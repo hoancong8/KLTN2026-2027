@@ -25,6 +25,7 @@ class AppAuthInterceptor extends Interceptor {
     final token = ref.read(authTokenProvider);
     if (token != null) {
       options.headers['Authorization'] = 'Bearer ${token.accessToken}';
+      options.headers['FromMobile'] = 'true';
     }
     return handler.next(options);
   }
