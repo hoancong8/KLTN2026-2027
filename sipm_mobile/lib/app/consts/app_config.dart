@@ -13,7 +13,7 @@ class AppConfig {
   // URL mặc định theo environment và platform
   static String get _defaultBaseUrl {
     if (env == 'prod') {
-      return 'https://erp.lamhai.net'; // Production
+      return 'https://sipm.lamhai.net'; // Production
     }
 
     // Development - Tự động detect platform
