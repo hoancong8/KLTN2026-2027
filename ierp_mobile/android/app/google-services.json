@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "70946259423",
+    "project_id": "notification-erp-72095",
+    "storage_bucket": "notification-erp-72095.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:70946259423:android:74e5dcc5e5b5559b1e046a",
+        "android_client_info": {
+          "package_name": "com.ierp.ierp_mobile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAFfKr0bbW6HIQAOg1ovU2vN1oUP_ZF31g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
