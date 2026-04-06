@@ -88,9 +88,12 @@ final isAdminProvider = Provider<bool>((ref) {
   final roleName = employee.roleName?.toLowerCase() ?? '';
 
   return roleName.contains('admin') ||
-      roleName.contains('quáº£n trá»‹') ||
       roleId == 1;
 });
+
+/// Provider for current tab index in Home Screen
+final homeTabProvider = StateProvider<int>((ref) => 0);
+
 
 // ============================================================================
 // PRIVATE HELPERS - Token Refresh & Session Management (MOVED TO AppAuthInterceptor)

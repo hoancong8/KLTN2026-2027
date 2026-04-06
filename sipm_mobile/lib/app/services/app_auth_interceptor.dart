@@ -87,6 +87,7 @@ class AppAuthInterceptor extends Interceptor {
         final newToken = await _refreshFuture!;
         final opts = err.requestOptions;
         opts.headers['Authorization'] = 'Bearer ${newToken.accessToken}';
+        opts.headers['FromMobile'] = 'true';
 
         final tenantId = await SecureStorageService.instance.getTenantId();
         if (tenantId != null) {
@@ -125,7 +126,8 @@ class AppAuthInterceptor extends Interceptor {
     _refreshDio ??= Dio(
       BaseOptions(
         baseUrl: AppConfig.baseUrl,
-        headers: {'Content-Type': 'application/json'},
+        headers: {'Content-Type': 'application/json', 'FromMobile': 'true'},
+
       ),
     )..httpClientAdapter = buildAdapter();
 
