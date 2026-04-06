@@ -4,6 +4,7 @@ import 'package:sipm_mobile/app/consts/app_colcor.dart';
 import 'package:sipm_mobile/app/provider.dart';
 import 'package:sipm_mobile/ui/screen/home/home_screen.dart';
 import 'package:sipm_mobile/widget/app_bar/custom_app_bar.dart';
+import '../../../../app/provider/localization_provider.dart';
 import 'home_shared.dart';
 
 class HomeTablet extends ConsumerWidget {
@@ -25,7 +26,7 @@ class HomeTablet extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: AppColor.white,
-      appBar: _buildAppBar(context),
+      appBar: _buildAppBar(context, ref),
       body: Row(
         children: [
           _buildNavigationRail(context, ref, tabIndex, unreadCount),
@@ -50,6 +51,8 @@ class HomeTablet extends ConsumerWidget {
       int tabIndex,
       int unreadCount,
       ) {
+    final l10n = ref.watch(localizationProvider.notifier);
+    ref.watch(localizationProvider);
     return NavigationRail(
       selectedIndex: tabIndex,
       onDestinationSelected: onTabSelected,
@@ -69,15 +72,15 @@ class HomeTablet extends ConsumerWidget {
         color: AppColor.cMuted,
       ),
       destinations: [
-        const NavigationRailDestination(
-          icon: Icon(Icons.home_outlined),
-          selectedIcon: Icon(Icons.home),
-          label: Text('Trang chủ'),
+        NavigationRailDestination(
+            icon: const Icon(Icons.home_outlined),
+            selectedIcon: const Icon(Icons.home),
+            label: Text(l10n.translate('Home')),
         ),
-        const NavigationRailDestination(
-          icon: Icon(Icons.work_outline),
-          selectedIcon: Icon(Icons.work),
-          label: Text('Dự án'),
+        NavigationRailDestination(
+          icon: const Icon(Icons.work_outline),
+          selectedIcon: const Icon(Icons.work),
+          label: Text(l10n.translate('Projects')),
         ),
         NavigationRailDestination(
           icon: Badge(
@@ -90,23 +93,25 @@ class HomeTablet extends ConsumerWidget {
             isLabelVisible: unreadCount > 0,
             child: const Icon(Icons.message),
           ),
-          label: const Text('Tin nhắn'),
+          label: Text(l10n.translate('Tin nhắn')),
         ),
-        const NavigationRailDestination(
-          icon: Icon(Icons.bar_chart_outlined),
-          selectedIcon: Icon(Icons.bar_chart),
-          label: Text('Báo cáo'),
+        NavigationRailDestination(
+          icon: const Icon(Icons.bar_chart_outlined),
+          selectedIcon: const Icon(Icons.bar_chart),
+          label: Text(l10n.translate('Report')),
         ),
-        const NavigationRailDestination(
-          icon: Icon(Icons.settings_outlined),
-          selectedIcon: Icon(Icons.settings),
-          label: Text('Cài đặt'),
+        NavigationRailDestination(
+          icon: const Icon(Icons.settings_outlined),
+          selectedIcon: const Icon(Icons.settings),
+          label: Text(l10n.translate('Setting')),
         ),
       ],
     );
   }
 
-  PreferredSizeWidget _buildAppBar(BuildContext context) {
+  PreferredSizeWidget _buildAppBar(BuildContext context, WidgetRef ref) {
+    final l10n = ref.watch(localizationProvider.notifier);
+    ref.watch(localizationProvider);
     return CustomAppBar(
       showLogo: true,
       backgroundColor: AppColor.white,
@@ -118,13 +123,13 @@ class HomeTablet extends ConsumerWidget {
           const CompanyHeader(),
           const Spacer(),
           IconButton(
-            tooltip: 'Tìm kiếm',
+            tooltip: l10n.translate('Search'),
             onPressed:
-                () => showSearch(context: context, delegate: SimpleSearchDelegate()),
+                () => showSearch(context: context, delegate: SimpleSearchDelegate(l10n)),
             icon: const Icon(Icons.search),
           ),
           IconButton(
-            tooltip: 'Thông báo',
+            tooltip: l10n.translate('Thông báo'), // TODO: Add key for notifications
             onPressed: () {},
             icon: const Icon(Icons.notifications_none),
           ),

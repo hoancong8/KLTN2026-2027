@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sipm_mobile/app/consts/app_colcor.dart';
 import 'package:sipm_mobile/app/provider.dart';
 import 'package:sipm_mobile/widget/app_bar/custom_app_bar.dart';
+import '../../../../app/provider/localization_provider.dart';
 import 'home_shared.dart';
 
 class HomeMobile extends ConsumerWidget {
@@ -21,10 +22,11 @@ class HomeMobile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final tabIndex = ref.watch(homeTabProvider);
     final unreadCount = 0; // TODO: Get unread count from providers
-
+    final l10n = ref.watch(localizationProvider.notifier);
+    ref.watch(localizationProvider);
     return Scaffold(
       backgroundColor: AppColor.white,
-      appBar: _buildAppBar(context),
+      appBar: _buildAppBar(context, ref),
       body: PageView(
         controller: pageController,
         onPageChanged: (index) {
@@ -49,15 +51,15 @@ class HomeMobile extends ConsumerWidget {
           backgroundColor: AppColor.white,
           indicatorColor: AppColor.cMain.withValues(alpha: 0.15),
           destinations: [
-            const NavigationDestination(
-              icon: Icon(Icons.home_outlined),
-              selectedIcon: Icon(Icons.home),
-              label: 'Trang chủ',
+            NavigationDestination(
+              icon: const Icon(Icons.home_outlined),
+              selectedIcon: const Icon(Icons.home),
+              label: l10n.translate('Home'),
             ),
-            const NavigationDestination(
-              icon: Icon(Icons.work_outline),
-              selectedIcon: Icon(Icons.work),
-              label: 'Dự án',
+            NavigationDestination(
+              icon: const Icon(Icons.work_outline),
+              selectedIcon: const Icon(Icons.work),
+              label: l10n.translate('Projects'),
             ),
             NavigationDestination(
               icon: Badge(
@@ -70,17 +72,17 @@ class HomeMobile extends ConsumerWidget {
                 isLabelVisible: unreadCount > 0,
                 child: const Icon(Icons.message),
               ),
-              label: 'Tin nhắn',
+              label: l10n.translate('Tin nhắn'), // TODO: Add key for messages
             ),
-            const NavigationDestination(
-              icon: Icon(Icons.bar_chart_outlined),
-              selectedIcon: Icon(Icons.bar_chart),
-              label: 'Báo cáo',
+            NavigationDestination(
+              icon: const Icon(Icons.bar_chart_outlined),
+              selectedIcon: const Icon(Icons.bar_chart),
+              label: l10n.translate('Report'),
             ),
-            const NavigationDestination(
-              icon: Icon(Icons.settings_outlined),
-              selectedIcon: Icon(Icons.settings),
-              label: 'Cài đặt',
+            NavigationDestination(
+              icon: const Icon(Icons.settings_outlined),
+              selectedIcon: const Icon(Icons.settings),
+              label: l10n.translate('Setting'),
             ),
           ],
         ),
@@ -88,7 +90,9 @@ class HomeMobile extends ConsumerWidget {
     );
   }
 
-  PreferredSizeWidget _buildAppBar(BuildContext context) {
+  PreferredSizeWidget _buildAppBar(BuildContext context, WidgetRef ref) {
+    final l10n = ref.watch(localizationProvider.notifier);
+    ref.watch(localizationProvider);
     return CustomAppBar(
       showLogo: true,
       backgroundColor: AppColor.white,
@@ -100,13 +104,13 @@ class HomeMobile extends ConsumerWidget {
           const CompanyHeader(),
           const Spacer(),
           IconButton(
-            tooltip: 'Tìm kiếm',
+            tooltip: l10n.translate('Search'),
             onPressed:
-                () => showSearch(context: context, delegate: SimpleSearchDelegate()),
+                () => showSearch(context: context, delegate: SimpleSearchDelegate(l10n)),
             icon: const Icon(Icons.search),
           ),
           IconButton(
-            tooltip: 'Thông báo',
+              tooltip: l10n.translate('Thông báo'),
             onPressed: () {},
             icon: const Icon(Icons.notifications_none),
           ),

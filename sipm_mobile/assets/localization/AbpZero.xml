@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<localizationDictionary culture="en">
+    <texts>
+        <text name="Success" value="Success" />
+        <text name="UnknownError" value="An unknown error occurred" />
+        <text name="NetworkError" value="Cannot connect to server" />
+        <text name="ConnectionTimeout" value="Connection timeout" />
+        <text name="ReceiveTimeout" value="Receive data timeout" />
+        <text name="Unauthorized" value="Session expired" />
+        <text name="Forbidden" value="Access denied" />
+        <text name="NotFound" value="Data not found" />
+        <text name="ServerError" value="Internal server error" />
+        <text name="LoginSuccess" value="Login successful" />
+        <text name="LoginFailed" value="Login failed" />
+        <text name="LogoutSuccess" value="Logout successful" />
+        <text name="InvalidCredentials" value="Invalid username or password" />
+        <text name="OtpSent" value="OTP has been sent" />
+        <text name="OtpInvalid" value="Invalid OTP" />
+        <text name="OtpExpired" value="OTP expired" />
+        <text name="Login" value="Login" />
+        <text name="Username" value="Username" />
+        <text name="Password" value="Password" />
+        <text name="ForgotPassword" value="Forgot password?" />
+        <text name="Cancel" value="Cancel" />
+        <text name="Confirm" value="Confirm" />
+        <text name="Save" value="Save" />
+        <text name="Edit" value="Edit" />
+        <text name="Delete" value="Delete" />
+        <text name="Search" value="Search" />
+        <text name="Back" value="Back" />
+        <text name="Submit" value="Submit" />
+        <text name="Home" value="Home" />
+        <text name="Profile" value="Profile" />
+        <text name="Setting" value="Setting" />
+        <text name="Logout" value="Logout" />
+        <text name="ChangePassword" value="Change Password" />
+        <text name="BlockedUsers" value="Blocked Users" />
+        <text name="AddFriend" value="Add Friend" />
+        <text name="BusinessSolution" value="Comprehensive enterprise management solution" />
+        <text name="EnterUsernameHint" value="Enter username or email" />
+        <text name="UsernameRequired" value="Please enter username" />
+        <text name="EnterPasswordHint" value="Enter password" />
+        <text name="PasswordRequired" value="Please enter password" />
+        <text name="PasswordTooShort" value="Password too short" />
+        <text name="LoggingIn" value="Logging in..." />
+        <text name="Or" value="or" />
+        <text name="BiometricLogin" value="Biometric Login" />
+        <text name="OtpVerification" value="OTP Verification" />
+        <text name="OtpEnterCodeMsg" value="Please enter the verification code sent to you." />
+        <text name="Verify" value="Verify" />
+        <text name="ParentCompany" value="Parent Company" />
+        <text name="ResultsFor" value="Results for: {query}" />
+        <text name="Finance" value="Finance" />
+        <text name="Report" value="Report" />
+        <text name="NotUpdated" value="Not updated" />
+        <text name="NoEmail" value="No email" />
+        <text name="BasicInfo" value="Basic Information" />
+        <text name="FullName" value="Full Name" />
+        <text name="EnterFullNameHint" value="Enter full name" />
+        <text name="FullNameRequired" value="Please enter full name" />
+        <text name="Email" value="Email" />
+        <text name="EnterEmailHint" value="Enter email address" />
+        <text name="PhoneNumber" value="Phone Number" />
+        <text name="EnterPhoneHint" value="Enter phone number" />
+        <text name="Address" value="Address" />
+        <text name="CurrentAddress" value="Current Address" />
+        <text name="EnterAddressHint" value="Enter current address" />
+        <text name="WorkInfo" value="Work Information" />
+        <text name="Department" value="Department" />
+        <text name="Position" value="Position" />
+        <text name="SaveChanges" value="Save Changes" />
+        <text name="Language" value="Language" />
+        <text name="Vietnamese" value="Vietnamese" />
+        <text name="English" value="English" />
+        <text name="Projects" value="Projects" />
+        <text name="Tin nhắn" value="Messages" />
+        <text name="Thông báo" value="Notifications" />
+        <text name="UpdateProfile" value="Update Profile" />
+        <text name="DateOfBirth" value="Date of Birth" />
+        <text name="ChooseDateOfBirth" value="Choose date of birth" />
+        <text name="Gender" value="Gender" />
+        <text name="Male" value="Male" />
+        <text name="Female" value="Female" />
+        <text name="SavingInfo" value="Saving information..." />
+        <text name="SearchHintAddFriend" value="Search by name, email..." />
+        <text name="AlreadyAdded" value="Added" />
+        <text name="Add" value="Add" />
+        <text name="EnterNameOrEmailToSearch" value="Enter name or email to search" />
+        <text name="Retry" value="Retry" />
+        <text name="NoUserFound" value="No users found" />
+        <text name="AddFriendSuccessMsg" value="Added {name} to chat list" />
+        <text name="AddFriendErrorMsg" value="Cannot add. May already be friends." />
+        <text name="AddFriend" value="Add Friend" />
+        <text name="Unblock" value="Unblock" />
+        <text name="NoBlockedUsers" value="No blocked users" />
+        <text name="UnblockSuccessMsg" value="Unblocked successfully" />
+        <text name="UnblockErrorMsg" value="Could not unblock. Please try again." />
+        <text name="Account" value="Account" />
+        <text name="AccountSubtitle" value="User info, permissions" />
+        <text name="Security" value="Security" />
+        <text name="PasswordSubtitle" value="Change your login password" />
+        <text name="Others" value="Others" />
+        <text name="LogoutSubtitle" value="Logout from system" />
+        <text name="Configuration" value="Configuration" />
+        <text name="LanguageSubtitle" value="Select application language" />
+        <text name="SystemConfig" value="System &amp; Account Configuration" />
+        <text name="LoggingOut" value="Logging out..." />
+    </texts>
+</localizationDictionary>

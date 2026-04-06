@@ -30,6 +30,7 @@ dependencies:
   gal: ^2.3.2
   cached_network_image: ^3.4.1
   open_filex: ^4.7.0
+  xml: ^6.6.1
   # WebRTC/Video Call removed
   url_launcher: ^6.3.2
   flutter_native_splash: ^2.4.7
@@ -63,6 +64,7 @@ flutter:
   assets:
     - assets/images/
     - assets/icons/
+    - assets/localization/
   # fonts:
   #   - family: Schyler
   #     fonts:

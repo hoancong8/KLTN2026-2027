@@ -6,6 +6,9 @@
       <excludeFolder url="file://$MODULE_DIR$/ierp_mobile/.dart_tool" />
       <excludeFolder url="file://$MODULE_DIR$/ierp_mobile/.pub" />
       <excludeFolder url="file://$MODULE_DIR$/ierp_mobile/build" />
+      <excludeFolder url="file://$MODULE_DIR$/sipm_mobile/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/sipm_mobile/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/sipm_mobile/build" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

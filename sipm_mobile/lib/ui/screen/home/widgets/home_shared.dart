@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sipm_mobile/app/consts/app_colcor.dart';
 import 'package:sipm_mobile/ui/screen/profile/profile_screen.dart';
 
-class CompanyHeader extends StatelessWidget {
+import '../../../../app/provider/localization_provider.dart';
+
+class CompanyHeader extends ConsumerWidget {
   const CompanyHeader({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final t = Theme.of(context).textTheme;
+    final l10n = ref.watch(localizationProvider.notifier);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -18,13 +22,16 @@ class CompanyHeader extends StatelessWidget {
             color: AppColor.cTitle,
           ),
         ),
-        Text('Công ty mẹ', style: t.bodySmall?.copyWith(color: AppColor.cMuted)),
+        Text(l10n.translate('ParentCompany'), style: t.bodySmall?.copyWith(color: AppColor.cMuted)),
       ],
     );
   }
 }
 
 class SimpleSearchDelegate extends SearchDelegate<String> {
+  final LocalizationNotifier l10n;
+
+  SimpleSearchDelegate(this.l10n) : super(searchFieldLabel: l10n.translate('Search'));
   @override
   List<Widget>? buildActions(BuildContext context) {
     return [
@@ -51,7 +58,7 @@ class SimpleSearchDelegate extends SearchDelegate<String> {
   Widget buildResults(BuildContext context) {
     return Center(
       child: Text(
-        'Ket qua cho: $query',
+        l10n.translate('ResultsFor', args: {'query': query}),
         style: const TextStyle(fontWeight: FontWeight.w700),
       ),
     );
@@ -59,7 +66,13 @@ class SimpleSearchDelegate extends SearchDelegate<String> {
 
   @override
   Widget buildSuggestions(BuildContext context) {
-    final source = const ['Home', 'Projects', 'Finance', 'Report', 'Settings'];
+    final source = [
+      l10n.translate('Home'),
+      l10n.translate('Projects'),
+      l10n.translate('Finance'),
+      l10n.translate('Report'),
+      l10n.translate('Setting')
+    ];
     final suggestions =
     source.where((e) {
       return e.toLowerCase().contains(query.toLowerCase());
