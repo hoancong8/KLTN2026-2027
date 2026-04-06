@@ -127,6 +127,44 @@ Dự án áp dụng Clean Architecture với 3 tầng chính:
 - **Widgets**: Components tái sử dụng
 - **Providers**: Quản lý state với Riverpod
 
+## 🌍 Đa ngôn ngữ (Localization)
+
+Dự án hỗ trợ đa ngôn ngữ thông qua `LocalizationService` và Riverpod.
+
+### 1. **Cách sử dụng**
+Sử dụng extension `ref.l('key')` trong `ConsumerWidget` hoặc `ConsumerState` để lấy chuỗi đã dịch:
+```dart
+Text(ref.l('Login')) // key 'Login' trong file xml
+```
+
+### 2. **Cấu trúc tệp tin**
+Các file ngôn ngữ được đặt trong `assets/localization/`:
+- `AbpZero-vi.xml`: Tiếng Việt (mặc định)
+- `AbpZero.xml`: Tiếng Anh
+
+### 3. **Quản lý trạng thái**
+Sử dụng `localizationProvider` để theo dõi và thay đổi ngôn ngữ. Khi ngôn ngữ thay đổi, toàn bộ UI sử dụng `ref.l()` sẽ tự động cập nhật.
+
+## 📱 Giao diện đáp ứng (Responsive Design)
+
+Ứng dụng được thiết kế để hiển thị tối ưu trên cả điện thoại (Mobile) và máy tính bảng (Tablet).
+
+### 1. **Cấu trúc Screen tách biệt**
+Để đảm bảo code sạch và dễ bảo trì, các màn hình phức tạp được tách thành các file riêng cho từng loại thiết bị:
+- `feature_screen.dart`: File điều phối chính, sử dụng `ResponsiveLayout`.
+- `widgets/feature_mobile.dart`: Giao diện tối ưu cho điện thoại (thường dùng Bottom Navigation).
+- `widgets/feature_tablet.dart`: Giao diện tối ưu cho máy tính bảng (thường dùng Navigation Rail hoặc Split View).
+- `widgets/feature_shared.dart`: Chứa các widget hoặc hằng số dùng chung cho cả hai loại thiết bị.
+
+### 2. **ResponsiveLayout Widget**
+Sử dụng widget `ResponsiveLayout` để tự động chuyển đổi giao diện dựa trên breakpoint (mặc định là 600dp):
+```dart
+return ResponsiveLayout(
+  mobile: FeatureMobile(...),
+  tablet: FeatureTablet(...),
+);
+```
+
 ## 📦 Dependencies chính
 
 | Package | Mục đích | Version |
