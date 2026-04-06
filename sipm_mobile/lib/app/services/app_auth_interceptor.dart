@@ -22,10 +22,12 @@ class AppAuthInterceptor extends Interceptor {
 
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
+    // Luôn gửi header FromMobile cho mọi request
+    options.headers['FromMobile'] = 'true';
+
     final token = ref.read(authTokenProvider);
     if (token != null) {
       options.headers['Authorization'] = 'Bearer ${token.accessToken}';
-      options.headers['FromMobile'] = 'true';
     }
     return handler.next(options);
   }
@@ -87,7 +89,6 @@ class AppAuthInterceptor extends Interceptor {
         final newToken = await _refreshFuture!;
         final opts = err.requestOptions;
         opts.headers['Authorization'] = 'Bearer ${newToken.accessToken}';
-        opts.headers['FromMobile'] = 'true';
 
         final tenantId = await SecureStorageService.instance.getTenantId();
         if (tenantId != null) {
@@ -126,8 +127,10 @@ class AppAuthInterceptor extends Interceptor {
     _refreshDio ??= Dio(
       BaseOptions(
         baseUrl: AppConfig.baseUrl,
-        headers: {'Content-Type': 'application/json', 'FromMobile': 'true'},
-
+        headers: {
+          'Content-Type': 'application/json',
+          'FromMobile': 'true',
+        },
       ),
     )..httpClientAdapter = buildAdapter();
 
