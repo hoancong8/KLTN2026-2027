@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sipm_mobile/app/consts/app_colcor.dart';
 import 'package:sipm_mobile/app/provider.dart';
+import 'package:sipm_mobile/app/provider/localization_provider.dart';
 
 class BiometricSettingsItem extends ConsumerStatefulWidget {
   const BiometricSettingsItem({super.key});
@@ -203,7 +204,7 @@ class _BiometricSettingsItemState extends ConsumerState<BiometricSettingsItem> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Sinh trắc học',
+                    context.l10n.biometric,
                     style: TextStyle(
                       fontWeight: FontWeight.w700,
                       fontSize: 15,
@@ -249,7 +250,7 @@ class _BiometricSettingsItemState extends ConsumerState<BiometricSettingsItem> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Sinh trắc học',
+                  context.l10n.biometric,
                   style: TextStyle(
                     fontWeight: FontWeight.w700,
                     fontSize: 15,
@@ -260,7 +261,7 @@ class _BiometricSettingsItemState extends ConsumerState<BiometricSettingsItem> {
                 Text(
                   _biometricEnabled
                       ? 'Đăng nhập bằng vân tay/Face ID'
-                      : 'Thiết lập đăng nhập sinh trắc học',
+                      : context.l10n.biometriclogicsetting,
                   style: TextStyle(fontSize: 13, color: AppColor.cMuted),
                 ),
               ],

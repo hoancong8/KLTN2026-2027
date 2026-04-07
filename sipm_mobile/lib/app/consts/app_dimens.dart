@@ -15,6 +15,8 @@ class AppDimens {
     return MediaQuery.of(context).orientation;
   }
 
+  static const double tabletBreakpoint = 600.0;
+
   static Widget kHeightBottom(BuildContext context) {
     return SafeArea(
       top: false,

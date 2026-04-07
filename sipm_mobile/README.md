@@ -52,6 +52,7 @@ flutter build ios --dart-define=ENV=prod
 sipm_mobile/
 ├── lib/
 │   ├── app/                    # 🔧 Cấu hình ứng dụng
+│   │   ├── l10n_gen/          # 🤖 Code đa ngôn ngữ tự động (Generated)
 │   │   ├── paging/            # Phân trang dữ liệu
 │   │   │   ├── paged_results.dart
 │   │   │   └── paging_cursor.dart
@@ -59,10 +60,15 @@ sipm_mobile/
 │   │   ├── app_messages.dart  # Thông báo và message
 │   │   ├── app_router.dart    # Định tuyến màn hình
 │   │   ├── app_theme.dart     # Theme và styling
+│   │   ├── localization_provider.dart # Quản lý ngôn ngữ
 │   │   ├── mapper.dart        # Base mapper
 │   │   ├── my_app.dart        # Widget gốc của app
 │   │   ├── provider.dart      # Base provider
 │   │   └── usecase.dart       # Base usecase
+│   │
+│   ├── l10n/                  # 🌍 File ngôn ngữ nguồn (.arb)
+│   │   ├── app_en.arb
+│   │   └── app_vi.arb
 │   │
 │   ├── data/                   # 💾 Tầng dữ liệu
 │   │   ├── datasource/        # Nguồn dữ liệu
@@ -126,6 +132,58 @@ Dự án áp dụng Clean Architecture với 3 tầng chính:
 - **Screens**: Các màn hình của ứng dụng
 - **Widgets**: Components tái sử dụng
 - **Providers**: Quản lý state với Riverpod
+
+## 🌍 Đa ngôn ngữ (Localization)
+
+Dự án sử dụng giải pháp chính thức của Flutter (`flutter_localizations`) kết hợp với thư viện `intl` để hỗ trợ đa ngôn ngữ một cách an toàn (Type-safe).
+
+### 1. **Cách sử dụng**
+
+Sử dụng trực tiếp qua `BuildContext` hoặc `WidgetRef` để lấy chuỗi đã dịch với đầy đủ gợi ý code:
+
+**Trong Widget (UI):**
+```dart
+Text(context.l10n.login) // Tự động gợi ý key 'login'
+```
+
+**Trong Provider/Logic:**
+```dart
+final text = ref.l10n.loginSuccess;
+```
+
+### 2. **Cấu trúc tệp tin**
+- **File nguồn**: Nằm tại `lib/l10n/` (định dạng `.arb` - JSON). Đây là nơi bạn thêm mới các nhãn dịch.
+- **File tự gen**: Nằm tại `lib/app/l10n_gen/`. Các file này được Flutter tự động tạo ra, **không sửa bằng tay**.
+
+### 3. **Thêm ngôn ngữ/nhãn mới**
+1. Thêm key và nội dung vào `lib/l10n/app_vi.arb` và `lib/l10n/app_en.arb`.
+2. Lưu file (IDE sẽ tự gen code) hoặc chạy lệnh:
+   ```bash
+   flutter gen-l10n
+   ```
+
+### 4. **Quản lý trạng thái**
+Sử dụng `localizationProvider` để thay đổi ngôn ngữ. Khi ngôn ngữ thay đổi, toàn bộ giao diện sẽ cập nhật ngay lập tức.
+
+## 📱 Giao diện đáp ứng (Responsive Design)
+
+Ứng dụng được thiết kế để hiển thị tối ưu trên cả điện thoại (Mobile) và máy tính bảng (Tablet).
+
+### 1. **Cấu trúc Screen tách biệt**
+Để đảm bảo code sạch và dễ bảo trì, các màn hình phức tạp được tách thành các file riêng cho từng loại thiết bị:
+- `feature_screen.dart`: File điều phối chính, sử dụng `ResponsiveLayout`.
+- `widgets/feature_mobile.dart`: Giao diện tối ưu cho điện thoại (thường dùng Bottom Navigation).
+- `widgets/feature_tablet.dart`: Giao diện tối ưu cho máy tính bảng (thường dùng Navigation Rail hoặc Split View).
+- `widgets/feature_shared.dart`: Chứa các widget hoặc hằng số dùng chung cho cả hai loại thiết bị.
+
+### 2. **ResponsiveLayout Widget**
+Sử dụng widget `ResponsiveLayout` để tự động chuyển đổi giao diện dựa trên breakpoint (mặc định là 600dp):
+```dart
+return ResponsiveLayout(
+  mobile: FeatureMobile(...),
+  tablet: FeatureTablet(...),
+);
+```
 
 ## 📦 Dependencies chính
 
