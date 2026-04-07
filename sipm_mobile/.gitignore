@@ -48,3 +48,6 @@ app.*.map.json
 # iOS dependencies
 /ios/Podfile.lock
 /ios/Pods/
+
+# Auto-generated Localization
+lib/app/l10n_gen/

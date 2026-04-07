@@ -6,6 +6,7 @@ import 'package:sipm_mobile/app/provider.dart';
 
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:sipm_mobile/app/provider/localization_provider.dart';
+import 'package:sipm_mobile/app/l10n_gen/app_localizations.dart';
 
 class MyApp extends ConsumerStatefulWidget {
   final String initialRoute;
@@ -61,6 +62,7 @@ class _MyAppState extends ConsumerState<MyApp> {
 
     // Generate router using the determined initialRoute
     final router = generateAppRouter(widget.initialRoute);
+    final locale = ref.watch(localizationProvider);
 
     // Remove the native splash screen now that first frame is ready
     FlutterNativeSplash.remove();
@@ -71,6 +73,9 @@ class _MyAppState extends ConsumerState<MyApp> {
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
       themeMode: ThemeMode.system,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      locale: locale,
     );
   }
 }
