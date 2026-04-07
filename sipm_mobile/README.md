@@ -52,6 +52,7 @@ flutter build ios --dart-define=ENV=prod
 sipm_mobile/
 ├── lib/
 │   ├── app/                    # 🔧 Cấu hình ứng dụng
+│   │   ├── l10n_gen/          # 🤖 Code đa ngôn ngữ tự động (Generated)
 │   │   ├── paging/            # Phân trang dữ liệu
 │   │   │   ├── paged_results.dart
 │   │   │   └── paging_cursor.dart
@@ -59,10 +60,15 @@ sipm_mobile/
 │   │   ├── app_messages.dart  # Thông báo và message
 │   │   ├── app_router.dart    # Định tuyến màn hình
 │   │   ├── app_theme.dart     # Theme và styling
+│   │   ├── localization_provider.dart # Quản lý ngôn ngữ
 │   │   ├── mapper.dart        # Base mapper
 │   │   ├── my_app.dart        # Widget gốc của app
 │   │   ├── provider.dart      # Base provider
 │   │   └── usecase.dart       # Base usecase
+│   │
+│   ├── l10n/                  # 🌍 File ngôn ngữ nguồn (.arb)
+│   │   ├── app_en.arb
+│   │   └── app_vi.arb
 │   │
 │   ├── data/                   # 💾 Tầng dữ liệu
 │   │   ├── datasource/        # Nguồn dữ liệu
@@ -129,21 +135,35 @@ Dự án áp dụng Clean Architecture với 3 tầng chính:
 
 ## 🌍 Đa ngôn ngữ (Localization)
 
-Dự án hỗ trợ đa ngôn ngữ thông qua `LocalizationService` và Riverpod.
+Dự án sử dụng giải pháp chính thức của Flutter (`flutter_localizations`) kết hợp với thư viện `intl` để hỗ trợ đa ngôn ngữ một cách an toàn (Type-safe).
 
 ### 1. **Cách sử dụng**
-Sử dụng extension `ref.l('key')` trong `ConsumerWidget` hoặc `ConsumerState` để lấy chuỗi đã dịch:
+
+Sử dụng trực tiếp qua `BuildContext` hoặc `WidgetRef` để lấy chuỗi đã dịch với đầy đủ gợi ý code:
+
+**Trong Widget (UI):**
 ```dart
-Text(ref.l('Login')) // key 'Login' trong file xml
+Text(context.l10n.login) // Tự động gợi ý key 'login'
+```
+
+**Trong Provider/Logic:**
+```dart
+final text = ref.l10n.loginSuccess;
 ```
 
 ### 2. **Cấu trúc tệp tin**
-Các file ngôn ngữ được đặt trong `assets/localization/`:
-- `AbpZero-vi.xml`: Tiếng Việt (mặc định)
-- `AbpZero.xml`: Tiếng Anh
+- **File nguồn**: Nằm tại `lib/l10n/` (định dạng `.arb` - JSON). Đây là nơi bạn thêm mới các nhãn dịch.
+- **File tự gen**: Nằm tại `lib/app/l10n_gen/`. Các file này được Flutter tự động tạo ra, **không sửa bằng tay**.
 
-### 3. **Quản lý trạng thái**
-Sử dụng `localizationProvider` để theo dõi và thay đổi ngôn ngữ. Khi ngôn ngữ thay đổi, toàn bộ UI sử dụng `ref.l()` sẽ tự động cập nhật.
+### 3. **Thêm ngôn ngữ/nhãn mới**
+1. Thêm key và nội dung vào `lib/l10n/app_vi.arb` và `lib/l10n/app_en.arb`.
+2. Lưu file (IDE sẽ tự gen code) hoặc chạy lệnh:
+   ```bash
+   flutter gen-l10n
+   ```
+
+### 4. **Quản lý trạng thái**
+Sử dụng `localizationProvider` để thay đổi ngôn ngữ. Khi ngôn ngữ thay đổi, toàn bộ giao diện sẽ cập nhật ngay lập tức.
 
 ## 📱 Giao diện đáp ứng (Responsive Design)
 

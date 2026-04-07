@@ -13,7 +13,6 @@ class SettingsPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(settingsViewModelProvider);
-    final l10n = ref.watch(localizationProvider.notifier);
     final currentLocale = ref.watch(localizationProvider);
 
     ref.listen(settingsViewModelProvider, (prev, next) {
@@ -37,9 +36,9 @@ class SettingsPage extends ConsumerWidget {
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.all(16),
         children: [
-          _buildHeader(context, l10n),
+          _buildHeader(context),
           const SizedBox(height: 20),
-          _buildSectionTitle(context, l10n.translate('Account'), Icons.person_outline),
+          _buildSectionTitle(context, context.l10n.account, Icons.person_outline),
           const SizedBox(height: 12),
           _buildSettingsCard(
             children: [
@@ -47,8 +46,8 @@ class SettingsPage extends ConsumerWidget {
                 context: context,
                 icon: Icons.person_outline,
                 color: AppColor.cMain,
-                title: l10n.translate('Account'),
-                subtitle: l10n.translate('AccountSubtitle'),
+                title: context.l10n.account,
+                subtitle: context.l10n.accountsubtitle,
                 onTap: () {
                   context.push(AppConfig.profilePath);
                 },
@@ -56,7 +55,7 @@ class SettingsPage extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 20),
-          _buildSectionTitle(context, l10n.translate('Security'), Icons.security_outlined),
+          _buildSectionTitle(context, context.l10n.security, Icons.security_outlined),
           const SizedBox(height: 12),
           _buildSettingsCard(
             children: [
@@ -64,8 +63,8 @@ class SettingsPage extends ConsumerWidget {
                 context: context,
                 icon: Icons.lock_outline,
                 color: AppColor.cYanPrimary,
-                title: l10n.translate('ChangePassword'),
-                subtitle: l10n.translate('PasswordSubtitle'),
+                title: context.l10n.changepassword,
+                subtitle: context.l10n.passwordsubtitle,
                 onTap: () {
                   context.push(AppConfig.changePasswordPath);
                 },
@@ -75,7 +74,7 @@ class SettingsPage extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 20),
-          _buildSectionTitle(context, l10n.translate('Configuration'), Icons.settings_suggest_outlined),
+          _buildSectionTitle(context, context.l10n.configuration, Icons.settings_suggest_outlined),
           const SizedBox(height: 12),
           _buildSettingsCard(
             children: [
@@ -83,14 +82,14 @@ class SettingsPage extends ConsumerWidget {
                 context: context,
                 icon: Icons.language,
                 color: Colors.orange,
-                title: l10n.translate('Language'),
-                subtitle: currentLocale == 'vi' ? l10n.translate('Vietnamese') : l10n.translate('English'),
-                onTap: () => _showLanguageBottomSheet(context, ref, l10n, currentLocale),
+                title: context.l10n.language,
+                subtitle: currentLocale.languageCode == 'vi' ? context.l10n.vietnamese : context.l10n.english,
+                onTap: () => _showLanguageBottomSheet(context, ref, currentLocale),
               ),
             ],
           ),
           const SizedBox(height: 20),
-          _buildSectionTitle(context, 'Khác', Icons.more_horiz),
+          _buildSectionTitle(context, context.l10n.others, Icons.more_horiz),
           const SizedBox(height: 12),
           _buildLogoutCard(context, ref, state.isLoading),
           const SizedBox(height: 24),
@@ -102,15 +101,14 @@ class SettingsPage extends ConsumerWidget {
   void _showLanguageBottomSheet(
       BuildContext context,
       WidgetRef ref,
-      LocalizationNotifier l10n,
-      String currentLocale,
+      Locale currentLocale,
       ) {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
       builder: (context) {
-        String selectedLocale = currentLocale;
+        String selectedLocale = currentLocale.languageCode;
 
         return StatefulBuilder(
           builder: (context, setState) {
@@ -136,7 +134,7 @@ class SettingsPage extends ConsumerWidget {
                       ),
                       const SizedBox(width: 16),
                       Text(
-                        l10n.translate('Language'),
+                        context.l10n.language,
                         style: const TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.w800,
@@ -152,14 +150,14 @@ class SettingsPage extends ConsumerWidget {
                   ),
                   const SizedBox(height: 24),
                   _buildLanguageSelectionItem(
-                    label: l10n.translate('Vietnamese'),
+                    label: context.l10n.vietnamese,
                     flag: '🇻🇳',
                     isSelected: selectedLocale == 'vi',
                     onTap: () => setState(() => selectedLocale = 'vi'),
                   ),
                   const SizedBox(height: 12),
                   _buildLanguageSelectionItem(
-                    label: l10n.translate('English'),
+                    label: context.l10n.english,
                     flag: '🇺🇸',
                     isSelected: selectedLocale == 'en',
                     onTap: () => setState(() => selectedLocale = 'en'),
@@ -178,7 +176,7 @@ class SettingsPage extends ConsumerWidget {
                             side: const BorderSide(color: AppColor.cDivider),
                           ),
                           child: Text(
-                            l10n.translate('Cancel'),
+                            context.l10n.cancel,
                             style: const TextStyle(
                               color: AppColor.cTitle,
                               fontWeight: FontWeight.w600,
@@ -204,7 +202,7 @@ class SettingsPage extends ConsumerWidget {
                             elevation: 0,
                           ),
                           child: Text(
-                            l10n.translate('Save'),
+                            context.l10n.save,
                             style: const TextStyle(
                               color: AppColor.white,
                               fontWeight: FontWeight.w600,
@@ -267,7 +265,7 @@ class SettingsPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildHeader(BuildContext context, LocalizationNotifier l10n) {
+  Widget _buildHeader(BuildContext context) {
     return Row(
       children: [
         Container(
@@ -284,14 +282,14 @@ class SettingsPage extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                l10n.translate('Setting'),
+                context.l10n.setting,
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.w800,
                   color: AppColor.cTitle,
                 ),
               ),
               Text(
-                l10n.translate('SystemConfig'),
+                context.l10n.systemconfig,
                 style: Theme.of(
                   context,
                 ).textTheme.bodyMedium?.copyWith(color: AppColor.cMuted),
@@ -437,7 +435,7 @@ class SettingsPage extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        isLoading ? 'Đang đăng xuất...' : 'Đăng xuất',
+                        isLoading ? context.l10n.loggingout : context.l10n.logout,
                         style: TextStyle(
                           fontWeight: FontWeight.w700,
                           fontSize: 15,
@@ -446,7 +444,7 @@ class SettingsPage extends ConsumerWidget {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        'Đăng xuất khỏi hệ thống',
+                        context.l10n.logoutsubtitle,
                         style: TextStyle(fontSize: 13, color: AppColor.cMuted),
                       ),
                     ],

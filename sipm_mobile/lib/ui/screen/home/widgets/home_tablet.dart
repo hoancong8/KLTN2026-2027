@@ -51,7 +51,6 @@ class HomeTablet extends ConsumerWidget {
       int tabIndex,
       int unreadCount,
       ) {
-    final l10n = ref.watch(localizationProvider.notifier);
     ref.watch(localizationProvider);
     return NavigationRail(
       selectedIndex: tabIndex,
@@ -75,12 +74,12 @@ class HomeTablet extends ConsumerWidget {
         NavigationRailDestination(
             icon: const Icon(Icons.home_outlined),
             selectedIcon: const Icon(Icons.home),
-            label: Text(l10n.translate('Home')),
+            label: Text(context.l10n.home),
         ),
         NavigationRailDestination(
           icon: const Icon(Icons.work_outline),
           selectedIcon: const Icon(Icons.work),
-          label: Text(l10n.translate('Projects')),
+          label: Text(context.l10n.projects),
         ),
         NavigationRailDestination(
           icon: Badge(
@@ -93,24 +92,23 @@ class HomeTablet extends ConsumerWidget {
             isLabelVisible: unreadCount > 0,
             child: const Icon(Icons.message),
           ),
-          label: Text(l10n.translate('Tin nhắn')),
+          label: Text(context.l10n.tinNhan),
         ),
         NavigationRailDestination(
           icon: const Icon(Icons.bar_chart_outlined),
           selectedIcon: const Icon(Icons.bar_chart),
-          label: Text(l10n.translate('Report')),
+          label: Text(context.l10n.report),
         ),
         NavigationRailDestination(
           icon: const Icon(Icons.settings_outlined),
           selectedIcon: const Icon(Icons.settings),
-          label: Text(l10n.translate('Setting')),
+          label: Text(context.l10n.setting),
         ),
       ],
     );
   }
 
   PreferredSizeWidget _buildAppBar(BuildContext context, WidgetRef ref) {
-    final l10n = ref.watch(localizationProvider.notifier);
     ref.watch(localizationProvider);
     return CustomAppBar(
       showLogo: true,
@@ -123,13 +121,13 @@ class HomeTablet extends ConsumerWidget {
           const CompanyHeader(),
           const Spacer(),
           IconButton(
-            tooltip: l10n.translate('Search'),
+            tooltip: context.l10n.search,
             onPressed:
-                () => showSearch(context: context, delegate: SimpleSearchDelegate(l10n)),
+                () => showSearch(context: context, delegate: SimpleSearchDelegate(context.l10n)),
             icon: const Icon(Icons.search),
           ),
           IconButton(
-            tooltip: l10n.translate('Thông báo'), // TODO: Add key for notifications
+            tooltip: context.l10n.others, // TODO: Add key for notifications
             onPressed: () {},
             icon: const Icon(Icons.notifications_none),
           ),

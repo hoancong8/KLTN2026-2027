@@ -1,42 +1,50 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
-import 'package:state_notifier/state_notifier.dart';
-import 'package:sipm_mobile/app/services/localization_service.dart';
-final localizationServiceProvider = Provider<LocalizationService>((ref) {
-  return LocalizationService();
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sipm_mobile/app/consts/storage_keys.dart';
+import 'package:sipm_mobile/app/l10n_gen/app_localizations.dart';
+
+final localizationProvider = StateNotifierProvider<LocalizationNotifier, Locale>((ref) {
+  return LocalizationNotifier();
 });
 
-final localizationProvider = StateNotifierProvider<LocalizationNotifier, String>((ref) {
-  final service = ref.watch(localizationServiceProvider);
-  return LocalizationNotifier(service, 'vi');
-});
+class LocalizationNotifier extends StateNotifier<Locale> {
+  AppLocalizations? _l10n;
 
-class LocalizationNotifier extends StateNotifier<String> {
-  final LocalizationService _service;
+  LocalizationNotifier() : super(const Locale('vi'));
 
-  LocalizationNotifier(this._service, String initialLocale) : super(initialLocale);
+  AppLocalizations? get l10n => _l10n;
 
-  /// Call this when starting the application
   Future<void> init() async {
-    await _service.init();
-    state = _service.currentLocale;
+    final prefs = await SharedPreferences.getInstance();
+    final langCode = prefs.getString(StorageKeys.languageCode) ?? 'vi';
+    state = Locale(langCode);
+    _l10n = lookupAppLocalizations(state);
   }
 
-  Future<void> changeLocale(String locale) async {
-    if (state == locale) return;
-    await _service.load(locale);
-    state = locale;
-  }
-
-  String translate(String key, {Map<String, String>? args}) {
-    return _service.translate(key, args: args);
+  Future<void> changeLocale(String langCode) async {
+    if (state.languageCode == langCode) return;
+    
+    final newLocale = Locale(langCode);
+    state = newLocale;
+    _l10n = lookupAppLocalizations(newLocale);
+    
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(StorageKeys.languageCode, langCode);
   }
 }
 
-/// Helper extension to use ref.l('key')
 extension LocalizationRefExtension on WidgetRef {
-  String l(String key, {Map<String, String>? args}) {
-    watch(localizationProvider); // Watch state to trigger rebuilds
-    return watch(localizationProvider.notifier).translate(key, args: args);
+  /// New type-safe way: ref.l10n.login
+  AppLocalizations get l10n {
+    watch(localizationProvider);
+    final notifier = watch(localizationProvider.notifier);
+    return notifier.l10n ?? lookupAppLocalizations(watch(localizationProvider));
   }
+}
+
+extension LocalizationBuildContextExtension on BuildContext {
+  /// Shortcut for AppLocalizations.of(context)
+  AppLocalizations get l10n => AppLocalizations.of(this)!;
 }

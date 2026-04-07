@@ -22,7 +22,6 @@ class HomeMobile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final tabIndex = ref.watch(homeTabProvider);
     final unreadCount = 0; // TODO: Get unread count from providers
-    final l10n = ref.watch(localizationProvider.notifier);
     ref.watch(localizationProvider);
     return Scaffold(
       backgroundColor: AppColor.white,
@@ -54,12 +53,7 @@ class HomeMobile extends ConsumerWidget {
             NavigationDestination(
               icon: const Icon(Icons.home_outlined),
               selectedIcon: const Icon(Icons.home),
-              label: l10n.translate('Home'),
-            ),
-            NavigationDestination(
-              icon: const Icon(Icons.work_outline),
-              selectedIcon: const Icon(Icons.work),
-              label: l10n.translate('Projects'),
+              label: context.l10n.home,
             ),
             NavigationDestination(
               icon: Badge(
@@ -72,17 +66,17 @@ class HomeMobile extends ConsumerWidget {
                 isLabelVisible: unreadCount > 0,
                 child: const Icon(Icons.message),
               ),
-              label: l10n.translate('Tin nhắn'), // TODO: Add key for messages
+              label: context.l10n.tinNhan, // TODO: Add key for messages
             ),
             NavigationDestination(
               icon: const Icon(Icons.bar_chart_outlined),
               selectedIcon: const Icon(Icons.bar_chart),
-              label: l10n.translate('Report'),
+              label: context.l10n.report,
             ),
             NavigationDestination(
               icon: const Icon(Icons.settings_outlined),
               selectedIcon: const Icon(Icons.settings),
-              label: l10n.translate('Setting'),
+              label: context.l10n.setting,
             ),
           ],
         ),
@@ -91,7 +85,6 @@ class HomeMobile extends ConsumerWidget {
   }
 
   PreferredSizeWidget _buildAppBar(BuildContext context, WidgetRef ref) {
-    final l10n = ref.watch(localizationProvider.notifier);
     ref.watch(localizationProvider);
     return CustomAppBar(
       showLogo: true,
@@ -104,13 +97,13 @@ class HomeMobile extends ConsumerWidget {
           const CompanyHeader(),
           const Spacer(),
           IconButton(
-            tooltip: l10n.translate('Search'),
+            tooltip: context.l10n.search,
             onPressed:
-                () => showSearch(context: context, delegate: SimpleSearchDelegate(l10n)),
+                () => showSearch(context: context, delegate: SimpleSearchDelegate(context.l10n)),
             icon: const Icon(Icons.search),
           ),
           IconButton(
-              tooltip: l10n.translate('Thông báo'),
+              tooltip: context.l10n.others,
             onPressed: () {},
             icon: const Icon(Icons.notifications_none),
           ),
