@@ -77,11 +77,6 @@ class HomeTablet extends ConsumerWidget {
             label: Text(context.l10n.home),
         ),
         NavigationRailDestination(
-          icon: const Icon(Icons.work_outline),
-          selectedIcon: const Icon(Icons.work),
-          label: Text(context.l10n.projects),
-        ),
-        NavigationRailDestination(
           icon: Badge(
             label: Text('$unreadCount'),
             isLabelVisible: unreadCount > 0,
