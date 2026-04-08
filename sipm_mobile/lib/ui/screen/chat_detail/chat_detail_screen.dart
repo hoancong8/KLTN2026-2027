@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sipm_mobile/app/consts/app_colcor.dart';
+import 'package:sipm_mobile/app/provider/localization_provider.dart';
 import '../home/tab/chat/widgets/message_bubble.dart';
 import '../home/tab/chat/widgets/message_input.dart';
 import '../home/tab/chat/widgets/chat_avatar.dart';
@@ -105,6 +106,16 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           _scrollToBottom();
         });
+      }
+     // show error as snackbar
+      if (next.error != null && next.error != previous?.error) {
+        final message = next.error!.getDisplayMessage(context.l10n);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(message),
+            backgroundColor: AppColor.cNeedCheck,
+          ),
+        );
       }
     });
 

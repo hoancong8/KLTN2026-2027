@@ -1,10 +1,11 @@
 import '../../../../domain/entities/chat_message.dart';
+import '../../../../domain/exceptions/app_exception.dart';
 
 class ChatDetailState {
   final bool isLoading;
   final bool isLoadingMore;
   final bool isSending;
-  final String? error;
+  final AppException? error;
   final List<ChatMessage> allMessages; // Buffer chứa tất cả tin từ API
   final List<ChatMessage> displayedMessages; // Tin đang hiển thị
   final bool hasMore;
@@ -27,7 +28,7 @@ class ChatDetailState {
     bool? isLoading,
     bool? isLoadingMore,
     bool? isSending,
-    String? error,
+    AppException? error,
     List<ChatMessage>? allMessages,
     List<ChatMessage>? displayedMessages,
     bool? hasMore,
