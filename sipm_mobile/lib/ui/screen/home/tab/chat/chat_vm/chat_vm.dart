@@ -1,4 +1,6 @@
 import 'package:flutter_riverpod/legacy.dart';
+import 'package:sipm_mobile/app/utils/app_exception_handler.dart';
+import 'package:sipm_mobile/domain/exceptions/app_exception.dart';
 import '../../../../../../app/provider.dart';
 import '../../../../../../app/services/signalr_service.dart';
 import '../../../../../../domain/entities/chat_friend.dart';
@@ -7,8 +9,8 @@ import '../../../../../../domain/usecases/friend/get_chat_friends_usecase.dart';
 import 'chat_state.dart';
 
 final chatViewModelProvider = StateNotifierProvider<ChatViewModel, ChatState>((
-    ref,
-    ) {
+  ref,
+) {
   return ChatViewModel(
     ref.watch(getChatFriendsUseCaseProvider),
     ref.watch(signalRServiceProvider),
@@ -23,7 +25,7 @@ class ChatViewModel extends StateNotifier<ChatState> {
   int? _activeChatFriendUserId;
 
   ChatViewModel(this.getChatFriendsUseCase, this.signalRService)
-      : super(const ChatState());
+    : super(const ChatState());
 
   /// Đánh dấu đang xem chat với user này
   void setActiveChatFriend(int userId) {
@@ -222,9 +224,15 @@ class ChatViewModel extends StateNotifier<ChatState> {
         users: activeFriends,
         allUsers: activeFriends, // Init both
       );
+    } on AppException catch (e) {
+      if (!mounted) return;
+      state = state.copyWith(isLoading: false, error: e);
     } catch (e) {
       if (!mounted) return;
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(
+        isLoading: false,
+        // error: AppExceptionHandler.handle(e),
+      );
     }
   }
 
