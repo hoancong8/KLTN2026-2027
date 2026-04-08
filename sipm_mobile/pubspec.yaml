@@ -1,6 +1,6 @@
 name: sipm_mobile
 description: "A new Flutter project."
-publish_to: 'none'
+publish_to: "none"
 
 version: 1.1.0+5
 
@@ -33,6 +33,7 @@ dependencies:
   # WebRTC/Video Call removed
   url_launcher: ^6.3.2
   flutter_native_splash: ^2.4.7
+  pretty_dio_logger: ^1.3.1
 
   # Localization
   flutter_localizations:
@@ -79,4 +80,3 @@ flutter:
   #       - asset: fonts/TrajanPro.ttf
   #       - asset: fonts/TrajanPro_Bold.ttf
   #         weight: 700
-

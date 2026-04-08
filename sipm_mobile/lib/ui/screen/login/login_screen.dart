@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sipm_mobile/app/consts/app_colcor.dart';
 import 'package:sipm_mobile/app/consts/app_config.dart';
+import 'package:sipm_mobile/app/consts/app_dimens.dart';
+import 'package:sipm_mobile/app/l10n_gen/app_localizations.dart';
 import 'package:sipm_mobile/widget/app_text_field/app_text_field.dart';
 import 'package:sipm_mobile/widget/loading_overlay.dart';
 import 'package:sipm_mobile/app/provider/localization_provider.dart';
@@ -46,6 +48,8 @@ class _LoginPageState extends ConsumerState<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isMobile = AppDimens.isMobileScreen(context);
+    final l10n = AppLocalizations.of(context)!;
     ref.listen(loginViewModelProvider, (prev, next) {
       if (next.biometricError != null &&
           next.biometricError != prev?.biometricError) {
@@ -91,143 +95,148 @@ class _LoginPageState extends ConsumerState<LoginScreen> {
               child: Center(
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      _buildLogo(),
-                      _buildWelcomeSection(),
-                      const SizedBox(height: 32),
+                  child: SizedBox(
+                    width: isMobile ? double.infinity : 480,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        _buildHeader(l10n: l10n, isMobile: isMobile),
+                        const SizedBox(height: 32),
+                        // Login Form
+                        Form(
+                          key: _formKey,
+                          child: Column(
+                            children: [
+                              AppEditText(
+                                controller: _usernameCtl,
+                                labelText: 'Tên đăng nhập',
+                                hintText: 'Nhập tên đăng nhập hoặc email',
+                                prefixIcon: const Icon(
+                                  Icons.person_outline,
+                                  color: AppColor.cMuted,
+                                  size: 22,
+                                ),
+                                keyboardType: TextInputType.emailAddress,
+                                fillColor: AppColor.cGray_50,
+                                borderColor: AppColor.cDivider,
+                                focusedBorderColor: AppColor.cMain,
+                                errorBorderColor: AppColor.cError,
+                                textStyle: const TextStyle(
+                                  fontSize: 15,
+                                  color: AppColor.cTitle,
+                                ),
+                                hintStyle: TextStyle(
+                                  fontSize: 15,
+                                  color: AppColor.cMuted.withValues(alpha: 0.7),
+                                ),
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 16,
+                                ),
+                                validator: (v) {
+                                  if (v == null || v.trim().isEmpty) {
+                                    return 'Vui lòng nhập tên đăng nhập';
+                                  }
+                                  return null;
+                                },
+                              ),
+                              const SizedBox(height: 14),
 
-                      // Login Form
-                      Form(
-                        key: _formKey,
-                        child: Column(
-                          children: [
-                            AppEditText(
-                              controller: _usernameCtl,
-                              labelText: 'Tên đăng nhập',
-                              hintText: 'Nhập tên đăng nhập hoặc email',
-                              prefixIcon: const Icon(
-                                Icons.person_outline,
-                                color: AppColor.cMuted,
-                                size: 22,
+                              AppEditText(
+                                controller: _passwordCtl,
+                                labelText: 'Mật khẩu',
+                                hintText: 'Nhập mật khẩu',
+                                prefixIcon: const Icon(
+                                  Icons.lock_outline,
+                                  color: AppColor.cMuted,
+                                  size: 22,
+                                ),
+                                obscureText: true,
+                                fillColor: AppColor.cGray_50,
+                                borderColor: AppColor.cDivider,
+                                focusedBorderColor: AppColor.cMain,
+                                errorBorderColor: AppColor.cError,
+                                textStyle: const TextStyle(
+                                  fontSize: 15,
+                                  color: AppColor.cTitle,
+                                ),
+                                hintStyle: TextStyle(
+                                  fontSize: 15,
+                                  color: AppColor.cMuted.withValues(alpha: 0.7),
+                                ),
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 16,
+                                ),
+                                validator: (v) {
+                                  if (v == null || v.isEmpty)
+                                    return 'Vui lòng nhập mật khẩu';
+                                  if (v.length < 4) return 'Mật khẩu quá ngắn';
+                                  return null;
+                                },
                               ),
-                              keyboardType: TextInputType.emailAddress,
-                              fillColor: AppColor.cGray_50,
-                              borderColor: AppColor.cDivider,
-                              focusedBorderColor: AppColor.cMain,
-                              errorBorderColor: AppColor.cError,
-                              textStyle: const TextStyle(
-                                fontSize: 15,
-                                color: AppColor.cTitle,
-                              ),
-                              hintStyle: TextStyle(
-                                fontSize: 15,
-                                color: AppColor.cMuted.withValues(alpha: 0.7),
-                              ),
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 16,
-                              ),
-                              validator: (v) {
-                                if (v == null || v.trim().isEmpty) {
-                                  return 'Vui lòng nhập tên đăng nhập';
-                                }
-                                return null;
-                              },
-                            ),
-                            const SizedBox(height: 14),
+                              const SizedBox(height: 20),
 
-                            AppEditText(
-                              controller: _passwordCtl,
-                              labelText: 'Mật khẩu',
-                              hintText: 'Nhập mật khẩu',
-                              prefixIcon: const Icon(
-                                Icons.lock_outline,
-                                color: AppColor.cMuted,
-                                size: 22,
+                              // Login button
+                              _buildPrimaryButton(
+                                text: state.isLoading
+                                    ? 'Đang đăng nhập...'
+                                    : 'Đăng nhập',
+                                onPressed: state.isLoading
+                                    ? null
+                                    : _handleLogin,
                               ),
-                              obscureText: true,
-                              fillColor: AppColor.cGray_50,
-                              borderColor: AppColor.cDivider,
-                              focusedBorderColor: AppColor.cMain,
-                              errorBorderColor: AppColor.cError,
-                              textStyle: const TextStyle(
-                                fontSize: 15,
-                                color: AppColor.cTitle,
-                              ),
-                              hintStyle: TextStyle(
-                                fontSize: 15,
-                                color: AppColor.cMuted.withValues(alpha: 0.7),
-                              ),
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 16,
-                              ),
-                              validator: (v) {
-                                if (v == null || v.isEmpty)
-                                  return 'Vui lòng nhập mật khẩu';
-                                if (v.length < 4) return 'Mật khẩu quá ngắn';
-                                return null;
-                              },
-                            ),
-                            const SizedBox(height: 20),
 
-                            // Login button
-                            _buildPrimaryButton(
-                              text: state.isLoading
-                                  ? 'Đang đăng nhập...'
-                                  : 'Đăng nhập',
-                              onPressed: state.isLoading ? null : _handleLogin,
-                            ),
+                              // Error message
+                              if (state.error != null) ...[
+                                const SizedBox(height: 12),
+                                _buildErrorBox(state.error!),
+                              ],
 
-                            // Error message
-                            if (state.error != null) ...[
-                              const SizedBox(height: 12),
-                              _buildErrorBox(state.error!),
-                            ],
-
-                            // Biometric button
-                            if (state.biometricSetup) ...[
-                              const SizedBox(height: 42),
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: Divider(color: AppColor.cDivider),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 12,
+                              // Biometric button
+                              if (state.biometricSetup) ...[
+                                const SizedBox(height: 42),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: Divider(color: AppColor.cDivider),
                                     ),
-                                    child: Text(
-                                      'hoặc',
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: AppColor.cMuted,
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                      ),
+                                      child: Text(
+                                        'hoặc',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: AppColor.cMuted,
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                  Expanded(
-                                    child: Divider(color: AppColor.cDivider),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 16),
-                              _buildBiometricButton(
-                                onPressed:
-                                    state.isLoading || state.biometricLoading
-                                    ? null
-                                    : () => ref
-                                          .read(loginViewModelProvider.notifier)
-                                          .authenticateWithBiometric(),
-                              ),
+                                    Expanded(
+                                      child: Divider(color: AppColor.cDivider),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 16),
+                                _buildBiometricButton(
+                                  onPressed:
+                                      state.isLoading || state.biometricLoading
+                                      ? null
+                                      : () => ref
+                                            .read(
+                                              loginViewModelProvider.notifier,
+                                            )
+                                            .authenticateWithBiometric(),
+                                ),
+                              ],
                             ],
-                          ],
+                          ),
                         ),
-                      ),
 
-                      const SizedBox(height: 24),
-                    ],
+                        const SizedBox(height: 24),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -241,9 +250,13 @@ class _LoginPageState extends ConsumerState<LoginScreen> {
     );
   }
 
-  Widget _buildLogo() {
+  Widget _buildHeader({
+    required AppLocalizations l10n,
+    required bool isMobile,
+  }) {
     return Column(
       children: [
+        // Phần Logo Icon
         Container(
           width: 80,
           height: 80,
@@ -264,30 +277,29 @@ class _LoginPageState extends ConsumerState<LoginScreen> {
             size: 40,
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 12),
+
+        // Tên ứng dụng (Sử dụng l10n.app_name hoặc hardcode nếu tên không đổi)
         Text(
           'iERP Mobile',
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 28,
             fontWeight: FontWeight.w800,
             color: AppColor.cTitle,
             letterSpacing: -0.5,
           ),
         ),
-      ],
-    );
-  }
+        const SizedBox(height: 16),
 
-  Widget _buildWelcomeSection() {
-    return Column(
-      children: [
+        // Câu chào mừng (Đã áp dụng l10n)
         Text(
-          'Chào mừng trở lại!',
-          style: TextStyle(
+          l10n.welcomeBack, // "Chào mừng trở lại!" hoặc "Welcome back!"
+          style: const TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.w700,
             color: AppColor.cTitle,
           ),
+          textAlign: TextAlign.center,
         ),
       ],
     );

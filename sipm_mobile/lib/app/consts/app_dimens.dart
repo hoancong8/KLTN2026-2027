@@ -21,7 +21,13 @@ class AppDimens {
     return SafeArea(
       top: false,
       bottom: true,
-      child: SizedBox(height: MediaQuery.of(context).padding.bottom > 0 ? 0 : 12),
+      child: SizedBox(
+        height: MediaQuery.of(context).padding.bottom > 0 ? 0 : 12,
+      ),
     );
+  }
+
+  static bool isMobileScreen(BuildContext context) {
+    return MediaQuery.of(context).size.width < tabletBreakpoint;
   }
 }
