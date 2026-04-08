@@ -5,6 +5,8 @@ import 'package:sipm_mobile/app/consts/app_colcor.dart';
 import 'package:sipm_mobile/app/consts/app_config.dart';
 import 'package:sipm_mobile/widget/app_text_field/app_text_field.dart';
 import 'package:sipm_mobile/widget/loading_overlay.dart';
+import 'package:sipm_mobile/app/provider/localization_provider.dart';
+import '../../../../domain/exceptions/app_exception.dart';
 import 'login_vm/login_vm.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -180,8 +182,7 @@ class _LoginPageState extends ConsumerState<LoginScreen> {
                             ),
 
                             // Error message
-                            if (state.error != null &&
-                                state.error!.trim().isNotEmpty) ...[
+                            if (state.error != null) ...[
                               const SizedBox(height: 12),
                               _buildErrorBox(state.error!),
                             ],
@@ -344,7 +345,7 @@ class _LoginPageState extends ConsumerState<LoginScreen> {
     );
   }
 
-  Widget _buildErrorBox(String message) {
+  Widget _buildErrorBox(AppException error) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(12),
@@ -359,7 +360,7 @@ class _LoginPageState extends ConsumerState<LoginScreen> {
           const SizedBox(width: 10),
           Expanded(
             child: Text(
-              message,
+              error.getDisplayMessage(context.l10n),
               style: TextStyle(
                 color: AppColor.cError,
                 fontWeight: FontWeight.w500,

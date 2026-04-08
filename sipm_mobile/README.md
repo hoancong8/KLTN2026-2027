@@ -165,6 +165,44 @@ final text = ref.l10n.loginSuccess;
 ### 4. **Quản lý trạng thái**
 Sử dụng `localizationProvider` để thay đổi ngôn ngữ. Khi ngôn ngữ thay đổi, toàn bộ giao diện sẽ cập nhật ngay lập tức.
 
+## ⚠️ Xử lý lỗi (Error Handling)
+
+Dự án sử dụng hệ thống xử lý lỗi tập trung, kết hợp giữa Clean Architecture và Localization để đảm bảo thông báo lỗi luôn nhất quán và thân thiện với người dùng.
+
+### 1. Thành phần chính
+- **`AppException`**: Lớp ngoại lệ cơ sở hỗ trợ đa ngôn ngữ. Thay vì chứa chuỗi text, nó chứa một `l10nSelector` để lấy nội dung từ file ARB.
+- **`AppExceptionHandler`**: Bộ điều phối trung tâm. Phân tích các lỗi từ Network (Dio), Server (Business Error) và chuyển đổi chúng thành các `AppException` cụ thể.
+- **`BaseRemoteDatasource`**: Tự động bắt và xử lý lỗi cho mọi API call.
+
+### 2. Luồng xử lý
+1. **Data Layer**: API trả về lỗi -> `BaseRemoteDatasource` bắt lỗi -> `AppExceptionHandler` chuyển đổi thành `AppException` (ví dụ: `AuthFailedException`).
+2. **Domain Layer**: Repository nhận và throw Exception này lên tầng trên.
+3. **UI Layer**:
+   - ViewModel bắt Exception và lưu vào state.
+   - UI sử dụng `AppExceptionHandler.getErrorMessage(context, exception)` để hiển thị thông báo. Thông báo sẽ tự động dịch sang tiếng Anh hoặc tiếng Việt dựa trên cấu hình máy.
+
+### 3. Cách sử dụng
+
+**Trong Repository:**
+Không cần dùng try-catch cho các lỗi API thông thường, `BaseRemoteDatasource` đã xử lý việc mapping.
+
+**Trong ViewModel:**
+```dart
+try {
+  await repo.login(...);
+} catch (e) {
+  state = state.copyWith(errorMessage: e as AppException);
+}
+```
+
+**Trong UI (Hiển thị lỗi):**
+```dart
+if (state.errorMessage != null) {
+  final message = AppExceptionHandler.getErrorMessage(context, state.errorMessage!);
+  AppDialogs.showError(context, message);
+}
+```
+
 ## 📱 Giao diện đáp ứng (Responsive Design)
 
 Ứng dụng được thiết kế để hiển thị tối ưu trên cả điện thoại (Mobile) và máy tính bảng (Tablet).

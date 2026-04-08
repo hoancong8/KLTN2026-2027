@@ -21,29 +21,23 @@ class LoginResponseDto {
   });
 
   factory LoginResponseDto.fromJson(Map<String, dynamic> json) {
-    final result = json['result'];
-
-    if (result == null) {
-      throw Exception('Response result is null');
-    }
-
-    final accessToken = result['accessToken'];
+    final accessToken = json['accessToken'];
     if (accessToken == null) {
-      throw Exception('accessToken is null in response: $result');
+      throw Exception('accessToken is null in response: $json');
     }
 
     return LoginResponseDto(
       accessToken: accessToken as String,
-      refreshToken: (result['refreshToken'] as String?) ?? '',
-      expireInSeconds: _parseInt(result['expireInSeconds']),
+      refreshToken: (json['refreshToken'] as String?) ?? '',
+      expireInSeconds: _parseInt(json['expireInSeconds']),
       requiresTwoFactorVerification:
-      _parseBool(result['requiresTwoFactorVerification']),
+      _parseBool(json['requiresTwoFactorVerification']),
       twoFactorRememberClientToken:
-      result['twoFactorRememberClientToken'] as String?,
-      encryptedAccessToken: result['encryptedAccessToken'] as String?,
-      userId: _parseIntNullable(result['userId']),
+      json['twoFactorRememberClientToken'] as String?,
+      encryptedAccessToken: json['encryptedAccessToken'] as String?,
+      userId: _parseIntNullable(json['userId']),
       refreshTokenExpireInSeconds:
-      _parseIntNullable(result['refreshTokenExpireInSeconds']),
+      _parseIntNullable(json['refreshTokenExpireInSeconds']),
     );
   }
 
