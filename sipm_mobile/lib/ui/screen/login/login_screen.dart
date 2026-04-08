@@ -109,8 +109,8 @@ class _LoginPageState extends ConsumerState<LoginScreen> {
                             children: [
                               AppEditText(
                                 controller: _usernameCtl,
-                                labelText: 'Tên đăng nhập',
-                                hintText: 'Nhập tên đăng nhập hoặc email',
+                                labelText: l10n.username,
+                                hintText: l10n.enterusernamehint,
                                 prefixIcon: const Icon(
                                   Icons.person_outline,
                                   color: AppColor.cMuted,
@@ -135,7 +135,7 @@ class _LoginPageState extends ConsumerState<LoginScreen> {
                                 ),
                                 validator: (v) {
                                   if (v == null || v.trim().isEmpty) {
-                                    return 'Vui lòng nhập tên đăng nhập';
+                                    return l10n.usernamerequired;
                                   }
                                   return null;
                                 },
@@ -144,8 +144,8 @@ class _LoginPageState extends ConsumerState<LoginScreen> {
 
                               AppEditText(
                                 controller: _passwordCtl,
-                                labelText: 'Mật khẩu',
-                                hintText: 'Nhập mật khẩu',
+                                labelText: l10n.password,
+                                hintText: l10n.enterpasswordhint,
                                 prefixIcon: const Icon(
                                   Icons.lock_outline,
                                   color: AppColor.cMuted,
@@ -169,9 +169,12 @@ class _LoginPageState extends ConsumerState<LoginScreen> {
                                   vertical: 16,
                                 ),
                                 validator: (v) {
-                                  if (v == null || v.isEmpty)
-                                    return 'Vui lòng nhập mật khẩu';
-                                  if (v.length < 4) return 'Mật khẩu quá ngắn';
+                                  if (v == null || v.isEmpty) {
+                                    return l10n.passwordrequired;
+                                  }
+                                  if (v.length < 4) {
+                                    return l10n.passwordtooshort;
+                                  }
                                   return null;
                                 },
                               ),
@@ -180,8 +183,8 @@ class _LoginPageState extends ConsumerState<LoginScreen> {
                               // Login button
                               _buildPrimaryButton(
                                 text: state.isLoading
-                                    ? 'Đang đăng nhập...'
-                                    : 'Đăng nhập',
+                                    ? l10n.loggingin
+                                    : l10n.login,
                                 onPressed: state.isLoading
                                     ? null
                                     : _handleLogin,
@@ -220,6 +223,7 @@ class _LoginPageState extends ConsumerState<LoginScreen> {
                                 ),
                                 const SizedBox(height: 16),
                                 _buildBiometricButton(
+                                  l10n: l10n,
                                   onPressed:
                                       state.isLoading || state.biometricLoading
                                       ? null
@@ -256,7 +260,6 @@ class _LoginPageState extends ConsumerState<LoginScreen> {
   }) {
     return Column(
       children: [
-        // Phần Logo Icon
         Container(
           width: 80,
           height: 80,
@@ -278,10 +281,8 @@ class _LoginPageState extends ConsumerState<LoginScreen> {
           ),
         ),
         const SizedBox(height: 12),
-
-        // Tên ứng dụng (Sử dụng l10n.app_name hoặc hardcode nếu tên không đổi)
         Text(
-          'iERP Mobile',
+          l10n.app_name,
           style: const TextStyle(
             fontSize: 28,
             fontWeight: FontWeight.w800,
@@ -289,11 +290,8 @@ class _LoginPageState extends ConsumerState<LoginScreen> {
             letterSpacing: -0.5,
           ),
         ),
-        const SizedBox(height: 16),
-
-        // Câu chào mừng (Đã áp dụng l10n)
         Text(
-          l10n.welcomeBack, // "Chào mừng trở lại!" hoặc "Welcome back!"
+          l10n.welcomeBack,
           style: const TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.w700,
@@ -331,7 +329,10 @@ class _LoginPageState extends ConsumerState<LoginScreen> {
     );
   }
 
-  Widget _buildBiometricButton({required VoidCallback? onPressed}) {
+  Widget _buildBiometricButton({
+    required AppLocalizations l10n,
+    required VoidCallback? onPressed,
+  }) {
     return SizedBox(
       width: double.infinity,
       height: 48,
@@ -346,7 +347,7 @@ class _LoginPageState extends ConsumerState<LoginScreen> {
         ),
         icon: Icon(Icons.fingerprint, color: AppColor.cMain, size: 22),
         label: Text(
-          'Đăng nhập sinh trắc học',
+          l10n.biometriclogin,
           style: TextStyle(
             color: AppColor.cMain,
             fontWeight: FontWeight.w600,

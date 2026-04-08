@@ -14,7 +14,6 @@ import 'package:sipm_mobile/domain/usecases/auth/logout_usecase.dart';
 import 'package:sipm_mobile/domain/usecases/auth/register_device_token_usecase.dart';
 import 'package:sipm_mobile/domain/usecases/auth/save_employee_id_usecase.dart';
 import 'package:sipm_mobile/domain/usecases/auth/save_tenant_id_usecase.dart';
-import 'package:sipm_mobile/ui/screen/home/home_screen.dart';
 import '../../../../domain/usecases/notification/get_notification_opened_stream_usecase.dart';
 import '../../chat_detail/chat_detail_screen.dart';
 import 'home_state.dart';
