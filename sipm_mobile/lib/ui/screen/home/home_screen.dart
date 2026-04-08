@@ -25,7 +25,8 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
-  late final PageController _pageController;
+  late PageController _pageController;
+  final GlobalKey _pageViewKey = GlobalKey(debugLabel: 'home_page_view');
 
   @override
   void initState() {
@@ -80,11 +81,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     return ResponsiveLayout(
       mobile: HomeMobile(
+        pageViewKey: _pageViewKey,
         pageController: _pageController,
         onTabSelected: _onTabSelected,
         pages: pages,
       ),
       tablet: HomeTablet(
+        pageViewKey: _pageViewKey,
         pageController: _pageController,
         onTabSelected: _onTabSelected,
         pages: pages,

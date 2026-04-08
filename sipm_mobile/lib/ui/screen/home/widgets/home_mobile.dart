@@ -10,12 +10,14 @@ class HomeMobile extends ConsumerWidget {
   final PageController pageController;
   final Function(int) onTabSelected;
   final List<Widget> pages;
+  final Key? pageViewKey;
 
   const HomeMobile({
     super.key,
     required this.pageController,
     required this.onTabSelected,
     required this.pages,
+    this.pageViewKey,
   });
 
   @override
@@ -27,9 +29,12 @@ class HomeMobile extends ConsumerWidget {
       backgroundColor: AppColor.white,
       appBar: _buildAppBar(context, ref),
       body: PageView(
+        key: pageViewKey,
         controller: pageController,
         onPageChanged: (index) {
-          ref.read(homeTabProvider.notifier).state = index;
+          if (ref.read(homeTabProvider) != index) {
+            ref.read(homeTabProvider.notifier).state = index;
+          }
         },
         children: pages,
       ),

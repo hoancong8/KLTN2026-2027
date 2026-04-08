@@ -11,12 +11,14 @@ class HomeTablet extends ConsumerWidget {
   final PageController pageController;
   final Function(int) onTabSelected;
   final List<Widget> pages;
+  final Key? pageViewKey;
 
   const HomeTablet({
     super.key,
     required this.pageController,
     required this.onTabSelected,
     required this.pages,
+    this.pageViewKey,
   });
 
   @override
@@ -33,9 +35,12 @@ class HomeTablet extends ConsumerWidget {
           const VerticalDivider(thickness: 1, width: 1, color: AppColor.cDivider),
           Expanded(
             child: PageView(
+              key: pageViewKey,
               controller: pageController,
               onPageChanged: (index) {
-                ref.read(homeTabProvider.notifier).state = index;
+                if (ref.read(homeTabProvider) != index) {
+                  ref.read(homeTabProvider.notifier).state = index;
+                }
               },
               children: pages,
             ),
