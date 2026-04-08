@@ -1,9 +1,10 @@
 import 'package:sipm_mobile/domain/entities/employee.dart';
+import '../../../../domain/exceptions/app_exception.dart';
 
 class ProfileState {
   final bool isLoading;
   final bool isSaving;
-  final String? error;
+  final AppException? error;
   final String? successMessage;
   final Employee? employee;
 
@@ -18,7 +19,7 @@ class ProfileState {
   ProfileState copyWith({
     bool? isLoading,
     bool? isSaving,
-    String? error,
+    AppException? error,
     String? successMessage,
     Employee? employee,
   }) {

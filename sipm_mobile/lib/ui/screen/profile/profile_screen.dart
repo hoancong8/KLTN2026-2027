@@ -9,7 +9,7 @@ import 'package:sipm_mobile/widget/app_button/app_button_common.dart';
 import 'package:sipm_mobile/widget/app_text_field/app_text_field.dart';
 import 'package:sipm_mobile/widget/loading_overlay.dart';
 import 'profile_vm/profile_vm.dart';
-
+import 'package:sipm_mobile/app/provider/localization_provider.dart';
 class ProfileScreen extends ConsumerStatefulWidget {
   final Employee? initialEmployee;
 
@@ -84,10 +84,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           _selectedGender = emp.gender ?? 0;
         });
       }
-
       if (next.error != null && next.error != prev?.error) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(next.error!), backgroundColor: Colors.red),
+          SnackBar(
+            content: Text(next.error!.getDisplayMessage(context.l10n)),
+            backgroundColor: AppColor.cError,
+          ),
         );
       }
       if (next.successMessage != null &&
