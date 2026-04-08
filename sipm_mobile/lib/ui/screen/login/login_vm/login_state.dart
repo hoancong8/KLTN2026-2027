@@ -1,10 +1,11 @@
 import 'package:sipm_mobile/domain/entities/auth_token.dart';
+import '../../../../domain/exceptions/app_exception.dart';
 
 class LoginState {
   final bool isLoading;
   final bool required2FA;
   final AuthToken? token;
-  final String? error;
+  final AppException? error;
   final bool biometricSetup;
   final bool biometricLoading;
   final String? biometricError;
@@ -25,7 +26,7 @@ class LoginState {
     bool? isLoading,
     bool? required2FA,
     AuthToken? token,
-    String? error,
+    AppException? error,
     bool? biometricSetup,
     bool? biometricLoading,
     String? biometricError,

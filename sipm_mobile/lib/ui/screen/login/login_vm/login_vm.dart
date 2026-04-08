@@ -7,6 +7,8 @@ import '../../../../domain/exceptions/auth_exceptions.dart';
 import '../../../../domain/usecases/auth/login_usecase.dart';
 import '../../../../domain/usecases/auth/register_device_token_usecase.dart';
 import '../../../../domain/usecases/auth/biometric_usecase.dart';
+import '../../../../domain/exceptions/app_exception.dart';
+import '../../../../app/utils/app_exception_handler.dart';
 import 'login_state.dart';
 
 //Provider for LoginViewModel
@@ -96,8 +98,10 @@ class LoginViewModel extends StateNotifier<LoginState> {
       }
     } on RequiresTwoFactorException {
       state = state.copyWith(isLoading: false, required2FA: true);
+    } on AppException catch (e) {
+      state = state.copyWith(isLoading: false, error: e);
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: AppExceptionHandler.handle(e));
     }
   }
 
