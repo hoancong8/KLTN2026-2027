@@ -107,17 +107,6 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
           _scrollToBottom();
         });
       }
-     // show error as snackbar
-      if (next.error != null && next.error != previous?.error) {
-        final message = next.error!.getDisplayMessage(context.l10n);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(message),
-            backgroundColor: AppColor.cNeedCheck,
-          ),
-        );
-      }
-    });
 
     return Scaffold(
       backgroundColor: AppColor.cGray_50,
