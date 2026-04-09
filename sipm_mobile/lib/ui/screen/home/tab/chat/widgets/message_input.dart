@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:sipm_mobile/app/consts/app_colcor.dart';
+import 'package:sipm_mobile/app/consts/app_color.dart';
 
 class MessageInput extends StatelessWidget {
   final TextEditingController controller;
@@ -94,23 +94,23 @@ class MessageInput extends StatelessWidget {
                   boxShadow: isSending
                       ? null
                       : [
-                    BoxShadow(
-                      color: AppColor.cMain.withValues(alpha: 0.3),
-                      blurRadius: 8,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
+                          BoxShadow(
+                            color: AppColor.cMain.withValues(alpha: 0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
                 ),
                 child: isSending
                     ? Padding(
-                  padding: const EdgeInsets.all(13),
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      AppColor.white,
-                    ),
-                  ),
-                )
+                        padding: const EdgeInsets.all(13),
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            AppColor.white,
+                          ),
+                        ),
+                      )
                     : Icon(Icons.send_rounded, color: AppColor.white, size: 22),
               ),
             ),
@@ -158,11 +158,11 @@ class MessageInput extends StatelessWidget {
   }
 
   Widget _buildMenuItem(
-      BuildContext context, {
-        required IconData icon,
-        required String label,
-        required VoidCallback onTap,
-      }) {
+    BuildContext context, {
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
     return ListTile(
       leading: Container(
         padding: const EdgeInsets.all(8),

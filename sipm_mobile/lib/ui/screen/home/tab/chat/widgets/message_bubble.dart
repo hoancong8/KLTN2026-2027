@@ -4,7 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:sipm_mobile/app/consts/app_colcor.dart';
+import 'package:sipm_mobile/app/consts/app_color.dart';
 import 'package:sipm_mobile/app/consts/app_config.dart';
 import 'package:sipm_mobile/app/provider.dart';
 import 'package:open_filex/open_filex.dart';
@@ -314,12 +314,12 @@ class _MessageBubbleState extends ConsumerState<MessageBubble>
   }
 
   Future<void> _downloadAndOpenFile(
-      BuildContext context,
-      WidgetRef ref,
-      String? id,
-      String name,
-      String? contentType,
-      ) async {
+    BuildContext context,
+    WidgetRef ref,
+    String? id,
+    String name,
+    String? contentType,
+  ) async {
     if (id == null) return;
 
     try {

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sipm_mobile/app/consts/app_colcor.dart';
+import 'package:sipm_mobile/app/consts/app_color.dart';
 import 'package:sipm_mobile/app/provider.dart';
 import 'package:sipm_mobile/widget/app_bar/custom_app_bar.dart';
 import '../../../../app/provider/localization_provider.dart';
@@ -23,7 +23,7 @@ class HomeTablet extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final tabIndex = ref.watch(homeTabProvider);
-    final unreadCount = 0; // TODO: Get unread count from providers
+    final unreadCount = 0; // Get unread count from providers
 
     return Scaffold(
       backgroundColor: AppColor.white,
@@ -132,7 +132,7 @@ class HomeTablet extends ConsumerWidget {
             icon: const Icon(Icons.search),
           ),
           IconButton(
-            tooltip: context.l10n.others, // TODO: Add key for notifications
+            tooltip: context.l10n.others, //  Add key for notifications
             onPressed: () {},
             icon: const Icon(Icons.notifications_none),
           ),

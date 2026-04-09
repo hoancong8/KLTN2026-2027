@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sipm_mobile/app/consts/app_colcor.dart';
+import 'package:sipm_mobile/app/consts/app_color.dart';
 import 'report_vm/report_vm.dart';
 
 class ReportPage extends ConsumerStatefulWidget {
@@ -56,7 +56,8 @@ class _ReportPageState extends ConsumerState<ReportPage> {
             ),
             const SizedBox(height: 16),
             ElevatedButton.icon(
-              onPressed: () => ref.read(reportViewModelProvider.notifier).loadData(),
+              onPressed: () =>
+                  ref.read(reportViewModelProvider.notifier).loadData(),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColor.cMain,
                 foregroundColor: AppColor.white,
@@ -134,7 +135,11 @@ class _ReportPageState extends ConsumerState<ReportPage> {
             ],
           ),
           const SizedBox(height: 24),
-          _buildSectionTitle(context, 'Báo cáo chi tiết', Icons.analytics_outlined),
+          _buildSectionTitle(
+            context,
+            'Báo cáo chi tiết',
+            Icons.analytics_outlined,
+          ),
           const SizedBox(height: 12),
           _buildReportItem(
             icon: Icons.bar_chart,
@@ -186,11 +191,7 @@ class _ReportPageState extends ConsumerState<ReportPage> {
             color: AppColor.cMain.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
           ),
-          child: Icon(
-            Icons.bar_chart,
-            color: AppColor.cMain,
-            size: 24,
-          ),
+          child: Icon(Icons.bar_chart, color: AppColor.cMain, size: 24),
         ),
         const SizedBox(width: 12),
         Expanded(
@@ -206,9 +207,9 @@ class _ReportPageState extends ConsumerState<ReportPage> {
               ),
               Text(
                 'Báo cáo tổng hợp và phân tích',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppColor.cMuted,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(color: AppColor.cMuted),
               ),
             ],
           ),
@@ -226,11 +227,7 @@ class _ReportPageState extends ConsumerState<ReportPage> {
             color: AppColor.cMain.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8),
           ),
-          child: Icon(
-            icon,
-            color: AppColor.cMain,
-            size: 18,
-          ),
+          child: Icon(icon, color: AppColor.cMain, size: 18),
         ),
         const SizedBox(width: 10),
         Text(
@@ -255,47 +252,40 @@ class _ReportPageState extends ConsumerState<ReportPage> {
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
       child: Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColor.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColor.cDivider),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppColor.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppColor.cDivider),
+        ),
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(icon, color: color, size: 24),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              value,
+              style: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.w800,
+                color: AppColor.cTitle,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: TextStyle(fontSize: 13, color: AppColor.cMuted),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
       ),
-      child: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(
-              icon,
-              color: color,
-              size: 24,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.w800,
-              color: AppColor.cTitle,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 13,
-              color: AppColor.cMuted,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    ),
     );
   }
 
@@ -324,11 +314,7 @@ class _ReportPageState extends ConsumerState<ReportPage> {
                 color: color.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(
-                icon,
-                color: color,
-                size: 24,
-              ),
+              child: Icon(icon, color: color, size: 24),
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -346,18 +332,12 @@ class _ReportPageState extends ConsumerState<ReportPage> {
                   const SizedBox(height: 2),
                   Text(
                     subtitle,
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: AppColor.cMuted,
-                    ),
+                    style: TextStyle(fontSize: 13, color: AppColor.cMuted),
                   ),
                 ],
               ),
             ),
-            Icon(
-              Icons.chevron_right,
-              color: AppColor.cMuted,
-            ),
+            Icon(Icons.chevron_right, color: AppColor.cMuted),
           ],
         ),
       ),

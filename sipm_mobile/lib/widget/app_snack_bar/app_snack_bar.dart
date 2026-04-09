@@ -27,13 +27,14 @@ class AppSnackBar {
       vsync: overlay,
     );
 
-    slideAnimation = Tween<Offset>(begin: const Offset(0, -1), end: Offset.zero).animate(
-      CurvedAnimation(
-        parent: controller,
-        curve: Curves.easeOutCubic,
-        reverseCurve: Curves.easeInCubic,
-      ),
-    );
+    slideAnimation = Tween<Offset>(begin: const Offset(0, -1), end: Offset.zero)
+        .animate(
+          CurvedAnimation(
+            parent: controller,
+            curve: Curves.easeOutCubic,
+            reverseCurve: Curves.easeInCubic,
+          ),
+        );
 
     fadeAnimation = Tween<double>(
       begin: 0.0,
@@ -164,14 +165,20 @@ class _GlassSnackBarWidget extends StatelessWidget {
             child: BackdropFilter(
               filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 14,
+                ),
                 decoration: BoxDecoration(
-                  color: background.withOpacity(0.65),
+                  color: background.withAlpha(180),
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.white.withOpacity(0.15), width: 1),
+                  border: Border.all(
+                    color: Colors.white.withAlpha(50),
+                    width: 1,
+                  ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.2),
+                      color: Colors.black.withAlpha(50),
                       blurRadius: 20,
                       offset: const Offset(0, 8),
                     ),
@@ -183,7 +190,7 @@ class _GlassSnackBarWidget extends StatelessWidget {
                       width: 36,
                       height: 36,
                       decoration: BoxDecoration(
-                        color: iconColor.withOpacity(0.15),
+                        color: iconColor.withAlpha(40),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Icon(icon, size: 20, color: iconColor),

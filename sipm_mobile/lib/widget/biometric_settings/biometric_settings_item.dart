@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sipm_mobile/app/consts/app_colcor.dart';
+import 'package:sipm_mobile/app/consts/app_color.dart';
 import 'package:sipm_mobile/app/provider.dart';
 import 'package:sipm_mobile/app/provider/localization_provider.dart';
 
@@ -8,7 +8,8 @@ class BiometricSettingsItem extends ConsumerStatefulWidget {
   const BiometricSettingsItem({super.key});
 
   @override
-  ConsumerState<BiometricSettingsItem> createState() => _BiometricSettingsItemState();
+  ConsumerState<BiometricSettingsItem> createState() =>
+      _BiometricSettingsItemState();
 }
 
 class _BiometricSettingsItemState extends ConsumerState<BiometricSettingsItem> {
@@ -34,7 +35,7 @@ class _BiometricSettingsItemState extends ConsumerState<BiometricSettingsItem> {
 
   Future<void> _showPinDialog() async {
     final biometricService = ref.read(biometricServiceProvider);
-    
+
     // Kiểm tra user có đang đăng nhập không
     final authToken = ref.read(authTokenProvider);
     if (authToken == null) {
@@ -117,13 +118,17 @@ class _BiometricSettingsItemState extends ConsumerState<BiometricSettingsItem> {
             onPressed: () => Navigator.pop(context, false),
             child: Text(
               'Hủy',
-              style: TextStyle(color: AppColor.cMuted, fontWeight: FontWeight.w600),
+              style: TextStyle(
+                color: AppColor.cMuted,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
           ElevatedButton(
             onPressed: () async {
               if (pinController.text.length >= 4) {
-                final success = await biometricService.setupBiometricWithLastLogin(pinController.text);
+                final success = await biometricService
+                    .setupBiometricWithLastLogin(pinController.text);
                 if (context.mounted) {
                   Navigator.pop(context, success);
                 }
@@ -133,9 +138,14 @@ class _BiometricSettingsItemState extends ConsumerState<BiometricSettingsItem> {
               backgroundColor: AppColor.cMain,
               foregroundColor: AppColor.white,
               elevation: 0,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
             ),
-            child: const Text('Xác nhận', style: TextStyle(fontWeight: FontWeight.w600)),
+            child: const Text(
+              'Xác nhận',
+              style: TextStyle(fontWeight: FontWeight.w600),
+            ),
           ),
         ],
       ),
@@ -162,7 +172,9 @@ class _BiometricSettingsItemState extends ConsumerState<BiometricSettingsItem> {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Sinh trắc học không khả dụng trên thiết bị này'),
+            content: const Text(
+              'Sinh trắc học không khả dụng trên thiết bị này',
+            ),
             backgroundColor: AppColor.cError,
           ),
         );

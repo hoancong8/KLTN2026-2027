@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
+import 'package:sipm_mobile/app/consts/app_log.dart';
 import 'package:sipm_mobile/app/consts/app_router.dart';
 import 'package:sipm_mobile/app/provider.dart';
 import 'package:sipm_mobile/app/services/signalr_service.dart';
 import 'package:sipm_mobile/domain/entities/employee.dart';
+import 'package:sipm_mobile/domain/entities/notification_message.dart';
 import 'package:sipm_mobile/domain/exceptions/auth_exceptions.dart';
 import 'package:sipm_mobile/domain/usecases/notification/get_initial_notification_message_usecase.dart';
 import 'package:sipm_mobile/domain/usecases/notification/get_notification_message_stream_usecase.dart';
@@ -43,7 +45,7 @@ final homeViewModelProvider = StateNotifierProvider<HomeViewModel, HomeState>((
 
   // Manual cleanup khi provider bị dispose
   ref.onDispose(() {
-    print('[HomeVM] Provider disposing - cleaning up');
+    AppLog.info('[HomeVM] Provider disposing - cleaning up');
     viewModel.cleanup();
   });
 
@@ -93,7 +95,7 @@ class HomeViewModel extends StateNotifier<HomeState> {
       // Handle any notification that woke up the app
       final initialMessage = getInitialNotificationMessageUseCase.execute();
       if (initialMessage != null) {
-        print('[HomeVM] Processing initial notification on startup');
+        AppLog.info('[HomeVM] Processing initial notification on startup');
         _handleNotificationClick(initialMessage);
         getInitialNotificationMessageUseCase.clear();
       }
@@ -101,9 +103,9 @@ class HomeViewModel extends StateNotifier<HomeState> {
       state = state.copyWith(isInitialized: true);
     } on SessionExpiredException {
       // Session expired - để interceptor xử lý dialog
-      print('[HomeVM] Initialize failed: Session expired');
+      AppLog.info('[HomeVM] Initialize failed: Session expired');
     } catch (e) {
-      print('[HomeVM] Initialize failed: $e');
+      AppLog.info('[HomeVM] Initialize failed: $e');
       if (mounted) {
         state = state.copyWith(isInitialized: true);
       }
@@ -119,7 +121,7 @@ class HomeViewModel extends StateNotifier<HomeState> {
                 .execute(userId)
                 .then<Employee?>((res) => res)
                 .catchError((e) {
-                  print('[HomeVM] GetProfile failed: $e');
+                  AppLog.info('[HomeVM] GetProfile failed: $e');
                   return null;
                 })
           : Future<Employee?>.value(null);
@@ -129,7 +131,7 @@ class HomeViewModel extends StateNotifier<HomeState> {
           .execute()
           .then<dynamic>((res) => res)
           .catchError((e) {
-            print('[HomeVM] GetSessionInfo failed: $e');
+            AppLog.info('[HomeVM] GetSessionInfo failed: $e');
             return null;
           });
 
@@ -152,23 +154,25 @@ class HomeViewModel extends StateNotifier<HomeState> {
         if (employee.tenantId != null) {
           try {
             await saveTenantIdUseCase.execute(employee.tenantId!);
-            print('[HomeVM] TenantId saved to storage: ${employee.tenantId}');
+            AppLog.info(
+              '[HomeVM] TenantId saved to storage: ${employee.tenantId}',
+            );
           } catch (e) {
-            print('[HomeVM] Failed to save TenantId: $e');
+            AppLog.info('[HomeVM] Failed to save TenantId: $e');
           }
         }
 
         // Lưu EmployeeId vào Storage
         try {
           await saveEmployeeIdUseCase.execute(employee.id);
-          print('[HomeVM] EmployeeId saved to storage: ${employee.id}');
+          AppLog.info('[HomeVM] EmployeeId saved to storage: ${employee.id}');
         } catch (e) {
-          print('[HomeVM] Failed to save EmployeeId: $e');
+          AppLog.info('[HomeVM] Failed to save EmployeeId: $e');
         }
 
         state = state.copyWith(employee: employee);
         ref.read(currentEmployeeProvider.notifier).state = employee;
-        print('[HomeVM] Employee loaded from Profile');
+        AppLog.info('[HomeVM] Employee loaded from Profile');
       } else if (sessionResult != null && sessionResult.user != null) {
         final user = sessionResult.user!;
         final isAdminUser =
@@ -192,45 +196,45 @@ class HomeViewModel extends StateNotifier<HomeState> {
 
         state = state.copyWith(employee: employee);
         ref.read(currentEmployeeProvider.notifier).state = employee;
-        print('[HomeVM] Employee loaded from Session API (Fallback)');
+        AppLog.info('[HomeVM] Employee loaded from Session API (Fallback)');
       }
 
       try {
         await registerDeviceTokenUseCase.execute();
       } catch (e) {
-        print('[HomeVM] Failed to register device token: $e');
+        AppLog.info('[HomeVM] Failed to register device token: $e');
       }
     } catch (e) {
-      print('[HomeVM] LoadUserData failed: $e');
+      AppLog.info('[HomeVM] LoadUserData failed: $e');
     }
   }
 
   Future<void> _connectSignalR(String accessToken) async {
     try {
       await signalRService.connect(accessToken);
-      print('[HomeVM] SignalR connected');
+      AppLog.info('[HomeVM] SignalR connected');
     } catch (e) {
-      print('[HomeVM] SignalR connection failed: $e');
+      AppLog.info('[HomeVM] SignalR connection failed: $e');
     }
   }
 
   Future<void> _listenToNotifications() async {
     getNotificationMessageStreamUseCase.execute().listen((notification) {
-      print('[HomeVM] Notification received: ${notification.title}');
+      AppLog.info('[HomeVM] Notification received: ${notification.title}');
     });
 
     getNotificationOpenedStreamUseCase.execute().listen((notification) {
-      print('[HomeVM] Notification opened: ${notification.title}');
+      AppLog.info('[HomeVM] Notification opened: ${notification.title}');
       _handleNotificationClick(notification);
     });
   }
 
-  void _handleNotificationClick(notification) {
+  void _handleNotificationClick(NotificationMessage notification) {
     final data = notification.data;
     if (data == null) return;
 
     final type = data['type'] as String?;
-    print('[HomeVM] Notification type: $type');
+    AppLog.info('[HomeVM] Notification type: $type');
 
     // Xử lý theo loại notification
     // Backend cần gửi data với format đúng - xem NOTIFICATION_FORMAT.md
@@ -240,11 +244,11 @@ class HomeViewModel extends StateNotifier<HomeState> {
         _openChatFromNotification(data);
         break;
       case 'admin_alert':
-        // TODO: Xử lý admin alert - hiển thị persistent banner
-        print('[HomeVM] Admin alert received');
+        // Xử lý admin alert - hiển thị persistent banner
+        AppLog.info('[HomeVM] Admin alert received');
         break;
       default:
-        print('[HomeVM] Unknown notification type: $type');
+        AppLog.info('[HomeVM] Unknown notification type: $type');
     }
   }
 
@@ -253,11 +257,13 @@ class HomeViewModel extends StateNotifier<HomeState> {
     final userName = data['userName'] ?? data['senderName'] ?? 'User';
 
     if (userId == null) {
-      print('[HomeVM] Missing userId in notification data');
+      AppLog.info('[HomeVM] Missing userId in notification data');
       return;
     }
 
-    print('[HomeVM] Opening chat with userId: $userId, userName: $userName');
+    AppLog.info(
+      '[HomeVM] Opening chat with userId: $userId, userName: $userName',
+    );
 
     // Switch sang tab Chat (index 2)
     ref.read(homeTabProvider.notifier).state = 2;
@@ -313,9 +319,9 @@ class HomeViewModel extends StateNotifier<HomeState> {
   }
 
   void cleanup() {
-    print('[HomeVM] Cleaning up resources');
+    AppLog.info('[HomeVM] Cleaning up resources');
     signalRService.disconnect(clear: false).catchError((e) {
-      print('[HomeVM] SignalR disconnect error on cleanup: $e');
+      AppLog.info('[HomeVM] SignalR disconnect error on cleanup: $e');
     });
   }
 }

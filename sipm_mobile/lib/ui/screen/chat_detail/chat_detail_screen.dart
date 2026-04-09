@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:sipm_mobile/app/consts/app_colcor.dart';
+import 'package:sipm_mobile/app/consts/app_color.dart';
 import '../home/tab/chat/widgets/message_bubble.dart';
 import '../home/tab/chat/widgets/message_input.dart';
 import '../home/tab/chat/widgets/chat_avatar.dart';
@@ -230,104 +230,104 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
       ),
       body: state.isLoading
           ? Center(
-        child: CircularProgressIndicator(
-          valueColor: AlwaysStoppedAnimation<Color>(AppColor.cMain),
-        ),
-      )
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(AppColor.cMain),
+              ),
+            )
           : Stack(
-        children: [
-          Column(
-            children: [
-              Expanded(
-                child: state.displayedMessages.isEmpty
-                    ? _buildEmptyState()
-                    : ListView.builder(
-                  controller: _scrollController,
-                  reverse: true,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
-                  itemCount:
-                  state.displayedMessages.length +
-                      (state.isLoadingMore ? 1 : 0),
-                  itemBuilder: (context, index) {
-                    if (index == state.displayedMessages.length &&
-                        state.isLoadingMore) {
-                      return Center(
-                        child: Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: CircularProgressIndicator(
-                            valueColor:
-                            AlwaysStoppedAnimation<Color>(
-                              AppColor.cMain,
+              children: [
+                Column(
+                  children: [
+                    Expanded(
+                      child: state.displayedMessages.isEmpty
+                          ? _buildEmptyState()
+                          : ListView.builder(
+                              controller: _scrollController,
+                              reverse: true,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 12,
+                              ),
+                              itemCount:
+                                  state.displayedMessages.length +
+                                  (state.isLoadingMore ? 1 : 0),
+                              itemBuilder: (context, index) {
+                                if (index == state.displayedMessages.length &&
+                                    state.isLoadingMore) {
+                                  return Center(
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(16),
+                                      child: CircularProgressIndicator(
+                                        valueColor:
+                                            AlwaysStoppedAnimation<Color>(
+                                              AppColor.cMain,
+                                            ),
+                                      ),
+                                    ),
+                                  );
+                                }
+
+                                final reversedIndex =
+                                    state.displayedMessages.length - 1 - index;
+                                final message =
+                                    state.displayedMessages[reversedIndex];
+
+                                return MessageBubble(
+                                  key: ValueKey(
+                                    message.id,
+                                  ), // ← FIX: Prevent rebuild
+                                  message: message,
+                                  senderName: widget.userName,
+                                );
+                              },
                             ),
+                    ),
+                    MessageInput(
+                      controller: _messageController,
+                      onSend: _sendMessage,
+                      isSending: state.isSending,
+                      onAttachImage: () => ref
+                          .read(chatDetailViewModelProvider(_params).notifier)
+                          .pickAndUploadImage(ImageSource.gallery),
+                      onAttachFile: () => ref
+                          .read(chatDetailViewModelProvider(_params).notifier)
+                          .pickAndUploadFile(),
+                    ),
+                  ],
+                ),
+                if (_showScrollToBottom)
+                  Positioned(
+                    left: 0,
+                    right: 0,
+                    bottom: 80,
+                    child: Center(
+                      child: GestureDetector(
+                        onTap: _scrollToBottom,
+                        child: Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: AppColor.cMain,
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColor.cMain.withValues(alpha: 0.3),
+                                blurRadius: 8,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Icon(
+                            Icons.keyboard_arrow_down,
+                            color: AppColor.white,
+                            size: 24,
                           ),
                         ),
-                      );
-                    }
-
-                    final reversedIndex =
-                        state.displayedMessages.length - 1 - index;
-                    final message =
-                    state.displayedMessages[reversedIndex];
-
-                    return MessageBubble(
-                      key: ValueKey(
-                        message.id,
-                      ), // ← FIX: Prevent rebuild
-                      message: message,
-                      senderName: widget.userName,
-                    );
-                  },
-                ),
-              ),
-              MessageInput(
-                controller: _messageController,
-                onSend: _sendMessage,
-                isSending: state.isSending,
-                onAttachImage: () => ref
-                    .read(chatDetailViewModelProvider(_params).notifier)
-                    .pickAndUploadImage(ImageSource.gallery),
-                onAttachFile: () => ref
-                    .read(chatDetailViewModelProvider(_params).notifier)
-                    .pickAndUploadFile(),
-              ),
-            ],
-          ),
-          if (_showScrollToBottom)
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 80,
-              child: Center(
-                child: GestureDetector(
-                  onTap: _scrollToBottom,
-                  child: Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: AppColor.cMain,
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColor.cMain.withValues(alpha: 0.3),
-                          blurRadius: 8,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Icon(
-                      Icons.keyboard_arrow_down,
-                      color: AppColor.white,
-                      size: 24,
+                      ),
                     ),
                   ),
-                ),
-              ),
+              ],
             ),
-        ],
-      ),
     );
   }
 

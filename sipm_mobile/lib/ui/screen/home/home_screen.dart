@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sipm_mobile/app/consts/app_colcor.dart';
+import 'package:sipm_mobile/app/consts/app_color.dart';
 import 'package:sipm_mobile/app/provider.dart';
 import 'package:sipm_mobile/ui/screen/home/home_vm/home_vm.dart';
 import 'package:sipm_mobile/ui/screen/home/tab/chat/chat_page.dart';

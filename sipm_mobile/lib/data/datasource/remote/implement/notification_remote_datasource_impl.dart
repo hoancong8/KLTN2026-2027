@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:sipm_mobile/app/consts/app_log.dart';
 import '../../../../app/consts/app_config.dart';
 import '../../../dto/notification/notification_message_dto.dart';
 import '../../../dto/notification/register_device_token_request_dto.dart';
@@ -14,10 +15,10 @@ class NotificationRemoteDatasourceImpl implements NotificationRemoteDatasource {
   final FlutterLocalNotificationsPlugin localNotifications;
 
   final _messageReceivedController =
-  StreamController<NotificationMessageDto>.broadcast();
+      StreamController<NotificationMessageDto>.broadcast();
 
   final _messageOpenedController =
-  StreamController<NotificationMessageDto>.broadcast();
+      StreamController<NotificationMessageDto>.broadcast();
 
   // Cache initial message
   NotificationMessageDto? _initialMessageCache;
@@ -57,16 +58,16 @@ class NotificationRemoteDatasourceImpl implements NotificationRemoteDatasource {
       if (response.payload != null) {
         try {
           final data = jsonDecode(response.payload!) as Map<String, dynamic>;
-          print('[FCM] Local notification tapped with data: $data');
+          AppLog.info('[FCM] Local notification tapped with data: $data');
           final dto = NotificationMessageDto(
             title:
-            null, // Title and body are already shown, only data matters for routing
+                null, // Title and body are already shown, only data matters for routing
             body: null,
             data: data,
           );
           _messageOpenedController.add(dto);
         } catch (e) {
-          print('[FCM] Error decoding notification payload: $e');
+          AppLog.info('[FCM] Error decoding notification payload: $e');
         }
       }
     }
@@ -85,8 +86,8 @@ class NotificationRemoteDatasourceImpl implements NotificationRemoteDatasource {
     );
     await localNotifications
         .resolvePlatformSpecificImplementation<
-        AndroidFlutterLocalNotificationsPlugin
-    >()
+          AndroidFlutterLocalNotificationsPlugin
+        >()
         ?.createNotificationChannel(androidChannel);
 
     // Request FCM permission
@@ -98,24 +99,24 @@ class NotificationRemoteDatasourceImpl implements NotificationRemoteDatasource {
     );
 
     if (fcmSettings.authorizationStatus == AuthorizationStatus.denied) {
-      print('[FCM] User declined notification permissions');
+      AppLog.info('[FCM] User declined notification permissions');
       return;
     }
 
-    print('[FCM] Permission granted: ${fcmSettings.authorizationStatus}');
+    AppLog.info('[FCM] Permission granted: ${fcmSettings.authorizationStatus}');
 
     // Get and print FCM token
     final token = await messaging.getToken();
-    print('[FCM] Device Token: $token');
+    AppLog.info('[FCM] Device Token: $token');
 
     // Listen to foreground messages — these are shown as local notifications.
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       if (_isMessageFromSelf(message)) {
-        print('[FCM] Skipping self-sent foreground message');
+        AppLog.info('[FCM] Skipping self-sent foreground message');
         return;
       }
 
-      print(
+      AppLog.info(
         '[FCM] Foreground message received: ${message.notification?.title}',
       );
       final dto = NotificationMessageDto.fromRemoteMessage(message);
@@ -128,11 +129,13 @@ class NotificationRemoteDatasourceImpl implements NotificationRemoteDatasource {
     // Skip messages that were shown as foreground local notifications because
     // their tap is already handled by onDidReceiveNotificationResponse.
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      print(
+      AppLog.info(
         '[FCM] Message opened from background: ${message.notification?.title}',
       );
       if (_foregroundLocalNotificationIds.remove(message.hashCode)) {
-        print('[FCM] Skipping onMessageOpenedApp — already handled as local notification tap');
+        AppLog.info(
+          '[FCM] Skipping onMessageOpenedApp — already handled as local notification tap',
+        );
         return;
       }
       final dto = NotificationMessageDto.fromRemoteMessage(message);
@@ -145,10 +148,12 @@ class NotificationRemoteDatasourceImpl implements NotificationRemoteDatasource {
     // to avoid the 500ms race condition with subscriber registration.
     final initialMessage = await messaging.getInitialMessage();
     if (initialMessage != null && !_isMessageFromSelf(initialMessage)) {
-      print(
+      AppLog.info(
         '[FCM] App opened from terminated state: ${initialMessage.notification?.title}',
       );
-      _initialMessageCache = NotificationMessageDto.fromRemoteMessage(initialMessage);
+      _initialMessageCache = NotificationMessageDto.fromRemoteMessage(
+        initialMessage,
+      );
     }
   }
 
@@ -157,8 +162,8 @@ class NotificationRemoteDatasourceImpl implements NotificationRemoteDatasource {
     final currentUserId = userIdProvider!();
     final data = message.data;
 
-    print('[FCM Debug] currentUserId: $currentUserId');
-    print('[FCM Debug] Notification data: $data');
+    AppLog.info('[FCM Debug] currentUserId: $currentUserId');
+    AppLog.info('[FCM Debug] Notification data: $data');
 
     if (currentUserId == null) return false;
 
@@ -169,15 +174,13 @@ class NotificationRemoteDatasourceImpl implements NotificationRemoteDatasource {
     try {
       final senderId = int.parse(senderIdRaw.toString());
       final isSelf = senderId == currentUserId;
-      print('[FCM Debug] senderId: $senderId, isSelf: $isSelf');
+      AppLog.info('[FCM Debug] senderId: $senderId, isSelf: $isSelf');
       return isSelf;
     } catch (e) {
-      print('[FCM Debug] Error parsing senderId: $e');
+      AppLog.info('[FCM Debug] Error parsing senderId: $e');
       return false;
     }
   }
-
-
 
   @override
   NotificationMessageDto? getInitialMessage() => _initialMessageCache;
@@ -225,10 +228,10 @@ class NotificationRemoteDatasourceImpl implements NotificationRemoteDatasource {
 
   @override
   Future<void> registerDeviceToken(
-      RegisterDeviceTokenRequestDto request,
-      ) async {
+    RegisterDeviceTokenRequestDto request,
+  ) async {
     await dio.post(AppConfig.registerDeviceToken, data: request.toJson());
-    print('[FCM] Device token registered: ${request.deviceToken}');
+    AppLog.info('[FCM] Device token registered: ${request.deviceToken}');
   }
 
   @override
@@ -241,18 +244,18 @@ class NotificationRemoteDatasourceImpl implements NotificationRemoteDatasource {
           AppConfig.deleteDeviceToken,
           queryParameters: {'deviceToken': token},
         );
-        print('[FCM] Device token deleted successfully: $token');
+        AppLog.info('[FCM] Device token deleted successfully: $token');
       } catch (e) {
-        print('[FCM] Delete token error: $e');
+        AppLog.info('[FCM] Delete token error: $e');
         // Nếu fail, thử với body
         try {
           await dio.delete(
             AppConfig.deleteDeviceToken,
             data: {'deviceToken': token},
           );
-          print('[FCM] Device token deleted with body: $token');
+          AppLog.info('[FCM] Device token deleted with body: $token');
         } catch (e2) {
-          print('[FCM] Delete token failed both ways: $e2');
+          AppLog.info('[FCM] Delete token failed both ways: $e2');
           rethrow;
         }
       }

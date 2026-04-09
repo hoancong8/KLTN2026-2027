@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:sipm_mobile/app/consts/app_colcor.dart';
+import 'package:sipm_mobile/app/consts/app_color.dart';
 import 'package:sipm_mobile/app/provider.dart';
 import 'package:sipm_mobile/domain/entities/employee.dart';
 import 'package:sipm_mobile/widget/app_button/app_button.dart';
@@ -195,7 +195,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 right: 0,
                 child: AppButton(
                   onTap: () {
-                    // TODO: Pick avatar
+                    // Pick avatar
                   },
                   child: Container(
                     padding: const EdgeInsets.all(6),

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:sipm_mobile/app/consts/app_colcor.dart';
+import 'package:sipm_mobile/app/consts/app_color.dart';
 
 //R = Regular
 //SB = SemiBold
@@ -21,8 +21,6 @@ class AppTextStyle {
   void refresh() {
     _instance = AppTextStyle._();
   }
-
-
 
   TextStyle textDisplay31SB = TextStyle(
     fontSize: 18,

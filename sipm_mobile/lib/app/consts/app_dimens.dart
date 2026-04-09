@@ -3,15 +3,15 @@ import 'package:flutter/material.dart';
 class AppDimens {
   static const double appBarHeight = 56;
 
-  static double getWidth(context) {
+  static double getWidth(BuildContext context) {
     return MediaQuery.of(context).size.width;
   }
 
-  static double getHeight(context) {
+  static double getHeight(BuildContext context) {
     return MediaQuery.of(context).size.height;
   }
 
-  static Orientation getOrientation(context) {
+  static Orientation getOrientation(BuildContext context) {
     return MediaQuery.of(context).orientation;
   }
 
