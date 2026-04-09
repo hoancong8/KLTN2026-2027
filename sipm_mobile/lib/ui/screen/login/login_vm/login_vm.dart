@@ -1,6 +1,7 @@
 // ui/login/login_vm.dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
+import 'package:sipm_mobile/app/consts/app_log.dart';
 import '../../../../app/provider.dart';
 import '../../../../app/services/secure_storage_service.dart';
 import '../../../../domain/exceptions/auth_exceptions.dart';
@@ -94,14 +95,17 @@ class LoginViewModel extends StateNotifier<LoginState> {
       try {
         await registerDeviceTokenUseCase.execute();
       } catch (e) {
-        print('[LoginViewModel] Failed to register device token: $e');
+        AppLog.info('[LoginViewModel] Failed to register device token: $e');
       }
     } on RequiresTwoFactorException {
       state = state.copyWith(isLoading: false, required2FA: true);
     } on AppException catch (e) {
       state = state.copyWith(isLoading: false, error: e);
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: AppExceptionHandler.handle(e));
+      state = state.copyWith(
+        isLoading: false,
+        error: AppExceptionHandler.handle(e),
+      );
     }
   }
 

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:sipm_mobile/app/consts/app_colcor.dart';
+import 'package:sipm_mobile/app/consts/app_color.dart';
 
 /// A loading overlay widget that displays a centered loading indicator
 /// with a white card background. Can be used as a Stack child overlay.

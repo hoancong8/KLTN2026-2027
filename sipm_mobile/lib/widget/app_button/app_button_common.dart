@@ -1,20 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:sipm_mobile/app/consts/app_log.dart';
 
 import 'app_button.dart';
 
-enum AppButtonType {
-  primary,
-  secondary,
-  outlined,
-  text,
-  danger,
-}
+enum AppButtonType { primary, secondary, outlined, text, danger }
 
-enum AppButtonSize {
-  small,
-  medium,
-  large,
-}
+enum AppButtonSize { small, medium, large }
 
 class AppButtonCommon extends StatefulWidget {
   final String text;
@@ -37,7 +28,7 @@ class AppButtonCommon extends StatefulWidget {
   final FontWeight? fontWeight;
 
   const AppButtonCommon({
-    Key? key,
+    super.key,
     required this.text,
     this.onPressed,
     this.enabled = true,
@@ -56,7 +47,7 @@ class AppButtonCommon extends StatefulWidget {
     this.padding,
     this.fontSize,
     this.fontWeight,
-  }) : super(key: key);
+  });
 
   @override
   State<AppButtonCommon> createState() => AppButtonCommonState();
@@ -81,7 +72,7 @@ class AppButtonCommonState extends State<AppButtonCommon> {
         Future.delayed(widget.autoLoadingDuration),
       ]);
     } catch (e) {
-      print(e);
+      AppLog.warning(e);
     } finally {
       if (widget.isLoading == null && mounted) {
         setState(() {
@@ -110,66 +101,70 @@ class AppButtonCommonState extends State<AppButtonCommon> {
         padding: widget.padding ?? getPadding(),
         decoration: BoxDecoration(
           color: getBackgroundColor(isDisabled),
-          borderRadius: BorderRadius.circular(widget.borderRadius ?? getBorderRadius()),
+          borderRadius: BorderRadius.circular(
+            widget.borderRadius ?? getBorderRadius(),
+          ),
           border: getBorder(isDisabled),
           boxShadow: widget.elevation != null && !isDisabled
               ? [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: widget.elevation!,
-              offset: Offset(0, widget.elevation! / 2),
-            ),
-          ]
+                  BoxShadow(
+                    color: Colors.black.withAlpha(25),
+                    blurRadius: widget.elevation!,
+                    offset: Offset(0, widget.elevation! / 2),
+                  ),
+                ]
               : widget.type == AppButtonType.primary && !isDisabled
               ? [
-            BoxShadow(
-              color: (getBackgroundColor(false) ?? Colors.blue).withOpacity(0.3),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
-            ),
-          ]
+                  BoxShadow(
+                    color: (getBackgroundColor(false) ?? Colors.blue).withAlpha(
+                      75,
+                    ),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ]
               : null,
         ),
         child: isLoadingState
             ? Center(
-          child: SizedBox(
-            width: getLoadingSize(),
-            height: getLoadingSize(),
-            child: CircularProgressIndicator(
-              strokeWidth: 2.5,
-              valueColor: AlwaysStoppedAnimation<Color>(
-                getLoadingColor(isDisabled),
-              ),
-            ),
-          ),
-        )
-            : Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (widget.prefixIcon != null) ...[
-              widget.prefixIcon!,
-              SizedBox(width: getIconSpacing()),
-            ],
-            Flexible(
-              child: Text(
-                widget.text,
-                style: TextStyle(
-                  fontSize: widget.fontSize ?? getFontSize(),
-                  fontWeight: widget.fontWeight ?? FontWeight.w600,
-                  color: getTextColor(isDisabled),
+                child: SizedBox(
+                  width: getLoadingSize(),
+                  height: getLoadingSize(),
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2.5,
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      getLoadingColor(isDisabled),
+                    ),
+                  ),
                 ),
-                textAlign: TextAlign.center,
-                overflow: TextOverflow.ellipsis,
-                maxLines: 1,
+              )
+            : Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (widget.prefixIcon != null) ...[
+                    widget.prefixIcon!,
+                    SizedBox(width: getIconSpacing()),
+                  ],
+                  Flexible(
+                    child: Text(
+                      widget.text,
+                      style: TextStyle(
+                        fontSize: widget.fontSize ?? getFontSize(),
+                        fontWeight: widget.fontWeight ?? FontWeight.w600,
+                        color: getTextColor(isDisabled),
+                      ),
+                      textAlign: TextAlign.center,
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
+                  ),
+                  if (widget.suffixIcon != null) ...[
+                    SizedBox(width: getIconSpacing()),
+                    widget.suffixIcon!,
+                  ],
+                ],
               ),
-            ),
-            if (widget.suffixIcon != null) ...[
-              SizedBox(width: getIconSpacing()),
-              widget.suffixIcon!,
-            ],
-          ],
-        ),
       ),
     );
   }
@@ -185,9 +180,18 @@ class AppButtonCommonState extends State<AppButtonCommon> {
 
   EdgeInsetsGeometry getPadding() {
     return switch (widget.size) {
-      AppButtonSize.small => const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      AppButtonSize.medium => const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-      AppButtonSize.large => const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      AppButtonSize.small => const EdgeInsets.symmetric(
+        horizontal: 16,
+        vertical: 8,
+      ),
+      AppButtonSize.medium => const EdgeInsets.symmetric(
+        horizontal: 20,
+        vertical: 12,
+      ),
+      AppButtonSize.large => const EdgeInsets.symmetric(
+        horizontal: 24,
+        vertical: 16,
+      ),
     };
   }
 
@@ -251,7 +255,9 @@ class AppButtonCommonState extends State<AppButtonCommon> {
     }
 
     return switch (widget.type) {
-      AppButtonType.primary || AppButtonType.secondary || AppButtonType.danger => Colors.white,
+      AppButtonType.primary ||
+      AppButtonType.secondary ||
+      AppButtonType.danger => Colors.white,
       AppButtonType.outlined => widget.borderColor ?? const Color(0xFF4CAF50),
       AppButtonType.text => const Color(0xFF4CAF50),
     };
@@ -264,7 +270,9 @@ class AppButtonCommonState extends State<AppButtonCommon> {
     }
 
     return switch (widget.type) {
-      AppButtonType.primary || AppButtonType.secondary || AppButtonType.danger => Colors.white,
+      AppButtonType.primary ||
+      AppButtonType.secondary ||
+      AppButtonType.danger => Colors.white,
       AppButtonType.outlined => widget.borderColor ?? const Color(0xFF4CAF50),
       AppButtonType.text => const Color(0xFF4CAF50),
     };
@@ -273,7 +281,9 @@ class AppButtonCommonState extends State<AppButtonCommon> {
   Border? getBorder(bool isDisabled) {
     if (widget.type == AppButtonType.outlined) {
       return Border.all(
-        color: isDisabled ? Colors.grey[400]! : (widget.borderColor ?? const Color(0xFF4CAF50)),
+        color: isDisabled
+            ? Colors.grey[400]!
+            : (widget.borderColor ?? const Color(0xFF4CAF50)),
         width: 1,
       );
     }

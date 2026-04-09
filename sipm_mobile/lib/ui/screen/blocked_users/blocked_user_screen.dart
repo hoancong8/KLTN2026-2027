@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:sipm_mobile/app/consts/app_colcor.dart';
+import 'package:sipm_mobile/app/consts/app_color.dart';
 import 'package:sipm_mobile/ui/screen/home/tab/chat/widgets/chat_avatar.dart';
 import 'blocked_user_vm.dart';
 
@@ -50,81 +50,81 @@ class _BlockedUsersScreenState extends ConsumerState<BlockedUsersScreen> {
       ),
       body: state.isLoading
           ? Center(
-        child: CircularProgressIndicator(
-          valueColor: AlwaysStoppedAnimation<Color>(AppColor.cMain),
-        ),
-      )
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(AppColor.cMain),
+              ),
+            )
           : state.blockedUsers.isEmpty
           ? Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.block, size: 48, color: AppColor.cMuted),
-            const SizedBox(height: 16),
-            Text(
-              'Chưa có người dùng bị chặn',
-              style: TextStyle(color: AppColor.cMuted, fontSize: 16),
-            ),
-          ],
-        ),
-      )
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.block, size: 48, color: AppColor.cMuted),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Chưa có người dùng bị chặn',
+                    style: TextStyle(color: AppColor.cMuted, fontSize: 16),
+                  ),
+                ],
+              ),
+            )
           : ListView.separated(
-        padding: const EdgeInsets.all(16),
-        itemCount: state.blockedUsers.length,
-        separatorBuilder: (context, index) => const SizedBox(height: 16),
-        itemBuilder: (context, index) {
-          final user = state.blockedUsers[index];
-          return Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: AppColor.cGray_50,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Row(
-              children: [
-                ChatAvatar(name: user.userName, radius: 24),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+              padding: const EdgeInsets.all(16),
+              itemCount: state.blockedUsers.length,
+              separatorBuilder: (context, index) => const SizedBox(height: 16),
+              itemBuilder: (context, index) {
+                final user = state.blockedUsers[index];
+                return Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: AppColor.cGray_50,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
                     children: [
-                      Text(
-                        user.userName,
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 16,
-                          color: AppColor.cTitle,
+                      ChatAvatar(name: user.userName, radius: 24),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              user.userName,
+                              style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 16,
+                                color: AppColor.cTitle,
+                              ),
+                            ),
+                            if (user.tenancyName != null) ...[
+                              const SizedBox(height: 2),
+                              Text(
+                                user.tenancyName!,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: AppColor.cMuted,
+                                ),
+                              ),
+                            ],
+                          ],
                         ),
                       ),
-                      if (user.tenancyName != null) ...[
-                        const SizedBox(height: 2),
-                        Text(
-                          user.tenancyName!,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: AppColor.cMuted,
-                          ),
+                      TextButton(
+                        onPressed: () async {
+                          await ref
+                              .read(blockedUsersViewModelProvider.notifier)
+                              .unblockUser(user.userId, user.tenantId);
+                        },
+                        style: TextButton.styleFrom(
+                          foregroundColor: AppColor.cMain,
                         ),
-                      ],
+                        child: const Text('Bỏ chặn'),
+                      ),
                     ],
                   ),
-                ),
-                TextButton(
-                  onPressed: () async {
-                    await ref
-                        .read(blockedUsersViewModelProvider.notifier)
-                        .unblockUser(user.userId, user.tenantId);
-                  },
-                  style: TextButton.styleFrom(
-                    foregroundColor: AppColor.cMain,
-                  ),
-                  child: const Text('Bỏ chặn'),
-                ),
-              ],
+                );
+              },
             ),
-          );
-        },
-      ),
     );
   }
 }
