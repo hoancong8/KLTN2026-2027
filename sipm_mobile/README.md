@@ -167,41 +167,46 @@ Sử dụng `localizationProvider` để thay đổi ngôn ngữ. Khi ngôn ng�
 
 ## ⚠️ Xử lý lỗi (Error Handling)
 
-Dự án sử dụng hệ thống xử lý lỗi tập trung, kết hợp giữa Clean Architecture và Localization để đảm bảo thông báo lỗi luôn nhất quán và thân thiện với người dùng.
+Dự án sử dụng hệ thống xử lý lỗi tập trung theo chuẩn **Clean Architecture**, tách biệt hoàn toàn logic nghiệp vụ (Domain) và thông báo giao diện (UI).
 
 ### 1. Thành phần chính
-- **`AppException`**: Lớp ngoại lệ cơ sở hỗ trợ đa ngôn ngữ. Thay vì chứa chuỗi text, nó chứa một `l10nSelector` để lấy nội dung từ file ARB.
-- **`AppExceptionHandler`**: Bộ điều phối trung tâm. Phân tích các lỗi từ Network (Dio), Server (Business Error) và chuyển đổi chúng thành các `AppException` cụ thể.
-- **`BaseRemoteDatasource`**: Tự động bắt và xử lý lỗi cho mọi API call.
+- **`AppException`** (Domain Layer): Lớp ngoại lệ cơ sở thuần Dart. Nó không chứa chuỗi văn bản cứng mà sử dụng phương thức `resolve(IAppMessages)` để quyết định thông báo lỗi.
+- **`IAppMessages`** (Domain Layer): Một interface định nghĩa các "hợp đồng" thông báo lỗi mà Domain cần, đảm bảo Domain không phụ thuộc vào Flutter framework.
+- **`FlutterAppMessages`** (Presentation Layer): Hiện thực (Implementation) của `IAppMessages`, sử dụng `AppLocalizations` để lấy chuỗi đã dịch.
+- **`AppExceptionDisplayExt`** (Presentation Utils): Extension cung cấp hàm `getDisplayMessage(l10n)` giúp UI hiển thị lỗi một cách đơn giản.
+- **`AppExceptionHandler`**: Bộ điều phối trung tâm, chuyển đổi các lỗi kỹ thuật (Dio, Socket) thành các `AppException` cụ thể.
 
 ### 2. Luồng xử lý
-1. **Data Layer**: API trả về lỗi -> `BaseRemoteDatasource` bắt lỗi -> `AppExceptionHandler` chuyển đổi thành `AppException` (ví dụ: `AuthFailedException`).
-2. **Domain Layer**: Repository nhận và throw Exception này lên tầng trên.
-3. **UI Layer**:
+1. **Data Layer**: API trả về lỗi -> `BaseRemoteDatasource` bắt lỗi -> `AppExceptionHandler` mapping thành một subclass của `AppException` (ví dụ: `ConnectionException`).
+2. **Domain Layer**: Exception được ném đi mà không mang theo bất kỳ phụ thuộc nào của Flutter.
+3. **UI Layer**: 
    - ViewModel bắt Exception và lưu vào state.
-   - UI sử dụng `AppExceptionHandler.getErrorMessage(context, exception)` để hiển thị thông báo. Thông báo sẽ tự động dịch sang tiếng Anh hoặc tiếng Việt dựa trên cấu hình máy.
+   - UI gọi `error.getDisplayMessage(context.l10n)` để hiển thị thông báo.
 
 ### 3. Cách sử dụng
-
-**Trong Repository:**
-Không cần dùng try-catch cho các lỗi API thông thường, `BaseRemoteDatasource` đã xử lý việc mapping.
 
 **Trong ViewModel:**
 ```dart
 try {
   await repo.login(...);
 } catch (e) {
-  state = state.copyWith(errorMessage: e as AppException);
+  state = state.copyWith(error: e as AppException);
 }
 ```
 
 **Trong UI (Hiển thị lỗi):**
 ```dart
-if (state.errorMessage != null) {
-  final message = AppExceptionHandler.getErrorMessage(context, state.errorMessage!);
-  AppDialogs.showError(context, message);
+if (state.error != null) {
+  // Sử dụng extension để lấy thông báo đã dịch
+  final message = state.error!.getDisplayMessage(context.l10n);
+  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
 }
 ```
+
+**Khi thêm lỗi mới:**
+1. Thêm getter vào `IAppMessages`.
+2. Implement getter đó trong `FlutterAppMessages`.
+3. Tạo subclass của `AppException` và override hàm `resolve`.
 
 ## 📱 Giao diện đáp ứng (Responsive Design)
 
