@@ -1,26 +1,59 @@
-import '../../app/l10n_gen/app_localizations.dart';
+import 'i_app_messages.dart';
 
 /// Lớp ngoại lệ cơ sở cho toàn bộ ứng dụng.
-/// Kết hợp giữa thông báo từ Server (message) và logic đa ngôn ngữ (l10nSelector).
+/// Domain không biết về Flutter — chỉ biết [IAppMessages].
 class AppException implements Exception {
   final String? message;
-  final String? Function(AppLocalizations)? l10nSelector;
   final dynamic originalError;
 
-  AppException({
-    this.message,
-    this.l10nSelector,
-    this.originalError,
-  });
+  const AppException({this.message, this.originalError});
 
-  /// Trả về thông báo lỗi đã được dịch hoặc từ server.
-  String getDisplayMessage(AppLocalizations l10n) {
-    if (message != null && message!.isNotEmpty) {
-      return message!;
-    }
-    return l10nSelector?.call(l10n) ?? l10n.error_system;
-  }
+  /// Trả về thông báo đã được dịch.
+  /// Ưu tiên [message] từ API, fallback về [IAppMessages.errorSystem].
+  /// Subclass override method này để chọn đúng key.
+  String resolve(IAppMessages messages) =>
+      (message?.isNotEmpty == true) ? message! : messages.errorSystem;
 
   @override
-  String toString() => message ?? 'AppException';
+  String toString() => message ?? runtimeType.toString();
+}
+
+// ---------------------------------------------------------------------------
+// Common subclasses — dùng trong AppExceptionHandler và BaseRemoteDatasource
+// ---------------------------------------------------------------------------
+
+class ConnectionException extends AppException {
+  const ConnectionException();
+  @override
+  String resolve(IAppMessages messages) => messages.errorConnection;
+}
+
+class NetworkTimeoutException extends AppException {
+  const NetworkTimeoutException();
+  @override
+  String resolve(IAppMessages messages) => messages.errorNetworkTimeout;
+}
+
+class ForbiddenException extends AppException {
+  const ForbiddenException();
+  @override
+  String resolve(IAppMessages messages) => messages.errorForbidden;
+}
+
+class NotFoundException extends AppException {
+  const NotFoundException();
+  @override
+  String resolve(IAppMessages messages) => messages.errorNotFound;
+}
+
+class ServerException extends AppException {
+  const ServerException();
+  @override
+  String resolve(IAppMessages messages) => messages.errorServer;
+}
+
+class InvalidResponseException extends AppException {
+  const InvalidResponseException({super.originalError});
+  @override
+  String resolve(IAppMessages messages) => messages.errorInvalidResponse;
 }

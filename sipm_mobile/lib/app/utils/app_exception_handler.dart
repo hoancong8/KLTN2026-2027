@@ -13,19 +13,16 @@ class AppExceptionHandler {
     }
 
     if (error is SocketException) {
-      return AppException(l10nSelector: (l) => l.error_connection);
+      return const ConnectionException();
     }
 
-    return AppException(
-      l10nSelector: (l) => l.error_system,
-      originalError: error,
-    );
+    return AppException(originalError: error);
   }
 
   static AppException _handleDioException(DioException e) {
     // 1. Kiểm tra nếu request bị cancel (thường do Interceptor báo hết hạn phiên)
     if (e.type == DioExceptionType.cancel) {
-      return SessionExpiredException();
+      return const SessionExpiredException();
     }
 
     final response = e.response;
@@ -51,30 +48,29 @@ class AppExceptionHandler {
     // 4. Các lỗi HTTP thông dụng khác
     if (statusCode != null) {
       if (statusCode == 403) {
-        return AppException(l10nSelector: (l) => l.error_forbidden);
+        return const ForbiddenException();
       }
       if (statusCode == 404) {
-        return AppException(l10nSelector: (l) => l.error_not_found);
+        return const NotFoundException();
       }
       if (statusCode >= 500) {
-        return AppException(l10nSelector: (l) => l.error_server);
+        return const ServerException();
       }
     }
 
     // 5. Các lỗi Network của Dio
     if (e.type == DioExceptionType.connectionTimeout ||
         e.type == DioExceptionType.receiveTimeout) {
-      return AppException(l10nSelector: (l) => l.error_network_timeout);
+      return const NetworkTimeoutException();
     }
 
     if (e.type == DioExceptionType.connectionError) {
-      return AppException(l10nSelector: (l) => l.error_connection);
+      return const ConnectionException();
     }
 
     // 6. Fallback
     return AppException(
       message: serverMessage,
-      l10nSelector: serverMessage == null ? (l) => l.error_system : null,
       originalError: e,
     );
   }
