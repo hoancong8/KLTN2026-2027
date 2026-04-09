@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sipm_mobile/app/consts/app_colcor.dart';
+import 'package:sipm_mobile/app/consts/app_color.dart';
 import 'package:sipm_mobile/ui/screen/home/tab/chat/widgets/chat_list_item.dart';
 import '../../../blocked_users/blocked_user_screen.dart';
 import '../../../chat_detail/chat_detail_screen.dart';
@@ -95,78 +95,78 @@ class _ChatPageState extends ConsumerState<ChatPage> {
           Expanded(
             child: state.users.isEmpty
                 ? Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: AppColor.cMain.withValues(alpha: 0.1),
-                      shape: BoxShape.circle,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            color: AppColor.cMain.withValues(alpha: 0.1),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            Icons.chat_bubble_outline,
+                            color: AppColor.cMain,
+                            size: 48,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'Không tìm thấy cuộc trò chuyện',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: AppColor.cTitle,
+                          ),
+                        ),
+                      ],
                     ),
-                    child: Icon(
-                      Icons.chat_bubble_outline,
-                      color: AppColor.cMain,
-                      size: 48,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Không tìm thấy cuộc trò chuyện',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: AppColor.cTitle,
-                    ),
-                  ),
-                ],
-              ),
-            )
+                  )
                 : ListView.builder(
-              physics: const AlwaysScrollableScrollPhysics(),
-              itemCount: state.users.length,
-              itemBuilder: (context, index) {
-                final user = state.users[index];
-                return ChatListItem(
-                  user: user,
-                  onTap: () async {
-                    ref
-                        .read(chatViewModelProvider.notifier)
-                        .setActiveChatFriend(user.userId);
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    itemCount: state.users.length,
+                    itemBuilder: (context, index) {
+                      final user = state.users[index];
+                      return ChatListItem(
+                        user: user,
+                        onTap: () async {
+                          ref
+                              .read(chatViewModelProvider.notifier)
+                              .setActiveChatFriend(user.userId);
 
-                    await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => ChatDetailScreen(
-                          userId: user.userId,
-                          userName: user.userName,
-                          isOnline: user.isOnline,
-                        ),
-                      ),
-                    );
+                          await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => ChatDetailScreen(
+                                userId: user.userId,
+                                userName: user.userName,
+                                isOnline: user.isOnline,
+                              ),
+                            ),
+                          );
 
-                    ref
-                        .read(chatViewModelProvider.notifier)
-                        .clearActiveChatFriend();
-                    // Cập nhật local state ngay (không rebuild toàn bộ list)
-                    ref
-                        .read(chatViewModelProvider.notifier)
-                        .resetUnreadCount(user.userId);
-                    // Báo server đã đọc (fire-and-forget)
-                    ref
-                        .read(
-                      chatDetailViewModelProvider(
-                        ChatDetailParams(
-                          friendUserId: user.userId,
-                          initialIsOnline: user.isOnline,
-                        ),
-                      ).notifier,
-                    )
-                        .markAllAsRead();
-                  },
-                );
-              },
-            ),
+                          ref
+                              .read(chatViewModelProvider.notifier)
+                              .clearActiveChatFriend();
+                          // Cập nhật local state ngay (không rebuild toàn bộ list)
+                          ref
+                              .read(chatViewModelProvider.notifier)
+                              .resetUnreadCount(user.userId);
+                          // Báo server đã đọc (fire-and-forget)
+                          ref
+                              .read(
+                                chatDetailViewModelProvider(
+                                  ChatDetailParams(
+                                    friendUserId: user.userId,
+                                    initialIsOnline: user.isOnline,
+                                  ),
+                                ).notifier,
+                              )
+                              .markAllAsRead();
+                        },
+                      );
+                    },
+                  ),
           ),
         ],
       ),

@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
+import 'package:sipm_mobile/app/consts/app_log.dart';
 import 'package:sipm_mobile/domain/entities/auth_token.dart';
 import 'app/consts/app_config.dart';
 import 'app/my_app.dart';
@@ -19,7 +20,9 @@ import 'firebase_options.dart';
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  print('[FCM Background] Message received: ${message.notification?.title}');
+  AppLog.info(
+    '[FCM Background] Message received: ${message.notification?.title}',
+  );
 }
 
 void main() async {
@@ -54,14 +57,14 @@ void main() async {
         initialRoute = AppConfig.homePath;
         finalToken = newToken;
       } catch (e) {
-        print('[Main] Token refresh failed: $e');
+        AppLog.info('[Main] Token refresh failed: $e');
         initialRoute = AppConfig.loginPath;
       } finally {
         container.dispose();
       }
     }
   } catch (e) {
-    print('[Main] Auth check failed: $e');
+    AppLog.info('[Main] Auth check failed: $e');
   }
 
   // 4. Run app

@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sipm_mobile/app/consts/app_colcor.dart';
+import 'package:sipm_mobile/app/consts/app_color.dart';
 import 'package:sipm_mobile/app/provider.dart';
-import 'package:sipm_mobile/ui/screen/home/home_screen.dart';
 import 'package:sipm_mobile/widget/app_bar/custom_app_bar.dart';
 import '../../../../app/provider/localization_provider.dart';
 import 'home_shared.dart';
@@ -11,18 +10,20 @@ class HomeTablet extends ConsumerWidget {
   final PageController pageController;
   final Function(int) onTabSelected;
   final List<Widget> pages;
+  final Key? pageViewKey;
 
   const HomeTablet({
     super.key,
     required this.pageController,
     required this.onTabSelected,
     required this.pages,
+    this.pageViewKey,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final tabIndex = ref.watch(homeTabProvider);
-    final unreadCount = 0; // TODO: Get unread count from providers
+    final unreadCount = 0; // Get unread count from providers
 
     return Scaffold(
       backgroundColor: AppColor.white,
@@ -30,12 +31,19 @@ class HomeTablet extends ConsumerWidget {
       body: Row(
         children: [
           _buildNavigationRail(context, ref, tabIndex, unreadCount),
-          const VerticalDivider(thickness: 1, width: 1, color: AppColor.cDivider),
+          const VerticalDivider(
+            thickness: 1,
+            width: 1,
+            color: AppColor.cDivider,
+          ),
           Expanded(
             child: PageView(
+              key: pageViewKey,
               controller: pageController,
               onPageChanged: (index) {
-                ref.read(homeTabProvider.notifier).state = index;
+                if (ref.read(homeTabProvider) != index) {
+                  ref.read(homeTabProvider.notifier).state = index;
+                }
               },
               children: pages,
             ),
@@ -46,11 +54,11 @@ class HomeTablet extends ConsumerWidget {
   }
 
   Widget _buildNavigationRail(
-      BuildContext context,
-      WidgetRef ref,
-      int tabIndex,
-      int unreadCount,
-      ) {
+    BuildContext context,
+    WidgetRef ref,
+    int tabIndex,
+    int unreadCount,
+  ) {
     ref.watch(localizationProvider);
     return NavigationRail(
       selectedIndex: tabIndex,
@@ -72,9 +80,9 @@ class HomeTablet extends ConsumerWidget {
       ),
       destinations: [
         NavigationRailDestination(
-            icon: const Icon(Icons.home_outlined),
-            selectedIcon: const Icon(Icons.home),
-            label: Text(context.l10n.home),
+          icon: const Icon(Icons.home_outlined),
+          selectedIcon: const Icon(Icons.home),
+          label: Text(context.l10n.home),
         ),
         NavigationRailDestination(
           icon: Badge(
@@ -117,12 +125,14 @@ class HomeTablet extends ConsumerWidget {
           const Spacer(),
           IconButton(
             tooltip: context.l10n.search,
-            onPressed:
-                () => showSearch(context: context, delegate: SimpleSearchDelegate(context.l10n)),
+            onPressed: () => showSearch(
+              context: context,
+              delegate: SimpleSearchDelegate(context.l10n),
+            ),
             icon: const Icon(Icons.search),
           ),
           IconButton(
-            tooltip: context.l10n.others, // TODO: Add key for notifications
+            tooltip: context.l10n.others, //  Add key for notifications
             onPressed: () {},
             icon: const Icon(Icons.notifications_none),
           ),

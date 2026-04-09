@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/legacy.dart';
+import 'package:sipm_mobile/app/consts/app_log.dart';
 import '../../../../../../app/provider.dart';
 import '../../../../../../app/services/signalr_service.dart';
 import '../../../../../../domain/entities/chat_friend.dart';
@@ -7,8 +8,8 @@ import '../../../../../../domain/usecases/friend/get_chat_friends_usecase.dart';
 import 'chat_state.dart';
 
 final chatViewModelProvider = StateNotifierProvider<ChatViewModel, ChatState>((
-    ref,
-    ) {
+  ref,
+) {
   return ChatViewModel(
     ref.watch(getChatFriendsUseCaseProvider),
     ref.watch(signalRServiceProvider),
@@ -23,17 +24,17 @@ class ChatViewModel extends StateNotifier<ChatState> {
   int? _activeChatFriendUserId;
 
   ChatViewModel(this.getChatFriendsUseCase, this.signalRService)
-      : super(const ChatState());
+    : super(const ChatState());
 
   /// Đánh dấu đang xem chat với user này
   void setActiveChatFriend(int userId) {
     _activeChatFriendUserId = userId;
-    print('[Chat] Active chat set to userId: $userId');
+    AppLog.info('[Chat] Active chat set to userId: $userId');
   }
 
   /// Clear khi rời khỏi chat detail
   void clearActiveChatFriend() {
-    print('[Chat] Active chat cleared (was: $_activeChatFriendUserId)');
+    AppLog.info('[Chat] Active chat cleared (was: $_activeChatFriendUserId)');
     _activeChatFriendUserId = null;
   }
 
@@ -61,10 +62,10 @@ class ChatViewModel extends StateNotifier<ChatState> {
   }
 
   void handleNewMessage(Map<String, dynamic> data) {
-    print('[Chat] New message: $data');
+    AppLog.info('[Chat] New message: $data');
 
     if (!mounted) {
-      print('[Chat] Not mounted, skipping');
+      AppLog.info('[Chat] Not mounted, skipping');
       return;
     }
 
@@ -72,18 +73,20 @@ class ChatViewModel extends StateNotifier<ChatState> {
     final senderId = data['targetUserId'] as int?;
 
     if (senderId == null) {
-      print('[Chat] targetUserId is null, skipping');
+      AppLog.info('[Chat] targetUserId is null, skipping');
       return;
     }
 
     // Skip tăng unread count nếu đang xem chat với người gửi này
     if (_activeChatFriendUserId == senderId) {
-      print('[Chat] User is viewing this chat, skipping unread increment');
+      AppLog.info(
+        '[Chat] User is viewing this chat, skipping unread increment',
+      );
       return;
     }
 
-    print('[Chat] Sender ID: $senderId');
-    print(
+    AppLog.info('[Chat] Sender ID: $senderId');
+    AppLog.info(
       '[Chat] Available user IDs: ${state.users.map((u) => u.userId).toList()}',
     );
 
@@ -113,7 +116,9 @@ class ChatViewModel extends StateNotifier<ChatState> {
     }).toList();
 
     if (!found) {
-      print('[Chat] WARNING: User with ID $senderId not found in friends list');
+      AppLog.info(
+        '[Chat] WARNING: User with ID $senderId not found in friends list',
+      );
       loadUsers();
       return;
     }
@@ -136,13 +141,13 @@ class ChatViewModel extends StateNotifier<ChatState> {
     }).toList();
 
     state = state.copyWith(users: updatedUsers, allUsers: updatedAllUsers);
-    print(
+    AppLog.info(
       '[Chat] State updated. Unread users count: ${state.unreadUsersCount}',
     );
   }
 
   void handleUserConnectionChange(Map<String, dynamic> data) {
-    print('[Chat] Connection change: $data');
+    AppLog.info('[Chat] Connection change: $data');
 
     final friend = data['friend'] as Map<String, dynamic>?;
     final isConnected = data['isConnected'] as bool?;
@@ -175,7 +180,7 @@ class ChatViewModel extends StateNotifier<ChatState> {
   }
 
   void handleMessagesRead(Map<String, dynamic> data) {
-    print('[Chat] Messages read: $data');
+    AppLog.info('[Chat] Messages read: $data');
 
     final friend = data['friend'] as Map<String, dynamic>?;
     if (friend == null || !mounted) return;
@@ -242,8 +247,8 @@ class ChatViewModel extends StateNotifier<ChatState> {
     state = state.copyWith(users: filtered);
   }
 
-  void onUserTap(user) {
-    print('Tapped on user: ${user.userName}');
+  void onUserTap(ChatFriend user) {
+    AppLog.info('Tapped on user: ${user.userName}');
     // Navigation will be handled in chat_page.dart
   }
 }

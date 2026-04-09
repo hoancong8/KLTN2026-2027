@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/legacy.dart';
+import 'package:sipm_mobile/app/consts/app_log.dart';
 import 'package:sipm_mobile/domain/entities/chat_friend.dart';
 import 'package:sipm_mobile/app/provider.dart';
 
@@ -31,21 +32,21 @@ class BlockedUsersState {
 }
 
 final blockedUsersViewModelProvider =
-StateNotifierProvider.autoDispose<BlockedUsersViewModel, BlockedUsersState>(
+    StateNotifierProvider.autoDispose<BlockedUsersViewModel, BlockedUsersState>(
       (ref) {
-    return BlockedUsersViewModel(
-      ref.watch(getChatFriendsUseCaseProvider),
-      ref.watch(unblockUserUseCaseProvider),
+        return BlockedUsersViewModel(
+          ref.watch(getChatFriendsUseCaseProvider),
+          ref.watch(unblockUserUseCaseProvider),
+        );
+      },
     );
-  },
-);
 
 class BlockedUsersViewModel extends StateNotifier<BlockedUsersState> {
   final GetChatFriendsUseCase getChatFriendsUseCase;
   final UnblockUserUseCase unblockUserUseCase;
 
   BlockedUsersViewModel(this.getChatFriendsUseCase, this.unblockUserUseCase)
-      : super(const BlockedUsersState());
+    : super(const BlockedUsersState());
 
   Future<void> loadBlockedUsers() async {
     state = state.copyWith(isLoading: true, error: null);
@@ -73,7 +74,7 @@ class BlockedUsersViewModel extends StateNotifier<BlockedUsersState> {
       await loadBlockedUsers();
     } catch (e) {
       // Handle error (maybe show toast via UI listener)
-      print('Unblock failed: $e');
+      AppLog.info('Unblock failed: $e');
     }
   }
 }

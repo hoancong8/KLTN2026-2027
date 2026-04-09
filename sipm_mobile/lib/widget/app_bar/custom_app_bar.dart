@@ -86,7 +86,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
             height: 56,
             alignment: Alignment.center,
             child: Image.asset(
-              AppPath.ic_app,
+              AppPath.icApp,
               width: logoSize,
               height: logoSize,
               fit: BoxFit.contain,
