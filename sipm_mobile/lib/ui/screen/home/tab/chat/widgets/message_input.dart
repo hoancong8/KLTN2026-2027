@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:sipm_mobile/app/consts/app_colcor.dart';
+
 import 'package:sipm_mobile/app/provider/localization_provider.dart';
+
+import '../../../../../../app/consts/app_color.dart';
 
 class MessageInput extends StatelessWidget {
   final TextEditingController controller;

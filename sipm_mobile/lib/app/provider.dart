@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
@@ -87,13 +88,11 @@ final isAdminProvider = Provider<bool>((ref) {
   final roleId = employee.roleId;
   final roleName = employee.roleName?.toLowerCase() ?? '';
 
-  return roleName.contains('admin') ||
-      roleId == 1;
+  return roleName.contains('admin') || roleId == 1;
 });
 
 /// Provider for current tab index in Home Screen
 final homeTabProvider = StateProvider<int>((ref) => 0);
-
 
 // ============================================================================
 // PRIVATE HELPERS - Token Refresh & Session Management (MOVED TO AppAuthInterceptor)
@@ -119,7 +118,6 @@ final dioProvider = Provider<Dio>((ref) {
       headers: {'Content-Type': 'application/json'},
     ),
   );
-
   dio.httpClientAdapter = AppAuthInterceptor.buildAdapter();
 
   dio.interceptors.add(AppAuthInterceptor(ref, dio));
@@ -162,17 +160,17 @@ final sessionRemoteDatasourceProvider = Provider<SessionRemoteDatasource>((
 });
 
 final notificationRemoteDatasourceProvider =
-Provider<NotificationRemoteDatasource>((ref) {
-  return NotificationRemoteDatasourceImpl(
-    dio: ref.watch(dioProvider),
-    messaging: FirebaseMessaging.instance,
-    localNotifications: FlutterLocalNotificationsPlugin(),
-    userIdProvider: () {
-      final employee = ref.read(currentEmployeeProvider);
-      return employee?.userId ?? employee?.id;
-    },
-  );
-});
+    Provider<NotificationRemoteDatasource>((ref) {
+      return NotificationRemoteDatasourceImpl(
+        dio: ref.watch(dioProvider),
+        messaging: FirebaseMessaging.instance,
+        localNotifications: FlutterLocalNotificationsPlugin(),
+        userIdProvider: () {
+          final employee = ref.read(currentEmployeeProvider);
+          return employee?.userId ?? employee?.id;
+        },
+      );
+    });
 
 final chatRemoteDatasourceProvider = Provider<ChatRemoteDatasource>((ref) {
   return ChatRemoteDatasourceImpl(ref.watch(dioProvider));

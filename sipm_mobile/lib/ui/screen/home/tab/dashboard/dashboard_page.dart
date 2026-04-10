@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sipm_mobile/app/consts/app_colcor.dart';
+import 'package:sipm_mobile/app/consts/app_color.dart';
 import 'package:sipm_mobile/app/provider.dart';
 
 class DashboardPage extends ConsumerWidget {
@@ -22,10 +22,7 @@ class DashboardPage extends ConsumerWidget {
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildGreeting(context),
-            const SizedBox(height: 20),
-          ],
+          children: [_buildGreeting(context), const SizedBox(height: 20)],
         ),
       ),
     );
@@ -55,11 +52,7 @@ class DashboardPage extends ConsumerWidget {
             color: AppColor.cMain.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
           ),
-          child: Icon(
-            icon,
-            color: AppColor.cMain,
-            size: 24,
-          ),
+          child: Icon(icon, color: AppColor.cMain, size: 24),
         ),
         const SizedBox(width: 12),
         Expanded(
@@ -77,9 +70,9 @@ class DashboardPage extends ConsumerWidget {
               ),
               Text(
                 'Chúc bạn một ngày làm việc hiệu quả!',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppColor.cMuted,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(color: AppColor.cMuted),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -99,11 +92,7 @@ class DashboardPage extends ConsumerWidget {
             color: AppColor.cMain.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8),
           ),
-          child: Icon(
-            icon,
-            color: AppColor.cMain,
-            size: 18,
-          ),
+          child: Icon(icon, color: AppColor.cMain, size: 18),
         ),
         const SizedBox(width: 10),
         Text(

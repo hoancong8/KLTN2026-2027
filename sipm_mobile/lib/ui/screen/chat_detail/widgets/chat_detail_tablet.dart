@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:sipm_mobile/app/consts/app_colcor.dart';
+import '../../../../app/consts/app_color.dart';
 import '../../home/tab/chat/widgets/message_bubble.dart';
 import '../../home/tab/chat/widgets/message_input.dart';
 import '../../home/tab/chat/widgets/chat_avatar.dart';

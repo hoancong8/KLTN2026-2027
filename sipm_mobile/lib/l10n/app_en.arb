@@ -126,7 +126,6 @@
   "configuration": "Configuration",
   "languagesubtitle": "Select application language",
   "systemconfig": "System & Account Configuration",
-  "loggingout": "Logging out...",
     "online": "Online",
     "offline": "Offline",
     "unblock": "Unblock",
@@ -156,5 +155,8 @@
      "addfriend": "Add Friend",
      "enterMessage" :"Enter message...",
      "justNow": "Just now",
-     "blockUserConfirmation":"Are you sure you want to block {userName}?"
-}
+     "blockUserConfirmation":"Are you sure you want to block {userName}?",
+      "loggingout": "Logging out...",
+      "welcomeBack": "Welcome back!",
+      "app_name": "SIPM Mobile"
+    }

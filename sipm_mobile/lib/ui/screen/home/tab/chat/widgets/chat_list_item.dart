@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:sipm_mobile/app/consts/app_colcor.dart';
+
+import '../../../../../../app/consts/app_color.dart';
 import '../../../../../../app/provider/localization_provider.dart';
 import '../../../../../../domain/entities/chat_friend.dart';
 import 'chat_avatar.dart';

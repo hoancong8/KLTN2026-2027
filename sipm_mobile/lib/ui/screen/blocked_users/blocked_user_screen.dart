@@ -1,9 +1,11 @@
+
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:sipm_mobile/app/consts/app_colcor.dart';
 import 'package:sipm_mobile/app/provider/localization_provider.dart';
 import 'package:sipm_mobile/ui/screen/home/tab/chat/widgets/chat_avatar.dart';
+import '../../../app/consts/app_color.dart';
 import 'blocked_user_vm.dart';
 
 class BlockedUsersScreen extends ConsumerStatefulWidget {

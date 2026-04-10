@@ -15,7 +15,7 @@ class OtpScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // TODO: implement build
+    // implement build
     final state = ref.watch(otpViewModelProvider);
     final code = ref.watch(otpCodeProvider);
     ref.listen<OtpState>(otpViewModelProvider, (prev, next) async {
@@ -28,6 +28,7 @@ class OtpScreen extends ConsumerWidget {
         await SecureStorageService.instance.setRememberMe(true);
 
         // SignalR và loadUsers sẽ được xử lý bởi HomeViewModel sau khi navigate
+        if (!context.mounted) return;
         context.go(AppConfig.homePath);
       }
 

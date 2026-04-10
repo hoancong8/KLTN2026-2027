@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sipm_mobile/app/consts/app_colcor.dart';
+
+import '../../../../../../app/consts/app_color.dart';
 import '../../../../../../app/provider/localization_provider.dart';
 import '../../../../add_friend/add_friend_screen.dart';
 import '../../../../blocked_users/blocked_user_screen.dart';

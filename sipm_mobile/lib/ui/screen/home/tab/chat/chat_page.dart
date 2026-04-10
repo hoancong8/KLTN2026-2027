@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sipm_mobile/widget/responsive_layout.dart';
+import '../../../../../widget/responsive_layout.dart';
 import '../../../blocked_users/blocked_user_screen.dart';
 import '../../../chat_detail/chat_detail_screen.dart';
 import '../../../chat_detail/chat_detail_vm/chat_detail_vm.dart';

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sipm_mobile/app/consts/app_colcor.dart';
 import 'package:sipm_mobile/app/provider/localization_provider.dart';
+import '../../../app/consts/app_color.dart';
 import 'add_friend_vm.dart';
 
 
@@ -279,7 +279,7 @@ class _AddFriendScreenState extends ConsumerState<AddFriendScreen> {
                         .read(addFriendViewModelProvider.notifier)
                         .addFriend(user.userId);
 
-                    if (!mounted) return;
+                    if (!context.mounted) return;
                     ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text(

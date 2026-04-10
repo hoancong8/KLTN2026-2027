@@ -126,7 +126,6 @@
   "configuration": "Cấu hình",
   "languagesubtitle": "Chọn ngôn ngữ ứng dụng",
   "systemconfig": "Cấu hình hệ thống & tài khoản",
-  "loggingout": "Đang đăng xuất...",
   "online": "Đang hoạt động",
   "offline": "Ngoại tuyến",
   "unblock": "Bỏ chặn",
@@ -154,5 +153,8 @@
     "anerroroccurred": "Có lỗi xảy ra",
     "enterMessage" :"Nhập tin nhắn...",
     "justNow": "Vừa xong",
-    "blockUserConfirmation": "Bạn có chắc chắn muốn chặn {userName} không?"
+    "blockUserConfirmation": "Bạn có chắc chắn muốn chặn {userName} không?",
+      "loggingout": "Đang đăng xuất...",
+      "welcomeBack": "Chào mừng trở lại!",
+      "app_name": "SIPM Mobile"
 }

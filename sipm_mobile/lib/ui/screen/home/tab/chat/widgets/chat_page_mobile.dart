@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sipm_mobile/app/consts/app_colcor.dart';
 import 'package:sipm_mobile/app/l10n_gen/app_localizations.dart';
+import '../../../../../../app/consts/app_color.dart';
 import '../../../../../../app/provider/localization_provider.dart';
 import '../chat_vm/chat_state.dart';
 import '../chat_vm/chat_vm.dart';

@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/legacy.dart';
+import 'package:sipm_mobile/app/consts/app_log.dart';
 import '../../../../app/provider.dart';
 import '../../../../app/services/signalr_service.dart';
 import '../../../../domain/entities/chat_message.dart';
@@ -115,7 +116,7 @@ class ChatDetailViewModel extends StateNotifier<ChatDetailState> {
           senderId == friendUserId && receiverId == currentUserId;
 
       if (isMyMessage || isFriendMessage) {
-        print(
+        AppLog.info(
           '[ChatDetail] Message for this chat: sender=$senderId, receiver=$receiverId',
         );
         _addMessageToState(data);
@@ -134,7 +135,9 @@ class ChatDetailViewModel extends StateNotifier<ChatDetailState> {
 
       final friendId = friend['friendUserId'] as int?;
       if (friendId == friendUserId) {
-        print('[ChatDetail] Friend connection changed: isOnline=$isConnected');
+        AppLog.info(
+          '[ChatDetail] Friend connection changed: isOnline=$isConnected',
+        );
         state = state.copyWith(isOnline: isConnected);
       }
     };
@@ -171,9 +174,9 @@ class ChatDetailViewModel extends StateNotifier<ChatDetailState> {
         displayedMessages: [...state.displayedMessages, newMessage],
       );
 
-      print('[ChatDetail] Message added to state');
+      AppLog.info('[ChatDetail] Message added to state');
     } catch (e) {
-      print('[ChatDetail] Error adding message: $e');
+      AppLog.info('[ChatDetail] Error adding message: $e');
       // Nếu parse lỗi thì reload
       loadMessages();
     }
@@ -212,9 +215,11 @@ class ChatDetailViewModel extends StateNotifier<ChatDetailState> {
   Future<void> loadMoreMessages() async {
     if (!mounted || state.isLoadingMore) return;
 
-    print('[ChatDetail] === Load More Triggered ===');
-    print('[ChatDetail] Current displayed: ${state.displayedMessages.length}');
-    print('[ChatDetail] Total in buffer: ${state.allMessages.length}');
+    AppLog.info('[ChatDetail] === Load More Triggered ===');
+    AppLog.info(
+      '[ChatDetail] Current displayed: ${state.displayedMessages.length}',
+    );
+    AppLog.info('[ChatDetail] Total in buffer: ${state.allMessages.length}');
 
     // Tính số tin chưa hiển thị trong buffer (phần đầu)
     final undisplayedCount =
@@ -228,7 +233,7 @@ class ChatDetailViewModel extends StateNotifier<ChatDetailState> {
       final endIndex =
           state.allMessages.length - state.displayedMessages.length;
 
-      print(
+      AppLog.info(
         '[ChatDetail] Loading from buffer: $loadCount messages (index $startIndex to $endIndex)',
       );
 
@@ -238,7 +243,7 @@ class ChatDetailViewModel extends StateNotifier<ChatDetailState> {
         displayedMessages: [...newDisplayed, ...state.displayedMessages],
       );
 
-      print(
+      AppLog.info(
         '[ChatDetail] After buffer load - displayed: ${state.displayedMessages.length}',
       );
       return;
@@ -246,11 +251,11 @@ class ChatDetailViewModel extends StateNotifier<ChatDetailState> {
 
     // Hết buffer, gọi API
     if (!state.hasMore) {
-      print('[ChatDetail] No more messages from API');
+      AppLog.info('[ChatDetail] No more messages from API');
       return;
     }
 
-    print('[ChatDetail] Buffer empty, calling API...');
+    AppLog.info('[ChatDetail] Buffer empty, calling API...');
     state = state.copyWith(isLoadingMore: true);
 
     try {
@@ -291,11 +296,11 @@ class ChatDetailViewModel extends StateNotifier<ChatDetailState> {
         hasMore: uniqueNewMessages.length >= 50,
       );
 
-      print(
+      AppLog.info(
         '[ChatDetail] After API load - buffer: ${state.allMessages.length}, displayed: ${state.displayedMessages.length}',
       );
     } catch (e) {
-      print('[ChatDetail] Error loading more: $e');
+      AppLog.info('[ChatDetail] Error loading more: $e');
       if (!mounted) return;
       state = state.copyWith(isLoadingMore: false, error: e.toString());
     }
@@ -326,9 +331,9 @@ class ChatDetailViewModel extends StateNotifier<ChatDetailState> {
 
     try {
       await markAllAsReadUseCase.execute(userId: friendUserId, tenantId: null);
-      print('[ChatDetail] Marked all messages as read');
+      AppLog.info('[ChatDetail] Marked all messages as read');
     } catch (e) {
-      print('[ChatDetail] Error marking as read: $e');
+      AppLog.info('[ChatDetail] Error marking as read: $e');
     }
   }
 
@@ -344,7 +349,7 @@ class ChatDetailViewModel extends StateNotifier<ChatDetailState> {
       if (!mounted) return;
       state = state.copyWith(isBlocked: true);
     } catch (e) {
-      print('Block user failed: $e');
+      AppLog.info('Block user failed: $e');
       if (!mounted) return;
       state = state.copyWith(error: 'Chặn người dùng thất bại: $e');
     }
@@ -356,7 +361,7 @@ class ChatDetailViewModel extends StateNotifier<ChatDetailState> {
       if (!mounted) return;
       state = state.copyWith(isBlocked: false);
     } catch (e) {
-      print('Unblock user failed: $e');
+      AppLog.info('Unblock user failed: $e');
       if (!mounted) return;
       state = state.copyWith(error: 'Bỏ chặn người dùng thất bại: $e');
     }
@@ -404,7 +409,7 @@ class ChatDetailViewModel extends StateNotifier<ChatDetailState> {
 
       await sendMessage(messageContent);
     } catch (e) {
-      print('Upload failed: $e');
+      AppLog.info('Upload failed: $e');
       if (mounted) {
         state = state.copyWith(isSending: false, error: 'Tải lên thất bại: $e');
       }
