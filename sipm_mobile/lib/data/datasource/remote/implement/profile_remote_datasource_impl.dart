@@ -3,35 +3,36 @@ import 'package:sipm_mobile/app/consts/app_config.dart';
 import 'package:sipm_mobile/data/datasource/remote/abstract/profile_remote_datasource.dart';
 import 'package:sipm_mobile/data/dto/profile/change_profile_request_dto.dart';
 import 'package:sipm_mobile/data/dto/profile/change_profile_response_dto.dart';
+import '../base_remote_datasource.dart';
 
-class ProfileRemoteDatasourceImpl implements ProfileRemoteDatasource {
+class ProfileRemoteDatasourceImpl extends BaseRemoteDatasource implements ProfileRemoteDatasource {
   final Dio dio;
 
   ProfileRemoteDatasourceImpl(this.dio);
 
-
   @override
   Future<ChangeProfileResponseDto> getProfile(int employeeId) async {
-    final response = await dio.get(
-      AppConfig.getProfilePath,
-      queryParameters: {'Id': employeeId},
-    );
-    return ChangeProfileResponseDto.fromJson(response.data);
+    try {
+      final response = await dio.get(
+        AppConfig.getProfilePath,
+        queryParameters: {'Id': employeeId},
+      );
+      return handleResponse(response, (data) => ChangeProfileResponseDto.fromJson(data));
+    }
+    catch (e) {
+      throw handleError(e);
+    }
   }
-
   @override
   Future<void> changeProfile(ChangeProfileRequestDto request) async {
-    final response = await dio.post(
-      AppConfig.changeProfilePath,
-      data: request.toJson(),
-      options: Options(
-        contentType: 'application/json-patch+json',
-      ),
-    );
-    // Check if success
-    final data = response.data as Map<String, dynamic>;
-    if (data['success'] != true) {
-      throw Exception(data['error']?['message'] ?? 'Update failed');
+    try {
+      final response = await dio.post(
+        AppConfig.changeProfilePath,
+        data: request.toJson(),
+      );
+      return handleResponse(response, (data) => null);
+    } catch (e) {
+      throw handleError(e);
     }
   }
 }

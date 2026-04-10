@@ -126,7 +126,37 @@
   "configuration": "Configuration",
   "languagesubtitle": "Select application language",
   "systemconfig": "System & Account Configuration",
-  "loggingout": "Logging out...",
-  "welcomeBack": "Welcome back!",
-  "app_name": "SIPM Mobile"
-}
+    "online": "Online",
+    "offline": "Offline",
+    "unblock": "Unblock",
+    "blockuser": "Block user",
+    "startchat": "Start conversation",
+    "sendfirstmessage": "Send the first message to {userName}",
+    "@guiTinNhanDauTien": {
+      "placeholders": {
+        "userName": {
+          "type": "String"
+        }
+      }
+    },
+    "selectaconversation": "Select a conversation",
+    "selectuserformlist": "Select a user from the list on the left to start chatting",
+    "nouserfound": "No users found",
+    "trysearchdiffkeyword": "Try searching with different keywords",
+    "noconversationyet": "No conversations yet",
+     "startfisrtconversation": "Start your first conversation",
+     "cannotloadmessages": "Cannot load messages",
+     "tryagain": "Please try again",
+     "tryagainbtn": "Retry",
+     "chatWithColleagues": "Chat with colleagues",
+     "searchconversation": "Search conversations...",
+     "blockedusers": "Blocked Users",
+     "anerroroccurred": "An error occurred",
+     "addfriend": "Add Friend",
+     "enterMessage" :"Enter message...",
+     "justNow": "Just now",
+     "blockUserConfirmation":"Are you sure you want to block {userName}?",
+      "loggingout": "Logging out...",
+      "welcomeBack": "Welcome back!",
+      "app_name": "SIPM Mobile"
+    }
