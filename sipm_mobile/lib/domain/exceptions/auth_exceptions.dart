@@ -1,18 +1,23 @@
 import 'app_exception.dart';
+import 'i_app_messages.dart';
 
 class RequiresTwoFactorException extends AppException {
-  RequiresTwoFactorException() : super(l10nSelector: (l) => l.otpVerification);
+  const RequiresTwoFactorException();
+  @override
+  String resolve(IAppMessages messages) => messages.otpVerification;
 }
 
 class SessionExpiredException extends AppException {
-  SessionExpiredException() : super(l10nSelector: (l) => l.error_session_expired);
+  const SessionExpiredException();
+  @override
+  String resolve(IAppMessages messages) => messages.errorSessionExpired;
 }
 
 class AuthFailedException extends AppException {
-  AuthFailedException([String? message]) : super(message: message);
+  const AuthFailedException([String? message]) : super(message: message);
 }
 
 class ChangePasswordFailedException extends AppException {
-  ChangePasswordFailedException([String? message]) 
-      : super(message: message ?? 'Đổi mật khẩu không thành công!');
+  const ChangePasswordFailedException([String? message])
+      : super(message: message);
 }

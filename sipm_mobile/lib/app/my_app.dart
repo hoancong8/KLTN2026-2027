@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:sipm_mobile/app/consts/app_log.dart';
 import 'package:sipm_mobile/app/consts/app_router.dart';
 import 'package:sipm_mobile/app/consts/app_theme.dart';
@@ -19,10 +20,12 @@ class MyApp extends ConsumerStatefulWidget {
 
 class _MyAppState extends ConsumerState<MyApp> {
   bool _isInit = false;
+  late final GoRouter _router;
 
   @override
   void initState() {
     super.initState();
+    _router = generateAppRouter(widget.initialRoute);
     _initApp();
   }
 
@@ -57,15 +60,13 @@ class _MyAppState extends ConsumerState<MyApp> {
       );
     }
 
-    // Generate router using the determined initialRoute
-    final router = generateAppRouter(widget.initialRoute);
     final locale = ref.watch(localizationProvider);
 
     // Remove the native splash screen now that first frame is ready
     FlutterNativeSplash.remove();
 
     return MaterialApp.router(
-      routerConfig: router,
+      routerConfig: _router,
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,

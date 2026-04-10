@@ -28,7 +28,7 @@ abstract class BaseRemoteDatasource {
     // Fallback cho các kiểu dữ liệu primitive (String, int...)
     if (data is T) return data;
 
-    throw AppException(l10nSelector: (l) => l.error_invalid_response);
+    throw const InvalidResponseException();
   }
 
   /// Bóc tách danh sách từ trường 'result' -> 'items' (PagedResult của ABP).
