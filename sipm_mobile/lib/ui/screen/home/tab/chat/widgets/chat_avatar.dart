@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:sipm_mobile/app/consts/app_colcor.dart';
+import 'package:sipm_mobile/app/consts/app_color.dart';
 
 class ChatAvatar extends StatelessWidget {
   final String name;
@@ -40,7 +40,9 @@ class ChatAvatar extends StatelessWidget {
           width: radius * 2,
           height: radius * 2,
           decoration: BoxDecoration(
-            color: imageUrl == null ? avatarColor.withValues(alpha: 0.15) : null,
+            color: imageUrl == null
+                ? avatarColor.withValues(alpha: 0.15)
+                : null,
             shape: BoxShape.circle,
             border: Border.all(
               color: avatarColor.withValues(alpha: 0.3),
@@ -49,12 +51,13 @@ class ChatAvatar extends StatelessWidget {
           ),
           child: imageUrl != null
               ? ClipOval(
-            child: Image.network(
-              imageUrl!,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) => _buildInitial(avatarColor),
-            ),
-          )
+                  child: Image.network(
+                    imageUrl!,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) =>
+                        _buildInitial(avatarColor),
+                  ),
+                )
               : _buildInitial(avatarColor),
         ),
         if (isOnline)

@@ -1,10 +1,10 @@
 import 'dart:io';
-import 'dart:ui';
 
 import 'package:signalr_netcore/http_connection_options.dart';
 import 'package:signalr_netcore/hub_connection.dart';
 import 'package:signalr_netcore/hub_connection_builder.dart';
 import 'package:flutter/material.dart';
+import 'package:sipm_mobile/app/consts/app_log.dart';
 import '../consts/app_config.dart';
 
 class SignalRService with WidgetsBindingObserver {
@@ -84,7 +84,7 @@ class SignalRService with WidgetsBindingObserver {
 
       await hubConnection!.start();
       await _register();
-      print('[SignalR] Connected');
+      AppLog.info('[SignalR] Connected');
     } finally {
       _isConnecting = false;
     }
@@ -101,10 +101,10 @@ class SignalRService with WidgetsBindingObserver {
         .withAutomaticReconnect(retryDelays: [0, 2000, 10000, 30000])
         .build();
 
-    conn.onclose(({error}) => print('[SignalR] Closed: $error'));
-    conn.onreconnecting(({error}) => print('[SignalR] Reconnecting...'));
+    conn.onclose(({error}) => AppLog.info('[SignalR] Closed: $error'));
+    conn.onreconnecting(({error}) => AppLog.info('[SignalR] Reconnecting...'));
     conn.onreconnected(({connectionId}) async {
-      print('[SignalR] Reconnected: $connectionId');
+      AppLog.info('[SignalR] Reconnected: $connectionId');
       await _register();
     });
 
@@ -145,9 +145,9 @@ class SignalRService with WidgetsBindingObserver {
   Future<void> _register() async {
     try {
       await hubConnection?.invoke('register');
-      print('[SignalR] Registered');
+      AppLog.info('[SignalR] Registered');
     } catch (e) {
-      print('[SignalR] Register failed: $e');
+      AppLog.info('[SignalR] Register failed: $e');
     }
   }
 
@@ -175,9 +175,9 @@ class SignalRService with WidgetsBindingObserver {
   Future<void> disconnect({bool clear = false}) async {
     try {
       await hubConnection?.stop();
-      print('[SignalR] Disconnected');
+      AppLog.info('[SignalR] Disconnected');
     } catch (e) {
-      print('[SignalR] Disconnect error: $e');
+      AppLog.info('[SignalR] Disconnect error: $e');
     }
 
     if (clear) {
@@ -206,9 +206,9 @@ class SignalRService with WidgetsBindingObserver {
     required int userId,
     required String message,
   }) async {
-    print('[SignalR] Sending message to user $userId...');
+    AppLog.info('[SignalR] Sending message to user $userId...');
     if (!isConnected) {
-      print('[SignalR] Cannot send - not connected');
+      AppLog.info('[SignalR] Cannot send - not connected');
       throw Exception('SignalR not connected');
     }
 
@@ -223,7 +223,7 @@ class SignalRService with WidgetsBindingObserver {
       ],
     );
 
-    print('[SignalR] Message sent successfully');
+    AppLog.info('[SignalR] Message sent successfully');
   }
 
   bool get isConnected => hubConnection?.state == HubConnectionState.Connected;

@@ -52,5 +52,4 @@ class ChatMessageRemoteDatasourceImpl extends BaseRemoteDatasource
       throw handleError(e);
     }
   }
-  
 }

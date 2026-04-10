@@ -1,3 +1,5 @@
+import 'package:sipm_mobile/app/consts/app_log.dart';
+
 import '../../../app/services/secure_storage_service.dart';
 import '../../entities/auth_token.dart';
 import '../../repositories/auth_repository.dart';
@@ -19,8 +21,9 @@ class LoginUseCase {
     // Luôn lưu token
     await SecureStorageService.instance.saveAuthToken(token);
     await SecureStorageService.instance.setRememberMe(true);
-    print('[LoginUseCase] RefreshToken saved to storage: '+SecureStorageService
-        .instance.getAuthToken().toString());
+    AppLog.info(
+      '[LoginUseCase] RefreshToken saved to storage: ${SecureStorageService.instance.getAuthToken()}',
+    );
     return token;
   }
 }

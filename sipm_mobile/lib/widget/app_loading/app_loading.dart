@@ -1,10 +1,10 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:sipm_mobile/app/consts/app_colcor.dart';
+import 'package:sipm_mobile/app/consts/app_color.dart';
 
 class AppNavigator {
   static final GlobalKey<NavigatorState> navigatorKey =
-  GlobalKey<NavigatorState>();
+      GlobalKey<NavigatorState>();
 
   static BuildContext? get context => navigatorKey.currentContext;
 }
@@ -57,10 +57,7 @@ class AppLoading extends StatelessWidget {
           Flexible(
             child: Text(
               message!,
-              style: TextStyle(
-                color: textColor,
-                fontSize: 14,
-              ),
+              style: TextStyle(color: textColor, fontSize: 14),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
@@ -115,7 +112,7 @@ class AppLoadingOverlay {
         Widget content = Stack(
           children: [
             ModalBarrier(
-              color: barrierColor ?? Colors.black.withOpacity(0.35),
+              color: barrierColor ?? Colors.black.withAlpha(268),
               dismissible: barrierDismissible,
             ),
             AppLoading(
@@ -149,7 +146,8 @@ class AppLoadingOverlay {
 
     try {
       overlayEntry?.remove();
-    } catch (_) {} finally {
+    } catch (_) {
+    } finally {
       overlayEntry = null;
       isShowing = false;
     }

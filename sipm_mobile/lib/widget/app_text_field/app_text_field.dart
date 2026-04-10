@@ -52,7 +52,7 @@ class AppEditText extends StatefulWidget {
   final FocusNode? focusNode;
 
   const AppEditText({
-    Key? key,
+    super.key,
     this.controller,
     this.hintText,
     this.labelText,
@@ -93,7 +93,7 @@ class AppEditText extends StatefulWidget {
     this.focusNode,
     this.width,
     this.height,
-  }) : super(key: key);
+  });
 
   @override
   State<AppEditText> createState() => _AppEditTextState();
@@ -177,19 +177,30 @@ class _AppEditTextState extends State<AppEditText> {
             onEditingComplete: widget.onEditingComplete,
             style:
                 widget.textStyle ??
-                const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: Colors.black87),
+                const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w400,
+                  color: Colors.black87,
+                ),
             decoration: InputDecoration(
               isDense: true,
               hintText: widget.hintText,
               hintStyle:
                   widget.hintStyle ??
-                  TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: Colors.grey[400]),
+                  TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w400,
+                    color: Colors.grey[400],
+                  ),
               helperText: widget.helperText,
               errorText: widget.errorText,
               filled: true,
-              fillColor: widget.enabled ? (widget.fillColor ?? Colors.grey[50]) : Colors.grey[200],
+              fillColor: widget.enabled
+                  ? (widget.fillColor ?? Colors.grey[50])
+                  : Colors.grey[200],
               contentPadding:
-                  widget.contentPadding ?? const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  widget.contentPadding ??
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
 
               prefixIcon: widget.prefixIcon,
               prefix: widget.prefix,
@@ -199,7 +210,9 @@ class _AppEditTextState extends State<AppEditText> {
               suffixIcon: widget.obscureText
                   ? IconButton(
                       icon: Icon(
-                        obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                        obscurePassword
+                            ? Icons.visibility_off_outlined
+                            : Icons.visibility_outlined,
                         color: Colors.grey[600],
                         size: 20,
                       ),
@@ -212,19 +225,31 @@ class _AppEditTextState extends State<AppEditText> {
 
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(widget.borderRadius),
-                borderSide: BorderSide(color: widget.borderColor ?? Colors.grey[300]!, width: 1),
+                borderSide: BorderSide(
+                  color: widget.borderColor ?? Colors.grey[300]!,
+                  width: 1,
+                ),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(widget.borderRadius),
-                borderSide: BorderSide(color: widget.focusedBorderColor ?? Colors.blue, width: 1),
+                borderSide: BorderSide(
+                  color: widget.focusedBorderColor ?? Colors.blue,
+                  width: 1,
+                ),
               ),
               errorBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(widget.borderRadius),
-                borderSide: BorderSide(color: widget.errorBorderColor ?? Colors.red, width: 1),
+                borderSide: BorderSide(
+                  color: widget.errorBorderColor ?? Colors.red,
+                  width: 1,
+                ),
               ),
               focusedErrorBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(widget.borderRadius),
-                borderSide: BorderSide(color: widget.errorBorderColor ?? Colors.red, width: 1),
+                borderSide: BorderSide(
+                  color: widget.errorBorderColor ?? Colors.red,
+                  width: 1,
+                ),
               ),
               disabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(widget.borderRadius),

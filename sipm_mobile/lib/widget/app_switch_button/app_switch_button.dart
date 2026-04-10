@@ -48,13 +48,16 @@ class AppSwitchButtonState extends State<AppSwitchButton> {
   Widget build(BuildContext context) {
     final double radius = widget.height / 2;
     final double thumbSize = widget.height - (widget.padding.vertical);
-    final Alignment alignment = widget.value ? Alignment.centerRight : Alignment.centerLeft;
+    final Alignment alignment = widget.value
+        ? Alignment.centerRight
+        : Alignment.centerLeft;
 
     return Focus(
       focusNode: widget.focusNode,
       canRequestFocus: true,
       onKeyEvent: (node, event) {
-        if (event.logicalKey.keyLabel == ' ' || event.logicalKey.keyLabel == 'Enter') {
+        if (event.logicalKey.keyLabel == ' ' ||
+            event.logicalKey.keyLabel == 'Enter') {
           if (event is KeyUpEvent) toggle();
           return KeyEventResult.handled;
         }
@@ -80,7 +83,10 @@ class AppSwitchButtonState extends State<AppSwitchButton> {
             decoration: BoxDecoration(
               color: widget.value ? widget.activeColor : widget.inactiveColor,
               borderRadius: BorderRadius.circular(radius),
-              border: Border.all(color: widget.borderColor.withOpacity(widget.value ? 1 : 0), width: widget.value ? 1 : 0),
+              border: Border.all(
+                color: widget.borderColor.withAlpha(widget.value ? 255 : 25),
+                width: widget.value ? 1 : 0,
+              ),
             ),
             child: AnimatedAlign(
               duration: widget.duration,
@@ -96,13 +102,13 @@ class AppSwitchButtonState extends State<AppSwitchButton> {
                   shape: BoxShape.circle,
                   boxShadow: widget.shadow
                       ? [
-                    BoxShadow(
-                      blurRadius: pressed ? 2 : 4,
-                      spreadRadius: 0,
-                      offset: Offset(0, pressed ? 0.5 : 1.5),
-                      color: Colors.black.withOpacity(0.18),
-                    ),
-                  ]
+                          BoxShadow(
+                            blurRadius: pressed ? 2 : 4,
+                            spreadRadius: 0,
+                            offset: Offset(0, pressed ? 0.5 : 1.5),
+                            color: Colors.black.withAlpha(48),
+                          ),
+                        ]
                       : null,
                 ),
               ),

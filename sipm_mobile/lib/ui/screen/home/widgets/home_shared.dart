@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sipm_mobile/app/consts/app_colcor.dart';
+import 'package:sipm_mobile/app/consts/app_color.dart';
 import 'package:sipm_mobile/ui/screen/profile/profile_screen.dart';
 
 import 'package:sipm_mobile/app/l10n_gen/app_localizations.dart';
@@ -22,7 +22,10 @@ class CompanyHeader extends ConsumerWidget {
             color: AppColor.cTitle,
           ),
         ),
-        Text(context.l10n.parentcompany, style: t.bodySmall?.copyWith(color: AppColor.cMuted)),
+        Text(
+          context.l10n.parentcompany,
+          style: t.bodySmall?.copyWith(color: AppColor.cMuted),
+        ),
       ],
     );
   }
@@ -71,10 +74,9 @@ class SimpleSearchDelegate extends SearchDelegate<String> {
       l10n.projects,
       l10n.finance,
       l10n.report,
-      l10n.setting
+      l10n.setting,
     ];
-    final suggestions =
-    source.where((e) {
+    final suggestions = source.where((e) {
       return e.toLowerCase().contains(query.toLowerCase());
     }).toList();
 

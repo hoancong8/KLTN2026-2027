@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sipm_mobile/app/consts/app_colcor.dart';
+import 'package:sipm_mobile/app/consts/app_color.dart';
 import 'package:sipm_mobile/app/provider.dart';
 import 'package:sipm_mobile/widget/app_bar/custom_app_bar.dart';
 import '../../../../app/provider/localization_provider.dart';
@@ -10,26 +10,31 @@ class HomeMobile extends ConsumerWidget {
   final PageController pageController;
   final Function(int) onTabSelected;
   final List<Widget> pages;
+  final Key? pageViewKey;
 
   const HomeMobile({
     super.key,
     required this.pageController,
     required this.onTabSelected,
     required this.pages,
+    this.pageViewKey,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final tabIndex = ref.watch(homeTabProvider);
-    final unreadCount = 0; // TODO: Get unread count from providers
+    final unreadCount = 0; // Get unread count from providers
     ref.watch(localizationProvider);
     return Scaffold(
       backgroundColor: AppColor.white,
       appBar: _buildAppBar(context, ref),
       body: PageView(
+        key: pageViewKey,
         controller: pageController,
         onPageChanged: (index) {
-          ref.read(homeTabProvider.notifier).state = index;
+          if (ref.read(homeTabProvider) != index) {
+            ref.read(homeTabProvider.notifier).state = index;
+          }
         },
         children: pages,
       ),
@@ -66,7 +71,7 @@ class HomeMobile extends ConsumerWidget {
                 isLabelVisible: unreadCount > 0,
                 child: const Icon(Icons.message),
               ),
-              label: context.l10n.tinNhan, // TODO: Add key for messages
+              label: context.l10n.tinNhan,
             ),
             NavigationDestination(
               icon: const Icon(Icons.bar_chart_outlined),
@@ -98,12 +103,14 @@ class HomeMobile extends ConsumerWidget {
           const Spacer(),
           IconButton(
             tooltip: context.l10n.search,
-            onPressed:
-                () => showSearch(context: context, delegate: SimpleSearchDelegate(context.l10n)),
+            onPressed: () => showSearch(
+              context: context,
+              delegate: SimpleSearchDelegate(context.l10n),
+            ),
             icon: const Icon(Icons.search),
           ),
           IconButton(
-              tooltip: context.l10n.others,
+            tooltip: context.l10n.others,
             onPressed: () {},
             icon: const Icon(Icons.notifications_none),
           ),

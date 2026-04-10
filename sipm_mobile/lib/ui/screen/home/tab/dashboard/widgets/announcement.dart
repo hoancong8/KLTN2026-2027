@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:sipm_mobile/app/consts/app_colcor.dart';
+import 'package:sipm_mobile/app/consts/app_color.dart';
 
 class AnnouncementWidget extends StatelessWidget {
   const AnnouncementWidget({super.key});
@@ -40,25 +40,24 @@ class AnnouncementWidget extends StatelessWidget {
                     children: [
                       Text(
                         'Thông báo chung',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w700,
-                          color: AppColor.cTitle,
-                        ),
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(
+                              fontWeight: FontWeight.w700,
+                              color: AppColor.cTitle,
+                            ),
                       ),
                       Text(
                         '${announcements.length} thông báo mới',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: AppColor.cMuted,
-                        ),
+                        style: Theme.of(
+                          context,
+                        ).textTheme.bodySmall?.copyWith(color: AppColor.cMuted),
                       ),
                     ],
                   ),
                 ),
                 TextButton(
                   onPressed: () {},
-                  style: TextButton.styleFrom(
-                    foregroundColor: AppColor.cMain,
-                  ),
+                  style: TextButton.styleFrom(foregroundColor: AppColor.cMain),
                   child: const Text('Xem tất cả'),
                 ),
               ],
@@ -69,7 +68,8 @@ class AnnouncementWidget extends StatelessWidget {
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: announcements.length > 3 ? 3 : announcements.length,
-            separatorBuilder: (_, __) => const Divider(height: 1, color: AppColor.cDivider),
+            separatorBuilder: (_, _) =>
+                const Divider(height: 1, color: AppColor.cDivider),
             itemBuilder: (context, index) {
               final item = announcements[index];
               return _AnnouncementItem(announcement: item);
@@ -143,11 +143,7 @@ class _AnnouncementItem extends StatelessWidget {
                 color: AppColor.cMain.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: Icon(
-                announcement.icon,
-                size: 20,
-                color: AppColor.cMain,
-              ),
+              child: Icon(announcement.icon, size: 20, color: AppColor.cMain),
             ),
             const SizedBox(width: 12),
             Expanded(

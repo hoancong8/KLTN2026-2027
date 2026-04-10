@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:sipm_mobile/app/consts/app_colcor.dart';
+import 'package:sipm_mobile/app/consts/app_color.dart';
 import 'package:sipm_mobile/app/consts/app_config.dart';
 import 'package:sipm_mobile/widget/biometric_settings/biometric_settings_item.dart';
 import '../../../../../app/provider/localization_provider.dart';
@@ -38,7 +38,11 @@ class SettingsPage extends ConsumerWidget {
         children: [
           _buildHeader(context),
           const SizedBox(height: 20),
-          _buildSectionTitle(context, context.l10n.account, Icons.person_outline),
+          _buildSectionTitle(
+            context,
+            context.l10n.account,
+            Icons.person_outline,
+          ),
           const SizedBox(height: 12),
           _buildSettingsCard(
             children: [
@@ -55,7 +59,11 @@ class SettingsPage extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 20),
-          _buildSectionTitle(context, context.l10n.security, Icons.security_outlined),
+          _buildSectionTitle(
+            context,
+            context.l10n.security,
+            Icons.security_outlined,
+          ),
           const SizedBox(height: 12),
           _buildSettingsCard(
             children: [
@@ -74,7 +82,11 @@ class SettingsPage extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 20),
-          _buildSectionTitle(context, context.l10n.configuration, Icons.settings_suggest_outlined),
+          _buildSectionTitle(
+            context,
+            context.l10n.configuration,
+            Icons.settings_suggest_outlined,
+          ),
           const SizedBox(height: 12),
           _buildSettingsCard(
             children: [
@@ -83,8 +95,11 @@ class SettingsPage extends ConsumerWidget {
                 icon: Icons.language,
                 color: Colors.orange,
                 title: context.l10n.language,
-                subtitle: currentLocale.languageCode == 'vi' ? context.l10n.vietnamese : context.l10n.english,
-                onTap: () => _showLanguageBottomSheet(context, ref, currentLocale),
+                subtitle: currentLocale.languageCode == 'vi'
+                    ? context.l10n.vietnamese
+                    : context.l10n.english,
+                onTap: () =>
+                    _showLanguageBottomSheet(context, ref, currentLocale),
               ),
             ],
           ),
@@ -99,10 +114,10 @@ class SettingsPage extends ConsumerWidget {
   }
 
   void _showLanguageBottomSheet(
-      BuildContext context,
-      WidgetRef ref,
-      Locale currentLocale,
-      ) {
+    BuildContext context,
+    WidgetRef ref,
+    Locale currentLocale,
+  ) {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -130,7 +145,11 @@ class SettingsPage extends ConsumerWidget {
                           color: Colors.orange.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        child: const Icon(Icons.language, color: Colors.orange, size: 24),
+                        child: const Icon(
+                          Icons.language,
+                          color: Colors.orange,
+                          size: 24,
+                        ),
                       ),
                       const SizedBox(width: 16),
                       Text(
@@ -234,7 +253,9 @@ class SettingsPage extends ConsumerWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: isSelected ? AppColor.cMain.withValues(alpha: 0.05) : Colors.grey[50],
+          color: isSelected
+              ? AppColor.cMain.withValues(alpha: 0.05)
+              : Colors.grey[50],
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: isSelected ? AppColor.cMain : AppColor.cDivider,
@@ -258,7 +279,11 @@ class SettingsPage extends ConsumerWidget {
             if (isSelected)
               const Icon(Icons.check_circle, color: AppColor.cMain, size: 24)
             else
-              const Icon(Icons.circle_outlined, color: AppColor.cDivider, size: 24),
+              const Icon(
+                Icons.circle_outlined,
+                color: AppColor.cDivider,
+                size: 24,
+              ),
           ],
         ),
       ),
@@ -274,7 +299,11 @@ class SettingsPage extends ConsumerWidget {
             color: AppColor.cMain.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
           ),
-          child: const Icon(Icons.settings_outlined, color: AppColor.cMain, size: 24),
+          child: const Icon(
+            Icons.settings_outlined,
+            color: AppColor.cMain,
+            size: 24,
+          ),
         ),
         const SizedBox(width: 12),
         Expanded(
@@ -435,7 +464,9 @@ class SettingsPage extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        isLoading ? context.l10n.loggingout : context.l10n.logout,
+                        isLoading
+                            ? context.l10n.loggingout
+                            : context.l10n.logout,
                         style: TextStyle(
                           fontWeight: FontWeight.w700,
                           fontSize: 15,
