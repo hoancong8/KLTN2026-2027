@@ -47,6 +47,7 @@ class _ChatPageState extends ConsumerState<ChatPage> {
             userId: user.userId,
             userName: user.userName,
             isOnline: user.isOnline,
+
           ),
         ),
       );
