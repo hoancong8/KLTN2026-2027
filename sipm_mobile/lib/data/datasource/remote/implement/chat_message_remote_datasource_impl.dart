@@ -3,8 +3,10 @@ import 'package:sipm_mobile/app/consts/app_config.dart';
 import 'package:sipm_mobile/data/dto/chat/chat_message_dto.dart';
 
 import '../abstract/chat_message_remote_datasource.dart';
+import '../base_remote_datasource.dart';
 
-class ChatMessageRemoteDatasourceImpl implements ChatMessageRemoteDatasource {
+class ChatMessageRemoteDatasourceImpl extends BaseRemoteDatasource
+    implements ChatMessageRemoteDatasource {
   final Dio dio;
   ChatMessageRemoteDatasourceImpl(this.dio);
 
@@ -13,21 +15,21 @@ class ChatMessageRemoteDatasourceImpl implements ChatMessageRemoteDatasource {
     required int userId,
     int? tenantId,
     int? minMessageId,
+    // TODO: implement getUserChatMessages
   }) async {
     try {
       final res = await dio.get(
         AppConfig.getUserChatMessages,
         queryParameters: {
           'userId': userId,
-          'tenantId': ?tenantId,
-          'minMessageId': ?minMessageId,
+          if (tenantId != null) 'tenantId': tenantId,
+          if (minMessageId != null) 'minMessageId': minMessageId,
         },
       );
 
-      final items = res.data['result']['items'] as List;
-      return items.map((json) => ChatMessageDto.fromJson(json)).toList();
+      return handleListResponse(res, (json) => ChatMessageDto.fromJson(json));
     } catch (e) {
-      rethrow;
+      throw handleError(e);
     }
   }
 
@@ -35,10 +37,19 @@ class ChatMessageRemoteDatasourceImpl implements ChatMessageRemoteDatasource {
   Future<void> markAllUnreadMessagesAsRead({
     required int userId,
     int? tenantId,
+    // TODO: implement markAllUnreadMessagesAsRead
   }) async {
-    await dio.post(
-      AppConfig.markAllUnreadMessagesOfUserAsRead,
-      data: {'userId': userId, 'tenantId': ?tenantId},
-    );
+    try {
+      final res = await dio.post(
+        AppConfig.markAllUnreadMessagesOfUserAsRead,
+        data: {
+          'userId': userId,
+          if (tenantId != null) 'tenantId': tenantId,
+        },
+      );
+
+    } catch (e) {
+      throw handleError(e);
+    }
   }
 }
