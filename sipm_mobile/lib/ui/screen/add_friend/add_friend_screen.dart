@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sipm_mobile/app/consts/app_colcor.dart';
+import 'package:sipm_mobile/app/consts/app_color.dart';
 import 'add_friend_vm.dart';
 
 class AddFriendScreen extends ConsumerStatefulWidget {
@@ -64,14 +64,14 @@ class _AddFriendScreenState extends ConsumerState<AddFriendScreen> {
                 prefixIcon: Icon(Icons.search, color: AppColor.cMuted),
                 suffixIcon: _searchController.text.isNotEmpty
                     ? IconButton(
-                  icon: Icon(Icons.clear, color: AppColor.cMuted),
-                  onPressed: () {
-                    _searchController.clear();
-                    ref
-                        .read(addFriendViewModelProvider.notifier)
-                        .searchUsers('');
-                  },
-                )
+                        icon: Icon(Icons.clear, color: AppColor.cMuted),
+                        onPressed: () {
+                          _searchController.clear();
+                          ref
+                              .read(addFriendViewModelProvider.notifier)
+                              .searchUsers('');
+                        },
+                      )
                     : null,
                 filled: true,
                 fillColor: AppColor.cGray_50,
@@ -277,7 +277,7 @@ class _AddFriendScreenState extends ConsumerState<AddFriendScreen> {
                         .read(addFriendViewModelProvider.notifier)
                         .addFriend(user.userId);
 
-                    if (!mounted) return;
+                    if (!context.mounted) return;
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text(

@@ -1,20 +1,23 @@
 import 'package:local_auth/local_auth.dart';
 import 'package:flutter/services.dart';
+import 'package:sipm_mobile/app/consts/app_log.dart';
 
 class BiometricHelper {
   static Future<Map<String, dynamic>> getBiometricStatus() async {
     final LocalAuthentication localAuth = LocalAuthentication();
-    
+
     try {
       final canCheckBiometrics = await localAuth.canCheckBiometrics;
       final isDeviceSupported = await localAuth.isDeviceSupported();
       final availableBiometrics = await localAuth.getAvailableBiometrics();
-      
+
       return {
         'canCheckBiometrics': canCheckBiometrics,
         'isDeviceSupported': isDeviceSupported,
         'availableBiometrics': availableBiometrics,
-        'hasFingerprint': availableBiometrics.contains(BiometricType.fingerprint),
+        'hasFingerprint': availableBiometrics.contains(
+          BiometricType.fingerprint,
+        ),
         'hasFace': availableBiometrics.contains(BiometricType.face),
         'hasIris': availableBiometrics.contains(BiometricType.iris),
         'hasWeak': availableBiometrics.contains(BiometricType.weak),
@@ -29,7 +32,7 @@ class BiometricHelper {
       };
     }
   }
-  
+
   static String getBiometricErrorMessage(PlatformException e) {
     switch (e.code) {
       case 'NotAvailable':
@@ -52,30 +55,30 @@ class BiometricHelper {
         return 'Lỗi xác thực sinh trắc học: ${e.message ?? e.code}';
     }
   }
-  
+
   static void printBiometricDebugInfo(Map<String, dynamic> status) {
-    print('=== BIOMETRIC DEBUG INFO ===');
-    print('Can check biometrics: ${status['canCheckBiometrics']}');
-    print('Device supported: ${status['isDeviceSupported']}');
-    print('Available biometrics: ${status['availableBiometrics']}');
-    print('Has fingerprint: ${status['hasFingerprint']}');
-    print('Has face: ${status['hasFace']}');
-    print('Has iris: ${status['hasIris']}');
-    print('Has weak: ${status['hasWeak']}');
-    print('Has strong: ${status['hasStrong']}');
-    
+    AppLog.info('=== BIOMETRIC DEBUG INFO ===');
+    AppLog.info('Can check biometrics: ${status['canCheckBiometrics']}');
+    AppLog.info('Device supported: ${status['isDeviceSupported']}');
+    AppLog.info('Available biometrics: ${status['availableBiometrics']}');
+    AppLog.info('Has fingerprint: ${status['hasFingerprint']}');
+    AppLog.info('Has face: ${status['hasFace']}');
+    AppLog.info('Has iris: ${status['hasIris']}');
+    AppLog.info('Has weak: ${status['hasWeak']}');
+    AppLog.info('Has strong: ${status['hasStrong']}');
+
     // Hiển thị loại biometric chính
     if (status['hasFace']) {
-      print('PRIMARY BIOMETRIC: Face ID / Face Recognition');
+      AppLog.info('PRIMARY BIOMETRIC: Face ID / Face Recognition');
     } else if (status['hasFingerprint']) {
-      print('PRIMARY BIOMETRIC: Fingerprint / Touch ID');
+      AppLog.info('PRIMARY BIOMETRIC: Fingerprint / Touch ID');
     } else if (status['hasStrong']) {
-      print('PRIMARY BIOMETRIC: Strong biometric available');
+      AppLog.info('PRIMARY BIOMETRIC: Strong biometric available');
     }
-    
+
     if (status['error'] != null) {
-      print('Error: ${status['error']}');
+      AppLog.info('Error: ${status['error']}');
     }
-    print('=== END DEBUG INFO ===');
+    AppLog.info('=== END DEBUG INFO ===');
   }
 }

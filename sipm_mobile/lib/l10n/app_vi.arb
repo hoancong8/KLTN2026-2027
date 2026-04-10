@@ -126,5 +126,7 @@
   "configuration": "Cấu hình",
   "languagesubtitle": "Chọn ngôn ngữ ứng dụng",
   "systemconfig": "Cấu hình hệ thống & tài khoản",
-  "loggingout": "Đang đăng xuất..."
+  "loggingout": "Đang đăng xuất...",
+  "welcomeBack": "Chào mừng trở lại!",
+  "app_name": "SIPM Mobile"
 }

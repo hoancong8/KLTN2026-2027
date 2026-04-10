@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sipm_mobile/app/consts/app_colcor.dart';
 import 'package:sipm_mobile/app/provider/localization_provider.dart';
+import 'package:sipm_mobile/app/consts/app_color.dart';
 import 'package:sipm_mobile/ui/screen/home/tab/chat/widgets/chat_list_item.dart';
 import '../../../blocked_users/blocked_user_screen.dart';
 import '../../../chat_detail/chat_detail_screen.dart';

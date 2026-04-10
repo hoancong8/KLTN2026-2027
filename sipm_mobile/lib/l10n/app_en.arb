@@ -126,5 +126,7 @@
   "configuration": "Configuration",
   "languagesubtitle": "Select application language",
   "systemconfig": "System & Account Configuration",
-  "loggingout": "Logging out..."
+  "loggingout": "Logging out...",
+  "welcomeBack": "Welcome back!",
+  "app_name": "SIPM Mobile"
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sipm_mobile/app/consts/app_log.dart';
 import 'package:sipm_mobile/app/consts/app_router.dart';
 import 'package:sipm_mobile/app/consts/app_theme.dart';
 import 'package:sipm_mobile/app/provider.dart';
@@ -35,7 +36,7 @@ class _MyAppState extends ConsumerState<MyApp> {
     try {
       await ref.read(initializeNotificationUseCaseProvider).execute();
     } catch (e) {
-      print('[MyApp] Failed to initialize notification: $e');
+      AppLog.info('[MyApp] Failed to initialize notification: $e');
     }
   }
 
@@ -43,7 +44,7 @@ class _MyAppState extends ConsumerState<MyApp> {
     try {
       await ref.read(localizationProvider.notifier).init();
     } catch (e) {
-      print('[MyApp] Failed to initialize localization: $e');
+      AppLog.info('[MyApp] Failed to initialize localization: $e');
     }
   }
 
@@ -52,11 +53,7 @@ class _MyAppState extends ConsumerState<MyApp> {
     if (!_isInit) {
       return const MaterialApp(
         debugShowCheckedModeBanner: false,
-        home: Scaffold(
-          body: Center(
-            child: CircularProgressIndicator(),
-          ),
-        ),
+        home: Scaffold(body: Center(child: CircularProgressIndicator())),
       );
     }
 

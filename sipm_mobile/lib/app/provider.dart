@@ -1,8 +1,10 @@
 import 'package:dio/dio.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
+import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'package:sipm_mobile/app/services/secure_storage_service.dart';
 import 'package:sipm_mobile/app/services/signalr_service.dart';
 import 'package:sipm_mobile/domain/entities/auth_token.dart';
@@ -87,13 +89,11 @@ final isAdminProvider = Provider<bool>((ref) {
   final roleId = employee.roleId;
   final roleName = employee.roleName?.toLowerCase() ?? '';
 
-  return roleName.contains('admin') ||
-      roleId == 1;
+  return roleName.contains('admin') || roleId == 1;
 });
 
 /// Provider for current tab index in Home Screen
 final homeTabProvider = StateProvider<int>((ref) => 0);
-
 
 // ============================================================================
 // PRIVATE HELPERS - Token Refresh & Session Management (MOVED TO AppAuthInterceptor)
@@ -119,6 +119,19 @@ final dioProvider = Provider<Dio>((ref) {
       headers: {'Content-Type': 'application/json'},
     ),
   );
+  if (kDebugMode) {
+    dio.interceptors.add(
+      PrettyDioLogger(
+        requestHeader: true,
+        requestBody: true,
+        responseBody: true,
+        responseHeader: false,
+        error: true,
+        compact: true, // In ra gọn gàng hơn
+        maxWidth: 90,
+      ),
+    );
+  }
 
   dio.httpClientAdapter = AppAuthInterceptor.buildAdapter();
 
@@ -162,17 +175,17 @@ final sessionRemoteDatasourceProvider = Provider<SessionRemoteDatasource>((
 });
 
 final notificationRemoteDatasourceProvider =
-Provider<NotificationRemoteDatasource>((ref) {
-  return NotificationRemoteDatasourceImpl(
-    dio: ref.watch(dioProvider),
-    messaging: FirebaseMessaging.instance,
-    localNotifications: FlutterLocalNotificationsPlugin(),
-    userIdProvider: () {
-      final employee = ref.read(currentEmployeeProvider);
-      return employee?.userId ?? employee?.id;
-    },
-  );
-});
+    Provider<NotificationRemoteDatasource>((ref) {
+      return NotificationRemoteDatasourceImpl(
+        dio: ref.watch(dioProvider),
+        messaging: FirebaseMessaging.instance,
+        localNotifications: FlutterLocalNotificationsPlugin(),
+        userIdProvider: () {
+          final employee = ref.read(currentEmployeeProvider);
+          return employee?.userId ?? employee?.id;
+        },
+      );
+    });
 
 final chatRemoteDatasourceProvider = Provider<ChatRemoteDatasource>((ref) {
   return ChatRemoteDatasourceImpl(ref.watch(dioProvider));

@@ -1,13 +1,15 @@
 import 'dart:async';
 import 'package:flutter_riverpod/legacy.dart';
+import 'package:sipm_mobile/app/consts/app_log.dart';
 import 'package:sipm_mobile/domain/entities/notification_message.dart';
 import 'package:sipm_mobile/domain/repositories/notification_repository.dart';
 import '../../../../app/provider.dart';
 import 'notification_state.dart';
 
-final notificationViewModelProvider = StateNotifierProvider<NotificationViewModel, NotificationState>((ref) {
-  return NotificationViewModel(ref.watch(notificationRepositoryProvider));
-});
+final notificationViewModelProvider =
+    StateNotifierProvider<NotificationViewModel, NotificationState>((ref) {
+      return NotificationViewModel(ref.watch(notificationRepositoryProvider));
+    });
 
 class NotificationViewModel extends StateNotifier<NotificationState> {
   final NotificationRepository repository;
@@ -29,8 +31,7 @@ class NotificationViewModel extends StateNotifier<NotificationState> {
   }
 
   void _handleNotificationClick(NotificationMessage message) {
-    // TODO: Navigate based on notification type
-    print('[Notification] Clicked: ${message.title}');
+    AppLog.info('[Notification] Clicked: ${message.title}');
   }
 
   void markAsRead() {

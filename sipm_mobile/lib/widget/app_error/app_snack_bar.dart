@@ -1,20 +1,21 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:sipm_mobile/app/consts/app_colcor.dart';
+import 'package:sipm_mobile/app/consts/app_color.dart';
+import 'package:sipm_mobile/app/consts/app_log.dart';
 
 class AppSnack {
   static OverlayEntry? currentEntry;
   static AnimationController? currentController;
 
   static void showBase(
-      BuildContext context,
-      String message, {
-        required Color background,
-        required IconData icon,
-        Color iconColor = Colors.white,
-        Color textColor = Colors.white,
-        Duration duration = const Duration(seconds: 2),
-      }) {
+    BuildContext context,
+    String message, {
+    required Color background,
+    required IconData icon,
+    Color iconColor = Colors.white,
+    Color textColor = Colors.white,
+    Duration duration = const Duration(seconds: 2),
+  }) {
     dismissImmediate();
 
     final overlay = Overlay.of(context);
@@ -25,22 +26,19 @@ class AppSnack {
       vsync: overlay,
     );
 
-    final slideAnimation = Tween<Offset>(
-      begin: const Offset(0, -1),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: controller,
-      curve: Curves.easeOutCubic,
-      reverseCurve: Curves.easeInCubic,
-    ));
+    final slideAnimation =
+        Tween<Offset>(begin: const Offset(0, -1), end: Offset.zero).animate(
+          CurvedAnimation(
+            parent: controller,
+            curve: Curves.easeOutCubic,
+            reverseCurve: Curves.easeInCubic,
+          ),
+        );
 
     final fadeAnimation = Tween<double>(
       begin: 0.0,
       end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: controller,
-      curve: Curves.easeOut,
-    ));
+    ).animate(CurvedAnimation(parent: controller, curve: Curves.easeOut));
 
     currentController = controller;
 
@@ -73,28 +71,31 @@ class AppSnack {
     try {
       currentEntry?.remove();
     } catch (e) {
-      print(e);
+      AppLog.warning(e);
     }
     currentEntry = null;
     try {
       currentController?.dispose();
     } catch (e) {
-      print(e);
+      AppLog.warning(e);
     }
     currentController = null;
   }
 
-  static void dismissWithAnimation(OverlayEntry entry, AnimationController controller) {
+  static void dismissWithAnimation(
+    OverlayEntry entry,
+    AnimationController controller,
+  ) {
     controller.reverse().then((_) {
       try {
         entry.remove();
       } catch (e) {
-        print(e);
+        AppLog.warning(e);
       }
       try {
         controller.dispose();
       } catch (e) {
-        print(e);
+        AppLog.warning(e);
       }
       if (currentEntry == entry) {
         currentEntry = null;
@@ -161,6 +162,7 @@ class GlassSnackBarWidget extends StatelessWidget {
   final Animation<double> fadeAnimation;
 
   const GlassSnackBarWidget({
+    super.key,
     required this.message,
     required this.background,
     required this.icon,
@@ -189,17 +191,20 @@ class GlassSnackBarWidget extends StatelessWidget {
               child: BackdropFilter(
                 filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 14,
+                  ),
                   decoration: BoxDecoration(
-                    color: background.withOpacity(0.65),
+                    color: background.withAlpha(200),
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                      color: Colors.white.withOpacity(0.15),
+                      color: Colors.white.withAlpha(45),
                       width: 1,
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.2),
+                        color: Colors.black.withAlpha(50),
                         blurRadius: 20,
                         offset: const Offset(0, 8),
                       ),
@@ -211,14 +216,10 @@ class GlassSnackBarWidget extends StatelessWidget {
                         width: 36,
                         height: 36,
                         decoration: BoxDecoration(
-                          color: iconColor.withOpacity(0.15),
+                          color: iconColor.withAlpha(45),
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        child: Icon(
-                          icon,
-                          size: 20,
-                          color: iconColor,
-                        ),
+                        child: Icon(icon, size: 20, color: iconColor),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
