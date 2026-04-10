@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sipm_mobile/app/consts/app_colcor.dart';
+import '../../../../../../app/provider/localization_provider.dart';
 import '../../../../../../domain/entities/chat_friend.dart';
 import 'chat_avatar.dart';
 
@@ -63,7 +64,7 @@ class ChatListItem extends StatelessWidget {
                         ),
                         const SizedBox(width: 6),
                         Text(
-                          user.isOnline ? 'Đang hoạt động' : 'Ngoại tuyến',
+                          user.isOnline ? context.l10n.online : context.l10n.offline,
                           style: TextStyle(
                             fontSize: 13,
                             color: user.isOnline ? AppColor.cMain : AppColor.cMuted,

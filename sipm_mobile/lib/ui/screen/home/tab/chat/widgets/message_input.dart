@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sipm_mobile/app/consts/app_colcor.dart';
+import 'package:sipm_mobile/app/provider/localization_provider.dart';
 
 class MessageInput extends StatelessWidget {
   final TextEditingController controller;
@@ -53,7 +54,7 @@ class MessageInput extends StatelessWidget {
                         textInputAction: TextInputAction.newline,
                         style: TextStyle(color: AppColor.cTitle, fontSize: 15),
                         decoration: InputDecoration(
-                          hintText: 'Nhập tin nhắn...',
+                          hintText: context.l10n.enterMessage,
                           hintStyle: TextStyle(
                             color: AppColor.cMuted,
                             fontSize: 15,

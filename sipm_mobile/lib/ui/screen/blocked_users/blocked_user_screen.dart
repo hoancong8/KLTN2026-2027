@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sipm_mobile/app/consts/app_colcor.dart';
+import 'package:sipm_mobile/app/provider/localization_provider.dart';
 import 'package:sipm_mobile/ui/screen/home/tab/chat/widgets/chat_avatar.dart';
 import 'blocked_user_vm.dart';
 
@@ -39,7 +40,7 @@ class _BlockedUsersScreenState extends ConsumerState<BlockedUsersScreen> {
           onPressed: () => context.pop(),
         ),
         title: Text(
-          'Danh sách chặn',
+          context.l10n.blockedusers,
           style: TextStyle(
             color: AppColor.cTitle,
             fontSize: 18,
@@ -62,7 +63,7 @@ class _BlockedUsersScreenState extends ConsumerState<BlockedUsersScreen> {
             Icon(Icons.block, size: 48, color: AppColor.cMuted),
             const SizedBox(height: 16),
             Text(
-              'Chưa có người dùng bị chặn',
+              context.l10n.noblockedusers,
               style: TextStyle(color: AppColor.cMuted, fontSize: 16),
             ),
           ],
@@ -118,7 +119,7 @@ class _BlockedUsersScreenState extends ConsumerState<BlockedUsersScreen> {
                   style: TextButton.styleFrom(
                     foregroundColor: AppColor.cMain,
                   ),
-                  child: const Text('Bỏ chặn'),
+                  child:  Text(context.l10n.unblock),
                 ),
               ],
             ),

@@ -126,5 +126,33 @@
   "configuration": "Cấu hình",
   "languagesubtitle": "Chọn ngôn ngữ ứng dụng",
   "systemconfig": "Cấu hình hệ thống & tài khoản",
-  "loggingout": "Đang đăng xuất..."
+  "loggingout": "Đang đăng xuất...",
+  "online": "Đang hoạt động",
+  "offline": "Ngoại tuyến",
+  "unblock": "Bỏ chặn",
+  "blockuser": "Chặn người dùng",
+  "startchat": "Bắt đầu cuộc trò chuyện",
+  "sendfirstmessage": "Gửi tin nhắn đầu tiên cho {userName}",
+  "@guiTinNhanDauTien": {
+    "placeholders": {
+      "userName": {
+        "type": "String"
+      }
+    }
+   },
+   "selectaconversation": "Chọn một cuộc trò chuyện",
+   "selectuserformlist": "Chọn người dùng từ danh sách bên trái để bắt đầu trò chuyện",
+   "nouserfound": "Không tìm thấy người dùng",
+   "trysearchdiffkeyword": "Thử tìm kiếm với từ khóa khác",
+   "noconversationyet": "Chưa có cuộc trò chuyện nào",
+   "startfisrtconversation": "Bắt đầu cuộc trò chuyện đầu tiên của bạn",
+    "cannotloadmessages": "Không thể tải tin nhắn",
+    "tryagain": "Vui lòng thử lại",
+    "tryagainbtn": "Thử lại",
+    "chatWithColleagues": "Trò chuyện với đồng nghiệp",
+    "searchconversation": "Tìm kiếm cuộc trò chuyện...",
+    "anerroroccurred": "Có lỗi xảy ra",
+    "enterMessage" :"Nhập tin nhắn...",
+    "justNow": "Vừa xong",
+    "blockUserConfirmation": "Bạn có chắc chắn muốn chặn {userName} không?"
 }
