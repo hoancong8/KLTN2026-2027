@@ -15,6 +15,7 @@ class ChatMessageRemoteDatasourceImpl extends BaseRemoteDatasource
     required int userId,
     int? tenantId,
     int? minMessageId,
+    // TODO: implement getUserChatMessages
   }) async {
     try {
       final res = await dio.get(
@@ -36,6 +37,7 @@ class ChatMessageRemoteDatasourceImpl extends BaseRemoteDatasource
   Future<void> markAllUnreadMessagesAsRead({
     required int userId,
     int? tenantId,
+    // TODO: implement markAllUnreadMessagesAsRead
   }) async {
     try {
       final res = await dio.post(
