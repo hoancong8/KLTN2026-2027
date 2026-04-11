@@ -5,7 +5,8 @@ import 'package:sipm_mobile/domain/exceptions/auth_exceptions.dart';
 import 'package:sipm_mobile/domain/usecases/profile/change_profile_usecase.dart';
 import 'package:sipm_mobile/domain/usecases/profile/get_profile_usecase.dart';
 import 'profile_state.dart';
-
+import '../../../../domain/exceptions/app_exception.dart';
+import '../../../../app/utils/app_exception_handler.dart';
 final profileViewModelProvider =
     StateNotifierProvider.autoDispose<ProfileViewModel, ProfileState>((ref) {
   return ProfileViewModel(
@@ -38,12 +39,14 @@ class ProfileViewModel extends StateNotifier<ProfileState> {
     } on SessionExpiredException {
       if (!mounted) return;
       state = state.copyWith(isLoading: false);
-    } catch (e) {
+    } on AppException catch (e) {
+      state = state.copyWith(isLoading: false, error: e);
+    }
+    catch (e) {
       if (!mounted) return;
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: AppExceptionHandler.handle(e));
     }
   }
-
   void updateField({
     String? fullName,
     String? email,
@@ -67,7 +70,6 @@ class ProfileViewModel extends StateNotifier<ProfileState> {
       ),
     );
   }
-
   Future<void> saveProfile() async {
     if (state.employee == null) return;
     if (!mounted) return;
@@ -84,15 +86,16 @@ class ProfileViewModel extends StateNotifier<ProfileState> {
     } on SessionExpiredException {
       if (!mounted) return;
       state = state.copyWith(isSaving: false);
+    } on AppException catch (e) {
+      state = state.copyWith(isSaving: false, error: e);
     } catch (e) {
       if (!mounted) return;
       state = state.copyWith(
         isSaving: false,
-        error: e.toString(),
+        error: AppExceptionHandler.handle(e),
       );
     }
   }
-
   void clearMessages() {
     state = state.copyWith(error: null, successMessage: null);
   }

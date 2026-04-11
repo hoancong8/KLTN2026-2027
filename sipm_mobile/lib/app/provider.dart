@@ -4,7 +4,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
-import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'package:sipm_mobile/app/services/secure_storage_service.dart';
 import 'package:sipm_mobile/app/services/signalr_service.dart';
 import 'package:sipm_mobile/domain/entities/auth_token.dart';
@@ -119,20 +118,6 @@ final dioProvider = Provider<Dio>((ref) {
       headers: {'Content-Type': 'application/json'},
     ),
   );
-  if (kDebugMode) {
-    dio.interceptors.add(
-      PrettyDioLogger(
-        requestHeader: true,
-        requestBody: true,
-        responseBody: true,
-        responseHeader: false,
-        error: true,
-        compact: true, // In ra gọn gàng hơn
-        maxWidth: 90,
-      ),
-    );
-  }
-
   dio.httpClientAdapter = AppAuthInterceptor.buildAdapter();
 
   dio.interceptors.add(AppAuthInterceptor(ref, dio));

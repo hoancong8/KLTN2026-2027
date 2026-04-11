@@ -9,6 +9,8 @@ import '../../../../domain/usecases/chat/send_message_usecase.dart';
 import '../../../../domain/usecases/friend/block_user_usecase.dart';
 import '../../../../domain/usecases/friend/unblock_user_usecase.dart';
 import '../../../../domain/usecases/chat/upload_file_usecase.dart';
+import '../../../../app/utils/app_exception_handler.dart';
+import '../../../../domain/exceptions/app_exception.dart';
 import 'dart:convert';
 import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
@@ -206,9 +208,15 @@ class ChatDetailViewModel extends StateNotifier<ChatDetailState> {
         displayedMessages: displayed,
         hasMore: messages.length >= 50,
       );
+    } on AppException catch (e) {
+      if (!mounted) return;
+      state = state.copyWith(isLoading: false, error: e);
     } catch (e) {
       if (!mounted) return;
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(
+        isLoading: false,
+        error: AppExceptionHandler.handle(e),
+      );
     }
   }
 
@@ -302,7 +310,10 @@ class ChatDetailViewModel extends StateNotifier<ChatDetailState> {
     } catch (e) {
       AppLog.info('[ChatDetail] Error loading more: $e');
       if (!mounted) return;
-      state = state.copyWith(isLoadingMore: false, error: e.toString());
+      state = state.copyWith(
+        isLoadingMore: false,
+        error: AppExceptionHandler.handle(e),
+      );
     }
   }
 
@@ -322,7 +333,10 @@ class ChatDetailViewModel extends StateNotifier<ChatDetailState> {
       state = state.copyWith(isSending: false);
     } catch (e) {
       if (!mounted) return;
-      state = state.copyWith(isSending: false, error: e.toString());
+      state = state.copyWith(
+        isSending: false,
+        error: AppExceptionHandler.handle(e),
+      );
     }
   }
 
@@ -351,7 +365,13 @@ class ChatDetailViewModel extends StateNotifier<ChatDetailState> {
     } catch (e) {
       AppLog.info('Block user failed: $e');
       if (!mounted) return;
-      state = state.copyWith(error: 'Chặn người dùng thất bại: $e');
+      final ex = AppExceptionHandler.handle(e);
+      state = state.copyWith(
+        error: AppException(
+          message: 'Chặn người dùng thất bại: ${ex.message ?? ex.toString()}',
+          originalError: ex,
+        ),
+      );
     }
   }
 
@@ -363,7 +383,13 @@ class ChatDetailViewModel extends StateNotifier<ChatDetailState> {
     } catch (e) {
       AppLog.info('Unblock user failed: $e');
       if (!mounted) return;
-      state = state.copyWith(error: 'Bỏ chặn người dùng thất bại: $e');
+      final ex = AppExceptionHandler.handle(e);
+      state = state.copyWith(
+        error: AppException(
+          message: 'Bỏ chặn người dùng thất bại: ${ex.message ?? ex.toString()}',
+          originalError: ex,
+        ),
+      );
     }
   }
 
@@ -411,7 +437,14 @@ class ChatDetailViewModel extends StateNotifier<ChatDetailState> {
     } catch (e) {
       AppLog.info('Upload failed: $e');
       if (mounted) {
-        state = state.copyWith(isSending: false, error: 'Tải lên thất bại: $e');
+        final ex = AppExceptionHandler.handle(e);
+        state = state.copyWith(
+          isSending: false,
+          error: AppException(
+            message: 'Tải lên thất bại: ${ex.message ?? ex.toString()}',
+            originalError: ex,
+          ),
+        );
       }
     }
   }

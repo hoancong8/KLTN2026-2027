@@ -4,6 +4,7 @@ import 'package:sipm_mobile/data/datasource/remote/base_remote_datasource.dart';
 import 'package:sipm_mobile/data/dto/chat/chat_message_dto.dart';
 
 import '../abstract/chat_message_remote_datasource.dart';
+import '../base_remote_datasource.dart';
 
 class ChatMessageRemoteDatasourceImpl extends BaseRemoteDatasource
     implements ChatMessageRemoteDatasource {
@@ -15,6 +16,7 @@ class ChatMessageRemoteDatasourceImpl extends BaseRemoteDatasource
     required int userId,
     int? tenantId,
     int? minMessageId,
+    // TODO: implement getUserChatMessages
   }) async {
     try {
       final res = await dio.get(
@@ -37,7 +39,7 @@ class ChatMessageRemoteDatasourceImpl extends BaseRemoteDatasource
     int? tenantId,
   }) async {
     try {
-      await dio.post(
+      final res = await dio.post(
         AppConfig.markAllUnreadMessagesOfUserAsRead,
         data: {'userId': userId, if (tenantId != null) 'tenantId': tenantId},
       );

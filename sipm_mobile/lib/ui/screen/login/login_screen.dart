@@ -9,6 +9,7 @@ import 'package:sipm_mobile/widget/app_text_field/app_text_field.dart';
 import 'package:sipm_mobile/widget/loading_overlay.dart';
 import 'package:sipm_mobile/app/provider/localization_provider.dart';
 import '../../../../domain/exceptions/app_exception.dart';
+import '../../../app/utils/exception_ext.dart';
 import 'login_vm/login_vm.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {

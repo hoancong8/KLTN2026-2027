@@ -9,6 +9,7 @@ import 'package:sipm_mobile/app/consts/app_config.dart';
 import 'package:sipm_mobile/app/provider.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:sipm_mobile/app/provider/localization_provider.dart';
 import '../../../../../../domain/entities/chat_message.dart';
 // import 'full_screen_image_screen.dart'; // No longer needed for Navigator
 
@@ -382,7 +383,7 @@ class _MessageBubbleState extends ConsumerState<MessageBubble>
     final now = DateTime.now();
     final diff = now.difference(time);
 
-    if (diff.inMinutes < 1) return 'Vừa xong';
+    if (diff.inMinutes < 1) return context.l10n.justNow;
     if (diff.inMinutes < 60) return '${diff.inMinutes} phút';
     if (diff.inHours < 24) return '${diff.inHours} giờ';
     return '${time.hour}:${time.minute.toString().padLeft(2, '0')}';
