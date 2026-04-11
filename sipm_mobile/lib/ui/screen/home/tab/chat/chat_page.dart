@@ -47,7 +47,6 @@ class _ChatPageState extends ConsumerState<ChatPage> {
             userId: user.userId,
             userName: user.userName,
             isOnline: user.isOnline,
-
           ),
         ),
       );
@@ -57,13 +56,13 @@ class _ChatPageState extends ConsumerState<ChatPage> {
 
       ref
           .read(
-        chatDetailViewModelProvider(
-          ChatDetailParams(
-            friendUserId: user.userId,
-            initialIsOnline: user.isOnline,
-          ),
-        ).notifier,
-      )
+            chatDetailViewModelProvider(
+              ChatDetailParams(
+                friendUserId: user.userId,
+                initialIsOnline: user.isOnline,
+              ),
+            ).notifier,
+          )
           .markAllAsRead();
     }
   }
@@ -93,7 +92,6 @@ class _ChatPageState extends ConsumerState<ChatPage> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(chatViewModelProvider);
-
     return ResponsiveLayout(
       mobile: ChatPageMobile(
         state: state,

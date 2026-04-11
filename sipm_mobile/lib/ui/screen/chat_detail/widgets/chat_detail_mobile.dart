@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:sipm_mobile/app/utils/exception_ext.dart';
 import '../../../../app/consts/app_color.dart';
-import '../../../../domain/exceptions/i_app_messages.dart';
 import '../../home/tab/chat/widgets/message_bubble.dart';
 import '../../home/tab/chat/widgets/message_input.dart';
 import '../chat_detail_vm/chat_detail_vm.dart';
@@ -57,7 +57,9 @@ class _ChatDetailMobileState extends ConsumerState<ChatDetailMobile> {
               ),
               TextButton(
                 onPressed: () => Navigator.of(ctx).pop(true),
-                style: TextButton.styleFrom(foregroundColor: AppColor.cError),
+                style: TextButton.styleFrom(
+                  foregroundColor: AppColor.cError,
+                ),
                 child: Text(context.l10n.blockuser),
               ),
             ],
@@ -66,14 +68,10 @@ class _ChatDetailMobileState extends ConsumerState<ChatDetailMobile> {
       );
 
       if (confirmed == true) {
-        ref
-            .read(chatDetailViewModelProvider(widget.params).notifier)
-            .blockUser();
+        ref.read(chatDetailViewModelProvider(widget.params).notifier).blockUser();
       }
     } else if (value == 'unblock') {
-      ref
-          .read(chatDetailViewModelProvider(widget.params).notifier)
-          .unblockUser();
+      ref.read(chatDetailViewModelProvider(widget.params).notifier).unblockUser();
     }
   }
 
@@ -87,8 +85,8 @@ class _ChatDetailMobileState extends ConsumerState<ChatDetailMobile> {
       appBar: ChatDetailAppBar(
         userId: widget.userId,
         userName: widget.userName,
-        isOnline: state.isOnline,
-        isBlocked: state.isBlocked,
+        isOnline: widget.isOnline,
+        isBlocked: widget.isBlocked,
         onBackPressed: () => context.pop(),
         onMenuSelected: _handleMenuSelection,
       ),
@@ -104,74 +102,56 @@ class _ChatDetailMobileState extends ConsumerState<ChatDetailMobile> {
                   children: [
                     Expanded(
                       child: state.error != null
-                          ? buildErrorState(
-                              context,
-                              state.error!.resolve(
-                                context.l10n as IAppMessages,
-                              ),
-                              () {
-                                ref
-                                    .read(
-                                      chatDetailViewModelProvider(
-                                        widget.params,
-                                      ).notifier,
-                                    )
-                                    .loadMessages();
-                              },
-                            )
+                          ? buildErrorState(context, state.error!.getDisplayMessage(context.l10n), () {
+                              ref.read(chatDetailViewModelProvider(widget.params).notifier).loadMessages();
+                            })
                           : state.displayedMessages.isEmpty
-                          ? buildEmptyState(context, widget.userName)
-                          : ListView.builder(
-                              controller: widget.scrollController,
-                              reverse: true,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 12,
-                              ),
-                              itemCount:
-                                  state.displayedMessages.length +
-                                  (state.isLoadingMore ? 1 : 0),
-                              itemBuilder: (context, index) {
-                                if (index == state.displayedMessages.length &&
-                                    state.isLoadingMore) {
-                                  return Center(
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(16),
-                                      child: CircularProgressIndicator(
-                                        valueColor:
-                                            AlwaysStoppedAnimation<Color>(
+                              ? buildEmptyState(context, widget.userName)
+                              : ListView.builder(
+                                  controller: widget.scrollController,
+                                  reverse: true,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 12,
+                                  ),
+                                  itemCount: state.displayedMessages.length +
+                                      (state.isLoadingMore ? 1 : 0),
+                                  itemBuilder: (context, index) {
+                                    if (index == state.displayedMessages.length &&
+                                        state.isLoadingMore) {
+                                      return Center(
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(16),
+                                          child: CircularProgressIndicator(
+                                            valueColor: AlwaysStoppedAnimation<Color>(
                                               AppColor.cMain,
                                             ),
-                                      ),
-                                    ),
-                                  );
-                                }
+                                          ),
+                                        ),
+                                      );
+                                    }
 
-                                final reversedIndex =
-                                    state.displayedMessages.length - 1 - index;
-                                final message =
-                                    state.displayedMessages[reversedIndex];
-                                return MessageBubble(
-                                  key: ValueKey(message.id),
-                                  message: message,
-                                  senderName: widget.userName,
-                                );
-                              },
-                            ),
+                                    final reversedIndex =
+                                        state.displayedMessages.length - 1 - index;
+                                    final message = state.displayedMessages[reversedIndex];
+
+                                    return MessageBubble(
+                                      key: ValueKey(message.id),
+                                      message: message,
+                                      senderName: widget.userName,
+                                    );
+                                  },
+                                ),
                     ),
                     MessageInput(
                       controller: widget.messageController,
                       onSend: widget.onSendMessage,
                       isSending: state.isSending,
                       onAttachImage: () => ref
-                          .read(
-                            chatDetailViewModelProvider(widget.params).notifier,
-                          )
+                          .read(chatDetailViewModelProvider(widget.params).notifier)
                           .pickAndUploadImage(ImageSource.gallery),
                       onAttachFile: () => ref
-                          .read(
-                            chatDetailViewModelProvider(widget.params).notifier,
-                          )
+                          .read(chatDetailViewModelProvider(widget.params).notifier)
                           .pickAndUploadFile(),
                     ),
                   ],
