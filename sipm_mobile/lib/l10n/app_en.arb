@@ -158,5 +158,7 @@
      "blockUserConfirmation":"Are you sure you want to block {userName}?",
       "loggingout": "Logging out...",
       "welcomeBack": "Welcome back!",
-      "app_name": "SIPM Mobile"
-    }
+      "app_name": "SIPM Mobile",
+      "imagelibrary": "Image Library",
+      "file":"File"
+  }

@@ -156,5 +156,7 @@
     "blockUserConfirmation": "Bạn có chắc chắn muốn chặn {userName} không?",
       "loggingout": "Đang đăng xuất...",
       "welcomeBack": "Chào mừng trở lại!",
-      "app_name": "SIPM Mobile"
+      "app_name": "SIPM Mobile",
+      "imagelibrary": "Thư viện ảnh",
+      "file": "Tệp tin"
 }
