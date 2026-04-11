@@ -37,6 +37,7 @@ class AppAuthInterceptor extends Interceptor {
       RequestInterceptorHandler handler,
       ) async {
     final token = ref.read(authTokenProvider);
+    options.headers['FromMobile'] = 'true';
     if (token != null) {
       options.headers['Authorization'] = 'Bearer ${token.accessToken}';
     }
@@ -179,7 +180,7 @@ class AppAuthInterceptor extends Interceptor {
     _refreshDio ??= Dio(
       BaseOptions(
         baseUrl: AppConfig.baseUrl,
-        headers: {'Content-Type': 'application/json'},
+        headers: {'Content-Type': 'application/json', 'FromMobile': 'true',},
       ),
     )..httpClientAdapter = buildAdapter();
 
