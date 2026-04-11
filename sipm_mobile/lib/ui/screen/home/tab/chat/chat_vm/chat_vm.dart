@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/legacy.dart';
+import 'package:sipm_mobile/domain/exceptions/app_exception.dart';
 import 'package:sipm_mobile/app/consts/app_log.dart';
 import '../../../../../../app/provider.dart';
 import '../../../../../../app/services/signalr_service.dart';
@@ -227,9 +228,15 @@ class ChatViewModel extends StateNotifier<ChatState> {
         users: activeFriends,
         allUsers: activeFriends, // Init both
       );
+    } on AppException catch (e) {
+      if (!mounted) return;
+      state = state.copyWith(isLoading: false, error: e);
     } catch (e) {
       if (!mounted) return;
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(
+        isLoading: false,
+        // error: AppExceptionHandler.handle(e),
+      );
     }
   }
 

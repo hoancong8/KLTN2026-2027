@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:sipm_mobile/app/utils/exception_ext.dart';
 import '../../../../app/consts/app_color.dart';
 import '../../home/tab/chat/widgets/message_bubble.dart';
 import '../../home/tab/chat/widgets/message_input.dart';
@@ -102,7 +103,7 @@ class _ChatDetailTabletState extends ConsumerState<ChatDetailTablet> {
                   children: [
                     Expanded(
                       child: state.error != null
-                          ? buildErrorState(context, state.error!, () {
+                          ? buildErrorState(context, state.error!.getDisplayMessage(context.l10n), () {
                               ref.read(chatDetailViewModelProvider(widget.params).notifier).loadMessages();
                             })
                           : state.displayedMessages.isEmpty

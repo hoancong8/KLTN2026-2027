@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sipm_mobile/app/utils/exception_ext.dart';
 import '../../../../../../app/consts/app_color.dart';
 import '../../../../../../app/provider/localization_provider.dart';
 import '../chat_vm/chat_state.dart';
@@ -93,34 +94,42 @@ class _ChatPageTabletState extends ConsumerState<ChatPageTablet> {
                               children: [
                                 Text(
                                   context.l10n.tinNhan,
-                                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                    fontWeight: FontWeight.w800,
-                                    color: AppColor.cTitle,
-                                  ),
+                                  style: Theme.of(context).textTheme.titleLarge
+                                      ?.copyWith(
+                                        fontWeight: FontWeight.w800,
+                                        color: AppColor.cTitle,
+                                      ),
                                 ),
                               ],
                             ),
                           ),
                           IconButton(
-                            icon: Icon(Icons.person_add, color: AppColor.cMain, size: 28),
+                            icon: Icon(
+                              Icons.person_add,
+                              color: AppColor.cMain,
+                              size: 28,
+                            ),
                             onPressed: widget.onAddFriendPressed,
                             tooltip: context.l10n.addfriend,
                           ),
                           IconButton(
-                            icon: Icon(Icons.block, color: AppColor.cMuted, size: 28),
+                            icon: Icon(
+                              Icons.block,
+                              color: AppColor.cMuted,
+                              size: 28,
+                            ),
                             onPressed: widget.onBlockedUsersPressed,
                             tooltip: 'Blocked Users',
                           ),
                         ],
                       ),
-                      const SizedBox(height:5),
-                      Row (
+                      const SizedBox(height: 5),
+                      Row(
                         children: [
                           Text(
                             context.l10n.chatWithColleagues,
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: AppColor.cMuted,
-                            ),
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(color: AppColor.cMuted),
                           ),
                         ],
                       ),
@@ -148,7 +157,10 @@ class _ChatPageTabletState extends ConsumerState<ChatPageTablet> {
                           ),
                           filled: true,
                           fillColor: AppColor.cGray_50,
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 16,
+                          ),
                         ),
                       ),
                     ],
@@ -160,31 +172,41 @@ class _ChatPageTabletState extends ConsumerState<ChatPageTablet> {
                   child: RefreshIndicator(
                     onRefresh: () async => widget.onRefresh(),
                     child: widget.state.isLoading
-                        ? const Center(
-                            child: CircularProgressIndicator(),
-                          )
+                        ? const Center(child: CircularProgressIndicator())
                         : widget.state.error != null
-                            ? buildErrorState(context, widget.state.error!, widget.onRefresh)
-                            : widget.state.users.isEmpty
-                                ? buildEmptyState(context, _searchController.text.isNotEmpty)
-                                : ListView.builder(
-                                    padding: const EdgeInsets.symmetric(vertical: 8),
-                                    itemCount: widget.state.users.length,
-                                    itemBuilder: (context, index) {
-                                      final user = widget.state.users[index];
-                                      return Container(
-                                        margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                                        decoration: BoxDecoration(
-                                          borderRadius: BorderRadius.circular(12),
-                                          color: AppColor.cGray_50.withValues(alpha: 0.3),
-                                        ),
-                                        child: ChatListItem(
-                                          user: user,
-                                          onTap: () => widget.onUserTap(user),
-                                        ),
-                                      );
-                                    },
+                        ? buildErrorState(
+                            context,
+                            widget.state.error!.getDisplayMessage(context.l10n),
+                            widget.onRefresh,
+                          )
+                        : widget.state.users.isEmpty
+                        ? buildEmptyState(
+                            context,
+                            _searchController.text.isNotEmpty,
+                          )
+                        : ListView.builder(
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            itemCount: widget.state.users.length,
+                            itemBuilder: (context, index) {
+                              final user = widget.state.users[index];
+                              return Container(
+                                margin: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(12),
+                                  color: AppColor.cGray_50.withValues(
+                                    alpha: 0.3,
                                   ),
+                                ),
+                                child: ChatListItem(
+                                  user: user,
+                                  onTap: () => widget.onUserTap(user),
+                                ),
+                              );
+                            },
+                          ),
                   ),
                 ),
               ],
