@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sipm_mobile/app/l10n_gen/app_localizations.dart';
+import 'package:sipm_mobile/app/utils/exception_ext.dart';
 import '../../../../../../app/consts/app_color.dart';
 import '../../../../../../app/provider/localization_provider.dart';
 import '../chat_vm/chat_state.dart';
@@ -40,34 +41,36 @@ class _ChatPageMobileState extends ConsumerState<ChatPageMobile> {
       body: Column(
         children: [
           // Header with search
-          buildChatPageHeader(
-            context: context,
-            ref: ref,
-          ),
+          buildChatPageHeader(context: context, ref: ref),
 
           // Content
           Expanded(
             child: RefreshIndicator(
               onRefresh: () async => widget.onRefresh(),
               child: widget.state.isLoading
-                  ? const Center(
-                      child: CircularProgressIndicator(),
-                    )
+                  ? const Center(child: CircularProgressIndicator())
                   : widget.state.error != null
-                      ? buildErrorState(context, widget.state.error!, widget.onRefresh)
-                      : widget.state.users.isEmpty
-                          ? buildEmptyState(context, false) // Không thể check search được nữa
-                          : ListView.builder(
-                              padding: const EdgeInsets.symmetric(vertical: 8),
-                              itemCount: widget.state.users.length,
-                              itemBuilder: (context, index) {
-                                final user = widget.state.users[index];
-                                return ChatListItem(
-                                  user: user,
-                                  onTap: () => widget.onUserTap(user),
-                                );
-                              },
-                            ),
+                  ? buildErrorState(
+                      context,
+                      widget.state.error!.getDisplayMessage(context.l10n),
+                      widget.onRefresh,
+                    )
+                  : widget.state.users.isEmpty
+                  ? buildEmptyState(
+                      context,
+                      false,
+                    ) // Không thể check search được nữa
+                  : ListView.builder(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      itemCount: widget.state.users.length,
+                      itemBuilder: (context, index) {
+                        final user = widget.state.users[index];
+                        return ChatListItem(
+                          user: user,
+                          onTap: () => widget.onUserTap(user),
+                        );
+                      },
+                    ),
             ),
           ),
         ],
