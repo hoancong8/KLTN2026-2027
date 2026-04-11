@@ -39,7 +39,7 @@ class ChatDetailState {
       isLoading: isLoading ?? this.isLoading,
       isLoadingMore: isLoadingMore ?? this.isLoadingMore,
       isSending: isSending ?? this.isSending,
-      error: error,
+      error: error ?? this.error,
       allMessages: allMessages ?? this.allMessages,
       displayedMessages: displayedMessages ?? this.displayedMessages,
       hasMore: hasMore ?? this.hasMore,
