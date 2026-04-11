@@ -193,7 +193,7 @@ class ChatDetailViewModel extends StateNotifier<ChatDetailState> {
 
   Future<void> loadMessages() async {
     if (!mounted) return;
-    state = state.copyWith(isLoading: true, error: null);
+    state = state.copyWith(isLoading: true, clearError: true);
 
     try {
       final messages = await getChatMessagesUseCase.execute(
