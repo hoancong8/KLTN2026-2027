@@ -10,25 +10,42 @@ import 'package:sipm_mobile/app/services/secure_storage_service.dart';
 import 'package:sipm_mobile/domain/entities/auth_token.dart';
 import 'package:sipm_mobile/app/consts/app_router.dart';
 
+import '../consts/app_log.dart';
+
 class AppAuthInterceptor extends Interceptor {
   final Ref ref;
   final Dio baseDio;
 
+  // Fix #1: these are static to share across parallel requests, but must be
+  // reset after session expires or after a successful refresh cycle completes.
   static bool _isShowingSessionExpiredDialog = false;
   static Dio? _refreshDio;
   static Future<AuthToken>? _refreshFuture;
 
+  /// Reset static state — call after logout or when starting a fresh session.
+  static void resetStaticState() {
+    _isShowingSessionExpiredDialog = false;
+    _refreshFuture = null;
+    // Keep _refreshDio — it is stateless and can be reused across sessions.
+  }
+
   AppAuthInterceptor(this.ref, this.baseDio);
 
   @override
-  void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
-    // Luôn gửi header FromMobile cho mọi request
-    options.headers['FromMobile'] = 'true';
-
+  void onRequest(
+      RequestOptions options,
+      RequestInterceptorHandler handler,
+      ) async {
     final token = ref.read(authTokenProvider);
     if (token != null) {
       options.headers['Authorization'] = 'Bearer ${token.accessToken}';
     }
+
+    final tenantId = await SecureStorageService.instance.getTenantId();
+    if (tenantId != null) {
+      options.headers['Abp.TenantId'] = tenantId.toString();
+    }
+
     return handler.next(options);
   }
 
@@ -55,22 +72,38 @@ class AppAuthInterceptor extends Interceptor {
       }
 
       if (_refreshFuture != null) {
+        AuthToken newToken;
         try {
-          final newToken = await _refreshFuture!;
+          newToken = await _refreshFuture!;
+        } catch (_) { // Bắt mọi lỗi từ Refresh API (Timeout, 400 Bad Request...)
+          _handleSessionExpired(ref);
+          return handler.reject(
+            DioException(
+              requestOptions: err.requestOptions,
+              type: DioExceptionType.cancel,
+            ),
+          );
+        }
+
+        try {
           final opts = err.requestOptions;
           opts.headers['Authorization'] = 'Bearer ${newToken.accessToken}';
-
-          final tenantId = await SecureStorageService.instance.getTenantId();
-          if (tenantId != null) {
-            opts.headers['Abp.TenantId'] = tenantId.toString();
-          }
-
-          final retryResponse = await baseDio.fetch(opts);
+          final retryResponse = await baseDio.request(
+            opts.path,
+            data: opts.data,
+            queryParameters: opts.queryParameters,
+            options: Options(
+              method: opts.method,
+              headers: opts.headers,
+              responseType: opts.responseType,
+              contentType: opts.contentType,
+            ),
+          );
+          AppLog.info('[AppAuthInterceptor] Waiter Retry Response Data: ${retryResponse.data?.toString().substring(0, retryResponse.data?.toString().length.clamp(0, 500))}');
           return handler.resolve(retryResponse);
         } catch (e) {
-          // Chỉ session expired nếu retry cũng bị 401
-          // Các lỗi khác (403, 500...) pass through bình thường
           if (e is DioException && e.response?.statusCode == 401) {
+            AppLog.info('[AppAuthInterceptor] Retry failed with 401, session expired');
             _handleSessionExpired(ref);
             return handler.reject(
               DioException(
@@ -83,10 +116,24 @@ class AppAuthInterceptor extends Interceptor {
         }
       }
 
+      AppLog.info('[AppAuthInterceptor] Triggering token refresh');
       _refreshFuture = _refreshToken(baseDio, currentToken, ref);
 
+      AuthToken newToken;
       try {
-        final newToken = await _refreshFuture!;
+        newToken = await _refreshFuture!;
+      } catch (e) {
+        _refreshFuture = null;
+        _handleSessionExpired(ref);
+        return handler.reject(
+          DioException(
+            requestOptions: err.requestOptions,
+            type: DioExceptionType.cancel,
+          ),
+        );
+      }
+
+      try {
         final opts = err.requestOptions;
         opts.headers['Authorization'] = 'Bearer ${newToken.accessToken}';
 
@@ -95,23 +142,28 @@ class AppAuthInterceptor extends Interceptor {
           opts.headers['Abp.TenantId'] = tenantId.toString();
         }
 
+        AppLog.info(
+          '[AppAuthInterceptor] Retrying original request with new token: ${opts.path}',
+        );
         final retryResponse = await baseDio.fetch(opts);
+        AppLog.info(
+          '[AppAuthInterceptor] Initiator Retry complete, status: ${retryResponse.statusCode} | Data: ${retryResponse.data?.toString().substring(0, retryResponse.data?.toString().length.clamp(0, 500))}',
+        );
         return handler.resolve(retryResponse);
       } catch (e) {
-        // Nếu refresh thất bại → session expired
-        // Nếu refresh OK nhưng retry bị lỗi khác 401 → pass through
-        if (e is DioException &&
-            e.response?.statusCode != null &&
-            e.response!.statusCode != 401) {
-          return handler.next(e);
+        if (e is DioException && e.response?.statusCode == 401) {
+          _handleSessionExpired(ref);
+          return handler.reject(
+            DioException(
+              requestOptions: err.requestOptions,
+              type: DioExceptionType.cancel,
+            ),
+          );
         }
-        _handleSessionExpired(ref);
-        return handler.reject(
-          DioException(
-            requestOptions: err.requestOptions,
-            type: DioExceptionType.cancel,
-          ),
-        );
+        if (e is DioException && e.response?.statusCode != null) {
+          AppLog.info('[AppAuthInterceptor] Retry failed with ${e.response?.statusCode}');
+        }
+        return handler.next(e is DioException ? e : err);
       } finally {
         _refreshFuture = null;
       }
@@ -120,21 +172,21 @@ class AppAuthInterceptor extends Interceptor {
   }
 
   Future<AuthToken> _refreshToken(
-    Dio dio,
-    AuthToken currentToken,
-    Ref ref,
-  ) async {
+      Dio dio,
+      AuthToken currentToken,
+      Ref ref,
+      ) async {
     _refreshDio ??= Dio(
       BaseOptions(
         baseUrl: AppConfig.baseUrl,
-        headers: {
-          'Content-Type': 'application/json',
-          'FromMobile': 'true',
-        },
+        headers: {'Content-Type': 'application/json'},
       ),
     )..httpClientAdapter = buildAdapter();
 
     try {
+      AppLog.info(
+        '[AppAuthInterceptor] Calling /TokenAuth/RefreshToken with old refreshToken',
+      );
       final response = await _refreshDio!.post(
         AppConfig.refreshToken,
         queryParameters: {'refreshToken': currentToken.refreshToken},
@@ -144,15 +196,23 @@ class AppAuthInterceptor extends Interceptor {
       final newToken = AuthToken(
         accessToken: result['accessToken'] as String,
         refreshToken:
-            (result['refreshToken'] as String?) ?? currentToken.refreshToken,
+        (result['refreshToken'] as String?) ?? currentToken.refreshToken,
         userId: currentToken.userId,
       );
 
       ref.read(authTokenProvider.notifier).state = newToken;
       await SecureStorageService.instance.saveAuthToken(newToken);
 
+      // Fix #6 + #1: notify SignalR to use the refreshed token immediately,
+      // and reset the refresh future so next token expiry starts a fresh cycle.
+      try {
+        ref.read(signalRServiceProvider).updateToken(newToken.accessToken);
+      } catch (_) {}
+
+      AppLog.info('[AppAuthInterceptor] Refresh token successful');
       return newToken;
     } catch (e) {
+      AppLog.info('[AppAuthInterceptor] Refresh token exception: $e');
       rethrow;
     }
   }
@@ -160,6 +220,10 @@ class AppAuthInterceptor extends Interceptor {
   void _handleSessionExpired(Ref ref) {
     if (_isShowingSessionExpiredDialog) return;
     _isShowingSessionExpiredDialog = true;
+
+    // Fix #1: clear the stale refresh future immediately so the next login
+    // session starts clean and doesn't inherit this session's state.
+    _refreshFuture = null;
 
     ref.read(authTokenProvider.notifier).state = null;
     SecureStorageService.instance.clearAuthToken();
@@ -194,6 +258,8 @@ class AppAuthInterceptor extends Interceptor {
         ],
       ),
     ).then((_) {
+      // Fix #1: fully reset static state when dialog is dismissed so the
+      // next login session doesn't inherit the expired session's flags.
       _isShowingSessionExpiredDialog = false;
       final navContext = rootNavigatorKey.currentContext;
       if (navContext != null && navContext.mounted) {
