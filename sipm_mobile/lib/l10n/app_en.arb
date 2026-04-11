@@ -158,5 +158,18 @@
      "blockUserConfirmation":"Are you sure you want to block {userName}?",
       "loggingout": "Logging out...",
       "welcomeBack": "Welcome back!",
-      "app_name": "SIPM Mobile"
-    }
+      "app_name": "SIPM Mobile",
+    "changePassword": "Change Password",
+    "currentPassword": "Current Password",
+    "newPassword": "New Password",
+    "confirmNewPassword": "Confirm New Password",
+    "changePasswordSuccess": "Password changed successfully!",
+    "enterCurrentPasswordHint": "Enter current password",
+    "enterNewPasswordHint": "Enter new password",
+    "enterConfirmPasswordHint": "Re enter new password",
+    "passwordNotMatch": "Passwords do not match",
+    "securityNote": "New password must be at least 6 characters long for security.",
+    "passwordrequired": "Please enter password",
+    "passwordtooshort": "Password is too short",
+    "updatePassword": "Update Password"
+}

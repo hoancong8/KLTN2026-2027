@@ -156,5 +156,18 @@
     "blockUserConfirmation": "Bạn có chắc chắn muốn chặn {userName} không?",
       "loggingout": "Đang đăng xuất...",
       "welcomeBack": "Chào mừng trở lại!",
-      "app_name": "SIPM Mobile"
+    "app_name": "SIPM Mobile",
+    "changePassword": "Đổi mật khẩu",
+    "currentPassword": "Mật khẩu hiện tại",
+    "newPassword": "Mật khẩu mới",
+    "confirmNewPassword": "Xác nhận mật khẩu mới",
+    "changePasswordSuccess": "Đổi mật khẩu thành công!",
+    "enterCurrentPasswordHint": "Nhập mật khẩu hiện tại",
+    "enterNewPasswordHint": "Nhập mật khẩu mới",
+    "enterConfirmPasswordHint": "Nhập lại mật khẩu mới",
+    "passwordNotMatch": "Mật khẩu không khớp",
+    "securityNote": "Mật khẩu mới cần có ít nhất 6 ký tự để đảm bảo an toàn.",
+    "passwordrequired" : "Vui lòng nhập mật khẩu",
+    "passwordtooshort" : "Mật khẩu quá ngắn",
+    "updatePassword" : "Cập nhật mật khẩu"
 }
