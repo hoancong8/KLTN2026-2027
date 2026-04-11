@@ -3,31 +3,24 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sipm_mobile/app/consts/app_color.dart';
 import 'package:sipm_mobile/app/consts/app_config.dart';
-import 'package:sipm_mobile/app/consts/app_dimens.dart';
-import 'package:sipm_mobile/app/l10n_gen/app_localizations.dart';
-import 'package:sipm_mobile/widget/app_text_field/app_text_field.dart';
 import 'package:sipm_mobile/widget/loading_overlay.dart';
-import 'package:sipm_mobile/app/provider/localization_provider.dart';
-import '../../../../domain/exceptions/app_exception.dart';
-import '../../../app/utils/exception_ext.dart';
+import 'package:sipm_mobile/widget/responsive_layout.dart'; // Đảm bảo import ResponsiveLayout
+
 import 'login_vm/login_vm.dart';
+import 'widgets/login_mobile.dart';
+import 'widgets/login_tablet.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  ConsumerState<LoginScreen> createState() => _LoginPageState();
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginPageState extends ConsumerState<LoginScreen> {
+class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _usernameCtl = TextEditingController();
   final _passwordCtl = TextEditingController();
-
-  @override
-  void initState() {
-    super.initState();
-  }
 
   @override
   void dispose() {
@@ -49,15 +42,14 @@ class _LoginPageState extends ConsumerState<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isMobile = AppDimens.isMobileScreen(context);
-    final l10n = AppLocalizations.of(context)!;
+    // Lắng nghe navigation và snackbar ở mức Wrapper
     ref.listen(loginViewModelProvider, (prev, next) {
       if (next.biometricError != null &&
           next.biometricError != prev?.biometricError) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(next.biometricError!),
-            backgroundColor: AppColor.cNeedCheck,
+            backgroundColor: AppColor.cNeedCheck, // Đảm bảo màu này có trong AppColor
           ),
         );
       }
@@ -69,321 +61,27 @@ class _LoginPageState extends ConsumerState<LoginScreen> {
 
     final state = ref.watch(loginViewModelProvider);
 
-    return Scaffold(
-      backgroundColor: AppColor.white,
-      body: Stack(
-        children: [
-          // Background gradient
-          Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  AppColor.cMain.withValues(alpha: 0.08),
-                  AppColor.white,
-                  AppColor.white,
-                ],
-              ),
-            ),
-          ),
-
-          SafeArea(
-            child: GestureDetector(
-              onTap: () {
-                FocusScope.of(context).unfocus();
-              },
-              child: Center(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: SizedBox(
-                    width: isMobile ? double.infinity : 480,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        _buildHeader(l10n: l10n, isMobile: isMobile),
-                        const SizedBox(height: 32),
-                        // Login Form
-                        Form(
-                          key: _formKey,
-                          child: Column(
-                            children: [
-                              AppEditText(
-                                controller: _usernameCtl,
-                                labelText: l10n.username,
-                                hintText: l10n.enterusernamehint,
-                                prefixIcon: const Icon(
-                                  Icons.person_outline,
-                                  color: AppColor.cMuted,
-                                  size: 22,
-                                ),
-                                keyboardType: TextInputType.emailAddress,
-                                fillColor: AppColor.cGray_50,
-                                borderColor: AppColor.cDivider,
-                                focusedBorderColor: AppColor.cMain,
-                                errorBorderColor: AppColor.cError,
-                                textStyle: const TextStyle(
-                                  fontSize: 15,
-                                  color: AppColor.cTitle,
-                                ),
-                                hintStyle: TextStyle(
-                                  fontSize: 15,
-                                  color: AppColor.cMuted.withValues(alpha: 0.7),
-                                ),
-                                contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 16,
-                                ),
-                                validator: (v) {
-                                  if (v == null || v.trim().isEmpty) {
-                                    return l10n.usernamerequired;
-                                  }
-                                  return null;
-                                },
-                              ),
-                              const SizedBox(height: 14),
-
-                              AppEditText(
-                                controller: _passwordCtl,
-                                labelText: l10n.password,
-                                hintText: l10n.enterpasswordhint,
-                                prefixIcon: const Icon(
-                                  Icons.lock_outline,
-                                  color: AppColor.cMuted,
-                                  size: 22,
-                                ),
-                                obscureText: true,
-                                fillColor: AppColor.cGray_50,
-                                borderColor: AppColor.cDivider,
-                                focusedBorderColor: AppColor.cMain,
-                                errorBorderColor: AppColor.cError,
-                                textStyle: const TextStyle(
-                                  fontSize: 15,
-                                  color: AppColor.cTitle,
-                                ),
-                                hintStyle: TextStyle(
-                                  fontSize: 15,
-                                  color: AppColor.cMuted.withValues(alpha: 0.7),
-                                ),
-                                contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 16,
-                                ),
-                                validator: (v) {
-                                  if (v == null || v.isEmpty) {
-                                    return l10n.passwordrequired;
-                                  }
-                                  if (v.length < 4) {
-                                    return l10n.passwordtooshort;
-                                  }
-                                  return null;
-                                },
-                              ),
-                              const SizedBox(height: 20),
-
-                              // Login button
-                              _buildPrimaryButton(
-                                text: state.isLoading
-                                    ? l10n.loggingin
-                                    : l10n.login,
-                                onPressed: state.isLoading
-                                    ? null
-                                    : _handleLogin,
-                              ),
-
-                              // Error message
-                              if (state.error != null) ...[
-                                const SizedBox(height: 12),
-                                _buildErrorBox(state.error!),
-                              ],
-
-                              // Biometric button
-                              if (state.biometricSetup) ...[
-                                const SizedBox(height: 42),
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: Divider(color: AppColor.cDivider),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 12,
-                                      ),
-                                      child: Text(
-                                        'hoặc',
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: AppColor.cMuted,
-                                        ),
-                                      ),
-                                    ),
-                                    Expanded(
-                                      child: Divider(color: AppColor.cDivider),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 16),
-                                _buildBiometricButton(
-                                  l10n: l10n,
-                                  onPressed:
-                                      state.isLoading || state.biometricLoading
-                                      ? null
-                                      : () => ref
-                                            .read(
-                                              loginViewModelProvider.notifier,
-                                            )
-                                            .authenticateWithBiometric(),
-                                ),
-                              ],
-                            ],
-                          ),
-                        ),
-
-                        const SizedBox(height: 24),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-
-          // Loading overlay
-          if (state.isLoading) const LoadingOverlay.processing(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildHeader({
-    required AppLocalizations l10n,
-    required bool isMobile,
-  }) {
-    return Column(
+    return Stack(
       children: [
-        Container(
-          width: 80,
-          height: 80,
-          decoration: BoxDecoration(
-            color: AppColor.cMain,
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: AppColor.cMain.withValues(alpha: 0.3),
-                blurRadius: 20,
-                offset: const Offset(0, 8),
-              ),
-            ],
+        // Responsive Layout rẽ nhánh giao diện
+        ResponsiveLayout(
+          mobile: LoginMobile(
+            formKey: _formKey,
+            usernameCtl: _usernameCtl,
+            passwordCtl: _passwordCtl,
+            onLogin: _handleLogin,
           ),
-          child: const Icon(
-            Icons.business_center_outlined,
-            color: AppColor.white,
-            size: 40,
+          tablet: LoginTablet(
+            formKey: _formKey,
+            usernameCtl: _usernameCtl,
+            passwordCtl: _passwordCtl,
+            onLogin: _handleLogin,
           ),
         ),
-        const SizedBox(height: 12),
-        Text(
-          l10n.app_name,
-          style: const TextStyle(
-            fontSize: 28,
-            fontWeight: FontWeight.w800,
-            color: AppColor.cTitle,
-            letterSpacing: -0.5,
-          ),
-        ),
-        Text(
-          l10n.welcomeBack,
-          style: const TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.w700,
-            color: AppColor.cTitle,
-          ),
-          textAlign: TextAlign.center,
-        ),
+
+        // Loading Overlay phủ toàn màn hình (áp dụng chung cho cả Mobile/Tablet)
+        if (state.isLoading) const LoadingOverlay.processing(),
       ],
-    );
-  }
-
-  Widget _buildPrimaryButton({
-    required String text,
-    required VoidCallback? onPressed,
-  }) {
-    return SizedBox(
-      width: double.infinity,
-      height: 52,
-      child: ElevatedButton(
-        onPressed: onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColor.cMain,
-          foregroundColor: AppColor.white,
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          disabledBackgroundColor: AppColor.cMain.withValues(alpha: 0.5),
-        ),
-        child: Text(
-          text,
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBiometricButton({
-    required AppLocalizations l10n,
-    required VoidCallback? onPressed,
-  }) {
-    return SizedBox(
-      width: double.infinity,
-      height: 48,
-      child: OutlinedButton.icon(
-        onPressed: onPressed,
-        style: OutlinedButton.styleFrom(
-          foregroundColor: AppColor.cMain,
-          side: BorderSide(color: AppColor.cMain, width: 1.5),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-        ),
-        icon: Icon(Icons.fingerprint, color: AppColor.cMain, size: 22),
-        label: Text(
-          l10n.biometriclogin,
-          style: TextStyle(
-            color: AppColor.cMain,
-            fontWeight: FontWeight.w600,
-            fontSize: 14,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildErrorBox(AppException error) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: AppColor.cError.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColor.cError.withValues(alpha: 0.3)),
-      ),
-      child: Row(
-        children: [
-          Icon(Icons.error_outline, color: AppColor.cError, size: 20),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              error.getDisplayMessage(context.l10n),
-              style: TextStyle(
-                color: AppColor.cError,
-                fontWeight: FontWeight.w500,
-                fontSize: 14,
-              ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

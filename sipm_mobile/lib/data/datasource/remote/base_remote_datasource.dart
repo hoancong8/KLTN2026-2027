@@ -17,7 +17,7 @@ abstract class BaseRemoteDatasource {
       if (data.containsKey('result')) {
         final result = data['result'];
         if (result == null) {
-          return null as T; 
+          return null as T;
         }
         return fromJson(result);
       }
@@ -49,7 +49,8 @@ abstract class BaseRemoteDatasource {
       }
     }
 
-    return [];
+    // Nếu data bị parse lỗi (thành String raw) hoặc backend mất items do retry:
+    throw InvalidResponseException(originalError: data);
   }
 
   /// Hàm tiện ích giúp chuẩn hóa lỗi ngay tại Datasource.
@@ -58,7 +59,7 @@ abstract class BaseRemoteDatasource {
   /// Kiểm tra nếu Server trả về trang HTML (thường do session expired hoặc lỗi server cấu hình sai).
   void checkSecurity(dynamic data) {
     if (data is String && data.contains('<!DOCTYPE html>')) {
-      throw SessionExpiredException();
+      throw const SessionExpiredException();
     }
   }
 }
