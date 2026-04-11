@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:sipm_mobile/app/utils/exception_ext.dart';
 import '../../../../app/consts/app_color.dart';
-import '../../../../domain/exceptions/i_app_messages.dart';
 import '../../home/tab/chat/widgets/message_bubble.dart';
 import '../../home/tab/chat/widgets/message_input.dart';
 import '../chat_detail_vm/chat_detail_vm.dart';
@@ -106,9 +106,7 @@ class _ChatDetailMobileState extends ConsumerState<ChatDetailMobile> {
                       child: state.error != null
                           ? buildErrorState(
                               context,
-                              state.error!.resolve(
-                                context.l10n as IAppMessages,
-                              ),
+                              state.error!.getDisplayMessage(context.l10n),
                               () {
                                 ref
                                     .read(

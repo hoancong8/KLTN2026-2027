@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:sipm_mobile/app/consts/app_config.dart';
+import 'package:sipm_mobile/data/datasource/remote/base_remote_datasource.dart';
 import 'package:sipm_mobile/data/dto/chat/chat_message_dto.dart';
 
 import '../abstract/chat_message_remote_datasource.dart';
@@ -26,8 +27,7 @@ class ChatMessageRemoteDatasourceImpl extends BaseRemoteDatasource
           if (minMessageId != null) 'minMessageId': minMessageId,
         },
       );
-
-      return handleListResponse(res, (json) => ChatMessageDto.fromJson(json));
+      return handleListResponse(res, (data) => ChatMessageDto.fromJson(data));
     } catch (e) {
       throw handleError(e);
     }
@@ -37,17 +37,12 @@ class ChatMessageRemoteDatasourceImpl extends BaseRemoteDatasource
   Future<void> markAllUnreadMessagesAsRead({
     required int userId,
     int? tenantId,
-    // TODO: implement markAllUnreadMessagesAsRead
   }) async {
     try {
       final res = await dio.post(
         AppConfig.markAllUnreadMessagesOfUserAsRead,
-        data: {
-          'userId': userId,
-          if (tenantId != null) 'tenantId': tenantId,
-        },
+        data: {'userId': userId, if (tenantId != null) 'tenantId': tenantId},
       );
-
     } catch (e) {
       throw handleError(e);
     }

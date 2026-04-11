@@ -1,8 +1,9 @@
 import 'package:sipm_mobile/domain/entities/chat_friend.dart';
+import 'package:sipm_mobile/domain/exceptions/app_exception.dart';
 
 class ChatState {
   final bool isLoading;
-  final String? error;
+  final AppException? error;
   final List<ChatFriend> users;
   final List<ChatFriend> allUsers;
   final int totalUnreadCount;
@@ -19,16 +20,19 @@ class ChatState {
 
   ChatState copyWith({
     bool? isLoading,
-    String? error,
+    AppException? error,
     List<ChatFriend>? users,
     List<ChatFriend>? allUsers,
-  }){
+  }) {
     final newUsers = users ?? this.users;
     final newAllUsers = allUsers ?? this.allUsers;
     final newTotalUnread = newAllUsers.fold<int>(
-      0, (sum, user) => sum + user.unreadMessageCount,
+      0,
+      (sum, user) => sum + user.unreadMessageCount,
     );
-    final newUnreadUsers = newAllUsers.where((user) => user.unreadMessageCount > 0).length;
+    final newUnreadUsers = newAllUsers
+        .where((user) => user.unreadMessageCount > 0)
+        .length;
     return ChatState(
       isLoading: isLoading ?? this.isLoading,
       error: error,
