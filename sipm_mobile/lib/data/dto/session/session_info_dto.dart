@@ -10,20 +10,16 @@ class SessionInfoDto {
   });
 
   factory SessionInfoDto.fromJson(Map<String, dynamic> json) {
-    final result = json['result'] as Map<String, dynamic>?;
-    if (result == null) {
-      return SessionInfoDto();
-    }
-
+    // BaseRemoteDatasource đã bóc 'result'
     return SessionInfoDto(
-      user: result['user'] != null
-          ? SessionUserDto.fromJson(result['user'] as Map<String, dynamic>)
+      user: json['user'] != null
+          ? SessionUserDto.fromJson(json['user'] as Map<String, dynamic>)
           : null,
-      employee: result['employee'] != null
-          ? SessionEmployeeDto.fromJson(result['employee'] as Map<String, dynamic>)
+      employee: json['employee'] != null
+          ? SessionEmployeeDto.fromJson(json['employee'] as Map<String, dynamic>)
           : null,
-      tenant: result['tenant'] != null
-          ? SessionTenantDto.fromJson(result['tenant'] as Map<String, dynamic>)
+      tenant: json['tenant'] != null
+          ? SessionTenantDto.fromJson(json['tenant'] as Map<String, dynamic>)
           : null,
     );
   }

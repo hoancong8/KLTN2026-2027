@@ -1,8 +1,8 @@
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:sipm_mobile/app/consts/app_log.dart';
 import '../../../../app/provider.dart';
-import '../../../../app/services/signalr_service.dart';
 import '../../../../domain/entities/chat_message.dart';
+import '../../../../domain/services/i_signalr_service.dart';
 import '../../../../domain/usecases/chat/get_chat_messages_usecase.dart';
 import '../../../../domain/usecases/chat/mark_all_unread_messages_as_read_usecase.dart';
 import '../../../../domain/usecases/chat/send_message_usecase.dart';
@@ -71,7 +71,7 @@ class ChatDetailViewModel extends StateNotifier<ChatDetailState> {
   final BlockUserUseCase blockUserUseCase;
   final UnblockUserUseCase unblockUserUseCase;
   final UploadFileUseCase uploadFileUseCase;
-  final SignalRService signalRService;
+  final ISignalRService signalRService;
 
   ChatDetailViewModel({
     required this.friendUserId,

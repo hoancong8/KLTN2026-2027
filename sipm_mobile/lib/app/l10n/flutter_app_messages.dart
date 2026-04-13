@@ -36,4 +36,40 @@ class FlutterAppMessages implements IAppMessages {
 
   @override
   String get otpVerification => _l.otpVerification;
+
+  @override
+  String get authSessionExpiredMessage => _l.auth_session_expired_message;
+
+  @override
+  String get authSessionExpiredTitle => _l.auth_session_expired_title;
+
+  @override
+  String get authLoginAgain => _l.auth_login_again;
+
+  @override
+  String get errorSignalRNotConnected => _l.error_signalr_not_connected;
+
+  // --- Biometric ---
+  @override
+  String get biometricReasonLogin => _l.auth_biometric_reason_login;
+
+  @override
+  String get biometricNotAvailable => _l.auth_biometric_error_not_available;
+
+  @override
+  String get biometricNotEnrolled => _l.auth_biometric_error_not_enrolled;
+
+  @override
+  String get biometricNotSetup => _l.auth_biometric_error_not_setup;
+
+  @override
+  String get biometricAuthFailed => _l.auth_biometric_error_not_available;
+
+  @override
+  String get biometricNoCredentials => _l.auth_biometric_error_no_credentials;
+
+  @override
+  String get biometricInvalidCredentials => _l.auth_biometric_error_invalid_credentials;
+
+
 }

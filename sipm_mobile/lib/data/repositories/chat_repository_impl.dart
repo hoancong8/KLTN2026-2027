@@ -35,11 +35,7 @@ class ChatRepositoryImpl implements ChatRepository {
   @override
   Future<ChatUploadResult> uploadFile(String filePath, String fileName) async {
     final response = await remoteDatasource.uploadFile(filePath, fileName);
-    return ChatUploadResult(
-      id: response.result.id,
-      name: response.result.name,
-      contentType: response.result.contentType,
-    );
+    return ChatUploadResult(id: response.id, name: response.name, contentType: response.contentType);
   }
 
   @override
@@ -53,7 +49,7 @@ class ChatRepositoryImpl implements ChatRepository {
       maxResultCount,
       skipCount,
     );
-    return response.result.items
+    return response.items
         .map(
           (dto) =>
           UserLookup(name: dto.name, userId: int.tryParse(dto.value) ?? 0),

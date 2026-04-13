@@ -5,6 +5,7 @@ import 'package:sipm_mobile/app/consts/app_log.dart';
 import '../../../../app/provider.dart';
 import '../../../../app/services/secure_storage_service.dart';
 import '../../../../domain/exceptions/auth_exceptions.dart';
+import '../../../../domain/exceptions/i_app_messages.dart';
 import '../../../../domain/usecases/auth/login_usecase.dart';
 import '../../../../domain/usecases/auth/register_device_token_usecase.dart';
 import '../../../../domain/usecases/auth/biometric_usecase.dart';
@@ -14,7 +15,7 @@ import 'login_state.dart';
 
 //Provider for LoginViewModel
 final loginViewModelProvider =
-    StateNotifierProvider.autoDispose<LoginViewModel, LoginState>((ref) {
+    StateNotifierProvider<LoginViewModel, LoginState>((ref) {
       return LoginViewModel(
         ref,
         ref.watch(loginUseCaseProvider),
@@ -71,18 +72,9 @@ class LoginViewModel extends StateNotifier<LoginState> {
         );
       }
 
-      // Lưu credentials cho biometric nếu đã thiết lập
-      final biometricService = ref.read(biometricServiceProvider);
-      final isBiometricSetup = await biometricService.isBiometricSetup();
-
-      if (isBiometricSetup &&
-          username.trim().isNotEmpty &&
-          password.isNotEmpty) {
-        await biometricService.saveCurrentUserCredentials(
-          username.trim(),
-          password,
-        );
-      }
+      // Cập nhật credentials cho biometric nếu đã thiết lập
+      await biometricUseCase.saveCredentialsAfterLogin(username, password);
+      if (!mounted) return;
 
       state = state.copyWith(
         isLoading: false,
@@ -92,11 +84,7 @@ class LoginViewModel extends StateNotifier<LoginState> {
       );
 
       // Register device token sau khi login thành công
-      try {
-        await registerDeviceTokenUseCase.execute();
-      } catch (e) {
-        AppLog.info('[LoginViewModel] Failed to register device token: $e');
-      }
+      await registerDeviceTokenUseCase.execute().catchError((_) {});
     } on RequiresTwoFactorException {
       state = state.copyWith(isLoading: false, required2FA: true);
     } on AppException catch (e) {
@@ -104,34 +92,38 @@ class LoginViewModel extends StateNotifier<LoginState> {
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
-        error: AppExceptionHandler.handle(e),
+        error: AppException(message: e.toString()),
       );
     }
   }
 
-  Future<void> authenticateWithBiometric() async {
+  Future<void> authenticateWithBiometric(IAppMessages messages) async {
     state = state.copyWith(biometricLoading: true, biometricError: null);
 
     try {
-      final credentials = await biometricUseCase.authenticateWithBiometric();
+      final credentials = await biometricUseCase.authenticateWithBiometric(messages);
 
       if (credentials != null) {
+        if (!mounted) return;
         await login(
           username: credentials['username']!,
           password: credentials['password']!,
         );
       }
 
+      if (!mounted) return;
       state = state.copyWith(biometricLoading: false);
-    } on BiometricException catch (e) {
+    } on AppException catch (e) {
+      if (!mounted) return;
       state = state.copyWith(
         biometricLoading: false,
-        biometricError: e.message,
+        biometricError: e.resolve(messages),
       );
     } catch (e) {
+      if (!mounted) return;
       state = state.copyWith(
         biometricLoading: false,
-        biometricError: 'Lỗi xác thực sinh trắc học: $e',
+        biometricError: messages.biometricAuthFailed,
       );
     }
   }

@@ -1,15 +1,3 @@
-class FindUsersResponseDto {
-  final FindUsersResultDto result;
-
-  FindUsersResponseDto({required this.result});
-
-  factory FindUsersResponseDto.fromJson(Map<String, dynamic> json) {
-    return FindUsersResponseDto(
-      result: FindUsersResultDto.fromJson(json['result']),
-    );
-  }
-}
-
 class FindUsersResultDto {
   final int totalCount;
   final List<UserLookupDto> items;
@@ -19,9 +7,8 @@ class FindUsersResultDto {
   factory FindUsersResultDto.fromJson(Map<String, dynamic> json) {
     return FindUsersResultDto(
       totalCount: json['totalCount'] ?? 0,
-      items:
-      (json['items'] as List<dynamic>?)
-          ?.map((e) => UserLookupDto.fromJson(e))
+      items: (json['items'] as List<dynamic>?)
+          ?.map((e) => UserLookupDto.fromJson(e as Map<String, dynamic>))
           .toList() ??
           [],
     );
@@ -35,6 +22,9 @@ class UserLookupDto {
   UserLookupDto({required this.name, required this.value});
 
   factory UserLookupDto.fromJson(Map<String, dynamic> json) {
-    return UserLookupDto(name: json['name'] ?? '', value: json['value'] ?? '');
+    return UserLookupDto(
+      name: json['name'] as String? ?? '',
+      value: json['value'] as String? ?? '',
+    );
   }
 }
