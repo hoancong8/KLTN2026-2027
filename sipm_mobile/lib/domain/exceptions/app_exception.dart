@@ -57,3 +57,9 @@ class InvalidResponseException extends AppException {
   @override
   String resolve(IAppMessages messages) => messages.errorInvalidResponse;
 }
+
+class SignalRNotConnectedException extends AppException {
+  const SignalRNotConnectedException();
+  @override
+  String resolve(IAppMessages messages) => messages.errorSignalRNotConnected;
+}

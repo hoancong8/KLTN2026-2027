@@ -1,10 +1,10 @@
 import 'package:dio/dio.dart';
-import 'package:sipm_mobile/app/consts/app_config.dart';
-import 'package:sipm_mobile/data/datasource/remote/base_remote_datasource.dart';
+import '../../../../app/consts/app_config.dart';
 import '../../../dto/chat/chat_friend_response_dto.dart';
 import '../../../dto/chat/chat_upload_response_dto.dart';
 import '../../../dto/chat/find_users_response_dto.dart';
 import '../abstract/chat_remote_datasource.dart';
+import '../base_remote_datasource.dart';
 
 class ChatRemoteDatasourceImpl extends BaseRemoteDatasource
     implements ChatRemoteDatasource {
@@ -18,7 +18,7 @@ class ChatRemoteDatasourceImpl extends BaseRemoteDatasource
       final res = await dio.get(AppConfig.getUserChatFriendsWithSettings);
       return handleResponse(
         res,
-        (data) => ChatFriendsResponseDto.fromJson(res.data),
+            (e) => ChatFriendsResponseDto.fromJson(e as Map<String, dynamic>),
       );
     } catch (e) {
       throw handleError(e);
@@ -28,10 +28,7 @@ class ChatRemoteDatasourceImpl extends BaseRemoteDatasource
   @override
   Future<void> blockUser(int userId, int? tenantId) async {
     try {
-      await dio.post(
-        AppConfig.blockUser,
-        data: {'userId': userId, 'tenantId': tenantId},
-      );
+      await dio.post(AppConfig.blockUser, data: {'userId': userId, 'tenantId': tenantId});
     } catch (e) {
       throw handleError(e);
     }
@@ -40,29 +37,22 @@ class ChatRemoteDatasourceImpl extends BaseRemoteDatasource
   @override
   Future<void> unblockUser(int userId, int? tenantId) async {
     try {
-      await dio.post(
-        AppConfig.unblockUser,
-        data: {'userId': userId, 'tenantId': tenantId},
-      );
+      await dio.post(AppConfig.unblockUser, data: {'userId': userId, 'tenantId': tenantId});
     } catch (e) {
       throw handleError(e);
     }
   }
 
   @override
-  Future<ChatUploadResponseDto> uploadFile(
-    String filePath,
-    String fileName,
-  ) async {
+  Future<ChatUploadResultDto> uploadFile(String filePath, String fileName) async {
     try {
       final formData = FormData.fromMap({
         'file': await MultipartFile.fromFile(filePath, filename: fileName),
       });
-
       final res = await dio.post(AppConfig.uploadChatFile, data: formData);
       return handleResponse(
         res,
-        (data) => ChatUploadResponseDto.fromJson(data),
+            (e) => ChatUploadResultDto.fromJson(e as Map<String, dynamic>),
       );
     } catch (e) {
       throw handleError(e);
@@ -70,11 +60,11 @@ class ChatRemoteDatasourceImpl extends BaseRemoteDatasource
   }
 
   @override
-  Future<FindUsersResponseDto> findUsers(
-    String filter,
-    int maxResultCount,
-    int skipCount,
-  ) async {
+  Future<FindUsersResultDto> findUsers(
+      String filter,
+      int maxResultCount,
+      int skipCount,
+      ) async {
     try {
       final res = await dio.post(
         AppConfig.findUsers,
@@ -85,7 +75,10 @@ class ChatRemoteDatasourceImpl extends BaseRemoteDatasource
           'excludeCurrentUser': true,
         },
       );
-      return handleResponse(res, (data) => FindUsersResponseDto.fromJson(data));
+      return handleResponse(
+        res,
+            (e) => FindUsersResultDto.fromJson(e as Map<String, dynamic>),
+      );
     } catch (e) {
       throw handleError(e);
     }

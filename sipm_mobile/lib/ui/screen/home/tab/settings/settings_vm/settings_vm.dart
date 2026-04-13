@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:sipm_mobile/app/provider.dart';
-import 'package:sipm_mobile/app/services/biometric_service.dart';
+import '../../../../../../domain/services/i_biometric_service.dart';
 import '../../../home_vm/home_vm.dart';
 import 'settings_state.dart';
 
@@ -15,7 +15,7 @@ StateNotifierProvider.autoDispose<SettingsViewModel, SettingsState>((ref) {
 
 
 class SettingsViewModel extends StateNotifier<SettingsState> {
-  final BiometricService biometricService;
+  final IBiometricService biometricService;
   final Ref ref;
 
   SettingsViewModel({

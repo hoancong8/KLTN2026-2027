@@ -1,5 +1,5 @@
-import '../../data/dto/session/session_info_dto.dart';
+import 'package:sipm_mobile/domain/entities/session_info.dart';
 
 abstract class SessionRepository {
-  Future<SessionInfoDto> getCurrentLoginInfo();
+  Future<SessionInfo> getCurrentLoginInfo();
 }

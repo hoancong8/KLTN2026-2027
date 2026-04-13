@@ -1,6 +1,6 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:sipm_mobile/app/consts/storage_keys.dart';
-import 'package:sipm_mobile/domain/entities/auth_token.dart';
+import '../../domain/entities/auth_token.dart';
+import '../consts/storage_keys.dart';
 
 /// Service for handling secure storage operations
 /// Provides methods to save, retrieve, and delete auth tokens
@@ -139,9 +139,9 @@ class SecureStorageService {
 
   /// Save credentials for biometric login
   Future<void> saveBiometricCredentials(
-    String username,
-    String password,
-  ) async {
+      String username,
+      String password,
+      ) async {
     await Future.wait([
       _storage.write(key: StorageKeys.biometricUsername, value: username),
       _storage.write(key: StorageKeys.biometricPassword, value: password),
@@ -162,19 +162,19 @@ class SecureStorageService {
 
   /// Save last login credentials (separate from biometric)
   Future<void> saveLastLoginCredentials(
-    String username,
-    String password,
-  ) async {
+      String username,
+      String password,
+      ) async {
     await Future.wait([
-      _storage.write(key: 'last_username', value: username),
-      _storage.write(key: 'last_password', value: password),
+      _storage.write(key: StorageKeys.lastUsername, value: username),
+      _storage.write(key: StorageKeys.lastPassword, value: password),
     ]);
   }
 
   /// Get last login credentials
   Future<Map<String, String>?> getLastLoginCredentials() async {
-    final username = await _storage.read(key: 'last_username');
-    final password = await _storage.read(key: 'last_password');
+    final username = await _storage.read(key: StorageKeys.lastUsername);
+    final password = await _storage.read(key: StorageKeys.lastPassword);
 
     if (username == null || password == null) {
       return null;
@@ -183,12 +183,35 @@ class SecureStorageService {
     return {'username': username, 'password': password};
   }
 
+  /// Save biometric setup flag
+  Future<void> setBiometricSetup(bool value) async {
+    await _storage.write(key: StorageKeys.biometricSetup, value: value.toString());
+  }
+
+  /// Get biometric setup flag
+  Future<bool> getBiometricSetup() async {
+    final value = await _storage.read(key: StorageKeys.biometricSetup);
+    return value == 'true';
+  }
+
+  /// Save biometric PIN securely
+  Future<void> saveBiometricPin(String pin) async {
+    await _storage.write(key: StorageKeys.biometricPin, value: pin);
+  }
+
+  /// Get biometric PIN
+  Future<String?> getBiometricPin() async {
+    return _storage.read(key: StorageKeys.biometricPin);
+  }
+
   /// Clear biometric credentials
   Future<void> clearBiometricCredentials() async {
     await Future.wait([
       _storage.delete(key: StorageKeys.biometricUsername),
       _storage.delete(key: StorageKeys.biometricPassword),
       _storage.delete(key: StorageKeys.biometricEnabled),
+      _storage.delete(key: StorageKeys.biometricSetup),
+      _storage.delete(key: StorageKeys.biometricPin),
     ]);
   }
 }

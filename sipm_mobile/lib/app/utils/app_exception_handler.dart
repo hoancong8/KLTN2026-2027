@@ -30,32 +30,26 @@ class AppExceptionHandler {
     final data = response?.data;
 
     // 2. Thử bóc tách message từ nội dung trả về của Server (ABP Framework)
-    String? serverMessage;
+    String? message;
     if (data is Map<String, dynamic>) {
       // ABP thường để lỗi trong trường 'error'
       final error = data['error'] ?? (data['result'] is Map ? data['result']['error'] : null);
       if (error is Map) {
-        serverMessage = error['message']?.toString() ?? error['Message']?.toString();
+        message = error['message']?.toString() ?? error['Message']?.toString();
       }
-      serverMessage ??= data['message']?.toString();
+      message ??= data['message']?.toString();
     }
 
     // 3. Nếu là lỗi xác thực 401
     if (statusCode == 401) {
-      return AuthFailedException(serverMessage);
+      return AuthFailedException(message);
     }
 
     // 4. Các lỗi HTTP thông dụng khác
     if (statusCode != null) {
-      if (statusCode == 403) {
-        return const ForbiddenException();
-      }
-      if (statusCode == 404) {
-        return const NotFoundException();
-      }
-      if (statusCode >= 500) {
-        return const ServerException();
-      }
+      if (statusCode == 403) return const ForbiddenException();
+      if (statusCode == 404) return const NotFoundException();
+      if (statusCode >= 500) return const ServerException();
     }
 
     // 5. Các lỗi Network của Dio
@@ -68,10 +62,7 @@ class AppExceptionHandler {
       return const ConnectionException();
     }
 
-    // 6. Fallback
-    return AppException(
-      message: serverMessage,
-      originalError: e,
-    );
+    // 6. Fallback — dùng message nếu có, ngược lại base class trả errorSystem
+    return AppException(message: message, originalError: e);
   }
 }

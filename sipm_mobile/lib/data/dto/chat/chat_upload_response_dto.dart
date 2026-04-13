@@ -1,17 +1,3 @@
-class ChatUploadResponseDto {
-  final ChatUploadResultDto result;
-  final bool success;
-
-  ChatUploadResponseDto({required this.result, required this.success});
-
-  factory ChatUploadResponseDto.fromJson(Map<String, dynamic> json) {
-    return ChatUploadResponseDto(
-      result: ChatUploadResultDto.fromJson(json['result']),
-      success: json['success'],
-    );
-  }
-}
-
 class ChatUploadResultDto {
   final String id;
   final String name;
@@ -25,9 +11,9 @@ class ChatUploadResultDto {
 
   factory ChatUploadResultDto.fromJson(Map<String, dynamic> json) {
     return ChatUploadResultDto(
-      id: json['id'],
-      name: json['name'],
-      contentType: json['contentType'],
+      id: json['id'] as String,
+      name: json['name'] as String,
+      contentType: json['contentType'] as String,
     );
   }
 }
