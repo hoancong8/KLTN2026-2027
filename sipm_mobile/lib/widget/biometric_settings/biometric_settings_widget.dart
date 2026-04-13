@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sipm_mobile/app/provider.dart';
+import '../../app/l10n/flutter_app_messages.dart';
+import '../../app/provider.dart';
+import '../../app/provider/localization_provider.dart';
 
 class BiometricSettingsWidget extends ConsumerStatefulWidget {
   const BiometricSettingsWidget({super.key});
@@ -24,7 +26,6 @@ class _BiometricSettingsWidgetState extends ConsumerState<BiometricSettingsWidge
     final biometricService = ref.read(biometricServiceProvider);
     final available = await biometricService.canCheckBiometrics();
     final enabled = await biometricService.isBiometricSetup();
-    
     if (mounted) {
       setState(() {
         _biometricAvailable = available;
@@ -35,34 +36,26 @@ class _BiometricSettingsWidgetState extends ConsumerState<BiometricSettingsWidge
   }
 
   Future<void> _toggleBiometric(bool value) async {
+    final l10n = context.l10n;
+    final messages = FlutterAppMessages(l10n);
     final biometricService = ref.read(biometricServiceProvider);
     if (value) {
-      final authenticated = await biometricService.authenticate(
-        reason: 'Xác thực để bật đăng nhập sinh trắc học',
+      final success = await biometricService.setupBiometric(
+        messages: messages,
+        pin: '',
       );
-      
-      if (authenticated) {
-        await biometricService.setBiometricSetup(true);
+      if (success && mounted) {
         setState(() => _biometricEnabled = true);
-        
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Đã bật đăng nhập sinh trắc học'),
-              backgroundColor: Colors.green,
-            ),
-          );
-        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.auth_biometric_setup_success), backgroundColor: Colors.green),
+        );
       }
     } else {
       await biometricService.clearCredentials();
       setState(() => _biometricEnabled = false);
-      
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Đã tắt đăng nhập sinh trắc học'),
-          ),
+          SnackBar(content: Text(l10n.auth_biometric_disabled_success)),
         );
       }
     }
@@ -70,38 +63,30 @@ class _BiometricSettingsWidgetState extends ConsumerState<BiometricSettingsWidge
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+
     if (_loading) {
-      return const ListTile(
-        leading: Icon(Icons.fingerprint),
-        title: Text('Đăng nhập sinh trắc học'),
-        trailing: SizedBox(
-          width: 20,
-          height: 20,
-          child: CircularProgressIndicator(strokeWidth: 2),
-        ),
+      return ListTile(
+        leading: const Icon(Icons.fingerprint),
+        title: Text(l10n.auth_biometric_title),
+        trailing: const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)),
       );
     }
 
     if (!_biometricAvailable) {
-      return const ListTile(
-        leading: Icon(Icons.fingerprint, color: Colors.grey),
-        title: Text('Đăng nhập sinh trắc học'),
-        subtitle: Text('Không khả dụng trên thiết bị này'),
+      return ListTile(
+        leading: const Icon(Icons.fingerprint, color: Colors.grey),
+        title: Text(l10n.auth_biometric_title),
+        subtitle: Text(l10n.auth_biometric_subtitle_unavailable),
         enabled: false,
       );
     }
 
     return ListTile(
       leading: const Icon(Icons.fingerprint),
-      title: const Text('Đăng nhập sinh trắc học'),
-      subtitle: Text(_biometricEnabled 
-        ? 'Đã bật - Sử dụng vân tay/Face ID để đăng nhập'
-        : 'Đăng nhập nhanh bằng vân tay hoặc Face ID'
-      ),
-      trailing: Switch(
-        value: _biometricEnabled,
-        onChanged: _toggleBiometric,
-      ),
+      title: Text(l10n.auth_biometric_title),
+      subtitle: Text(_biometricEnabled ? l10n.auth_biometric_subtitle_enabled : l10n.auth_biometric_subtitle_disabled),
+      trailing: Switch(value: _biometricEnabled, onChanged: _toggleBiometric),
     );
   }
 }

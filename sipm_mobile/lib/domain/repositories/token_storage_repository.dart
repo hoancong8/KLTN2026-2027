@@ -11,4 +11,5 @@ abstract class TokenStorageRepository {
   Future<int?> getTenantId();
   Future<void> saveEmployeeId(int employeeId);
   Future<int?> getEmployeeId();
+  Future<void> saveLastLoginCredentials(String username, String password);
 }

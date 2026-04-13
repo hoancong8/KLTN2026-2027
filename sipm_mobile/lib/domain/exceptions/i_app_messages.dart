@@ -10,10 +10,23 @@ abstract interface class IAppMessages {
   String get errorNotFound;
   String get errorServer;
   String get errorInvalidResponse;
+  String get errorSignalRNotConnected;
 
   // --- Auth ---
   String get errorSessionExpired;
   String get otpVerification;
+  String get authSessionExpiredTitle;
+  String get authSessionExpiredMessage;
+  String get authLoginAgain;
+
+  // --- Biometric ---
+  String get biometricReasonLogin;
+  String get biometricNotAvailable;
+  String get biometricNotEnrolled;
+  String get biometricNotSetup;
+  String get biometricAuthFailed;
+  String get biometricNoCredentials;
+  String get biometricInvalidCredentials;
 
   // Khi thêm exception mới:
   // 1. Thêm getter ở đây

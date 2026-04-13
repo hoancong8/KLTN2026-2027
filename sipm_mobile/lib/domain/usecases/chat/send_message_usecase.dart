@@ -1,7 +1,7 @@
-import '../../../app/services/signalr_service.dart';
+import '../../services/i_signalr_service.dart';
 
 class SendMessageUseCase {
-  final SignalRService signalRService;
+  final ISignalRService signalRService;
 
   SendMessageUseCase(this.signalRService);
 

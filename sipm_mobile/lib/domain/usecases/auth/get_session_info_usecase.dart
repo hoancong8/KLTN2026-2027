@@ -1,4 +1,4 @@
-import '../../../data/dto/session/session_info_dto.dart';
+import '../../entities/session_info.dart';
 import '../../repositories/session_repository.dart';
 
 class GetSessionInfoUseCase {
@@ -6,7 +6,7 @@ class GetSessionInfoUseCase {
 
   GetSessionInfoUseCase(this.repository);
 
-  Future<SessionInfoDto> execute() {
+  Future<SessionInfo> execute() {
     return repository.getCurrentLoginInfo();
   }
 }

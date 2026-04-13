@@ -2,9 +2,9 @@ import 'package:flutter_riverpod/legacy.dart';
 import 'package:sipm_mobile/domain/exceptions/app_exception.dart';
 import 'package:sipm_mobile/app/consts/app_log.dart';
 import '../../../../../../app/provider.dart';
-import '../../../../../../app/services/signalr_service.dart';
 import '../../../../../../domain/entities/chat_friend.dart';
 import '../../../../../../domain/entities/friend_ship_state.dart';
+import '../../../../../../domain/services/i_signalr_service.dart';
 import '../../../../../../domain/usecases/friend/get_chat_friends_usecase.dart';
 import 'chat_state.dart';
 
@@ -19,7 +19,7 @@ final chatViewModelProvider = StateNotifierProvider<ChatViewModel, ChatState>((
 
 class ChatViewModel extends StateNotifier<ChatState> {
   final GetChatFriendsUseCase getChatFriendsUseCase;
-  final SignalRService signalRService;
+  final ISignalRService signalRService;
 
   // Theo dõi chat đang mở để không tăng unread count
   int? _activeChatFriendUserId;
