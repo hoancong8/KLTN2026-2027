@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:local_auth/local_auth.dart';
+import 'package:sipm_mobile/domain/services/i_biometric_service.dart';
 import '../../app/provider.dart';
 
 class BiometricLoginButton extends ConsumerStatefulWidget {
@@ -27,8 +28,8 @@ class _BiometricLoginButtonState extends ConsumerState<BiometricLoginButton> {
     final biometrics = await biometricService.getAvailableBiometrics();
     if (mounted) {
       setState(() {
-        _hasFaceId = biometrics.contains(BiometricType.face);
-        _hasFingerprint = biometrics.contains(BiometricType.fingerprint);
+        _hasFaceId = biometrics.contains(AppBiometricType.face);
+        _hasFingerprint = biometrics.contains(AppBiometricType.fingerprint);
       });
     }
   }
