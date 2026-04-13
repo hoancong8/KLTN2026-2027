@@ -43,6 +43,8 @@ import '../domain/repositories/profile_repository.dart';
 import '../domain/repositories/session_repository.dart';
 import '../domain/repositories/token_storage_repository.dart';
 
+import '../domain/services/i_biometric_service.dart';
+import '../domain/services/i_signalr_service.dart';
 import '../domain/usecases/auth/change_password_usecase.dart';
 import '../domain/usecases/auth/delete_device_token_usecase.dart';
 import '../domain/usecases/auth/login_with_otp_usecase.dart';
@@ -103,7 +105,7 @@ final homeTabProvider = StateProvider<int>((ref) => 0);
 // ============================================================================
 
 /// BiometricService provider
-final biometricServiceProvider = Provider<BiometricService>((ref) {
+final biometricServiceProvider = Provider<IBiometricService>((ref) {
   return BiometricService();
 });
 
@@ -129,7 +131,7 @@ final tokenStorageProvider = Provider<TokenStorageRepository>((ref) {
   return TokenStorageRepositoryImpl(SecureStorageService.instance);
 });
 
-final signalRServiceProvider = Provider<SignalRService>((ref) {
+final signalRServiceProvider = Provider<ISignalRService>((ref) {
   return SignalRService();
 });
 
@@ -234,7 +236,10 @@ final chatMessageRepositoryProvider = Provider<ChatMessageRepository>((ref) {
 // ============================================================================
 
 final loginUseCaseProvider = Provider<LoginUseCase>((ref) {
-  return LoginUseCase(ref.watch(authRepositoryProvider));
+  return LoginUseCase(
+    ref.watch(authRepositoryProvider),
+    ref.watch(tokenStorageProvider),
+  );
 });
 
 final loginWithOtpUseCaseProvider = Provider<LoginWithOtpUseCase>((ref) {

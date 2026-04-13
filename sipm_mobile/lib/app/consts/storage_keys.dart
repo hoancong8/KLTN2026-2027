@@ -18,6 +18,10 @@ class StorageKeys {
   static const String biometricEnabled = 'biometric_enabled';
   static const String biometricUsername = 'biometric_username';
   static const String biometricPassword = 'biometric_password';
+  static const String biometricSetup = 'biometric_setup';
+  static const String biometricPin = 'biometric_pin';
+  static const String lastUsername = 'last_username';
+  static const String lastPassword = 'last_password';
 
   //user setting language
   static const String languageCode = 'language_code';

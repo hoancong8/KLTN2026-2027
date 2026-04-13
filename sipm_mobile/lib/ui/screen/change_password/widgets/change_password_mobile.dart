@@ -20,7 +20,7 @@ class ChangePasswordMobile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       backgroundColor: AppColor.white,
-      appBar: ChangePasswordShared(context.l10n.changePassword),
+      appBar: ChangePasswordShared(context.l10n.changepassword),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),

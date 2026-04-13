@@ -1,6 +1,7 @@
-import '../../data/datasource/remote/abstract/session_remote_datasource.dart';
-import '../../data/dto/session/session_info_dto.dart';
+import '../../domain/entities/session_info.dart';
 import '../../domain/repositories/session_repository.dart';
+import '../datasource/remote/abstract/session_remote_datasource.dart';
+import '../mapper/session_mapper.dart';
 
 class SessionRepositoryImpl implements SessionRepository {
   final SessionRemoteDatasource remoteDatasource;
@@ -8,7 +9,8 @@ class SessionRepositoryImpl implements SessionRepository {
   SessionRepositoryImpl(this.remoteDatasource);
 
   @override
-  Future<SessionInfoDto> getCurrentLoginInfo() {
-    return remoteDatasource.getCurrentLoginInfo();
+  Future<SessionInfo> getCurrentLoginInfo() async {
+    final dto = await remoteDatasource.getCurrentLoginInfo();
+    return SessionMapper.toEntity(dto);
   }
 }

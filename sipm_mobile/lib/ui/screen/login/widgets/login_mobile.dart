@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sipm_mobile/app/consts/app_color.dart';
 import 'package:sipm_mobile/app/l10n_gen/app_localizations.dart';
-import 'package:sipm_mobile/app/provider/localization_provider.dart';
 import 'package:sipm_mobile/widget/app_text_field/app_text_field.dart';
 
 import '../login_vm/login_vm.dart';
+import '../../../../app/l10n/flutter_app_messages.dart';
 import 'login_shared.dart';
 
 class LoginMobile extends ConsumerWidget {
@@ -129,7 +129,7 @@ class LoginMobile extends ConsumerWidget {
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
               child:  Text(
-                context.l10n.forgotpassword,
+                l10n.forgotpassword,
                 style: TextStyle(
                   color: AppColor.cMuted,
                   fontSize: 14,
@@ -168,7 +168,7 @@ class LoginMobile extends ConsumerWidget {
               l10n: l10n,
               onPressed: state.isLoading || state.biometricLoading
                   ? null
-                  : () => ref.read(loginViewModelProvider.notifier).authenticateWithBiometric(),
+                  : () => ref.read(loginViewModelProvider.notifier).authenticateWithBiometric(FlutterAppMessages(l10n)),
             ),
           ],
         ],

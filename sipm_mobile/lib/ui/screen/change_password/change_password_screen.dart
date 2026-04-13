@@ -56,7 +56,7 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
       if (next.success) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(context.l10n.changePasswordSuccess),
+            content: Text(context.l10n.auth_change_password_success),
             backgroundColor: AppColor.cMain,
           ),
         );
@@ -75,46 +75,52 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
 
     final state = ref.watch(changePasswordViewModelProvider);
     final formFields = [
-      ChangePasswordShared.buildSectionTitle(context.l10n.currentPassword),
+      ChangePasswordShared.buildSectionTitle(
+        context.l10n.auth_current_password,
+      ),
       const SizedBox(height: 12),
       ChangePasswordShared.buildPasswordField(
         controller: _currentPasswordCtl,
-        hint: context.l10n.enterCurrentPasswordHint,
+        hint: context.l10n.auth_enter_current_password_hint,
         obscureText: _obscureCurrent,
         onToggle: () => setState(() => _obscureCurrent = !_obscureCurrent),
         validator: (v) => (v == null || v.isEmpty)
-            ? context.l10n.enterCurrentPasswordHint
+            ? context.l10n.auth_enter_current_password_required
             : null,
       ),
       const SizedBox(height: 20),
-      ChangePasswordShared.buildSectionTitle(context.l10n.newPassword),
+      ChangePasswordShared.buildSectionTitle(context.l10n.auth_new_password),
       const SizedBox(height: 12),
       ChangePasswordShared.buildPasswordField(
         controller: _newPasswordCtl,
-        hint: context.l10n.enterNewPasswordHint,
+        hint: context.l10n.auth_enter_new_password_hint,
         obscureText: _obscureNew,
         onToggle: () => setState(() => _obscureNew = !_obscureNew),
         validator: (v) {
           if (v == null || v.isEmpty) {
-            return context.l10n.enterNewPasswordHint;
+            return context.l10n.auth_enter_new_password_required;
           }
-          if (v.length < 6) return context.l10n.securityNote;
+          if (v.length < 6) return context.l10n.auth_change_password_note;
           return null;
         },
       ),
       const SizedBox(height: 20),
-      ChangePasswordShared.buildSectionTitle(context.l10n.confirmNewPassword),
+      ChangePasswordShared.buildSectionTitle(
+        context.l10n.auth_confirm_password,
+      ),
       const SizedBox(height: 12),
       ChangePasswordShared.buildPasswordField(
         controller: _repeatPasswordCtl,
-        hint: context.l10n.enterConfirmPasswordHint,
+        hint: context.l10n.auth_enter_confirm_password_hint,
         obscureText: _obscureRepeat,
         onToggle: () => setState(() => _obscureRepeat = !_obscureRepeat),
         validator: (v) {
           if (v == null || v.isEmpty) {
-            return context.l10n.enterConfirmPasswordHint;
+            return context.l10n.auth_enter_confirm_password_required;
           }
-          if (v != _newPasswordCtl.text) return context.l10n.passwordNotMatch;
+          if (v != _newPasswordCtl.text) {
+            return context.l10n.auth_change_password_note;
+          }
           return null;
         },
       ),
@@ -165,7 +171,7 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
                   const Icon(Icons.check_circle_outline, size: 20),
                   const SizedBox(width: 8),
                   Text(
-                    context.l10n.updatePassword,
+                    context.l10n.auth_update_password,
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
                   ),
                 ],

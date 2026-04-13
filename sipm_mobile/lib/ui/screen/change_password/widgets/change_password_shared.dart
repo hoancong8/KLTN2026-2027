@@ -95,7 +95,7 @@ class ChangePasswordShared extends ConsumerWidget
           const SizedBox(width: 12),
           Expanded(
             child: Text(
-              context.l10n.securityNote,
+              context.l10n.auth_change_password_note,
               style: TextStyle(
                 fontSize: 13,
                 color: AppColor.cNeedCheck,

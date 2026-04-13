@@ -11,6 +11,7 @@ import 'package:sipm_mobile/domain/entities/auth_token.dart';
 import 'package:sipm_mobile/app/consts/app_router.dart';
 
 import '../consts/app_log.dart';
+import '../l10n_gen/app_localizations.dart';
 
 class AppAuthInterceptor extends Interceptor {
   final Ref ref;
@@ -180,7 +181,7 @@ class AppAuthInterceptor extends Interceptor {
     _refreshDio ??= Dio(
       BaseOptions(
         baseUrl: AppConfig.baseUrl,
-        headers: {'Content-Type': 'application/json', 'FromMobile': 'true',},
+        headers: {'Content-Type': 'application/json', 'FromMobile': 'true'},
       ),
     )..httpClientAdapter = buildAdapter();
 
@@ -235,26 +236,24 @@ class AppAuthInterceptor extends Interceptor {
       return;
     }
 
+    final l10n = AppLocalizations.of(context)!;
+
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (ctx) => AlertDialog(
-        title: const Row(
+        title: Row(
           children: [
-            Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 28),
-            SizedBox(width: 8),
-            Expanded(child: Text('Phiên đăng nhập hết hạn')),
+            const Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 28),
+            const SizedBox(width: 8),
+            Expanded(child: Text(l10n.auth_session_expired_title)),
           ],
         ),
-        content: const Text(
-          'Phiên đăng nhập của bạn đã hết hạn. Vui lòng đăng nhập lại để tiếp tục sử dụng.',
-        ),
+        content: Text(l10n.auth_session_expired_message),
         actions: [
           ElevatedButton(
-            onPressed: () {
-              Navigator.of(ctx).pop();
-            },
-            child: const Text('Đăng nhập lại'),
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text(l10n.auth_login_again),
           ),
         ],
       ),

@@ -6,8 +6,8 @@ abstract class ChatRemoteDatasource {
   Future<ChatFriendsResponseDto> getChatFriends();
   Future<void> blockUser(int userId, int? tenantId);
   Future<void> unblockUser(int userId, int? tenantId);
-  Future<ChatUploadResponseDto> uploadFile(String filePath, String fileName);
-  Future<FindUsersResponseDto> findUsers(
+  Future<ChatUploadResultDto> uploadFile(String filePath, String fileName);
+  Future<FindUsersResultDto> findUsers(
       String filter,
       int maxResultCount,
       int skipCount,

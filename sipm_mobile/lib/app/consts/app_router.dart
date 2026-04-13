@@ -22,12 +22,12 @@ GoRouter generateAppRouter(String initialRoute) {
     routes: [
       GoRoute(
         path: AppConfig.splashPath,
-        builder: (_, _) =>
+        builder: (_, __) =>
             Scaffold(body: Center(child: Text("Splash Screen Obsolete"))),
       ),
       GoRoute(
         path: AppConfig.loginPath,
-        builder: (_, _) => const LoginScreen(),
+        builder: (_, __) => const LoginScreen(),
       ),
       GoRoute(
         path: AppConfig.otpPath,
@@ -39,7 +39,7 @@ GoRouter generateAppRouter(String initialRoute) {
           );
         },
       ),
-      GoRoute(path: AppConfig.homePath, builder: (_, _) => const HomeScreen()),
+      GoRoute(path: AppConfig.homePath, builder: (_, __) => const HomeScreen()),
       GoRoute(
         path: AppConfig.profilePath,
         builder: (context, state) {
@@ -49,11 +49,11 @@ GoRouter generateAppRouter(String initialRoute) {
       ),
       GoRoute(
         path: AppConfig.changePasswordPath,
-        builder: (_, _) => const ChangePasswordScreen(),
+        builder: (_, __) => const ChangePasswordScreen(),
       ),
       GoRoute(
         path: AppConfig.blockedUsersPath,
-        builder: (_, _) => const BlockedUsersScreen(),
+        builder: (_, __) => const BlockedUsersScreen(),
       ),
       GoRoute(
         path: AppConfig.chatDetailPath,

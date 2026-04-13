@@ -56,4 +56,9 @@ class TokenStorageRepositoryImpl implements TokenStorageRepository {
   Future<int?> getEmployeeId() async {
     return await _secureStorage.getEmployeeId();
   }
+
+  @override
+  Future<void> saveLastLoginCredentials(String username, String password) async {
+    await _secureStorage.saveLastLoginCredentials(username, password);
+  }
 }
