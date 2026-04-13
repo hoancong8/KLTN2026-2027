@@ -65,6 +65,7 @@ class _ChatDetailTabletState extends ConsumerState<ChatDetailTablet> {
           );
         },
       );
+
       if (confirmed == true) {
         ref
             .read(chatDetailViewModelProvider(widget.params).notifier)
@@ -87,8 +88,8 @@ class _ChatDetailTabletState extends ConsumerState<ChatDetailTablet> {
       appBar: ChatDetailAppBar(
         userId: widget.userId,
         userName: widget.userName,
-        isOnline: state.isOnline,
-        isBlocked: state.isBlocked,
+        isOnline: widget.isOnline,
+        isBlocked: widget.isBlocked,
         onBackPressed: () => context.pop(),
         onMenuSelected: _handleMenuSelection,
       ),
@@ -149,6 +150,7 @@ class _ChatDetailTabletState extends ConsumerState<ChatDetailTablet> {
                                     state.displayedMessages.length - 1 - index;
                                 final message =
                                     state.displayedMessages[reversedIndex];
+
                                 return MessageBubble(
                                   key: ValueKey(message.id),
                                   message: message,

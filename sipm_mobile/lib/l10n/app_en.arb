@@ -173,5 +173,7 @@
       "detailed_report": "Detailed report",
       "revenue_over_time": "Revenue over time",
       "operating_cost_analysis": "Operating cost analysis",
-      "performance_analysis": "Performance analysis"
-    }
+      "performance_analysis": "Performance analysis",
+      "imagelibrary": "Image Library",
+      "file":"File"
+  }

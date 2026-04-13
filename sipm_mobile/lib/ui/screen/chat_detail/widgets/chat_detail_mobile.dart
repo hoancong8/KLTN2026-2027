@@ -87,8 +87,8 @@ class _ChatDetailMobileState extends ConsumerState<ChatDetailMobile> {
       appBar: ChatDetailAppBar(
         userId: widget.userId,
         userName: widget.userName,
-        isOnline: state.isOnline,
-        isBlocked: state.isBlocked,
+        isOnline: widget.isOnline,
+        isBlocked: widget.isBlocked,
         onBackPressed: () => context.pop(),
         onMenuSelected: _handleMenuSelection,
       ),
@@ -149,6 +149,7 @@ class _ChatDetailMobileState extends ConsumerState<ChatDetailMobile> {
                                     state.displayedMessages.length - 1 - index;
                                 final message =
                                     state.displayedMessages[reversedIndex];
+
                                 return MessageBubble(
                                   key: ValueKey(message.id),
                                   message: message,
