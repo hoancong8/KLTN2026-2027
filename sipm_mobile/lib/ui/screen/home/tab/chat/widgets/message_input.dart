@@ -138,7 +138,7 @@ class MessageInput extends StatelessWidget {
               _buildMenuItem(
                 context,
                 icon: Icons.image,
-                label: 'Thư viện ảnh',
+                label: context.l10n.imagelibrary,
                 onTap: () {
                   Navigator.pop(ctx);
                   onAttachImage?.call();
@@ -147,7 +147,7 @@ class MessageInput extends StatelessWidget {
               _buildMenuItem(
                 context,
                 icon: Icons.insert_drive_file,
-                label: 'Tệp tin',
+                label: context.l10n.file,
                 onTap: () {
                   Navigator.pop(ctx);
                   onAttachFile?.call();

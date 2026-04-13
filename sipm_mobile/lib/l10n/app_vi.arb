@@ -169,5 +169,7 @@
     "securityNote": "Mật khẩu mới cần có ít nhất 6 ký tự để đảm bảo an toàn.",
     "passwordrequired" : "Vui lòng nhập mật khẩu",
     "passwordtooshort" : "Mật khẩu quá ngắn",
-    "updatePassword" : "Cập nhật mật khẩu"
+    "updatePassword" : "Cập nhật mật khẩu",
+      "imagelibrary": "Thư viện ảnh",
+      "file": "Tệp tin"
 }

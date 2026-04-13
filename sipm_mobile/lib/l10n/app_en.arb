@@ -171,5 +171,8 @@
     "securityNote": "New password must be at least 6 characters long for security.",
     "passwordrequired": "Please enter password",
     "passwordtooshort": "Password is too short",
-    "updatePassword": "Update Password"
-}
+    "updatePassword": "Update Password",
+      "imagelibrary": "Image Library",
+      "file":"File"
+  }
+
