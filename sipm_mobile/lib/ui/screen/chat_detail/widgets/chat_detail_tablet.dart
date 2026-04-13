@@ -5,7 +5,6 @@ import 'package:sipm_mobile/app/utils/exception_ext.dart';
 import '../../../../app/consts/app_color.dart';
 import '../../home/tab/chat/widgets/message_bubble.dart';
 import '../../home/tab/chat/widgets/message_input.dart';
-import '../../home/tab/chat/widgets/chat_avatar.dart';
 import '../chat_detail_vm/chat_detail_vm.dart';
 import 'package:image_picker/image_picker.dart';
 import 'chat_detail_shared.dart';
