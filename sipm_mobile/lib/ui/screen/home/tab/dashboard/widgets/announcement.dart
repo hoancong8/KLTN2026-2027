@@ -68,7 +68,7 @@ class AnnouncementWidget extends StatelessWidget {
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: announcements.length > 3 ? 3 : announcements.length,
-            separatorBuilder: (_, _) =>
+            separatorBuilder: (_, __) =>
                 const Divider(height: 1, color: AppColor.cDivider),
             itemBuilder: (context, index) {
               final item = announcements[index];
