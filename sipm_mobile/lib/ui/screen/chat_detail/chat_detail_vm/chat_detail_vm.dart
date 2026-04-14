@@ -1,5 +1,8 @@
+import 'dart:ui';
+
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:sipm_mobile/app/consts/app_log.dart';
+import 'package:sipm_mobile/ui/screen/home/tab/chat/chat_vm/chat_vm.dart';
 import '../../../../app/provider.dart';
 import '../../../../domain/entities/chat_message.dart';
 import '../../../../domain/services/i_signalr_service.dart';
@@ -58,7 +61,9 @@ final chatDetailViewModelProvider =
         unblockUserUseCase: ref.watch(unblockUserUseCaseProvider),
         uploadFileUseCase: ref.watch(uploadFileUseCaseProvider),
         signalRService: ref.watch(signalRServiceProvider),
-        currentUserId: ref.read(authTokenProvider)?.userId,
+        currentUserId: ref.watch(authTokenProvider)?.userId,
+        onFriendshipChanged: () =>
+            ref.read(chatViewModelProvider.notifier).loadUsers(),
       );
     });
 
@@ -71,7 +76,9 @@ class ChatDetailViewModel extends StateNotifier<ChatDetailState> {
   final BlockUserUseCase blockUserUseCase;
   final UnblockUserUseCase unblockUserUseCase;
   final UploadFileUseCase uploadFileUseCase;
+
   final ISignalRService signalRService;
+  final VoidCallback? onFriendshipChanged;
 
   ChatDetailViewModel({
     required this.friendUserId,
@@ -85,6 +92,7 @@ class ChatDetailViewModel extends StateNotifier<ChatDetailState> {
     required this.unblockUserUseCase,
     required this.uploadFileUseCase,
     required this.signalRService,
+    this.onFriendshipChanged,
   }) : super(
          ChatDetailState(
            isOnline: initialIsOnline,
@@ -362,6 +370,7 @@ class ChatDetailViewModel extends StateNotifier<ChatDetailState> {
       await blockUserUseCase.execute(friendUserId, null);
       if (!mounted) return;
       state = state.copyWith(isBlocked: true);
+      onFriendshipChanged?.call();
     } catch (e) {
       AppLog.info('Block user failed: $e');
       if (!mounted) return;
@@ -380,13 +389,15 @@ class ChatDetailViewModel extends StateNotifier<ChatDetailState> {
       await unblockUserUseCase.execute(friendUserId, null);
       if (!mounted) return;
       state = state.copyWith(isBlocked: false);
+      onFriendshipChanged?.call();
     } catch (e) {
       AppLog.info('Unblock user failed: $e');
       if (!mounted) return;
       final ex = AppExceptionHandler.handle(e);
       state = state.copyWith(
         error: AppException(
-          message: 'Bỏ chặn người dùng thất bại: ${ex.message ?? ex.toString()}',
+          message:
+              'Bỏ chặn người dùng thất bại: ${ex.message ?? ex.toString()}',
           originalError: ex,
         ),
       );
