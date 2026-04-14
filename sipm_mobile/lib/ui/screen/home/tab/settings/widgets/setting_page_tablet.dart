@@ -16,13 +16,11 @@ const int kSettingsSecurityIndex = 1;
 const int kSettingsConfigIndex = 2;
 const int kSettingsLogoutIndex = 4;
 
-
 class SettingsPageTablet extends ConsumerStatefulWidget {
   const SettingsPageTablet({super.key});
 
   @override
-  ConsumerState<SettingsPageTablet> createState() =>
-      _SettingsPageTabletState();
+  ConsumerState<SettingsPageTablet> createState() => _SettingsPageTabletState();
 }
 
 class _SettingsPageTabletState extends ConsumerState<SettingsPageTablet> {
@@ -44,7 +42,7 @@ class _SettingsPageTabletState extends ConsumerState<SettingsPageTablet> {
       const _SidebarEntry.divider(),
       _SidebarEntry(
         icon: Icons.logout,
-        label: context.l10n.logout,
+        label: context.l10n.auth_logout,
         isDestructive: true,
       ),
     ];
@@ -57,7 +55,8 @@ class _SettingsPageTabletState extends ConsumerState<SettingsPageTablet> {
           items: sidebarItems,
           selectedIndex: _selectedIndex,
           onItemSelected: (index) {
-            if (index != 3) { // skip divider
+            if (index != 3) {
+              // skip divider
               setState(() => _selectedIndex = index);
             }
           },
@@ -66,43 +65,33 @@ class _SettingsPageTabletState extends ConsumerState<SettingsPageTablet> {
         VerticalDivider(width: 1, color: AppColor.cDivider),
 
         // ── RIGHT: Detail panel ────────────────────────────────
-        Expanded(
-          child: _buildDetailPanel(context, sections, state.isLoading),
-        ),
+        Expanded(child: _buildDetailPanel(context, sections, state.isLoading)),
       ],
     );
   }
 
   Widget _buildDetailPanel(
-      BuildContext context,
-      List<SettingsSection> sections,
-      bool isLoading,
-      ) {
+    BuildContext context,
+    List<SettingsSection> sections,
+    bool isLoading,
+  ) {
     switch (_selectedIndex) {
       case kSettingsAccountIndex:
-        return _DetailPanel(
-          section: sections[0],
-          extraItems: const [],
-        );
+        return _DetailPanel(section: sections[0], extraItems: const []);
       case kSettingsSecurityIndex:
         return _DetailPanel(
           section: sections[1],
           extraItems: const [BiometricSettingsItem()],
         );
       case kSettingsConfigIndex:
-        return _DetailPanel(
-          section: sections[2],
-          extraItems: const [],
-        );
+        return _DetailPanel(section: sections[2], extraItems: const []);
       case kSettingsLogoutIndex:
         return _LogoutPanel(isLoading: isLoading);
       default:
         return const SizedBox.shrink();
     }
   }
-
 }
-
 
 class _SidebarEntry {
   final IconData icon;
@@ -118,10 +107,10 @@ class _SidebarEntry {
   });
 
   const _SidebarEntry.divider()
-      : icon = Icons.circle,
-        label = '',
-        isDivider = true,
-        isDestructive = false;
+    : icon = Icons.circle,
+      label = '',
+      isDivider = true,
+      isDestructive = false;
 }
 
 class _SettingsSidebar extends StatelessWidget {
@@ -157,12 +146,12 @@ class _SettingsSidebar extends StatelessWidget {
           }
 
           final isSelected = selectedIndex == index;
-          final activeColor =
-          item.isDestructive ? AppColor.cError : AppColor.cMain;
+          final activeColor = item.isDestructive
+              ? AppColor.cError
+              : AppColor.cMain;
 
           return Padding(
-            padding:
-            const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
             child: Material(
               color: isSelected
                   ? activeColor.withValues(alpha: 0.08)
@@ -173,7 +162,9 @@ class _SettingsSidebar extends StatelessWidget {
                 onTap: () => onItemSelected(index),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 12, vertical: 12),
+                    horizontal: 12,
+                    vertical: 12,
+                  ),
                   child: Row(
                     children: [
                       Icon(
@@ -203,8 +194,7 @@ class _SettingsSidebar extends StatelessWidget {
                         ),
                       ),
                       if (isSelected && !item.isDestructive)
-                        Icon(Icons.chevron_right,
-                            size: 16, color: activeColor),
+                        Icon(Icons.chevron_right, size: 16, color: activeColor),
                     ],
                   ),
                 ),
@@ -224,10 +214,7 @@ class _DetailPanel extends StatelessWidget {
   final SettingsSection section;
   final List<Widget> extraItems;
 
-  const _DetailPanel({
-    required this.section,
-    required this.extraItems,
-  });
+  const _DetailPanel({required this.section, required this.extraItems});
 
   @override
   Widget build(BuildContext context) {
@@ -262,8 +249,7 @@ class _DetailPanel extends StatelessWidget {
                       subtitle: item.subtitle,
                       onTap: item.onTap,
                     ),
-                    if (i < section.items.length - 1 ||
-                        extraItems.isNotEmpty)
+                    if (i < section.items.length - 1 || extraItems.isNotEmpty)
                       buildDivider(),
                   ],
                 );
@@ -294,7 +280,7 @@ class _LogoutPanel extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            context.l10n.others,
+            context.l10n.set_others,
             style: const TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.w800,
@@ -303,7 +289,7 @@ class _LogoutPanel extends ConsumerWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            context.l10n.logoutsubtitle,
+            context.l10n.set_logout_subtitle,
             style: TextStyle(fontSize: 13, color: AppColor.cMuted),
           ),
           const SizedBox(height: 16),

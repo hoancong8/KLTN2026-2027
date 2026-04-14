@@ -21,7 +21,8 @@ class ChatDetailTabletPanel extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<ChatDetailTabletPanel> createState() => _ChatDetailTabletPanelState();
+  ConsumerState<ChatDetailTabletPanel> createState() =>
+      _ChatDetailTabletPanelState();
 }
 
 class _ChatDetailTabletPanelState extends ConsumerState<ChatDetailTabletPanel> {
@@ -96,21 +97,17 @@ class _ChatDetailTabletPanelState extends ConsumerState<ChatDetailTabletPanel> {
       final confirmed = await showDialog<bool>(
         context: context,
         builder: (ctx) => AlertDialog(
-          title:  Text(context.l10n.blockuser),
-          content: Text(
-          context.l10n.blockUserConfirmation(widget.user.userName),
-          ),
+          title: Text(context.l10n.chat_block_user),
+          content: Text(context.l10n.chat_block_confirm(widget.user.userName)),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(ctx).pop(false),
-              child:  Text(context.l10n.cancel),
+              child: Text(context.l10n.com_cancel),
             ),
             TextButton(
               onPressed: () => Navigator.of(ctx).pop(true),
-              style: TextButton.styleFrom(
-                foregroundColor: AppColor.cError,
-              ),
-              child:  Text(context.l10n.blockuser),
+              style: TextButton.styleFrom(foregroundColor: AppColor.cError),
+              child: Text(context.l10n.chat_block_user),
             ),
           ],
         ),
@@ -190,8 +187,13 @@ class _ChatDetailTabletPanelState extends ConsumerState<ChatDetailTabletPanel> {
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            state.isOnline ? context.l10n.online : context.l10n.offline,
-                            style: const TextStyle(fontSize: 12, color: AppColor.cMuted),
+                            state.isOnline
+                                ? context.l10n.chat_online
+                                : context.l10n.chat_offline,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: AppColor.cMuted,
+                            ),
                           ),
                         ],
                       ),
@@ -205,12 +207,12 @@ class _ChatDetailTabletPanelState extends ConsumerState<ChatDetailTabletPanel> {
                       if (state.isBlocked)
                         PopupMenuItem<String>(
                           value: 'unblock',
-                          child: Text(context.l10n.unblock),
+                          child: Text(context.l10n.chat_unblock),
                         )
                       else
                         PopupMenuItem<String>(
                           value: 'block',
-                          child: Text(context.l10n.blockuser),
+                          child: Text(context.l10n.chat_block_user),
                         ),
                     ];
                   },
@@ -221,48 +223,48 @@ class _ChatDetailTabletPanelState extends ConsumerState<ChatDetailTabletPanel> {
           // Messages
           Expanded(
             child: state.isLoading
-                ? const Center(
-                    child: CircularProgressIndicator(),
-                  )
+                ? const Center(child: CircularProgressIndicator())
                 : state.displayedMessages.isEmpty
-                    ? buildEmptyState(context, widget.user.userName)
-                    : Stack(
-                        children: [
-                          ListView.builder(
-                            controller: _scrollController,
-                            reverse: true,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 12,
-                            ),
-                            itemCount: state.displayedMessages.length +
-                                (state.isLoadingMore ? 1 : 0),
-                            itemBuilder: (context, index) {
-                              if (index == state.displayedMessages.length &&
-                                  state.isLoadingMore) {
-                                return const Center(
-                                  child: Padding(
-                                    padding: EdgeInsets.all(16),
-                                    child: CircularProgressIndicator(),
-                                  ),
-                                );
-                              }
+                ? buildEmptyState(context, widget.user.userName)
+                : Stack(
+                    children: [
+                      ListView.builder(
+                        controller: _scrollController,
+                        reverse: true,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
+                        itemCount:
+                            state.displayedMessages.length +
+                            (state.isLoadingMore ? 1 : 0),
+                        itemBuilder: (context, index) {
+                          if (index == state.displayedMessages.length &&
+                              state.isLoadingMore) {
+                            return const Center(
+                              child: Padding(
+                                padding: EdgeInsets.all(16),
+                                child: CircularProgressIndicator(),
+                              ),
+                            );
+                          }
 
-                              final reversedIndex =
-                                  state.displayedMessages.length - 1 - index;
-                              final message = state.displayedMessages[reversedIndex];
+                          final reversedIndex =
+                              state.displayedMessages.length - 1 - index;
+                          final message =
+                              state.displayedMessages[reversedIndex];
 
-                              return MessageBubble(
-                                key: ValueKey(message.id),
-                                message: message,
-                                senderName: widget.user.userName,
-                              );
-                            },
-                          ),
-                          if (_showScrollToBottom)
-                            buildScrollToBottomButton(_scrollToBottom),
-                        ],
+                          return MessageBubble(
+                            key: ValueKey(message.id),
+                            message: message,
+                            senderName: widget.user.userName,
+                          );
+                        },
                       ),
+                      if (_showScrollToBottom)
+                        buildScrollToBottomButton(_scrollToBottom),
+                    ],
+                  ),
           ),
           // Message Input
           MessageInput(

@@ -20,7 +20,7 @@ class ChangePasswordTablet extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       backgroundColor: AppColor.cGray_50,
-      appBar: ChangePasswordShared(context.l10n.changepassword),
+      appBar: ChangePasswordShared(context.l10n.auth_change_password),
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(vertical: 40),

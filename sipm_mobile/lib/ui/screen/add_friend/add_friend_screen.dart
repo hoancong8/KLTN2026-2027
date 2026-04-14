@@ -4,7 +4,6 @@ import 'package:sipm_mobile/app/provider/localization_provider.dart';
 import '../../../app/consts/app_color.dart';
 import 'add_friend_vm.dart';
 
-
 class AddFriendScreen extends ConsumerStatefulWidget {
   const AddFriendScreen({super.key});
 
@@ -39,7 +38,7 @@ class _AddFriendScreenState extends ConsumerState<AddFriendScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          context.l10n.addfriend,
+          context.l10n.chat_add_friend,
           style: TextStyle(
             color: AppColor.cTitle,
             fontSize: 18,
@@ -61,19 +60,19 @@ class _AddFriendScreenState extends ConsumerState<AddFriendScreen> {
                     .searchUsers(value);
               },
               decoration: InputDecoration(
-                hintText: context.l10n.searchhintaddfriend,
+                hintText: context.l10n.chat_search_friend_hint,
                 hintStyle: TextStyle(color: AppColor.cMuted),
                 prefixIcon: Icon(Icons.search, color: AppColor.cMuted),
                 suffixIcon: _searchController.text.isNotEmpty
                     ? IconButton(
-                  icon: Icon(Icons.clear, color: AppColor.cMuted),
-                  onPressed: () {
-                    _searchController.clear();
-                    ref
-                        .read(addFriendViewModelProvider.notifier)
-                        .searchUsers('');
-                  },
-                )
+                        icon: Icon(Icons.clear, color: AppColor.cMuted),
+                        onPressed: () {
+                          _searchController.clear();
+                          ref
+                              .read(addFriendViewModelProvider.notifier)
+                              .searchUsers('');
+                        },
+                      )
                     : null,
                 filled: true,
                 fillColor: AppColor.cGray_50,
@@ -114,7 +113,7 @@ class _AddFriendScreenState extends ConsumerState<AddFriendScreen> {
             ),
             const SizedBox(height: 16),
             Text(
-              context.l10n.enternameoremailtosearch,
+              context.l10n.chat_enter_name_or_email_to_search,
               style: TextStyle(color: AppColor.cMuted, fontSize: 15),
             ),
           ],
@@ -159,7 +158,7 @@ class _AddFriendScreenState extends ConsumerState<AddFriendScreen> {
                   ),
                 ),
                 icon: const Icon(Icons.refresh),
-                label: Text(context.l10n.tryagainbtn),
+                label: Text(context.l10n.com_retry),
               ),
             ],
           ),
@@ -175,7 +174,7 @@ class _AddFriendScreenState extends ConsumerState<AddFriendScreen> {
             Icon(Icons.person_off_outlined, size: 48, color: AppColor.cMuted),
             const SizedBox(height: 12),
             Text(
-              context.l10n.nouserfound,
+              context.l10n.chat_no_user_found,
               style: TextStyle(color: AppColor.cMuted, fontSize: 15),
             ),
           ],
@@ -253,7 +252,7 @@ class _AddFriendScreenState extends ConsumerState<AddFriendScreen> {
                       Icon(Icons.check, color: AppColor.cGreen_50, size: 16),
                       const SizedBox(width: 4),
                       Text(
-                        context.l10n.alreadyadded,
+                        context.l10n.chat_already_added,
                         style: TextStyle(
                           color: AppColor.cGreen_50,
                           fontSize: 13,
@@ -281,16 +280,18 @@ class _AddFriendScreenState extends ConsumerState<AddFriendScreen> {
 
                     if (!context.mounted) return;
                     ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            success
-                                ? context.l10n.addfriendsuccessmsg(user.name)
-                                : context.l10n.addfrienderrormsg,
-                          ),
-                          behavior: SnackBarBehavior.floating,
-                          backgroundColor: success ? AppColor.cMain : AppColor.cError,
-                          duration: const Duration(seconds: 2),
-                        )
+                      SnackBar(
+                        content: Text(
+                          success
+                              ? context.l10n.chat_add_success(user.name)
+                              : context.l10n.chat_add_error,
+                        ),
+                        behavior: SnackBarBehavior.floating,
+                        backgroundColor: success
+                            ? AppColor.cMain
+                            : AppColor.cError,
+                        duration: const Duration(seconds: 2),
+                      ),
                     );
                   },
                   style: ElevatedButton.styleFrom(
@@ -305,8 +306,8 @@ class _AddFriendScreenState extends ConsumerState<AddFriendScreen> {
                     ),
                     elevation: 0,
                   ),
-                  child:  Text(
-                    context.l10n.add,
+                  child: Text(
+                    context.l10n.com_add,
                     style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
                   ),
                 ),
@@ -316,6 +317,7 @@ class _AddFriendScreenState extends ConsumerState<AddFriendScreen> {
       },
     );
   }
+
   String _getInitials(String name) {
     // name format: "FullName (email)" — extract first part
     final displayName = name.contains('(')

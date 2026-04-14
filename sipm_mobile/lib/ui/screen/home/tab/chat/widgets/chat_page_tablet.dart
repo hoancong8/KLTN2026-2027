@@ -93,7 +93,7 @@ class _ChatPageTabletState extends ConsumerState<ChatPageTablet> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  context.l10n.tinNhan,
+                                  context.l10n.chat_messages,
                                   style: Theme.of(context).textTheme.titleLarge
                                       ?.copyWith(
                                         fontWeight: FontWeight.w800,
@@ -110,7 +110,7 @@ class _ChatPageTabletState extends ConsumerState<ChatPageTablet> {
                               size: 28,
                             ),
                             onPressed: widget.onAddFriendPressed,
-                            tooltip: context.l10n.addfriend,
+                            tooltip: context.l10n.chat_add_friend,
                           ),
                           IconButton(
                             icon: Icon(
@@ -127,7 +127,7 @@ class _ChatPageTabletState extends ConsumerState<ChatPageTablet> {
                       Row(
                         children: [
                           Text(
-                            context.l10n.chatWithColleagues,
+                            context.l10n.chat_with_colleagues,
                             style: Theme.of(context).textTheme.bodyMedium
                                 ?.copyWith(color: AppColor.cMuted),
                           ),
@@ -140,7 +140,7 @@ class _ChatPageTabletState extends ConsumerState<ChatPageTablet> {
                         onChanged: widget.onSearchChanged,
                         style: const TextStyle(fontSize: 16),
                         decoration: InputDecoration(
-                          hintText: context.l10n.search,
+                          hintText: context.l10n.com_search,
                           hintStyle: const TextStyle(fontSize: 16),
                           prefixIcon: const Icon(Icons.search, size: 24),
                           border: OutlineInputBorder(
@@ -247,7 +247,7 @@ class _ChatPageTabletState extends ConsumerState<ChatPageTablet> {
                           ),
                           const SizedBox(height: 24),
                           Text(
-                            context.l10n.selectaconversation,
+                            context.l10n.chat_select_conversation,
                             style: TextStyle(
                               fontSize: 24,
                               fontWeight: FontWeight.w600,
@@ -256,7 +256,7 @@ class _ChatPageTabletState extends ConsumerState<ChatPageTablet> {
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            context.l10n.selectuserformlist,
+                            context.l10n.chat_select_user_hint,
                             style: TextStyle(
                               fontSize: 16,
                               color: AppColor.cMuted,

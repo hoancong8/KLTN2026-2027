@@ -9,11 +9,7 @@ class ChatListItem extends StatelessWidget {
   final ChatFriend user;
   final VoidCallback onTap;
 
-  const ChatListItem({
-    super.key,
-    required this.user,
-    required this.onTap,
-  });
+  const ChatListItem({super.key, required this.user, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -45,7 +41,9 @@ class ChatListItem extends StatelessWidget {
                     Text(
                       user.userName,
                       style: TextStyle(
-                        fontWeight: hasUnread ? FontWeight.w700 : FontWeight.w600,
+                        fontWeight: hasUnread
+                            ? FontWeight.w700
+                            : FontWeight.w600,
                         fontSize: 15,
                         color: AppColor.cTitle,
                       ),
@@ -59,17 +57,25 @@ class ChatListItem extends StatelessWidget {
                           width: 8,
                           height: 8,
                           decoration: BoxDecoration(
-                            color: user.isOnline ? AppColor.cMain : AppColor.cMuted,
+                            color: user.isOnline
+                                ? AppColor.cMain
+                                : AppColor.cMuted,
                             shape: BoxShape.circle,
                           ),
                         ),
                         const SizedBox(width: 6),
                         Text(
-                          user.isOnline ? context.l10n.online : context.l10n.offline,
+                          user.isOnline
+                              ? context.l10n.chat_online
+                              : context.l10n.chat_offline,
                           style: TextStyle(
                             fontSize: 13,
-                            color: user.isOnline ? AppColor.cMain : AppColor.cMuted,
-                            fontWeight: hasUnread ? FontWeight.w500 : FontWeight.normal,
+                            color: user.isOnline
+                                ? AppColor.cMain
+                                : AppColor.cMuted,
+                            fontWeight: hasUnread
+                                ? FontWeight.w500
+                                : FontWeight.normal,
                           ),
                         ),
                       ],
@@ -80,13 +86,18 @@ class ChatListItem extends StatelessWidget {
               if (hasUnread) ...[
                 const SizedBox(width: 8),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColor.cMain,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
-                    user.unreadMessageCount > 99 ? '99+' : '${user.unreadMessageCount}',
+                    user.unreadMessageCount > 99
+                        ? '99+'
+                        : '${user.unreadMessageCount}',
                     style: TextStyle(
                       color: AppColor.white,
                       fontSize: 12,
@@ -95,11 +106,7 @@ class ChatListItem extends StatelessWidget {
                   ),
                 ),
               ] else ...[
-                Icon(
-                  Icons.chevron_right,
-                  color: AppColor.cMuted,
-                  size: 20,
-                ),
+                Icon(Icons.chevron_right, color: AppColor.cMuted, size: 20),
               ],
             ],
           ),

@@ -23,7 +23,7 @@ class CompanyHeader extends ConsumerWidget {
           ),
         ),
         Text(
-          context.l10n.parentcompany,
+          context.l10n.prof_parent_company,
           style: t.bodySmall?.copyWith(color: AppColor.cMuted),
         ),
       ],
@@ -34,7 +34,7 @@ class CompanyHeader extends ConsumerWidget {
 class SimpleSearchDelegate extends SearchDelegate<String> {
   final AppLocalizations l10n;
 
-  SimpleSearchDelegate(this.l10n) : super(searchFieldLabel: l10n.search);
+  SimpleSearchDelegate(this.l10n) : super(searchFieldLabel: l10n.com_search);
   @override
   List<Widget>? buildActions(BuildContext context) {
     return [
@@ -61,7 +61,7 @@ class SimpleSearchDelegate extends SearchDelegate<String> {
   Widget buildResults(BuildContext context) {
     return Center(
       child: Text(
-        l10n.resultsfor(query),
+        l10n.set_results_for(query),
         style: const TextStyle(fontWeight: FontWeight.w700),
       ),
     );
@@ -70,11 +70,11 @@ class SimpleSearchDelegate extends SearchDelegate<String> {
   @override
   Widget buildSuggestions(BuildContext context) {
     final source = [
-      l10n.home,
-      l10n.projects,
-      l10n.finance,
-      l10n.report,
-      l10n.setting,
+      l10n.com_home,
+      l10n.set_projects,
+      l10n.set_finance,
+      l10n.set_report,
+      l10n.set_title,
     ];
     final suggestions = source.where((e) {
       return e.toLowerCase().contains(query.toLowerCase());

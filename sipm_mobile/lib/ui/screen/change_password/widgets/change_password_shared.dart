@@ -61,7 +61,7 @@ class ChangePasswordShared extends ConsumerWidget
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                context.l10n.security,
+                context.l10n.set_security,
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.w800,
                   color: AppColor.cTitle,
@@ -69,7 +69,7 @@ class ChangePasswordShared extends ConsumerWidget
               ),
               const SizedBox(height: 2),
               Text(
-                context.l10n.passwordsubtitle,
+                context.l10n.set_password_subtitle,
                 style: Theme.of(
                   context,
                 ).textTheme.bodyMedium?.copyWith(color: AppColor.cMuted),

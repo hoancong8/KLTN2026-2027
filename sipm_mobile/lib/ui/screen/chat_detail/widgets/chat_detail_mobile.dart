@@ -48,17 +48,17 @@ class _ChatDetailMobileState extends ConsumerState<ChatDetailMobile> {
         builder: (ctx) {
           final l10n = context.l10n;
           return AlertDialog(
-            title: Text('${l10n.blockuser}?'),
-            content: Text('${l10n.blockuser}?'),
+            title: Text('${l10n.chat_block_user}?'),
+            content: Text('${l10n.chat_block_user}?'),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(ctx).pop(false),
-                child: Text(context.l10n.cancel),
+                child: Text(context.l10n.com_cancel),
               ),
               TextButton(
                 onPressed: () => Navigator.of(ctx).pop(true),
                 style: TextButton.styleFrom(foregroundColor: AppColor.cError),
-                child: Text(context.l10n.blockuser),
+                child: Text(context.l10n.chat_block_user),
               ),
             ],
           );
