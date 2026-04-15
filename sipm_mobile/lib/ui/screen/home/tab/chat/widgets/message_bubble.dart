@@ -383,7 +383,7 @@ class _MessageBubbleState extends ConsumerState<MessageBubble>
     final now = DateTime.now();
     final diff = now.difference(time);
 
-    if (diff.inMinutes < 1) return context.l10n.justNow;
+    if (diff.inMinutes < 1) return context.l10n.chat_just_now;
     if (diff.inMinutes < 60) return '${diff.inMinutes} phút';
     if (diff.inHours < 24) return '${diff.inHours} giờ';
     return '${time.hour}:${time.minute.toString().padLeft(2, '0')}';

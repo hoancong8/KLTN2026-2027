@@ -29,26 +29,26 @@ class SettingsPageMobile extends ConsumerWidget {
         padding: const EdgeInsets.all(16),
         children: [
           // ── Account ──────────────────────────────────────────
-          buildSectionTitle(
-              context, sections[0].title, sections[0].icon),
+          buildSectionTitle(context, sections[0].title, sections[0].icon),
           const SizedBox(height: 12),
           buildSettingsCard(
             children: sections[0].items
-                .map((item) => buildSettingsItem(
-              context: context,
-              icon: item.icon,
-              color: item.color,
-              title: item.title,
-              subtitle: item.subtitle,
-              onTap: item.onTap,
-            ))
+                .map(
+                  (item) => buildSettingsItem(
+                    context: context,
+                    icon: item.icon,
+                    color: item.color,
+                    title: item.title,
+                    subtitle: item.subtitle,
+                    onTap: item.onTap,
+                  ),
+                )
                 .toList(),
           ),
           const SizedBox(height: 20),
 
           // ── Security ─────────────────────────────────────────
-          buildSectionTitle(
-              context, sections[1].title, sections[1].icon),
+          buildSectionTitle(context, sections[1].title, sections[1].icon),
           const SizedBox(height: 12),
           buildSettingsCard(
             children: [
@@ -67,26 +67,26 @@ class SettingsPageMobile extends ConsumerWidget {
           const SizedBox(height: 20),
 
           // ── Configuration ─────────────────────────────────────
-          buildSectionTitle(
-              context, sections[2].title, sections[2].icon),
+          buildSectionTitle(context, sections[2].title, sections[2].icon),
           const SizedBox(height: 12),
           buildSettingsCard(
             children: sections[2].items
-                .map((item) => buildSettingsItem(
-              context: context,
-              icon: item.icon,
-              color: item.color,
-              title: item.title,
-              subtitle: item.subtitle,
-              onTap: item.onTap,
-            ))
+                .map(
+                  (item) => buildSettingsItem(
+                    context: context,
+                    icon: item.icon,
+                    color: item.color,
+                    title: item.title,
+                    subtitle: item.subtitle,
+                    onTap: item.onTap,
+                  ),
+                )
                 .toList(),
           ),
           const SizedBox(height: 20),
 
           // ── Others / Logout ───────────────────────────────────
-          buildSectionTitle(
-              context, context.l10n.others, Icons.more_horiz),
+          buildSectionTitle(context, context.l10n.set_others, Icons.more_horiz),
           const SizedBox(height: 12),
           buildLogoutCard(context, ref, state.isLoading),
           const SizedBox(height: 24),

@@ -58,7 +58,7 @@ class HomeMobile extends ConsumerWidget {
             NavigationDestination(
               icon: const Icon(Icons.home_outlined),
               selectedIcon: const Icon(Icons.home),
-              label: context.l10n.home,
+              label: context.l10n.com_home,
             ),
             NavigationDestination(
               icon: Badge(
@@ -71,17 +71,17 @@ class HomeMobile extends ConsumerWidget {
                 isLabelVisible: unreadCount > 0,
                 child: const Icon(Icons.message),
               ),
-              label: context.l10n.tinNhan,
+              label: context.l10n.chat_messages,
             ),
             NavigationDestination(
               icon: const Icon(Icons.bar_chart_outlined),
               selectedIcon: const Icon(Icons.bar_chart),
-              label: context.l10n.report,
+              label: context.l10n.set_report,
             ),
             NavigationDestination(
               icon: const Icon(Icons.settings_outlined),
               selectedIcon: const Icon(Icons.settings),
-              label: context.l10n.setting,
+              label: context.l10n.set_title,
             ),
           ],
         ),
@@ -102,7 +102,7 @@ class HomeMobile extends ConsumerWidget {
           const CompanyHeader(),
           const Spacer(),
           IconButton(
-            tooltip: context.l10n.search,
+            tooltip: context.l10n.com_search,
             onPressed: () => showSearch(
               context: context,
               delegate: SimpleSearchDelegate(context.l10n),
@@ -110,7 +110,7 @@ class HomeMobile extends ConsumerWidget {
             icon: const Icon(Icons.search),
           ),
           IconButton(
-            tooltip: context.l10n.others,
+            tooltip: context.l10n.set_others,
             onPressed: () {},
             icon: const Icon(Icons.notifications_none),
           ),

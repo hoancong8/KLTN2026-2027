@@ -10,22 +10,22 @@ class FlutterAppMessages implements IAppMessages {
 
   // --- Lỗi chung ---
   @override
-  String get errorSystem => _l.error_system;
+  String get errorSystem => _l.error_system_retry;
 
   @override
-  String get errorConnection => _l.error_connection;
+  String get errorConnection => _l.error_no_internet;
 
   @override
   String get errorNetworkTimeout => _l.error_network_timeout;
 
   @override
-  String get errorForbidden => _l.error_forbidden;
+  String get errorForbidden => _l.error_forbidden_action;
 
   @override
   String get errorNotFound => _l.error_not_found;
 
   @override
-  String get errorServer => _l.error_server;
+  String get errorServer => _l.error_server_problem;
 
   @override
   String get errorInvalidResponse => _l.error_invalid_response;
@@ -35,7 +35,7 @@ class FlutterAppMessages implements IAppMessages {
   String get errorSessionExpired => _l.error_session_expired;
 
   @override
-  String get otpVerification => _l.otpVerification;
+  String get otpVerification => _l.auth_verify_otp;
 
   @override
   String get authSessionExpiredMessage => _l.auth_session_expired_message;
@@ -47,7 +47,7 @@ class FlutterAppMessages implements IAppMessages {
   String get authLoginAgain => _l.auth_login_again;
 
   @override
-  String get errorSignalRNotConnected => _l.error_signalr_not_connected;
+  String get errorSignalRNotConnected => _l.error_signalr_disconnected;
 
   // --- Biometric ---
   @override
@@ -69,7 +69,6 @@ class FlutterAppMessages implements IAppMessages {
   String get biometricNoCredentials => _l.auth_biometric_error_no_credentials;
 
   @override
-  String get biometricInvalidCredentials => _l.auth_biometric_error_invalid_credentials;
-
-
+  String get biometricInvalidCredentials =>
+      _l.auth_biometric_error_invalid_credentials;
 }

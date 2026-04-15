@@ -6,6 +6,7 @@ import '../../../../../../app/provider/localization_provider.dart';
 import '../../../../add_friend/add_friend_screen.dart';
 import '../../../../blocked_users/blocked_user_screen.dart';
 import '../chat_vm/chat_vm.dart';
+
 PreferredSizeWidget buildChatPageAppBar({
   required BuildContext context,
   required VoidCallback onAddFriendPressed,
@@ -15,7 +16,7 @@ PreferredSizeWidget buildChatPageAppBar({
     backgroundColor: AppColor.white,
     elevation: 0,
     title: Text(
-      context.l10n.tinNhan,
+      context.l10n.chat_messages,
       style: TextStyle(
         fontSize: 20,
         fontWeight: FontWeight.w700,
@@ -26,7 +27,7 @@ PreferredSizeWidget buildChatPageAppBar({
       IconButton(
         icon: Icon(Icons.person_add, color: AppColor.cMain),
         onPressed: onAddFriendPressed,
-        tooltip: context.l10n.addfriend,
+        tooltip: context.l10n.chat_add_friend,
       ),
       IconButton(
         icon: Icon(Icons.block, color: AppColor.cMuted),
@@ -53,11 +54,7 @@ Widget buildChatPageHeader({
                 color: AppColor.cMain.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(
-                Icons.chat_outlined,
-                color: AppColor.cMain,
-                size: 24,
-              ),
+              child: Icon(Icons.chat_outlined, color: AppColor.cMain, size: 24),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -65,17 +62,17 @@ Widget buildChatPageHeader({
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    context.l10n.tinNhan,
+                    context.l10n.chat_messages,
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.w800,
                       color: AppColor.cTitle,
                     ),
                   ),
                   Text(
-                    context.l10n.chatWithColleagues,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColor.cMuted,
-                    ),
+                    context.l10n.chat_with_colleagues,
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyMedium?.copyWith(color: AppColor.cMuted),
                   ),
                 ],
               ),
@@ -94,21 +91,19 @@ Widget buildChatPageHeader({
                 color: AppColor.cMain,
                 size: 24,
               ),
-              tooltip: context.l10n.addfriend,
+              tooltip: context.l10n.chat_add_friend,
             ),
             IconButton(
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                    builder: (_) => const BlockedUsersScreen(),
-                  ),
+                  MaterialPageRoute(builder: (_) => const BlockedUsersScreen()),
                 ).then((_) {
                   ref.read(chatViewModelProvider.notifier).loadUsers();
                 });
               },
               icon: Icon(Icons.block, color: AppColor.cError, size: 24),
-              tooltip: context.l10n.blockedusers,
+              tooltip: context.l10n.chat_block_user,
             ),
           ],
         ),
@@ -118,7 +113,7 @@ Widget buildChatPageHeader({
             ref.read(chatViewModelProvider.notifier).search(value);
           },
           decoration: InputDecoration(
-            hintText: context.l10n.searchconversation,
+            hintText: context.l10n.chat_search_hint,
             hintStyle: TextStyle(color: AppColor.cMuted),
             prefixIcon: Icon(Icons.search, color: AppColor.cMuted),
             filled: true,
@@ -162,7 +157,9 @@ Widget buildEmptyState(BuildContext context, bool isSearching) {
         ),
         const SizedBox(height: 20),
         Text(
-          isSearching ? context.l10n.nouserfound : context.l10n.noconversationyet,
+          isSearching
+              ? context.l10n.chat_no_user_found
+              : context.l10n.chat_no_conversation,
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w600,
@@ -173,12 +170,9 @@ Widget buildEmptyState(BuildContext context, bool isSearching) {
         const SizedBox(height: 8),
         Text(
           isSearching
-              ? context.l10n.trysearchdiffkeyword
-              : context.l10n.startfisrtconversation,
-          style: TextStyle(
-            fontSize: 14,
-            color: AppColor.cMuted,
-          ),
+              ? context.l10n.chat_search_try_different_keywords
+              : context.l10n.chat_start_first,
+          style: TextStyle(fontSize: 14, color: AppColor.cMuted),
           textAlign: TextAlign.center,
         ),
       ],
@@ -186,7 +180,11 @@ Widget buildEmptyState(BuildContext context, bool isSearching) {
   );
 }
 
-Widget buildErrorState(BuildContext context, String error, VoidCallback onRetry) {
+Widget buildErrorState(
+  BuildContext context,
+  String error,
+  VoidCallback onRetry,
+) {
   return Center(
     child: Column(
       mainAxisSize: MainAxisSize.min,
@@ -197,15 +195,11 @@ Widget buildErrorState(BuildContext context, String error, VoidCallback onRetry)
             color: AppColor.cError.withValues(alpha: 0.1),
             shape: BoxShape.circle,
           ),
-          child: Icon(
-            Icons.error_outline,
-            color: AppColor.cError,
-            size: 64,
-          ),
+          child: Icon(Icons.error_outline, color: AppColor.cError, size: 64),
         ),
         const SizedBox(height: 20),
         Text(
-          context.l10n.anerroroccurred,
+          context.l10n.error_occurred,
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w600,
@@ -215,17 +209,14 @@ Widget buildErrorState(BuildContext context, String error, VoidCallback onRetry)
         const SizedBox(height: 8),
         Text(
           error,
-          style: TextStyle(
-            fontSize: 14,
-            color: AppColor.cMuted,
-          ),
+          style: TextStyle(fontSize: 14, color: AppColor.cMuted),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 20),
         ElevatedButton.icon(
           onPressed: onRetry,
           icon: const Icon(Icons.refresh),
-          label: Text(context.l10n.tryagainbtn),
+          label: Text(context.l10n.com_retry),
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColor.cMain,
             foregroundColor: AppColor.white,

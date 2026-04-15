@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:sipm_mobile/app/consts/app_color.dart';
+import 'package:sipm_mobile/app/l10n_gen/app_localizations.dart';
+import 'package:sipm_mobile/app/provider/localization_provider.dart';
 
 /// A loading overlay widget that displays a centered loading indicator
 /// with a white card background. Can be used as a Stack child overlay.
@@ -13,6 +15,7 @@ class LoadingOverlay extends StatelessWidget {
   final double cardBorderRadius;
   final double indicatorSize;
   final double strokeWidth;
+  final bool isDefaultProcessing;
 
   const LoadingOverlay({
     super.key,
@@ -25,6 +28,7 @@ class LoadingOverlay extends StatelessWidget {
     this.cardBorderRadius = 16,
     this.indicatorSize = 36,
     this.strokeWidth = 3,
+    this.isDefaultProcessing = false,
   });
 
   /// Default constructor with "Đang xử lý..." message
@@ -38,10 +42,15 @@ class LoadingOverlay extends StatelessWidget {
     this.cardBorderRadius = 16,
     this.indicatorSize = 36,
     this.strokeWidth = 3,
-  }) : message = 'Đang xử lý...';
+  }) : message = null,
+       isDefaultProcessing = true;
 
   @override
   Widget build(BuildContext context) {
+    String? displayMessage = message;
+    if (isDefaultProcessing) {
+      displayMessage = context.l10n.com_processing;
+    }
     return Container(
       color: barrierColor,
       child: Center(
@@ -68,14 +77,15 @@ class LoadingOverlay extends StatelessWidget {
                   valueColor: AlwaysStoppedAnimation<Color>(indicatorColor),
                 ),
               ),
-              if (message != null) ...[
+              if (displayMessage != null) ...[
                 const SizedBox(height: 16),
                 Text(
-                  message!,
+                  displayMessage,
                   style: TextStyle(
                     color: textColor,
                     fontWeight: FontWeight.w500,
                     fontSize: 14,
+                    decoration: TextDecoration.none,
                   ),
                   textAlign: TextAlign.center,
                 ),

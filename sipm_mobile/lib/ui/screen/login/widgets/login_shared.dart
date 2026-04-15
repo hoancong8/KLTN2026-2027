@@ -4,10 +4,7 @@ import 'package:sipm_mobile/app/l10n_gen/app_localizations.dart';
 import '../../../../app/utils/exception_ext.dart';
 import '../../../../domain/exceptions/app_exception.dart';
 
-
-Widget buildLoginHeader({
-  required AppLocalizations l10n,
-}) {
+Widget buildLoginHeader({required AppLocalizations l10n}) {
   return Column(
     mainAxisAlignment: MainAxisAlignment.center,
     children: [
@@ -33,7 +30,7 @@ Widget buildLoginHeader({
       ),
       const SizedBox(height: 12),
       Text(
-        l10n.app_name,
+        l10n.com_app_name,
         style: const TextStyle(
           fontSize: 28,
           fontWeight: FontWeight.w800,
@@ -42,7 +39,7 @@ Widget buildLoginHeader({
         ),
       ),
       Text(
-        l10n.welcomeBack,
+        l10n.com_welcome_back,
         style: const TextStyle(
           fontSize: 24,
           fontWeight: FontWeight.w700,
@@ -67,9 +64,7 @@ Widget buildPrimaryButton({
         backgroundColor: AppColor.cMain,
         foregroundColor: AppColor.white,
         elevation: 0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         disabledBackgroundColor: AppColor.cMain.withValues(alpha: 0.5),
       ),
       child: Text(
@@ -92,13 +87,11 @@ Widget buildBiometricButton({
       style: OutlinedButton.styleFrom(
         foregroundColor: AppColor.cMain,
         side: BorderSide(color: AppColor.cMain, width: 1.5),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
       icon: const Icon(Icons.fingerprint, color: AppColor.cMain, size: 22),
       label: Text(
-        l10n.biometriclogin,
+        l10n.auth_biometric_login,
         style: const TextStyle(
           color: AppColor.cMain,
           fontWeight: FontWeight.w600,

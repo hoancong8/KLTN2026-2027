@@ -9,11 +9,7 @@ class ReportTablet extends StatefulWidget {
   final ReportState state;
   final Future<void> Function() onRefresh;
 
-  const ReportTablet({
-    super.key,
-    required this.state,
-    required this.onRefresh,
-  });
+  const ReportTablet({super.key, required this.state, required this.onRefresh});
 
   @override
   State<ReportTablet> createState() => _ReportTabletState();
@@ -50,11 +46,26 @@ class _ReportTabletState extends State<ReportTablet> {
               children: [
                 _buildSubMenuHeader(),
                 const SizedBox(height: 16),
-                _buildSubMenuItem(0, Icons.dashboard_outlined, context.l10n.dashboard),
-                _buildSubMenuItem(1, Icons.bar_chart, context.l10n.revenue_report),
                 _buildSubMenuItem(
-                    2, Icons.pie_chart_outline,context.l10n.expense_report),
-                _buildSubMenuItem(3, Icons.show_chart, context.l10n.performance_report),
+                  0,
+                  Icons.dashboard_outlined,
+                  context.l10n.rep_dashboard,
+                ),
+                _buildSubMenuItem(
+                  1,
+                  Icons.bar_chart,
+                  context.l10n.rep_revenue_report,
+                ),
+                _buildSubMenuItem(
+                  2,
+                  Icons.pie_chart_outline,
+                  context.l10n.rep_expense_report,
+                ),
+                _buildSubMenuItem(
+                  3,
+                  Icons.show_chart,
+                  context.l10n.rep_performance_report,
+                ),
               ],
             ),
           ),
@@ -96,7 +107,7 @@ class _ReportTabletState extends State<ReportTablet> {
               ),
               const SizedBox(width: 12),
               Text(
-                context.l10n.report,
+                context.l10n.rep_title,
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -107,7 +118,7 @@ class _ReportTabletState extends State<ReportTablet> {
           ),
           const SizedBox(height: 8),
           Text(
-            context.l10n.data_statistics_and_analysis,
+            context.l10n.rep_data_analysis,
             style: TextStyle(fontSize: 13, color: AppColor.cMuted),
           ),
         ],
@@ -123,8 +134,9 @@ class _ReportTabletState extends State<ReportTablet> {
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
-          color:
-              isActive ? AppColor.cMain.withOpacity(0.1) : Colors.transparent,
+          color: isActive
+              ? AppColor.cMain.withOpacity(0.1)
+              : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
@@ -150,10 +162,10 @@ class _ReportTabletState extends State<ReportTablet> {
   }
 
   Widget _buildContentHeader() {
-    String title = context.l10n.report;
-    if (_selectedIndex == 1) title = context.l10n.revenue_report;
-    if (_selectedIndex == 2) title = context.l10n.expense_report;
-    if (_selectedIndex == 3) title = context.l10n.performance_report;
+    String title = context.l10n.set_report;
+    if (_selectedIndex == 1) title = context.l10n.rep_revenue_report;
+    if (_selectedIndex == 2) title = context.l10n.rep_expense_report;
+    if (_selectedIndex == 3) title = context.l10n.rep_performance_report;
 
     return Row(
       children: [
@@ -185,13 +197,29 @@ class _ReportTabletState extends State<ReportTablet> {
             childAspectRatio: 2.2,
             children: [
               _buildStatCard(
-                  Icons.trending_up, '0', context.l10n.revenue, AppColor.cMain),
+                Icons.trending_up,
+                '0',
+                context.l10n.rep_revenue,
+                AppColor.cMain,
+              ),
               _buildStatCard(
-                  Icons.receipt_long, '0', context.l10n.orders, AppColor.cBlue),
+                Icons.receipt_long,
+                '0',
+                context.l10n.rep_orders,
+                AppColor.cBlue,
+              ),
               _buildStatCard(
-                  Icons.people_alt, '0', context.l10n.client, AppColor.cYanPrimary),
+                Icons.people_alt,
+                '0',
+                context.l10n.rep_client,
+                AppColor.cYanPrimary,
+              ),
               _buildStatCard(
-                  Icons.inventory_2, '0', context.l10n.products, AppColor.cMainApp),
+                Icons.inventory_2,
+                '0',
+                context.l10n.rep_products,
+                AppColor.cMainApp,
+              ),
             ],
           ),
         ],
@@ -208,11 +236,14 @@ class _ReportTabletState extends State<ReportTablet> {
         child: Row(
           mainAxisSize: MainAxisSize.max,
           children: [
-            Icon(Icons.hourglass_empty,
-                size: 24, color: AppColor.cMuted.withOpacity(0.5)),
+            Icon(
+              Icons.hourglass_empty,
+              size: 24,
+              color: AppColor.cMuted.withOpacity(0.5),
+            ),
             const SizedBox(height: 20),
             Text(
-              context.l10n.this_feature_is_under_development,
+              context.l10n.com_feature_under_dev,
               style: TextStyle(fontSize: 18, color: AppColor.cMuted),
             ),
           ],
@@ -222,7 +253,11 @@ class _ReportTabletState extends State<ReportTablet> {
   }
 
   Widget _buildStatCard(
-      IconData icon, String value, String label, Color color) {
+    IconData icon,
+    String value,
+    String label,
+    Color color,
+  ) {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -283,8 +318,7 @@ class _ReportTabletState extends State<ReportTablet> {
           Text(error, style: const TextStyle(color: AppColor.cError)),
           const SizedBox(height: 16),
           ElevatedButton(
-            onPressed: () =>
-                widget.onRefresh,
+            onPressed: () => widget.onRefresh,
             child: const Text('Thử lại'),
           ),
         ],

@@ -9,7 +9,8 @@ class BiometricSettingsItem extends ConsumerStatefulWidget {
   const BiometricSettingsItem({super.key});
 
   @override
-  ConsumerState<BiometricSettingsItem> createState() => _BiometricSettingsItemState();
+  ConsumerState<BiometricSettingsItem> createState() =>
+      _BiometricSettingsItemState();
 }
 
 class _BiometricSettingsItemState extends ConsumerState<BiometricSettingsItem> {
@@ -40,7 +41,10 @@ class _BiometricSettingsItemState extends ConsumerState<BiometricSettingsItem> {
     if (authToken == null) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.auth_biometric_login_required), backgroundColor: AppColor.cNeedCheck),
+        SnackBar(
+          content: Text(l10n.auth_biometric_login_required),
+          backgroundColor: AppColor.cNeedCheck,
+        ),
       );
       return;
     }
@@ -53,7 +57,9 @@ class _BiometricSettingsItemState extends ConsumerState<BiometricSettingsItem> {
       result = await showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
           title: Row(
             children: [
               Container(
@@ -62,18 +68,31 @@ class _BiometricSettingsItemState extends ConsumerState<BiometricSettingsItem> {
                   color: AppColor.cMain.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Icon(Icons.pin_outlined, color: AppColor.cMain, size: 20),
+                child: Icon(
+                  Icons.pin_outlined,
+                  color: AppColor.cMain,
+                  size: 20,
+                ),
               ),
               const SizedBox(width: 12),
-              Text(l10n.auth_biometric_pin_title,
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: AppColor.cTitle)),
+              Text(
+                l10n.auth_biometric_pin_title,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: AppColor.cTitle,
+                ),
+              ),
             ],
           ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(l10n.auth_biometric_pin_subtitle, style: TextStyle(color: AppColor.cMuted, fontSize: 14)),
+              Text(
+                l10n.auth_biometric_pin_subtitle,
+                style: TextStyle(color: AppColor.cMuted, fontSize: 14),
+              ),
               const SizedBox(height: 16),
               TextField(
                 controller: pinController,
@@ -87,11 +106,18 @@ class _BiometricSettingsItemState extends ConsumerState<BiometricSettingsItem> {
                   prefixIcon: Icon(Icons.lock_outline, color: AppColor.cMuted),
                   filled: true,
                   fillColor: AppColor.cGray_50,
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
                   enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppColor.cDivider)),
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: AppColor.cDivider),
+                  ),
                   focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppColor.cMain, width: 2)),
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: AppColor.cMain, width: 2),
+                  ),
                 ),
               ),
             ],
@@ -99,7 +125,13 @@ class _BiometricSettingsItemState extends ConsumerState<BiometricSettingsItem> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: Text(l10n.cancel, style: TextStyle(color: AppColor.cMuted, fontWeight: FontWeight.w600)),
+              child: Text(
+                l10n.com_cancel,
+                style: TextStyle(
+                  color: AppColor.cMuted,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
             ElevatedButton(
               onPressed: () async {
@@ -126,9 +158,14 @@ class _BiometricSettingsItemState extends ConsumerState<BiometricSettingsItem> {
                 backgroundColor: AppColor.cMain,
                 foregroundColor: AppColor.white,
                 elevation: 0,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
-              child: Text(l10n.confirm, style: const TextStyle(fontWeight: FontWeight.w600)),
+              child: Text(
+                l10n.com_confirm,
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
             ),
           ],
         ),
@@ -140,7 +177,10 @@ class _BiometricSettingsItemState extends ConsumerState<BiometricSettingsItem> {
     if (result == true && mounted) {
       setState(() => _biometricEnabled = true);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.auth_biometric_setup_success), backgroundColor: AppColor.cMain),
+        SnackBar(
+          content: Text(l10n.auth_biometric_setup_success),
+          backgroundColor: AppColor.cMain,
+        ),
       );
     }
   }
@@ -153,7 +193,10 @@ class _BiometricSettingsItemState extends ConsumerState<BiometricSettingsItem> {
       if (!canCheck) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.auth_biometric_unavailable), backgroundColor: AppColor.cError),
+          SnackBar(
+            content: Text(l10n.auth_biometric_unavailable),
+            backgroundColor: AppColor.cError,
+          ),
         );
         return;
       }
@@ -163,7 +206,10 @@ class _BiometricSettingsItemState extends ConsumerState<BiometricSettingsItem> {
       setState(() => _biometricEnabled = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.auth_biometric_disabled_success), backgroundColor: AppColor.cMuted),
+          SnackBar(
+            content: Text(l10n.auth_biometric_disabled_success),
+            backgroundColor: AppColor.cMuted,
+          ),
         );
       }
     }
@@ -181,22 +227,39 @@ class _BiometricSettingsItemState extends ConsumerState<BiometricSettingsItem> {
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                  color: AppColor.cMain.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
+                color: AppColor.cMain.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
               child: Icon(Icons.fingerprint, color: AppColor.cMain, size: 22),
             ),
             const SizedBox(width: 14),
             Expanded(
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(l10n.auth_biometric_title,
-                    style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15, color: AppColor.cTitle)),
-                const SizedBox(height: 2),
-                Text(l10n.auth_biometric_checking, style: TextStyle(fontSize: 13, color: AppColor.cMuted)),
-              ]),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l10n.auth_biometric_title,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 15,
+                      color: AppColor.cTitle,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    l10n.auth_biometric_checking,
+                    style: TextStyle(fontSize: 13, color: AppColor.cMuted),
+                  ),
+                ],
+              ),
             ),
             SizedBox(
               width: 20,
               height: 20,
-              child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation<Color>(AppColor.cMain)),
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                valueColor: AlwaysStoppedAnimation<Color>(AppColor.cMain),
+              ),
             ),
           ],
         ),
@@ -210,20 +273,33 @@ class _BiometricSettingsItemState extends ConsumerState<BiometricSettingsItem> {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-                color: AppColor.cMain.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
+              color: AppColor.cMain.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(10),
+            ),
             child: Icon(Icons.fingerprint, color: AppColor.cMain, size: 22),
           ),
           const SizedBox(width: 14),
           Expanded(
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(l10n.auth_biometric_title,
-                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15, color: AppColor.cTitle)),
-              const SizedBox(height: 2),
-              Text(
-                _biometricEnabled ? l10n.auth_biometric_subtitle_enabled : l10n.auth_biometric_subtitle_disabled,
-                style: TextStyle(fontSize: 13, color: AppColor.cMuted),
-              ),
-            ]),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.auth_biometric_title,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 15,
+                    color: AppColor.cTitle,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  _biometricEnabled
+                      ? l10n.auth_biometric_subtitle_enabled
+                      : l10n.auth_biometric_subtitle_disabled,
+                  style: TextStyle(fontSize: 13, color: AppColor.cMuted),
+                ),
+              ],
+            ),
           ),
           Switch(
             value: _biometricEnabled,
