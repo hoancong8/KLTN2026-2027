@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sipm_mobile/app/consts/app_color.dart';
 import 'package:sipm_mobile/app/provider.dart';
+import 'package:sipm_mobile/app/provider/localization_provider.dart';
 
 class DashboardPage extends ConsumerWidget {
   const DashboardPage({super.key});
@@ -34,13 +35,13 @@ class DashboardPage extends ConsumerWidget {
     IconData icon;
 
     if (hour < 12) {
-      greeting = 'Chào buổi sáng';
+      greeting = context.l10n.com_good_morning;
       icon = Icons.wb_sunny_outlined;
     } else if (hour < 18) {
-      greeting = 'Chào buổi chiều';
+      greeting = context.l10n.com_good_afternoon;
       icon = Icons.wb_cloudy_outlined;
     } else {
-      greeting = 'Chào buổi tối';
+      greeting = context.l10n.com_good_evening;
       icon = Icons.nights_stay_outlined;
     }
 
@@ -69,7 +70,7 @@ class DashboardPage extends ConsumerWidget {
                 overflow: TextOverflow.ellipsis,
               ),
               Text(
-                'Chúc bạn một ngày làm việc hiệu quả!',
+                context.l10n.com_have_a_productive_day,
                 style: Theme.of(
                   context,
                 ).textTheme.bodyMedium?.copyWith(color: AppColor.cMuted),

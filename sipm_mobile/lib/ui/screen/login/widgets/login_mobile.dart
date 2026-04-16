@@ -70,26 +70,42 @@ class LoginMobile extends ConsumerWidget {
     );
   }
 
-  Widget _buildForm(BuildContext context, WidgetRef ref, AppLocalizations l10n, state) {
+  Widget _buildForm(
+    BuildContext context,
+    WidgetRef ref,
+    AppLocalizations l10n,
+    state,
+  ) {
     return Form(
       key: formKey,
       child: Column(
         children: [
           AppEditText(
             controller: usernameCtl,
-            labelText: l10n.username,
-            hintText: l10n.enterusernamehint,
-            prefixIcon: const Icon(Icons.person_outline, color: AppColor.cMuted, size: 22),
+            labelText: l10n.auth_username,
+            hintText: l10n.auth_enter_username_hint,
+            prefixIcon: const Icon(
+              Icons.person_outline,
+              color: AppColor.cMuted,
+              size: 22,
+            ),
             keyboardType: TextInputType.emailAddress,
             fillColor: AppColor.cGray_50,
             borderColor: AppColor.cDivider,
             focusedBorderColor: AppColor.cMain,
             errorBorderColor: AppColor.cError,
             textStyle: const TextStyle(fontSize: 15, color: AppColor.cTitle),
-            hintStyle: TextStyle(fontSize: 15, color: AppColor.cMuted.withValues(alpha: 0.7)),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            hintStyle: TextStyle(
+              fontSize: 15,
+              color: AppColor.cMuted.withValues(alpha: 0.7),
+            ),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 16,
+            ),
             validator: (v) {
-              if (v == null || v.trim().isEmpty) return l10n.usernamerequired;
+              if (v == null || v.trim().isEmpty)
+                return l10n.auth_username_required;
               return null;
             },
           ),
@@ -97,25 +113,35 @@ class LoginMobile extends ConsumerWidget {
 
           AppEditText(
             controller: passwordCtl,
-            labelText: l10n.password,
-            hintText: l10n.enterpasswordhint,
-            prefixIcon: const Icon(Icons.lock_outline, color: AppColor.cMuted, size: 22),
+            labelText: l10n.auth_password,
+            hintText: l10n.auth_enter_password_hint,
+            prefixIcon: const Icon(
+              Icons.lock_outline,
+              color: AppColor.cMuted,
+              size: 22,
+            ),
             obscureText: true,
             fillColor: AppColor.cGray_50,
             borderColor: AppColor.cDivider,
             focusedBorderColor: AppColor.cMain,
             errorBorderColor: AppColor.cError,
             textStyle: const TextStyle(fontSize: 15, color: AppColor.cTitle),
-            hintStyle: TextStyle(fontSize: 15, color: AppColor.cMuted.withValues(alpha: 0.7)),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            hintStyle: TextStyle(
+              fontSize: 15,
+              color: AppColor.cMuted.withValues(alpha: 0.7),
+            ),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 16,
+            ),
             validator: (v) {
-              if (v == null || v.isEmpty) return l10n.passwordrequired;
-              if (v.length < 4) return l10n.passwordtooshort;
+              if (v == null || v.isEmpty) return l10n.auth_password_required;
+              if (v.length < 4) return l10n.auth_password_too_short;
               return null;
             },
           ),
 
-         // Quên mật khẩu (Align right)
+          // Quên mật khẩu (Align right)
           Align(
             alignment: Alignment.centerRight,
             child: TextButton(
@@ -128,8 +154,8 @@ class LoginMobile extends ConsumerWidget {
                 minimumSize: Size.zero,
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
-              child:  Text(
-                l10n.forgotpassword,
+              child: Text(
+                l10n.auth_forgot_password,
                 style: TextStyle(
                   color: AppColor.cMuted,
                   fontSize: 14,
@@ -139,10 +165,10 @@ class LoginMobile extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 16),
-          // -----------------------------------------
 
+          // -----------------------------------------
           buildPrimaryButton(
-            text: state.isLoading ? l10n.loggingin : l10n.login,
+            text: state.isLoading ? l10n.auth_logging_in : l10n.auth_login,
             onPressed: state.isLoading ? null : onLogin,
           ),
 
@@ -158,7 +184,10 @@ class LoginMobile extends ConsumerWidget {
                 const Expanded(child: Divider(color: AppColor.cDivider)),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 12),
-                  child: Text('hoặc', style: TextStyle(fontSize: 12, color: AppColor.cMuted)),
+                  child: Text(
+                    'hoặc',
+                    style: TextStyle(fontSize: 12, color: AppColor.cMuted),
+                  ),
                 ),
                 const Expanded(child: Divider(color: AppColor.cDivider)),
               ],
@@ -168,7 +197,9 @@ class LoginMobile extends ConsumerWidget {
               l10n: l10n,
               onPressed: state.isLoading || state.biometricLoading
                   ? null
-                  : () => ref.read(loginViewModelProvider.notifier).authenticateWithBiometric(FlutterAppMessages(l10n)),
+                  : () => ref
+                        .read(loginViewModelProvider.notifier)
+                        .authenticateWithBiometric(FlutterAppMessages(l10n)),
             ),
           ],
         ],

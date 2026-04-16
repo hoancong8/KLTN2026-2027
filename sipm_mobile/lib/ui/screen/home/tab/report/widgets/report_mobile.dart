@@ -9,14 +9,13 @@ class ReportMobile extends ConsumerStatefulWidget {
   final ReportState state;
   final Future<void> Function() onRefresh;
 
-  const ReportMobile({super.key, required this.onRefresh,required this.state});
+  const ReportMobile({super.key, required this.onRefresh, required this.state});
 
   @override
   ConsumerState<ReportMobile> createState() => _ReportMobileState();
 }
 
 class _ReportMobileState extends ConsumerState<ReportMobile> {
-
   @override
   Widget build(BuildContext context) {
     if (widget.state.isLoading) {
@@ -81,7 +80,11 @@ class _ReportMobileState extends ConsumerState<ReportMobile> {
         children: [
           _buildHeader(context),
           const SizedBox(height: 20),
-          _buildSectionTitle(context, context.l10n.dashboard, Icons.dashboard_outlined),
+          _buildSectionTitle(
+            context,
+            context.l10n.rep_dashboard,
+            Icons.dashboard_outlined,
+          ),
           const SizedBox(height: 12),
           Row(
             children: [
@@ -89,7 +92,7 @@ class _ReportMobileState extends ConsumerState<ReportMobile> {
                 child: _buildStatCard(
                   icon: Icons.trending_up,
                   value: '0',
-                  label: context.l10n.revenue,
+                  label: context.l10n.rep_revenue_report,
                   color: AppColor.cMain,
                   onTap: () => _showComingSoon(context),
                 ),
@@ -99,7 +102,7 @@ class _ReportMobileState extends ConsumerState<ReportMobile> {
                 child: _buildStatCard(
                   icon: Icons.receipt_long_outlined,
                   value: '0',
-                  label: context.l10n.orders,
+                  label: context.l10n.rep_orders,
                   color: AppColor.cBlue,
                   onTap: () => _showComingSoon(context),
                 ),
@@ -113,7 +116,7 @@ class _ReportMobileState extends ConsumerState<ReportMobile> {
                 child: _buildStatCard(
                   icon: Icons.people_outline,
                   value: '0',
-                  label: context.l10n.client,
+                  label: context.l10n.rep_client,
                   color: AppColor.cYanPrimary,
                   onTap: () => _showComingSoon(context),
                 ),
@@ -123,7 +126,7 @@ class _ReportMobileState extends ConsumerState<ReportMobile> {
                 child: _buildStatCard(
                   icon: Icons.inventory_2_outlined,
                   value: '0',
-                  label: context.l10n.products,
+                  label: context.l10n.rep_products,
                   color: AppColor.cMainApp,
                   onTap: () => _showComingSoon(context),
                 ),
@@ -133,30 +136,30 @@ class _ReportMobileState extends ConsumerState<ReportMobile> {
           const SizedBox(height: 24),
           _buildSectionTitle(
             context,
-            context.l10n.detailed_report,
+            context.l10n.rep_detailed_report,
             Icons.analytics_outlined,
           ),
           const SizedBox(height: 12),
           _buildReportItem(
             icon: Icons.bar_chart,
-            title: context.l10n.revenue_report,
-            subtitle: context.l10n.revenue_over_time,
+            title: context.l10n.rep_revenue_report,
+            subtitle: context.l10n.rep_revenue_over_time,
             color: AppColor.cMain,
             onTap: () => _showComingSoon(context),
           ),
           const SizedBox(height: 12),
           _buildReportItem(
             icon: Icons.pie_chart_outline,
-            title: context.l10n.expense_report,
-            subtitle: context.l10n.operating_cost_analysis,
+            title: context.l10n.rep_expense_report,
+            subtitle: context.l10n.rep_operating_cost_analysis,
             color: AppColor.cBlue,
             onTap: () => _showComingSoon(context),
           ),
           const SizedBox(height: 12),
           _buildReportItem(
             icon: Icons.show_chart,
-            title: context.l10n.performance_report,
-            subtitle: context.l10n.performance_analysis,
+            title: context.l10n.rep_performance_report,
+            subtitle: context.l10n.rep_performance_analysis,
             color: AppColor.cYanPrimary,
             onTap: () => _showComingSoon(context),
           ),
@@ -169,7 +172,7 @@ class _ReportMobileState extends ConsumerState<ReportMobile> {
   void _showComingSoon(BuildContext context) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(context.l10n.this_feature_is_under_development),
+        content: Text(context.l10n.com_feature_under_dev),
         backgroundColor: AppColor.cMain,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -195,14 +198,14 @@ class _ReportMobileState extends ConsumerState<ReportMobile> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                context.l10n.report,
+                context.l10n.set_report,
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.w800,
                   color: AppColor.cTitle,
                 ),
               ),
               Text(
-                context.l10n.data_statistics_and_analysis,
+                context.l10n.rep_data_analysis,
                 style: Theme.of(
                   context,
                 ).textTheme.bodyMedium?.copyWith(color: AppColor.cMuted),

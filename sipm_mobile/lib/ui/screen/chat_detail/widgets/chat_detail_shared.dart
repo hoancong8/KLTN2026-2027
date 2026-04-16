@@ -79,7 +79,9 @@ class ChatDetailAppBar extends ConsumerWidget implements PreferredSizeWidget {
                     ),
                     const SizedBox(width: 4),
                     Text(
-                      isOnline ? context.l10n.online : context.l10n.offline,
+                      isOnline
+                          ? context.l10n.chat_online
+                          : context.l10n.chat_offline,
                       style: TextStyle(fontSize: 12, color: AppColor.cMuted),
                     ),
                   ],
@@ -97,12 +99,12 @@ class ChatDetailAppBar extends ConsumerWidget implements PreferredSizeWidget {
               if (isBlocked)
                 PopupMenuItem<String>(
                   value: 'unblock',
-                  child: Text(context.l10n.unblock),
+                  child: Text(context.l10n.chat_unblock),
                 )
               else
                 PopupMenuItem<String>(
                   value: 'block',
-                  child: Text(context.l10n.blockuser),
+                  child: Text(context.l10n.chat_block_user),
                 ),
             ];
           },
@@ -131,7 +133,7 @@ Widget buildEmptyState(BuildContext context, String userName) {
         ),
         const SizedBox(height: 16),
         Text(
-          context.l10n.startchat,
+          context.l10n.chat_start_conversation,
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w600,
@@ -140,7 +142,7 @@ Widget buildEmptyState(BuildContext context, String userName) {
         ),
         const SizedBox(height: 8),
         Text(
-          context.l10n.sendfirstmessage(userName),
+          context.l10n.chat_send_first_msg(userName),
           style: TextStyle(fontSize: 14, color: AppColor.cMuted),
         ),
       ],
@@ -181,7 +183,11 @@ Widget buildScrollToBottomButton(VoidCallback onTap) {
   );
 }
 
-Widget buildErrorState(BuildContext context, String error, VoidCallback onRetry) {
+Widget buildErrorState(
+  BuildContext context,
+  String error,
+  VoidCallback onRetry,
+) {
   return Center(
     child: Column(
       mainAxisSize: MainAxisSize.min,
@@ -192,15 +198,11 @@ Widget buildErrorState(BuildContext context, String error, VoidCallback onRetry)
             color: AppColor.cError.withValues(alpha: 0.1),
             shape: BoxShape.circle,
           ),
-          child: Icon(
-            Icons.error_outline,
-            color: AppColor.cError,
-            size: 48,
-          ),
+          child: Icon(Icons.error_outline, color: AppColor.cError, size: 48),
         ),
         const SizedBox(height: 16),
         Text(
-          context.l10n.cannotloadmessages,
+          context.l10n.error_cannot_load_msg,
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w600,
@@ -209,7 +211,7 @@ Widget buildErrorState(BuildContext context, String error, VoidCallback onRetry)
         ),
         const SizedBox(height: 8),
         Text(
-          context.l10n.tryagain,
+          context.l10n.chat_unblock_error,
           style: TextStyle(fontSize: 14, color: AppColor.cMuted),
         ),
         const SizedBox(height: 16),
@@ -223,7 +225,7 @@ Widget buildErrorState(BuildContext context, String error, VoidCallback onRetry)
               borderRadius: BorderRadius.circular(8),
             ),
           ),
-          child: Text(context.l10n.tryagainbtn),
+          child: Text(context.l10n.com_retry),
         ),
       ],
     ),

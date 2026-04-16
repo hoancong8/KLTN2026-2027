@@ -44,53 +44,52 @@ class SettingsItemData {
 // SHARED BUILDER: builds the sections list from context + ref
 // ─────────────────────────────────────────────────────────────────────────────
 List<SettingsSection> buildSettingsSections(
-    BuildContext context,
-    WidgetRef ref, {
-      required bool isLoading,
-    }) {
+  BuildContext context,
+  WidgetRef ref, {
+  required bool isLoading,
+}) {
   final currentLocale = ref.watch(localizationProvider);
 
   return [
     SettingsSection(
-      title: context.l10n.account,
+      title: context.l10n.set_account,
       icon: Icons.person_outline,
       items: [
         SettingsItemData(
           icon: Icons.person_outline,
           color: AppColor.cMain,
-          title: context.l10n.account,
-          subtitle: context.l10n.accountsubtitle,
+          title: context.l10n.set_account,
+          subtitle: context.l10n.set_account_subtitle,
           onTap: () => context.push(AppConfig.profilePath),
         ),
       ],
     ),
     SettingsSection(
-      title: context.l10n.security,
+      title: context.l10n.set_security,
       icon: Icons.security_outlined,
       items: [
         SettingsItemData(
           icon: Icons.lock_outline,
           color: AppColor.cYanPrimary,
-          title: context.l10n.changepassword,
-          subtitle: context.l10n.passwordsubtitle,
+          title: context.l10n.auth_change_password,
+          subtitle: context.l10n.set_password_subtitle,
           onTap: () => context.push(AppConfig.changePasswordPath),
         ),
         // BiometricSettingsItem is handled inline — see buildSettingsItemWidget
       ],
     ),
     SettingsSection(
-      title: context.l10n.configuration,
+      title: context.l10n.set_config,
       icon: Icons.settings_suggest_outlined,
       items: [
         SettingsItemData(
           icon: Icons.language,
           color: Colors.orange,
-          title: context.l10n.language,
+          title: context.l10n.set_language,
           subtitle: currentLocale.languageCode == 'vi'
-              ? context.l10n.vietnamese
-              : context.l10n.english,
-          onTap: () =>
-              showLanguageBottomSheet(context, ref, currentLocale),
+              ? context.l10n.set_vietnamese
+              : context.l10n.set_english,
+          onTap: () => showLanguageBottomSheet(context, ref, currentLocale),
         ),
       ],
     ),
@@ -111,8 +110,11 @@ Widget buildSettingsHeader(BuildContext context) {
           color: AppColor.cMain.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(12),
         ),
-        child: const Icon(Icons.settings_outlined,
-            color: AppColor.cMain, size: 24),
+        child: const Icon(
+          Icons.settings_outlined,
+          color: AppColor.cMain,
+          size: 24,
+        ),
       ),
       const SizedBox(width: 12),
       Expanded(
@@ -120,18 +122,17 @@ Widget buildSettingsHeader(BuildContext context) {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              context.l10n.setting,
+              context.l10n.set_title,
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.w800,
                 color: AppColor.cTitle,
               ),
             ),
             Text(
-              context.l10n.systemconfig,
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyMedium
-                  ?.copyWith(color: AppColor.cMuted),
+              context.l10n.set_system_config,
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: AppColor.cMuted),
             ),
           ],
         ),
@@ -141,8 +142,7 @@ Widget buildSettingsHeader(BuildContext context) {
 }
 
 /// Section title row: icon + label
-Widget buildSectionTitle(
-    BuildContext context, String title, IconData icon) {
+Widget buildSectionTitle(BuildContext context, String title, IconData icon) {
   return Row(
     children: [
       Container(
@@ -224,8 +224,7 @@ Widget buildSettingsItem({
                   const SizedBox(height: 2),
                   Text(
                     subtitle,
-                    style:
-                    TextStyle(fontSize: 13, color: AppColor.cMuted),
+                    style: TextStyle(fontSize: 13, color: AppColor.cMuted),
                   ),
                 ],
               ),
@@ -257,16 +256,17 @@ Widget buildDivider() {
 }
 
 /// Logout card
-Widget buildLogoutCard(
-    BuildContext context, WidgetRef ref, bool isLoading) {
+Widget buildLogoutCard(BuildContext context, WidgetRef ref, bool isLoading) {
   return buildSettingsCard(
     children: [
       buildSettingsItem(
         context: context,
         icon: Icons.logout,
         color: AppColor.cError,
-        title: isLoading ? context.l10n.loggingout : context.l10n.logout,
-        subtitle: context.l10n.logoutsubtitle,
+        title: isLoading
+            ? context.l10n.auth_logging_out
+            : context.l10n.auth_logout,
+        subtitle: context.l10n.set_logout_subtitle,
         isDestructive: true,
         isLoading: isLoading,
         onTap: () async {
@@ -286,10 +286,10 @@ Widget buildLogoutCard(
 // LANGUAGE BOTTOM SHEET  (shared)
 // ─────────────────────────────────────────────────────────────────────────────
 void showLanguageBottomSheet(
-    BuildContext context,
-    WidgetRef ref,
-    Locale currentLocale,
-    ) {
+  BuildContext context,
+  WidgetRef ref,
+  Locale currentLocale,
+) {
   showModalBottomSheet(
     context: context,
     backgroundColor: Colors.transparent,
@@ -303,8 +303,7 @@ void showLanguageBottomSheet(
             padding: const EdgeInsets.all(24),
             decoration: const BoxDecoration(
               color: AppColor.white,
-              borderRadius:
-              BorderRadius.vertical(top: Radius.circular(24)),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -318,12 +317,15 @@ void showLanguageBottomSheet(
                         color: Colors.orange.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: const Icon(Icons.language,
-                          color: Colors.orange, size: 24),
+                      child: const Icon(
+                        Icons.language,
+                        color: Colors.orange,
+                        size: 24,
+                      ),
                     ),
                     const SizedBox(width: 16),
                     Text(
-                      context.l10n.language,
+                      context.l10n.set_language,
                       style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.w800,
@@ -333,21 +335,20 @@ void showLanguageBottomSheet(
                     const Spacer(),
                     IconButton(
                       onPressed: () => Navigator.pop(context),
-                      icon:
-                      const Icon(Icons.close, color: AppColor.cMuted),
+                      icon: const Icon(Icons.close, color: AppColor.cMuted),
                     ),
                   ],
                 ),
                 const SizedBox(height: 24),
                 _buildLanguageOption(
-                  label: context.l10n.vietnamese,
+                  label: context.l10n.set_vietnamese,
                   flag: '🇻🇳',
                   isSelected: selectedLocale == 'vi',
                   onTap: () => setState(() => selectedLocale = 'vi'),
                 ),
                 const SizedBox(height: 12),
                 _buildLanguageOption(
-                  label: context.l10n.english,
+                  label: context.l10n.set_english,
                   flag: '🇺🇸',
                   isSelected: selectedLocale == 'en',
                   onTap: () => setState(() => selectedLocale = 'en'),
@@ -359,17 +360,18 @@ void showLanguageBottomSheet(
                       child: OutlinedButton(
                         onPressed: () => Navigator.pop(context),
                         style: OutlinedButton.styleFrom(
-                          padding:
-                          const EdgeInsets.symmetric(vertical: 16),
+                          padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12)),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                           side: const BorderSide(color: AppColor.cDivider),
                         ),
                         child: Text(
-                          context.l10n.cancel,
+                          context.l10n.com_cancel,
                           style: const TextStyle(
-                              color: AppColor.cTitle,
-                              fontWeight: FontWeight.w600),
+                            color: AppColor.cTitle,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                     ),
@@ -384,17 +386,18 @@ void showLanguageBottomSheet(
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColor.cMain,
-                          padding:
-                          const EdgeInsets.symmetric(vertical: 16),
+                          padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12)),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                           elevation: 0,
                         ),
                         child: Text(
-                          context.l10n.save,
+                          context.l10n.com_save,
                           style: const TextStyle(
-                              color: AppColor.white,
-                              fontWeight: FontWeight.w600),
+                            color: AppColor.white,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                     ),
@@ -440,18 +443,19 @@ Widget _buildLanguageOption({
               label,
               style: TextStyle(
                 fontSize: 16,
-                fontWeight:
-                isSelected ? FontWeight.w700 : FontWeight.w600,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
                 color: isSelected ? AppColor.cMain : AppColor.cTitle,
               ),
             ),
           ),
           if (isSelected)
-            const Icon(Icons.check_circle,
-                color: AppColor.cMain, size: 24)
+            const Icon(Icons.check_circle, color: AppColor.cMain, size: 24)
           else
-            const Icon(Icons.circle_outlined,
-                color: AppColor.cDivider, size: 24),
+            const Icon(
+              Icons.circle_outlined,
+              color: AppColor.cDivider,
+              size: 24,
+            ),
         ],
       ),
     ),
