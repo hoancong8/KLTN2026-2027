@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
+import 'package:sipm_mobile/app/consts/app_validator.dart';
 import 'package:sipm_mobile/app/services/secure_storage_service.dart';
 import 'package:sipm_mobile/app/services/signalr_service.dart';
 import 'package:sipm_mobile/domain/entities/auth_token.dart';
@@ -386,3 +387,7 @@ final createFriendshipRequestUseCaseProvider =
     Provider<CreateFriendshipRequestUseCase>((ref) {
       return CreateFriendshipRequestUseCase(ref.watch(chatRepositoryProvider));
     });
+
+final appValidatorProvider = Provider<AppValidator>((ref) {
+  return AppValidator();
+});

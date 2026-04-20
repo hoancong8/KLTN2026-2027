@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sipm_mobile/app/consts/app_color.dart';
 import 'package:sipm_mobile/app/l10n_gen/app_localizations.dart';
+import 'package:sipm_mobile/app/provider.dart';
 import 'package:sipm_mobile/widget/app_text_field/app_text_field.dart';
 
 import '../login_vm/login_vm.dart';
@@ -76,6 +77,7 @@ class LoginMobile extends ConsumerWidget {
     AppLocalizations l10n,
     state,
   ) {
+    final validator = ref.read(appValidatorProvider);
     return Form(
       key: formKey,
       child: Column(
@@ -103,11 +105,8 @@ class LoginMobile extends ConsumerWidget {
               horizontal: 16,
               vertical: 16,
             ),
-            validator: (v) {
-              if (v == null || v.trim().isEmpty)
-                return l10n.auth_username_required;
-              return null;
-            },
+            validator: (v) =>
+                validator.validateEmptyText(v, l10n.auth_username_required),
           ),
           const SizedBox(height: 14),
 
@@ -134,11 +133,11 @@ class LoginMobile extends ConsumerWidget {
               horizontal: 16,
               vertical: 16,
             ),
-            validator: (v) {
-              if (v == null || v.isEmpty) return l10n.auth_password_required;
-              if (v.length < 4) return l10n.auth_password_too_short;
-              return null;
-            },
+            validator: (v) => validator.validatePassword(
+              v,
+              requiredMsg: l10n.auth_password_required,
+              minLengthMsg: l10n.auth_password_too_short,
+            ),
           ),
 
           // Quên mật khẩu (Align right)
