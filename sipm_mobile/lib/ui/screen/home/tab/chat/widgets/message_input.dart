@@ -87,34 +87,21 @@ class MessageInput extends StatelessWidget {
             const SizedBox(width: 10),
 
             GestureDetector(
-              onTap: isSending ? null : onSend,
+              onTap: onSend,
               child: Container(
                 width: 46,
                 height: 46,
                 decoration: BoxDecoration(
-                  color: isSending ? AppColor.cMuted : AppColor.cMain,
+                  color: AppColor.cMain,
                   shape: BoxShape.circle,
-                  boxShadow: isSending
-                      ? null
-                      : [
-                          BoxShadow(
+                  boxShadow: [BoxShadow(
                             color: AppColor.cMain.withValues(alpha: 0.3),
                             blurRadius: 8,
                             offset: const Offset(0, 4),
                           ),
-                        ],
+                  ],
                 ),
-                child: isSending
-                    ? Padding(
-                        padding: const EdgeInsets.all(13),
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            AppColor.white,
-                          ),
-                        ),
-                      )
-                    : Icon(Icons.send_rounded, color: AppColor.white, size: 22),
+                child: Icon(Icons.send_rounded, color: AppColor.white, size: 22),
               ),
             ),
           ],

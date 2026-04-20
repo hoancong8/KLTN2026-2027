@@ -1,5 +1,7 @@
 import 'package:equatable/equatable.dart';
 
+enum MessageStatus{ sending, sent, error }
+
 class ChatMessage extends Equatable {
   final int id;
   final int userId;
@@ -11,7 +13,9 @@ class ChatMessage extends Equatable {
   final int receiverReadState;
   final String message;
   final DateTime creationTime;
-  final String sharedMessageId;
+  final String? sharedMessageId;
+  final MessageStatus status;
+  final String? localId;
 
   const ChatMessage({
     required this.id,
@@ -24,7 +28,9 @@ class ChatMessage extends Equatable {
     required this.receiverReadState,
     required this.message,
     required this.creationTime,
-    required this.sharedMessageId,
+    this.sharedMessageId,
+    this.status = MessageStatus.sent,
+    this.localId
   });
 
   bool get isMine => side == 1;
@@ -42,5 +48,7 @@ class ChatMessage extends Equatable {
     message,
     creationTime,
     sharedMessageId,
+    status,
+    localId
   ];
 }

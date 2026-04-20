@@ -79,6 +79,8 @@ class ChatDetailViewModel extends StateNotifier<ChatDetailState> {
 
   final ISignalRService signalRService;
   final VoidCallback? onFriendshipChanged;
+  final List<ChatMessage> _messageQueue = [];
+  bool _isProcessingQueue = false;
 
   ChatDetailViewModel({
     required this.friendUserId,
@@ -176,6 +178,32 @@ class ChatDetailViewModel extends StateNotifier<ChatDetailState> {
       // Nếu tin nhắn từ friend → đánh dấu đã đọc trên server
       if (newMessage.userId == friendUserId) {
         markAllAsRead();
+      }
+
+      if (newMessage.userId != friendUserId) {
+        final optimisticIndex = state.allMessages.indexWhere(
+              (m) =>
+          m.status == MessageStatus.sending &&
+              m.message == newMessage.message &&
+              m.localId != null,
+        );
+
+        if (optimisticIndex != -1) {
+          final updatedAll = List<ChatMessage>.from(state.allMessages);
+          updatedAll[optimisticIndex] = newMessage;
+
+          final updatedDisplayed = List<ChatMessage>.from(state.displayedMessages);
+          final dispIndex = updatedDisplayed.indexWhere((m) => m.localId == state.allMessages[optimisticIndex].localId);
+          if (dispIndex != -1) {
+            updatedDisplayed[dispIndex] = newMessage;
+          }
+
+          state = state.copyWith(
+            allMessages: updatedAll,
+            displayedMessages: updatedDisplayed,
+          );
+          return;
+        }
       }
 
       // Thêm vào cuối danh sách
@@ -326,27 +354,102 @@ class ChatDetailViewModel extends StateNotifier<ChatDetailState> {
   }
 
   Future<void> sendMessage(String message) async {
-    if (message.trim().isEmpty || !mounted) return;
+    final text = message.trim();
+    if (text.isEmpty || !mounted) return;
+    final localMsg = ChatMessage(
+      id: -DateTime.now().microsecondsSinceEpoch, // ID âm tạm thời
+      userId: currentUserId ?? 0,
+      targetUserId: friendUserId,
+      side: 1,
+      readState: 1,
+      receiverReadState: 1,
+      message: text,
+      creationTime: DateTime.now(),
+      status: MessageStatus.sending,
+      localId: DateTime.now().microsecondsSinceEpoch.toString(),
+    );
 
-    state = state.copyWith(isSending: true);
+    // 2. Cập nhật UI ngay lập tức
+    state = state.copyWith(
+      allMessages: [...state.allMessages, localMsg],
+      displayedMessages: [...state.displayedMessages, localMsg],
+    );
 
-    try {
-      await sendMessageUseCase.execute(
-        userId: friendUserId,
-        tenantId: null,
-        message: message,
-      );
-
-      if (!mounted) return;
-      state = state.copyWith(isSending: false);
-    } catch (e) {
-      if (!mounted) return;
-      state = state.copyWith(
-        isSending: false,
-        error: AppExceptionHandler.handle(e),
-      );
+    // 3. Đưa vào hàng đợi và xử lý
+    _messageQueue.add(localMsg);
+    _processQueue();
     }
+
+  Future<void> _processQueue() async {
+    if (_isProcessingQueue || _messageQueue.isEmpty) return;
+    _isProcessingQueue = true;
+
+    while (_messageQueue.isNotEmpty) {
+      final msg = _messageQueue.first;
+      try {
+        await sendMessageUseCase.execute(
+          userId: friendUserId,
+          tenantId: null,
+          message: msg.message,
+        );
+        // Sau khi gửi thành công qua SignalR invoke,
+        // SignalR sẽ tự push lại tin nhắn thật qua listener (_addMessageToState)
+        // nên ta chỉ cần xóa khỏi queue.
+        _messageQueue.removeAt(0);
+      } catch (e) {
+        AppLog.error('Error sending message: $e');
+        if (!mounted) break;
+
+        // Cập nhật trạng thái lỗi cho tin nhắn
+        final updatedAll = state.allMessages.map((m) {
+          if (m.localId == msg.localId) {
+            return ChatMessage(
+              id: m.id,
+              userId: m.userId,
+              targetUserId: m.targetUserId,
+              side: m.side,
+              readState: m.readState,
+              receiverReadState: m.receiverReadState,
+              message: m.message,
+              creationTime: m.creationTime,
+              status: MessageStatus.error,
+              localId: m.localId,
+            );
+          }
+          return m;
+        }).toList();
+
+        final updatedDisplayed = state.displayedMessages.map((m) {
+          if (m.localId == msg.localId) {
+            return ChatMessage(
+              id: m.id,
+              userId: m.userId,
+              targetUserId: m.targetUserId,
+              side: m.side,
+              readState: m.readState,
+              receiverReadState: m.receiverReadState,
+              message: m.message,
+              creationTime: m.creationTime,
+              status: MessageStatus.error,
+              localId: m.localId,
+            );
+          }
+          return m;
+        }).toList();
+
+        state = state.copyWith(
+          allMessages: updatedAll,
+          displayedMessages: updatedDisplayed,
+        );
+
+        _messageQueue.removeAt(0); // Tạm thời bỏ qua tin nhắn lỗi để không kẹt queue
+      }
+    }
+
+    _isProcessingQueue = false;
   }
+
+
 
   Future<void> markAllAsRead() async {
     if (!mounted) return;

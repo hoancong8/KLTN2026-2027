@@ -109,11 +109,16 @@ class _MessageBubbleState extends ConsumerState<MessageBubble>
               ),
               if (widget.message.isMine) ...[
                 const SizedBox(width: 4),
-                Icon(
-                  Icons.done_all,
-                  size: 14,
-                  color: AppColor.white.withValues(alpha: 0.7),
-                ),
+                if (widget.message.status == MessageStatus.sending)
+                  const Icon(Icons.access_time, size: 14, color: AppColor.white)
+                else if (widget.message.status == MessageStatus.error)
+                  const Icon(Icons.error_outline, size: 14, color: AppColor.white)
+                else
+                  Icon(
+                    Icons.done_all,
+                    size: 14,
+                    color: AppColor.white.withValues(alpha: 0.7),
+                  ),
               ],
             ],
           ),
@@ -150,7 +155,12 @@ class _MessageBubbleState extends ConsumerState<MessageBubble>
                 ),
                 if (widget.message.isMine) ...[
                   const SizedBox(width: 4),
-                  const Icon(Icons.done_all, size: 12, color: Colors.white),
+                  if (widget.message.status == MessageStatus.sending)
+                    const Icon(Icons.access_time, size: 12, color: Colors.white)
+                  else if (widget.message.status == MessageStatus.error)
+                    const Icon(Icons.error_outline, size: 12, color: Colors.white)
+                  else
+                    const Icon(Icons.done_all, size: 12, color: Colors.white),
                 ],
               ],
             ),
