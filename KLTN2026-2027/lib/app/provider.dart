@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -124,6 +125,20 @@ final dioProvider = Provider<Dio>((ref) {
   dio.httpClientAdapter = AppAuthInterceptor.buildAdapter();
 
   dio.interceptors.add(AppAuthInterceptor(ref, dio));
+
+  if (kDebugMode) {
+    dio.interceptors.add(
+      PrettyDioLogger(
+        requestHeader: true,
+        requestBody: true,
+        responseBody: true,
+        responseHeader: false,
+        error: true,
+        compact: true,
+        maxWidth: 90,
+      ),
+    );
+  }
 
   return dio;
 });

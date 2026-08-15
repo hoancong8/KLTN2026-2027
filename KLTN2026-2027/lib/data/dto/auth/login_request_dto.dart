@@ -1,12 +1,12 @@
 class LoginRequestDto {
-  final String userNameOrEmailAddress;
+  final String email;
   final String password;
   final String? twoFactorVerificationCode;
   final String? twoFactorRememberClientToken;
   final bool? rememberClient;
 
   LoginRequestDto({
-    required this.userNameOrEmailAddress,
+    required this.email,
     required this.password,
     this.twoFactorVerificationCode,
     this.twoFactorRememberClientToken,
@@ -14,7 +14,7 @@ class LoginRequestDto {
   });
 
   Map<String, dynamic> toJson() => {
-    'userNameOrEmailAddress': userNameOrEmailAddress,
+    'email': email,
     'password': password,
     if (twoFactorVerificationCode != null)
       'twoFactorVerificationCode': twoFactorVerificationCode,

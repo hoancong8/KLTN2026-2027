@@ -13,7 +13,7 @@ class AppConfig {
   // URL mặc định theo environment và platform
   static String get _defaultBaseUrl {
     if (env == 'prod') {
-      return 'https://sipm.lamhai.net'; // Production
+      return 'http://192.168.1.80:54796'; // Production
     }
 
     // Development - Tự động detect platform
@@ -39,9 +39,10 @@ class AppConfig {
   // - Thường là: 192.168.1.x hoặc 192.168.0.x
 
   // ===== API paths =====
-  static const login = '/api/TokenAuth/Authenticate';
-  static const refreshToken = '/api/TokenAuth/RefreshToken';
-  static const logOut = '/api/TokenAuth/LogOut';
+  static const login = '/api/v1/auth/login';
+  static const register = '/api/v1/auth/register';
+  static const refreshToken = '/api/v1/auth/refresh';
+  static const logOut = '/api/v1/auth/logout';
   static const changePassword = '/api/services/app/Profile/ChangePassword';
   static const sendTwoFactorCode = '/api/TokenAuth/SendTwoFactorAuthCode';
   static const tenantInfo = '/TenantInfo';

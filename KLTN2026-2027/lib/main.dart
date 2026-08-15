@@ -39,7 +39,7 @@ void main() async {
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
   // 3. Determine initial route concurrently under native splash
-  String initialRoute = AppConfig.homePath;
+  String initialRoute = AppConfig.loginPath;
   AuthToken? finalToken;
   try {
     final token = await SecureStorageService.instance.getAuthToken();

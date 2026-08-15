@@ -20,7 +20,7 @@ class AuthRepositoryImpl implements AuthRepository {
     required String password,
   }) async {
     final dto = LoginRequestDto(
-      userNameOrEmailAddress: username,
+      email: username,
       password: password,
     );
 
