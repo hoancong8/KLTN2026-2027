@@ -1,7 +1,6 @@
 // ui/login/login_vm.dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
-import 'package:kltn2026_2027/app/consts/app_log.dart';
 import '../../../../app/provider.dart';
 import '../../../../app/services/secure_storage_service.dart';
 import '../../../../domain/exceptions/auth_exceptions.dart';
@@ -10,7 +9,6 @@ import '../../../../domain/usecases/auth/login_usecase.dart';
 import '../../../../domain/usecases/auth/register_device_token_usecase.dart';
 import '../../../../domain/usecases/auth/biometric_usecase.dart';
 import '../../../../domain/exceptions/app_exception.dart';
-import '../../../../app/utils/app_exception_handler.dart';
 import 'login_state.dart';
 
 //Provider for LoginViewModel
@@ -63,6 +61,9 @@ class LoginViewModel extends StateNotifier<LoginState> {
 
       // Lưu auth token vào provider toàn cục
       ref.read(authTokenProvider.notifier).state = token;
+
+      // Lấy thông tin người dùng và danh sách quyền (permissions)
+      await ref.read(currentUserProfileProvider.notifier).fetchProfile();
 
       // Lưu last login credentials để tự điền hoặc dùng cho sinh trắc
       if (username.trim().isNotEmpty && password.isNotEmpty) {

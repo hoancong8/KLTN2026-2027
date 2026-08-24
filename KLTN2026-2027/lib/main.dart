@@ -1,5 +1,4 @@
 // main.dart
-import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -9,11 +8,11 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:kltn2026_2027/app/consts/app_log.dart';
 import 'package:kltn2026_2027/domain/entities/auth_token.dart';
+import 'package:kltn2026_2027/domain/entities/user_profile.dart';
 import 'app/consts/app_config.dart';
 import 'app/my_app.dart';
 import 'app/services/secure_storage_service.dart';
 import 'app/provider.dart';
-import 'app/services/signalr_service.dart';
 import 'firebase_options.dart';
 
 // Background message handler
@@ -30,17 +29,17 @@ void main() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
 
-  if (!kIsWeb && AppConfig.env == 'dev') {
-    HttpOverrides.global = DevHttpOverrides();
-  }
-
   // 2. Initialize Firebase
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+  if (!kIsWeb) {
+    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+  }
 
   // 3. Determine initial route concurrently under native splash
   String initialRoute = AppConfig.loginPath;
   AuthToken? finalToken;
+  UserProfile? initialUserProfile;
+
   try {
     final token = await SecureStorageService.instance.getAuthToken();
     if (token != null) {
@@ -56,6 +55,11 @@ void main() async {
         await SecureStorageService.instance.saveAuthToken(newToken);
         initialRoute = AppConfig.homePath;
         finalToken = newToken;
+
+        // Fetch User Profile & Permissions for logged in user via Riverpod Notifier
+        initialUserProfile = await container
+            .read(currentUserProfileProvider.notifier)
+            .fetchProfile();
       } catch (e) {
         AppLog.info('[Main] Token refresh failed: $e');
         initialRoute = AppConfig.loginPath;
@@ -70,9 +74,11 @@ void main() async {
   // 4. Run app
   runApp(
     ProviderScope(
-      overrides: finalToken != null
-          ? [authTokenProvider.overrideWith((ref) => finalToken)]
-          : [],
+      overrides: [
+        if (finalToken != null) authTokenProvider.overrideWith((ref) => finalToken),
+        if (initialUserProfile != null)
+          currentUserProfileProvider.overrideWith(() => CurrentUserProfileNotifier(initialUserProfile)),
+      ],
       child: MyApp(initialRoute: initialRoute),
     ),
   );

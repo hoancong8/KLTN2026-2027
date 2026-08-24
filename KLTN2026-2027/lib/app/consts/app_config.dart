@@ -1,14 +1,18 @@
-import 'dart:io';
+import 'package:flutter/foundation.dart';
 
 class AppConfig {
   // ===== Environment =====
   static const env = String.fromEnvironment('ENV', defaultValue: 'dev');
 
   // ===== Base URL =====
-  static final baseUrl = String.fromEnvironment(
-    'BASE_URL',
-    defaultValue: _defaultBaseUrl,
-  );
+  static const _overrideBaseUrl = String.fromEnvironment('BASE_URL');
+
+  static String get baseUrl {
+    if (_overrideBaseUrl.isNotEmpty) {
+      return _overrideBaseUrl;
+    }
+    return _defaultBaseUrl;
+  }
 
   // URL mặc định theo environment và platform
   static String get _defaultBaseUrl {
@@ -16,10 +20,14 @@ class AppConfig {
       return 'http://192.168.1.80:54796'; // Production
     }
 
+    if (kIsWeb) {
+      return 'https://localhost:44302'; // Web Browser
+    }
+
     // Development - Tự động detect platform
-    if (Platform.isIOS) {
+    if (defaultTargetPlatform == TargetPlatform.iOS) {
       return 'https://localhost:44302'; // iOS Simulator
-    } else if (Platform.isAndroid) {
+    } else if (defaultTargetPlatform == TargetPlatform.android) {
       return 'https://10.0.2.2:44302'; // Android Emulator
     } else {
       return 'https://localhost:44302'; // Default
@@ -70,6 +78,14 @@ class AppConfig {
       '/api/services/app/Friendship/CreateFriendshipRequest';
   static const markAllUnreadMessagesOfUserAsRead =
       '/api/services/app/Chat/MarkAllUnreadMessagesOfUserAsRead';
+
+  // ===== v1 API Paths =====
+  static const usersPath = '/api/v1/user';
+  static const userMePath = '/api/v1/user/me';
+  static const venuesPath = '/api/v1/venues';
+  static const venueSchedulesPath = '/api/v1/venue-schedules';
+  static const courtsPath = '/api/v1/courts';
+  static const courtPricingsPath = '/api/v1/court-pricings';
 
   // ===== Routes =====
   static const splashPath = '/';

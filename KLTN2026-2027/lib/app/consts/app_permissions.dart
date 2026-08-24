@@ -221,4 +221,27 @@ class DmsPermissions {
   static const String recruitmentPlanCreate = "Dms.RecruitmentPlan.Create";
   static const String recruitmentPlanEdit = "Dms.RecruitmentPlan.Edit";
   static const String recruitmentPlanDelete = "Dms.RecruitmentPlan.Delete";
+
+  // --- v1 System & Badminton Club Permissions ---
+  static const String systemAdministrator = "System.Administrator";
+
+  static const String courtsCreate = "Courts.Create";
+  static const String courtsUpdate = "Courts.Update";
+  static const String courtsDelete = "Courts.Delete";
+  static const String courtsRead = "Courts.Read";
+
+  static const String venuesCreate = "Venues.Create";
+  static const String venuesUpdate = "Venues.Update";
+  static const String venuesDelete = "Venues.Delete";
+  static const String venuesRead = "Venues.Read";
+
+  static const String venueSchedulesCreate = "VenueSchedules.Create";
+  static const String venueSchedulesUpdate = "VenueSchedules.Update";
+  static const String venueSchedulesDelete = "VenueSchedules.Delete";
+  static const String venueSchedulesRead = "VenueSchedules.Read";
+
+  static const String courtPricingsCreate = "CourtPricings.Create";
+  static const String courtPricingsUpdate = "CourtPricings.Update";
+  static const String courtPricingsDelete = "CourtPricings.Delete";
+  static const String courtPricingsRead = "CourtPricings.Read";
 }

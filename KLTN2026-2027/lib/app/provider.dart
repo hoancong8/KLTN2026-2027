@@ -10,6 +10,7 @@ import 'package:kltn2026_2027/app/services/secure_storage_service.dart';
 import 'package:kltn2026_2027/app/services/signalr_service.dart';
 import 'package:kltn2026_2027/domain/entities/auth_token.dart';
 import 'package:kltn2026_2027/domain/entities/employee.dart';
+import '../domain/entities/user_profile.dart';
 import 'package:kltn2026_2027/domain/usecases/auth/logout_usecase.dart';
 import 'package:kltn2026_2027/domain/usecases/profile/change_profile_usecase.dart';
 import 'package:kltn2026_2027/domain/usecases/auth/biometric_usecase.dart';
@@ -74,6 +75,44 @@ import '../domain/usecases/auth/get_employee_id_usecase.dart';
 import 'consts/app_config.dart';
 import 'services/app_auth_interceptor.dart';
 
+// Admin imports - Remote DataSources
+import '../data/datasource/remote/abstract/user_remote_datasource.dart';
+import '../data/datasource/remote/implement/user_remote_datasource_impl.dart';
+import '../data/datasource/remote/abstract/venue_remote_datasource.dart';
+import '../data/datasource/remote/implement/venue_remote_datasource_impl.dart';
+import '../data/datasource/remote/abstract/venue_schedule_remote_datasource.dart';
+import '../data/datasource/remote/implement/venue_schedule_remote_datasource_impl.dart';
+import '../data/datasource/remote/abstract/court_remote_datasource.dart';
+import '../data/datasource/remote/implement/court_remote_datasource_impl.dart';
+import '../data/datasource/remote/abstract/court_pricing_remote_datasource.dart';
+import '../data/datasource/remote/implement/court_pricing_remote_datasource_impl.dart';
+
+// Admin imports - Repositories
+import '../domain/repositories/user_repository.dart';
+import '../data/repositories/user_repository_impl.dart';
+import '../domain/repositories/venue_repository.dart';
+import '../data/repositories/venue_repository_impl.dart';
+import '../domain/repositories/venue_schedule_repository.dart';
+import '../data/repositories/venue_schedule_repository_impl.dart';
+import '../domain/repositories/court_repository.dart';
+import '../data/repositories/court_repository_impl.dart';
+import '../domain/repositories/court_pricing_repository.dart';
+import '../data/repositories/court_pricing_repository_impl.dart';
+
+// Admin imports - UseCases
+import '../domain/usecases/user/get_user_me_usecase.dart';
+import '../domain/usecases/user/get_users_usecase.dart';
+import '../domain/usecases/user/lock_user_usecase.dart';
+import '../domain/usecases/user/update_user_roles_usecase.dart';
+import '../domain/usecases/venue/get_venues_usecase.dart';
+import '../domain/usecases/venue/manage_venue_usecase.dart';
+import '../domain/usecases/venue_schedule/get_venue_schedules_usecase.dart';
+import '../domain/usecases/venue_schedule/manage_venue_schedule_usecase.dart';
+import '../domain/usecases/court/get_courts_usecase.dart';
+import '../domain/usecases/court/manage_court_usecase.dart';
+import '../domain/usecases/court_pricing/get_court_pricings_usecase.dart';
+import '../domain/usecases/court_pricing/manage_court_pricing_usecase.dart';
+
 // ============================================================================
 // STATE PROVIDERS
 // ============================================================================
@@ -93,6 +132,59 @@ final isAdminProvider = Provider<bool>((ref) {
   final roleName = employee.roleName?.toLowerCase() ?? '';
 
   return roleName.contains('admin') || roleId == 1;
+});
+
+/// Notifier quản lý thông tin profile & permissions người dùng đang đăng nhập
+class CurrentUserProfileNotifier extends Notifier<UserProfile?> {
+  final UserProfile? initialValue;
+
+  CurrentUserProfileNotifier([this.initialValue]);
+
+  @override
+  UserProfile? build() => initialValue;
+
+  void setProfile(UserProfile? profile) {
+    state = profile;
+  }
+
+  Future<UserProfile?> fetchProfile() async {
+    try {
+      final profile = await ref.read(getUserMeUseCaseProvider).execute();
+      state = profile;
+      return profile;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  void clear() {
+    state = null;
+  }
+}
+
+/// Global user profile provider (Riverpod NotifierProvider)
+final currentUserProfileProvider =
+    NotifierProvider<CurrentUserProfileNotifier, UserProfile?>(
+  CurrentUserProfileNotifier.new,
+);
+
+/// Helper check permission của user hiện tại
+final hasPermissionProvider = Provider.family<bool, String>((ref, permissionName) {
+  final userProfile = ref.watch(currentUserProfileProvider);
+  if (userProfile == null) return false;
+  if (userProfile.roles.contains('Admin') ||
+      userProfile.permissions.contains('System.Administrator')) {
+    return true; // Admin có toàn quyền
+  }
+  return userProfile.permissions.contains(permissionName);
+});
+
+/// Helper check role Admin từ user profile
+final isAdminUserProvider = Provider<bool>((ref) {
+  final userProfile = ref.watch(currentUserProfileProvider);
+  if (userProfile == null) return false;
+  return userProfile.roles.contains('Admin') ||
+      userProfile.permissions.contains('System.Administrator');
 });
 
 /// Provider for current tab index in Home Screen
@@ -122,7 +214,12 @@ final dioProvider = Provider<Dio>((ref) {
       headers: {'Content-Type': 'application/json'},
     ),
   );
-  dio.httpClientAdapter = AppAuthInterceptor.buildAdapter();
+  if (!kIsWeb) {
+    final adapter = AppAuthInterceptor.buildAdapter();
+    if (adapter != null) {
+      dio.httpClientAdapter = adapter;
+    }
+  }
 
   dio.interceptors.add(AppAuthInterceptor(ref, dio));
 
@@ -405,4 +502,101 @@ final createFriendshipRequestUseCaseProvider =
 
 final appValidatorProvider = Provider<AppValidator>((ref) {
   return AppValidator();
+});
+
+// ============================================================================
+// ADMIN REMOTE DATASOURCES
+// ============================================================================
+final userRemoteDatasourceProvider = Provider<UserRemoteDatasource>((ref) {
+  return UserRemoteDatasourceImpl(ref.watch(dioProvider));
+});
+
+final venueRemoteDatasourceProvider = Provider<VenueRemoteDatasource>((ref) {
+  return VenueRemoteDatasourceImpl(ref.watch(dioProvider));
+});
+
+final venueScheduleRemoteDatasourceProvider = Provider<VenueScheduleRemoteDatasource>((ref) {
+  return VenueScheduleRemoteDatasourceImpl(ref.watch(dioProvider));
+});
+
+final courtRemoteDatasourceProvider = Provider<CourtRemoteDatasource>((ref) {
+  return CourtRemoteDatasourceImpl(ref.watch(dioProvider));
+});
+
+final courtPricingRemoteDatasourceProvider = Provider<CourtPricingRemoteDatasource>((ref) {
+  return CourtPricingRemoteDatasourceImpl(ref.watch(dioProvider));
+});
+
+// ============================================================================
+// ADMIN REPOSITORIES
+// ============================================================================
+final userRepositoryProvider = Provider<UserRepository>((ref) {
+  return UserRepositoryImpl(ref.watch(userRemoteDatasourceProvider));
+});
+
+final venueRepositoryProvider = Provider<VenueRepository>((ref) {
+  return VenueRepositoryImpl(ref.watch(venueRemoteDatasourceProvider));
+});
+
+final venueScheduleRepositoryProvider = Provider<VenueScheduleRepository>((ref) {
+  return VenueScheduleRepositoryImpl(ref.watch(venueScheduleRemoteDatasourceProvider));
+});
+
+final courtRepositoryProvider = Provider<CourtRepository>((ref) {
+  return CourtRepositoryImpl(ref.watch(courtRemoteDatasourceProvider));
+});
+
+final courtPricingRepositoryProvider = Provider<CourtPricingRepository>((ref) {
+  return CourtPricingRepositoryImpl(ref.watch(courtPricingRemoteDatasourceProvider));
+});
+
+// ============================================================================
+// ADMIN USECASES
+// ============================================================================
+final getUserMeUseCaseProvider = Provider<GetUserMeUseCase>((ref) {
+  return GetUserMeUseCase(ref.watch(userRepositoryProvider));
+});
+
+final getUsersUseCaseProvider = Provider<GetUsersUseCase>((ref) {
+  return GetUsersUseCase(ref.watch(userRepositoryProvider));
+});
+
+final lockUserUseCaseProvider = Provider<LockUserUseCase>((ref) {
+  return LockUserUseCase(ref.watch(userRepositoryProvider));
+});
+
+final updateUserRolesUseCaseProvider = Provider<UpdateUserRolesUseCase>((ref) {
+  return UpdateUserRolesUseCase(ref.watch(userRepositoryProvider));
+});
+
+final getVenuesUseCaseProvider = Provider<GetVenuesUseCase>((ref) {
+  return GetVenuesUseCase(ref.watch(venueRepositoryProvider));
+});
+
+final manageVenueUseCaseProvider = Provider<ManageVenueUseCase>((ref) {
+  return ManageVenueUseCase(ref.watch(venueRepositoryProvider));
+});
+
+final getVenueSchedulesUseCaseProvider = Provider<GetVenueSchedulesUseCase>((ref) {
+  return GetVenueSchedulesUseCase(ref.watch(venueScheduleRepositoryProvider));
+});
+
+final manageVenueScheduleUseCaseProvider = Provider<ManageVenueScheduleUseCase>((ref) {
+  return ManageVenueScheduleUseCase(ref.watch(venueScheduleRepositoryProvider));
+});
+
+final getCourtsUseCaseProvider = Provider<GetCourtsUseCase>((ref) {
+  return GetCourtsUseCase(ref.watch(courtRepositoryProvider));
+});
+
+final manageCourtUseCaseProvider = Provider<ManageCourtUseCase>((ref) {
+  return ManageCourtUseCase(ref.watch(courtRepositoryProvider));
+});
+
+final getCourtPricingsUseCaseProvider = Provider<GetCourtPricingsUseCase>((ref) {
+  return GetCourtPricingsUseCase(ref.watch(courtPricingRepositoryProvider));
+});
+
+final manageCourtPricingUseCaseProvider = Provider<ManageCourtPricingUseCase>((ref) {
+  return ManageCourtPricingUseCase(ref.watch(courtPricingRepositoryProvider));
 });

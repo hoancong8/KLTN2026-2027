@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -178,12 +179,20 @@ class AppAuthInterceptor extends Interceptor {
       AuthToken currentToken,
       Ref ref,
       ) async {
-    _refreshDio ??= Dio(
-      BaseOptions(
-        baseUrl: AppConfig.baseUrl,
-        headers: {'Content-Type': 'application/json', 'FromMobile': 'true'},
-      ),
-    )..httpClientAdapter = buildAdapter();
+    if (_refreshDio == null) {
+      _refreshDio = Dio(
+        BaseOptions(
+          baseUrl: AppConfig.baseUrl,
+          headers: {'Content-Type': 'application/json', 'FromMobile': 'true'},
+        ),
+      );
+      if (!kIsWeb) {
+        final adapter = buildAdapter();
+        if (adapter != null) {
+          _refreshDio!.httpClientAdapter = adapter;
+        }
+      }
+    }
 
     try {
       AppLog.info(
@@ -268,7 +277,8 @@ class AppAuthInterceptor extends Interceptor {
     });
   }
 
-  static IOHttpClientAdapter buildAdapter() {
+  static HttpClientAdapter? buildAdapter() {
+    if (kIsWeb) return null;
     return IOHttpClientAdapter(
       createHttpClient: () {
         final client = HttpClient();

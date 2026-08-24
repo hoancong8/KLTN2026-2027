@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import '../../../../app/consts/app_config.dart';
 import '../../../dto/notification/notification_message_dto.dart';
@@ -33,6 +34,8 @@ class NotificationRemoteDatasourceImpl extends BaseRemoteDatasource
 
   @override
   Future<void> initialize() async {
+    if (kIsWeb) return;
+
     const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
     const iosSettings = DarwinInitializationSettings(
       requestAlertPermission: true,
@@ -113,6 +116,7 @@ class NotificationRemoteDatasourceImpl extends BaseRemoteDatasource
   }
 
   Future<void> _showLocalNotification(RemoteMessage message) async {
+    if (kIsWeb) return;
     const androidDetails = AndroidNotificationDetails(
       'high_importance_channel',
       'High Importance Notifications',
@@ -138,7 +142,14 @@ class NotificationRemoteDatasourceImpl extends BaseRemoteDatasource
   }
 
   @override
-  Future<String?> getToken() => messaging.getToken();
+  Future<String?> getToken() async {
+    if (kIsWeb) return null;
+    try {
+      return await messaging.getToken();
+    } catch (_) {
+      return null;
+    }
+  }
 
   @override
   Future<void> registerDeviceToken(RegisterDeviceTokenRequestDto request) async {

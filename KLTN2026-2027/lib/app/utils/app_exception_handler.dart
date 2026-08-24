@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:dio/dio.dart';
 import '../../domain/exceptions/app_exception.dart';
 import '../../domain/exceptions/auth_exceptions.dart';
@@ -12,7 +11,7 @@ class AppExceptionHandler {
       return _handleDioException(error);
     }
 
-    if (error is SocketException) {
+    if (error.runtimeType.toString() == 'SocketException') {
       return const ConnectionException();
     }
 
