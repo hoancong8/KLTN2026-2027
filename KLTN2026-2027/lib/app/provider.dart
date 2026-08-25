@@ -52,6 +52,15 @@ import '../domain/usecases/auth/change_password_usecase.dart';
 import '../domain/usecases/auth/delete_device_token_usecase.dart';
 import '../domain/usecases/auth/login_with_otp_usecase.dart';
 // Attendance imports
+import '../domain/usecases/user/get_user_permissions_usecase.dart';
+import '../domain/usecases/user/get_all_permissions_usecase.dart';
+import '../domain/usecases/user/manage_user_usecase.dart';
+import '../domain/usecases/role/get_roles_usecase.dart';
+import '../domain/usecases/role/manage_role_usecase.dart';
+import '../data/datasource/remote/abstract/role_remote_datasource.dart';
+import '../data/datasource/remote/implement/role_remote_datasource_impl.dart';
+import '../domain/repositories/role_repository.dart';
+import '../data/repositories/role_repository_impl.dart';
 import '../domain/usecases/chat/get_chat_messages_usecase.dart';
 import '../domain/usecases/chat/mark_all_unread_messages_as_read_usecase.dart';
 import '../domain/usecases/chat/send_message_usecase.dart';
@@ -167,6 +176,12 @@ final currentUserProfileProvider =
     NotifierProvider<CurrentUserProfileNotifier, UserProfile?>(
   CurrentUserProfileNotifier.new,
 );
+
+/// Global provider danh sách permissions của user hiện tại
+final userPermissionsProvider = Provider<List<String>>((ref) {
+  final userProfile = ref.watch(currentUserProfileProvider);
+  return userProfile?.permissions ?? [];
+});
 
 /// Helper check permission của user hiện tại
 final hasPermissionProvider = Provider.family<bool, String>((ref, permissionName) {
@@ -507,6 +522,10 @@ final appValidatorProvider = Provider<AppValidator>((ref) {
 // ============================================================================
 // ADMIN REMOTE DATASOURCES
 // ============================================================================
+final roleRemoteDatasourceProvider = Provider<RoleRemoteDatasource>((ref) {
+  return RoleRemoteDatasourceImpl(ref.watch(dioProvider));
+});
+
 final userRemoteDatasourceProvider = Provider<UserRemoteDatasource>((ref) {
   return UserRemoteDatasourceImpl(ref.watch(dioProvider));
 });
@@ -530,6 +549,10 @@ final courtPricingRemoteDatasourceProvider = Provider<CourtPricingRemoteDatasour
 // ============================================================================
 // ADMIN REPOSITORIES
 // ============================================================================
+final roleRepositoryProvider = Provider<RoleRepository>((ref) {
+  return RoleRepositoryImpl(ref.watch(roleRemoteDatasourceProvider));
+});
+
 final userRepositoryProvider = Provider<UserRepository>((ref) {
   return UserRepositoryImpl(ref.watch(userRemoteDatasourceProvider));
 });
@@ -557,8 +580,28 @@ final getUserMeUseCaseProvider = Provider<GetUserMeUseCase>((ref) {
   return GetUserMeUseCase(ref.watch(userRepositoryProvider));
 });
 
+final getUserPermissionsUseCaseProvider = Provider<GetUserPermissionsUseCase>((ref) {
+  return GetUserPermissionsUseCase(ref.watch(userRepositoryProvider));
+});
+
+final getAllPermissionsUseCaseProvider = Provider<GetAllPermissionsUseCase>((ref) {
+  return GetAllPermissionsUseCase(ref.watch(userRepositoryProvider));
+});
+
 final getUsersUseCaseProvider = Provider<GetUsersUseCase>((ref) {
   return GetUsersUseCase(ref.watch(userRepositoryProvider));
+});
+
+final getRolesUseCaseProvider = Provider<GetRolesUseCase>((ref) {
+  return GetRolesUseCase(ref.watch(roleRepositoryProvider));
+});
+
+final manageRoleUseCaseProvider = Provider<ManageRoleUseCase>((ref) {
+  return ManageRoleUseCase(ref.watch(roleRepositoryProvider));
+});
+
+final manageUserUseCaseProvider = Provider<ManageUserUseCase>((ref) {
+  return ManageUserUseCase(ref.watch(userRepositoryProvider));
 });
 
 final lockUserUseCaseProvider = Provider<LockUserUseCase>((ref) {

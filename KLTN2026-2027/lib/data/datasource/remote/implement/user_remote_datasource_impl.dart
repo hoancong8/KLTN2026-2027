@@ -7,6 +7,10 @@ import '../../../dto/user/user_roles_request_dto.dart';
 import '../abstract/user_remote_datasource.dart';
 import '../base_remote_datasource.dart';
 
+import '../../../dto/user/permission_group_response_dto.dart';
+import '../../../dto/user/user_permissions_response_dto.dart';
+import '../../../dto/user/user_management_request_dto.dart';
+
 class UserRemoteDatasourceImpl extends BaseRemoteDatasource implements UserRemoteDatasource {
   final Dio dio;
 
@@ -17,6 +21,26 @@ class UserRemoteDatasourceImpl extends BaseRemoteDatasource implements UserRemot
     try {
       final response = await dio.get(AppConfig.userMePath);
       return handleResponse(response, (data) => UserResponseDto.fromJson(data));
+    } catch (e) {
+      throw handleError(e);
+    }
+  }
+
+  @override
+  Future<UserPermissionsResponseDto> getUserPermissions() async {
+    try {
+      final response = await dio.get(AppConfig.userPermissionsPath);
+      return handleResponse(response, (data) => UserPermissionsResponseDto.fromJson(data));
+    } catch (e) {
+      throw handleError(e);
+    }
+  }
+
+  @override
+  Future<List<PermissionGroupResponseDto>> getAllPermissions() async {
+    try {
+      final response = await dio.get(AppConfig.userAllPermissionsPath);
+      return handleListResponse(response, (data) => PermissionGroupResponseDto.fromJson(data));
     } catch (e) {
       throw handleError(e);
     }
@@ -57,6 +81,42 @@ class UserRemoteDatasourceImpl extends BaseRemoteDatasource implements UserRemot
   }
 
   @override
+  Future<void> createUser(CreateUserRequestDto request) async {
+    try {
+      final response = await dio.post(
+        AppConfig.usersPath,
+        data: request.toJson(),
+      );
+      return handleResponse(response, (_) => null);
+    } catch (e) {
+      throw handleError(e);
+    }
+  }
+
+  @override
+  Future<void> updateUser(String id, UpdateUserRequestDto request) async {
+    try {
+      final response = await dio.put(
+        '${AppConfig.usersPath}/$id',
+        data: request.toJson(),
+      );
+      return handleResponse(response, (_) => null);
+    } catch (e) {
+      throw handleError(e);
+    }
+  }
+
+  @override
+  Future<void> deleteUser(String id) async {
+    try {
+      final response = await dio.delete('${AppConfig.usersPath}/$id');
+      return handleResponse(response, (_) => null);
+    } catch (e) {
+      throw handleError(e);
+    }
+  }
+
+  @override
   Future<void> lockUser(String id, UserLockRequestDto request) async {
     try {
       final response = await dio.put(
@@ -74,6 +134,19 @@ class UserRemoteDatasourceImpl extends BaseRemoteDatasource implements UserRemot
     try {
       final response = await dio.put(
         '${AppConfig.usersPath}/$id/roles',
+        data: request.toJson(),
+      );
+      return handleResponse(response, (_) => null);
+    } catch (e) {
+      throw handleError(e);
+    }
+  }
+
+  @override
+  Future<void> resetPassword(String id, ResetPasswordRequestDto request) async {
+    try {
+      final response = await dio.post(
+        '${AppConfig.usersPath}/$id/reset-password',
         data: request.toJson(),
       );
       return handleResponse(response, (_) => null);

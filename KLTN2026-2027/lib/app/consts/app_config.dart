@@ -34,19 +34,7 @@ class AppConfig {
     }
   }
 
-  // Lưu ý khi test trên máy thật (Real Device):
-  // Máy thật KHÔNG thể dùng localhost hay 10.0.2.2
-  // Phải dùng IP máy tính trong cùng mạng WiFi:
-  //
-  // Cách 1: Dùng --dart-define khi chạy
-  // flutter run --dart-define=BASE_URL=http://192.168.1.100:44302
-  //
-  // Cách 2: Tìm IP máy tính:
-  // - Windows: mở CMD, gõ: ipconfig (tìm IPv4 Address)
-  // - macOS/Linux: mở Terminal, gõ: ifconfig (tìm inet)
-  // - Thường là: 192.168.1.x hoặc 192.168.0.x
-
-  // ===== API paths =====
+  // ===== 🔐 1. Authentication APIs (/api/v1/auth) =====
   static const login = '/api/v1/auth/login';
   static const register = '/api/v1/auth/register';
   static const refreshToken = '/api/v1/auth/refresh';
@@ -55,6 +43,28 @@ class AppConfig {
   static const sendTwoFactorCode = '/api/TokenAuth/SendTwoFactorAuthCode';
   static const tenantInfo = '/TenantInfo';
 
+  // ===== 🛡️ 2. Roles Management APIs (/api/v1/roles) =====
+  static const rolesPath = '/api/v1/roles';
+
+  // ===== 👥 3. User Management APIs (/api/v1/user) =====
+  static const usersPath = '/api/v1/user';
+  static const userMePath = '/api/v1/user/me';
+  static const userPermissionsPath = '/api/v1/user/permissions';
+  static const userAllPermissionsPath = '/api/v1/user/all-permissions';
+
+  // ===== 🏢 3. Venues Management APIs (/api/v1/venues) =====
+  static const venuesPath = '/api/v1/venues';
+
+  // ===== 📅 4. Venue Schedules Management APIs (/api/v1/venue-schedules) =====
+  static const venueSchedulesPath = '/api/v1/venue-schedules';
+
+  // ===== 🏸 5. Courts Management APIs (/api/v1/courts) =====
+  static const courtsPath = '/api/v1/courts';
+
+  // ===== 💰 6. Court Pricings Management APIs (/api/v1/court-pricings) =====
+  static const courtPricingsPath = '/api/v1/court-pricings';
+
+  // ===== 🔔 Notification & Legacy Service APIs =====
   static const registerDeviceToken =
       '/api/services/app/FcmNotification/SaveDeviceToken';
   static const deleteDeviceToken =
@@ -64,6 +74,7 @@ class AppConfig {
   static const sessionInfoPath =
       '/api/services/app/Session/GetCurrentLoginInformations';
 
+  // ===== 💬 Chat Services =====
   static const getChatImage = '/App/Chat/GetImage';
   static const getChatFile = '/App/Chat/GetFile';
   static const uploadChatFile = '/App/Chat/UploadFile';
@@ -79,15 +90,7 @@ class AppConfig {
   static const markAllUnreadMessagesOfUserAsRead =
       '/api/services/app/Chat/MarkAllUnreadMessagesOfUserAsRead';
 
-  // ===== v1 API Paths =====
-  static const usersPath = '/api/v1/user';
-  static const userMePath = '/api/v1/user/me';
-  static const venuesPath = '/api/v1/venues';
-  static const venueSchedulesPath = '/api/v1/venue-schedules';
-  static const courtsPath = '/api/v1/courts';
-  static const courtPricingsPath = '/api/v1/court-pricings';
-
-  // ===== Routes =====
+  // ===== 🚦 Routes App (GoRouter) =====
   static const splashPath = '/';
   static const loginPath = '/login';
   static const logoutPath = '/logOut';
