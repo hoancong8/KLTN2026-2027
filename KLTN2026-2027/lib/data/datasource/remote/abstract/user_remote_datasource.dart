@@ -2,10 +2,8 @@ import '../../../dto/common/paged_result_dto.dart';
 import '../../../dto/user/user_lock_request_dto.dart';
 import '../../../dto/user/user_response_dto.dart';
 import '../../../dto/user/user_roles_request_dto.dart';
-
 import '../../../dto/user/permission_group_response_dto.dart';
 import '../../../dto/user/user_permissions_response_dto.dart';
-
 import '../../../dto/user/user_management_request_dto.dart';
 
 abstract class UserRemoteDatasource {
@@ -16,6 +14,10 @@ abstract class UserRemoteDatasource {
     int pageNumber = 1,
     int pageSize = 10,
     String? searchTerm,
+    String? email,
+    String? userName,
+    String? sortColumn,
+    int sortDirection = 1,
   });
   Future<UserResponseDto> getUserById(String id);
   Future<void> createUser(CreateUserRequestDto request);

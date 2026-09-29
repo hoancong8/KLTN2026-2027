@@ -18,9 +18,9 @@ class NotificationRemoteDatasourceImpl extends BaseRemoteDatasource
   final int? Function()? userIdProvider;
 
   final _messageReceivedController =
-  StreamController<NotificationMessageDto>.broadcast();
+      StreamController<NotificationMessageDto>.broadcast();
   final _messageOpenedController =
-  StreamController<NotificationMessageDto>.broadcast();
+      StreamController<NotificationMessageDto>.broadcast();
 
   NotificationMessageDto? _initialMessageCache;
   final Set<int> _foregroundLocalNotificationIds = {};
@@ -36,23 +36,26 @@ class NotificationRemoteDatasourceImpl extends BaseRemoteDatasource
   Future<void> initialize() async {
     if (kIsWeb) return;
 
-    const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+    const androidSettings = AndroidInitializationSettings(
+      '@mipmap/ic_launcher',
+    );
     const iosSettings = DarwinInitializationSettings(
       requestAlertPermission: true,
       requestBadgePermission: true,
       requestSoundPermission: true,
     );
-    const settings = InitializationSettings(android: androidSettings, iOS: iosSettings);
+    const settings = InitializationSettings(
+      android: androidSettings,
+      iOS: iosSettings,
+    );
 
     void onDidReceiveNotificationResponse(NotificationResponse response) {
       if (response.payload == null) return;
       try {
         final data = jsonDecode(response.payload!) as Map<String, dynamic>;
-        _messageOpenedController.add(NotificationMessageDto(
-          title: null,
-          body: null,
-          data: data,
-        ));
+        _messageOpenedController.add(
+          NotificationMessageDto(title: null, body: null, data: data),
+        );
       } catch (_) {}
     }
 
@@ -68,7 +71,9 @@ class NotificationRemoteDatasourceImpl extends BaseRemoteDatasource
       importance: Importance.high,
     );
     await localNotifications
-        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >()
         ?.createNotificationChannel(androidChannel);
 
     final fcmSettings = await messaging.requestPermission(
@@ -91,14 +96,18 @@ class NotificationRemoteDatasourceImpl extends BaseRemoteDatasource
 
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
       final messageId = int.tryParse(message.messageId ?? '');
-      if (messageId != null && _foregroundLocalNotificationIds.remove(messageId)) return;
+      if (messageId != null &&
+          _foregroundLocalNotificationIds.remove(messageId))
+        return;
       final dto = NotificationMessageDto.fromRemoteMessage(message);
       _messageOpenedController.add(dto);
     });
 
     final initialMessage = await messaging.getInitialMessage();
     if (initialMessage != null && !_isMessageFromSelf(initialMessage)) {
-      _initialMessageCache = NotificationMessageDto.fromRemoteMessage(initialMessage);
+      _initialMessageCache = NotificationMessageDto.fromRemoteMessage(
+        initialMessage,
+      );
     }
   }
 
@@ -130,7 +139,10 @@ class NotificationRemoteDatasourceImpl extends BaseRemoteDatasource
       presentBadge: true,
       presentSound: true,
     );
-    const details = NotificationDetails(android: androidDetails, iOS: iosDetails);
+    const details = NotificationDetails(
+      android: androidDetails,
+      iOS: iosDetails,
+    );
     final payload = message.data.isNotEmpty ? jsonEncode(message.data) : null;
     await localNotifications.show(
       message.hashCode, // local notification display ID
@@ -152,7 +164,9 @@ class NotificationRemoteDatasourceImpl extends BaseRemoteDatasource
   }
 
   @override
-  Future<void> registerDeviceToken(RegisterDeviceTokenRequestDto request) async {
+  Future<void> registerDeviceToken(
+    RegisterDeviceTokenRequestDto request,
+  ) async {
     try {
       await dio.post(AppConfig.registerDeviceToken, data: request.toJson());
     } catch (e) {
@@ -171,7 +185,10 @@ class NotificationRemoteDatasourceImpl extends BaseRemoteDatasource
       );
     } catch (_) {
       try {
-        await dio.delete(AppConfig.deleteDeviceToken, data: {'deviceToken': token});
+        await dio.delete(
+          AppConfig.deleteDeviceToken,
+          data: {'deviceToken': token},
+        );
       } catch (e) {
         throw handleError(e);
       }

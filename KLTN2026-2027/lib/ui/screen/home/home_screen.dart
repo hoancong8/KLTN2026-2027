@@ -28,7 +28,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     super.initState();
     _pageController = PageController(initialPage: ref.read(homeTabProvider));
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) return;
 
       final token = ref.read(authTokenProvider);
@@ -36,6 +36,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ref
             .read(homeViewModelProvider.notifier)
             .initialize(token.accessToken, token.userId);
+      }
+
+      // Tự động tải thông tin user & permissions nếu Riverpod chưa có (vd: sau khi reload trang)
+      if (ref.read(currentUserProfileProvider) == null) {
+        await ref.read(currentUserProfileProvider.notifier).fetchProfile();
       }
     });
   }

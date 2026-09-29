@@ -282,6 +282,131 @@ Tất cả các API lấy danh sách (`GET`) hỗ trợ phân trang sẽ trả v
   * `pageSize` (int, default: 10)
   * `searchTerm` (string, optional)
 * **Response Status**: `200 OK` (Trả về `PagedResult<UserResponse>`)
+* **Response Body**:
+  ```json
+  {
+    "items": [
+      {
+        "id": "01a032ec-addc-7bdd-9b16-00789729fb07",
+        "email": "admin@l7ungdz.id.vn",
+        "userName": "admin@l7ungdz.id.vn",
+        "phoneNumber": null,
+        "isLocked": false,
+        "lockoutEnd": null,
+        "roles": [
+          "Admin"
+        ],
+        "permissions": [
+          {
+            "name": "System",
+            "displayName": "Quản trị hệ thống",
+            "children": [
+              {
+                "name": "Roles",
+                "displayName": "Nhóm người dùng",
+                "permissions": [
+                  { "name": "Roles.Delete", "displayName": "Xóa vai trò" },
+                  { "name": "Roles.Update", "displayName": "Chỉnh sửa vai trò" },
+                  { "name": "Roles.Read", "displayName": "Xem danh sách vai trò" },
+                  { "name": "Roles.Create", "displayName": "Tạo vai trò mới" },
+                  { "name": "Roles.AssignPermissions", "displayName": "Gán quyền cho vai trò" }
+                ]
+              },
+              {
+                "name": "Users",
+                "displayName": "Danh sách tài khoản",
+                "permissions": [
+                  { "name": "Users.Delete", "displayName": "Xóa tài khoản" },
+                  { "name": "Users.Lock", "displayName": "Khóa / Mở khóa tài khoản" },
+                  { "name": "Users.Create", "displayName": "Thêm tài khoản mới" },
+                  { "name": "Users.Update", "displayName": "Chỉnh sửa tài khoản" },
+                  { "name": "Users.ResetPassword", "displayName": "Đặt lại mật khẩu" },
+                  { "name": "Users.Read", "displayName": "Xem danh sách tài khoản" },
+                  { "name": "Users.AssignRoles", "displayName": "Gán vai trò cho tài khoản" }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "Venues",
+            "displayName": "Quản lý cụm sân",
+            "permissions": [
+              { "name": "Venues.Update", "displayName": "Cập nhật cụm sân" },
+              { "name": "Venues.Read", "displayName": "Xem danh sách cụm sân" },
+              { "name": "Venues.Create", "displayName": "Tạo cụm sân mới" },
+              { "name": "Venues.Delete", "displayName": "Xóa cụm sân" }
+            ]
+          },
+          {
+            "name": "Courts",
+            "displayName": "Quản lý sân",
+            "permissions": [
+              { "name": "Courts.Update", "displayName": "Cập nhật sân" },
+              { "name": "Courts.Delete", "displayName": "Xóa sân" },
+              { "name": "Courts.Read", "displayName": "Xem danh sách sân" },
+              { "name": "Courts.Create", "displayName": "Tạo sân mới" }
+            ]
+          },
+          {
+            "name": "VenueSchedules",
+            "displayName": "Quản lý lịch cụm sân",
+            "permissions": [
+              { "name": "VenueSchedules.Create", "displayName": "Tạo lịch cụm sân mới" },
+              { "name": "VenueSchedules.Read", "displayName": "Xem lịch cụm sân" },
+              { "name": "VenueSchedules.Delete", "displayName": "Xóa lịch cụm sân" },
+              { "name": "VenueSchedules.Update", "displayName": "Cập nhật lịch cụm sân" }
+            ]
+          },
+          {
+            "name": "CourtPricings",
+            "displayName": "Quản lý bảng giá sân",
+            "permissions": [
+              { "name": "CourtPricings.Delete", "displayName": "Xóa bảng giá sân" },
+              { "name": "CourtPricings.Update", "displayName": "Cập nhật bảng giá sân" },
+              { "name": "CourtPricings.Read", "displayName": "Xem bảng giá sân" },
+              { "name": "CourtPricings.Create", "displayName": "Tạo bảng giá sân mới" }
+            ]
+          },
+          {
+            "name": "Dashboard",
+            "displayName": "Dashboard",
+            "permissions": [
+              { "name": "Dashboard.View", "displayName": "Trang chủ user" }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "01a0332d-33f1-755b-9301-b132a4a79723",
+        "email": "admin",
+        "userName": "admin",
+        "phoneNumber": null,
+        "isLocked": false,
+        "lockoutEnd": null,
+        "roles": [
+          "Admin"
+        ],
+        "permissions": []
+      },
+      {
+        "id": "01a03719-961e-70bf-aab6-09bab8661c61",
+        "email": "user",
+        "userName": "user",
+        "phoneNumber": null,
+        "isLocked": false,
+        "lockoutEnd": null,
+        "roles": [],
+        "permissions": []
+      }
+    ],
+    "totalCount": 3,
+    "pageNumber": 1,
+    "pageSize": 10,
+    "totalPages": 1,
+    "hasPreviousPage": false,
+    "hasNextPage": false
+  }
+  ```
 
 ---
 
@@ -290,6 +415,39 @@ Tất cả các API lấy danh sách (`GET`) hỗ trợ phân trang sẽ trả v
 * **Xác thực**: Quyền **`Users.Read`**.
 * **Path Parameter**: `id` (Guid).
 * **Response Status**: `200 OK` / `404 Not Found`
+* **Response Body**:
+  ```json
+  {
+    "id": "01a032ec-addc-7bdd-9b16-00789729fb07",
+    "email": "admin@l7ungdz.id.vn",
+    "userName": "admin@l7ungdz.id.vn",
+    "phoneNumber": null,
+    "isLocked": false,
+    "lockoutEnd": null,
+    "roles": [
+      "Admin"
+    ],
+    "permissions": [
+      {
+        "name": "System",
+        "displayName": "Quản trị hệ thống",
+        "children": [
+          {
+            "name": "Roles",
+            "displayName": "Nhóm người dùng",
+            "permissions": [
+              { "name": "Roles.Delete", "displayName": "Xóa vai trò" },
+              { "name": "Roles.Update", "displayName": "Chỉnh sửa vai trò" },
+              { "name": "Roles.Read", "displayName": "Xem danh sách vai trò" },
+              { "name": "Roles.Create", "displayName": "Tạo vai trò mới" },
+              { "name": "Roles.AssignPermissions", "displayName": "Gán quyền cho vai trò" }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+  ```
 
 ---
 

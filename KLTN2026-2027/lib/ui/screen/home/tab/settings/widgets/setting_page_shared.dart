@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kltn2026_2027/app/consts/app_color.dart';
 import 'package:kltn2026_2027/app/consts/app_config.dart';
+import 'package:kltn2026_2027/app/consts/permissions.dart';
+import 'package:kltn2026_2027/app/provider.dart';
 import '../../../../../../app/provider/localization_provider.dart';
 import '../settings_vm/settings_vm.dart';
 
@@ -49,6 +51,8 @@ List<SettingsSection> buildSettingsSections(
   required bool isLoading,
 }) {
   final currentLocale = ref.watch(localizationProvider);
+  final canReadUsers = ref.watch(hasPermissionProvider(Permissions.usersRead));
+  final canReadRoles = ref.watch(hasPermissionProvider(Permissions.rolesRead));
 
   return [
     SettingsSection(
@@ -64,6 +68,30 @@ List<SettingsSection> buildSettingsSections(
         ),
       ],
     ),
+    
+    if (canReadUsers || canReadRoles)
+      SettingsSection(
+        title: 'Quản trị hệ thống',
+        icon: Icons.admin_panel_settings_outlined,
+        items: [
+          if (canReadUsers)
+            SettingsItemData(
+              icon: Icons.people_outline,
+              color: const Color(0xFF0F1E36),
+              title: 'Quản lý nhân viên',
+              subtitle: 'Xem, thêm, sửa, phân quyền tài khoản',
+              onTap: () => context.push(AppConfig.adminUsersPath),
+            ),
+          if (canReadRoles)
+            SettingsItemData(
+              icon: Icons.shield_outlined,
+              color: const Color(0xFF673AB7),
+              title: 'Quản lý vai trò',
+              subtitle: 'Xem và cấu hình nhóm quyền hạn',
+              onTap: () => context.push(AppConfig.adminRolesPath),
+            ),
+        ],
+      ),
     SettingsSection(
       title: context.l10n.set_security,
       icon: Icons.security_outlined,

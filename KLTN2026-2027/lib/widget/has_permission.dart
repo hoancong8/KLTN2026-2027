@@ -4,6 +4,7 @@ import 'package:kltn2026_2027/app/provider.dart';
 
 /// Widget phân quyền giao diện (Permission Guard)
 /// Dựa trên danh sách permissions thu được khi người dùng đăng nhập (/api/v1/user/me).
+/// Tự động hỗ trợ Admin Bypass qua hasPermissionProvider.
 class HasPermission extends ConsumerWidget {
   final String permission;
   final Widget child;
@@ -18,12 +19,9 @@ class HasPermission extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final perms = ref.watch(userPermissionsProvider);
-    final userProfile = ref.watch(currentUserProfileProvider);
-    final isAdmin = userProfile?.roles.contains('Admin') == true ||
-        userProfile?.permissions.contains('System.Administrator') == true;
+    final hasPerm = ref.watch(hasPermissionProvider(permission));
 
-    if (isAdmin || perms.contains(permission)) {
+    if (hasPerm) {
       return child;
     }
     return fallback ?? const SizedBox.shrink();

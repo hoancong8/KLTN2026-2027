@@ -28,12 +28,14 @@ void main() async {
   // 1. Preserve native splash screen
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
-
   // 2. Initialize Firebase
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   if (!kIsWeb) {
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   }
+
+  final token = await FirebaseMessaging.instance.getToken();
+  print('===> FCM TOKEN: $token');
 
   // 3. Determine initial route concurrently under native splash
   String initialRoute = AppConfig.loginPath;
@@ -43,26 +45,48 @@ void main() async {
   try {
     final token = await SecureStorageService.instance.getAuthToken();
     if (token != null) {
-      // Create a temporary container to use Riverpod for the refresh usecase
+      finalToken = token;
+      initialRoute = AppConfig.homePath;
+
+      // Create a temporary container to use Riverpod for fetching profile on startup
       final container = ProviderContainer(
         overrides: [authTokenProvider.overrideWith((_) => token)],
       );
       try {
-        final newToken = await container
-            .read(refreshTokenUseCaseProvider)
-            .execute(token);
-        // Refresh success
-        await SecureStorageService.instance.saveAuthToken(newToken);
-        initialRoute = AppConfig.homePath;
-        finalToken = newToken;
-
-        // Fetch User Profile & Permissions for logged in user via Riverpod Notifier
+        // 1. Thử fetch User Profile & Permissions bằng token hiện tại
         initialUserProfile = await container
             .read(currentUserProfileProvider.notifier)
             .fetchProfile();
+
+        // 2. Nếu fetch profile trả về null (token hết hạn), thử refresh token dự phòng
+        if (initialUserProfile == null) {
+          try {
+            final newToken = await container
+                .read(refreshTokenUseCaseProvider)
+                .execute(token);
+            await SecureStorageService.instance.saveAuthToken(newToken);
+            finalToken = newToken;
+
+            final refreshContainer = ProviderContainer(
+              overrides: [authTokenProvider.overrideWith((_) => newToken)],
+            );
+            try {
+              initialUserProfile = await refreshContainer
+                  .read(currentUserProfileProvider.notifier)
+                  .fetchProfile();
+            } finally {
+              refreshContainer.dispose();
+            }
+          } catch (refreshErr) {
+            AppLog.info('[Main] Token refresh failed: $refreshErr');
+            // Nếu cả token hiện tại và refresh đều không hợp lệ -> mới đưa về login
+            finalToken = null;
+            initialRoute = AppConfig.loginPath;
+            await SecureStorageService.instance.clearAuthToken();
+          }
+        }
       } catch (e) {
-        AppLog.info('[Main] Token refresh failed: $e');
-        initialRoute = AppConfig.loginPath;
+        AppLog.info('[Main] Profile fetch error: $e');
       } finally {
         container.dispose();
       }
@@ -75,9 +99,12 @@ void main() async {
   runApp(
     ProviderScope(
       overrides: [
-        if (finalToken != null) authTokenProvider.overrideWith((ref) => finalToken),
+        if (finalToken != null)
+          authTokenProvider.overrideWith((ref) => finalToken),
         if (initialUserProfile != null)
-          currentUserProfileProvider.overrideWith(() => CurrentUserProfileNotifier(initialUserProfile)),
+          currentUserProfileProvider.overrideWith(
+            () => CurrentUserProfileNotifier(initialUserProfile),
+          ),
       ],
       child: MyApp(initialRoute: initialRoute),
     ),

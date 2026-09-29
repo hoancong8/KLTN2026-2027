@@ -13,6 +13,7 @@ class PermissionGroupMapper {
     return PermissionGroup(
       name: dto.name,
       displayName: dto.displayName,
+      children: dto.children.map((c) => toGroupEntity(c)).toList(),
       permissions: dto.permissions.map((e) => toItemEntity(e)).toList(),
     );
   }

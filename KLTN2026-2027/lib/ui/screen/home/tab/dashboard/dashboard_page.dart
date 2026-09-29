@@ -45,7 +45,7 @@ class DashboardPage extends ConsumerWidget {
                       const SizedBox(height: 20),
                       _buildPromoBanner(context, state.promoBanner),
                       const SizedBox(height: 20),
-                      _buildNearbyVenues(context, state.venues, vm),
+                      _buildNearbyVenues(context, state.venues, vm, state.isLoadingVenues),
                       const SizedBox(height: 24),
                     ],
                   ),
@@ -457,6 +457,7 @@ class DashboardPage extends ConsumerWidget {
     BuildContext context,
     List<VenueItem> venues,
     DashboardViewModel vm,
+    bool isLoading,
   ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -492,16 +493,43 @@ class DashboardPage extends ConsumerWidget {
           ],
         ),
         const SizedBox(height: 14),
-        ListView.separated(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: venues.length,
-          separatorBuilder: (_, __) => const SizedBox(height: 12),
-          itemBuilder: (context, index) {
-            final venue = venues[index];
-            return _buildVenueCard(context, venue, vm);
-          },
-        ),
+        if (isLoading && venues.isEmpty)
+          const Center(
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 28),
+              child: CircularProgressIndicator(color: Color(0xFF007A55)),
+            ),
+          )
+        else if (venues.isEmpty)
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFFF1F5F9)),
+            ),
+            child: Center(
+              child: Text(
+                'Chưa có cơ sở nào phù hợp',
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Colors.grey.shade500,
+                ),
+              ),
+            ),
+          )
+        else
+          ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: venues.length,
+            separatorBuilder: (_, _) => const SizedBox(height: 12),
+            itemBuilder: (context, index) {
+              final venue = venues[index];
+              return _buildVenueCard(context, venue, vm);
+            },
+          ),
       ],
     );
   }
@@ -539,11 +567,17 @@ class DashboardPage extends ConsumerWidget {
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(12),
-                  child: Image.network(
-                    venue.imageUrl,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, _, _) => const Icon(Icons.sports_tennis, color: Colors.grey, size: 36),
-                  ),
+                  child: venue.imageUrl.isNotEmpty
+                      ? Image.network(
+                          venue.imageUrl,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, _, _) => const Center(
+                            child: Icon(Icons.sports_tennis, color: Colors.grey, size: 36),
+                          ),
+                        )
+                      : const Center(
+                          child: Icon(Icons.sports_tennis, color: Colors.grey, size: 36),
+                        ),
                 ),
               ),
               Positioned(

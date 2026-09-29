@@ -4,15 +4,16 @@ import '../../../domain/exceptions/app_exception.dart';
 import '../../../domain/exceptions/auth_exceptions.dart';
 
 abstract class BaseRemoteDatasource {
-  /// Bóc tách dữ liệu từ trường 'result' của ABP Framework.
-  /// Hỗ trợ cả trường hợp kết quả là Object đơn lẻ.
+  /// Bóc tách dữ liệu từ trường 'result' của ABP Framework hoặc Object JSON trực tiếp.
+  /// Hỗ trợ cả trường hợp kết quả là Object đơn lẻ hoặc mảng List.
   T handleResponse<T>(Response response, T Function(dynamic) fromJson) {
     final data = response.data;
 
     // 1. Kiểm tra an toàn bảo mật (HTML response)
     checkSecurity(data);
 
-    if (data is Map<String, dynamic>) {
+    // 2. Trường hợp data là Map
+    if (data is Map) {
       // ABP thường bọc data trong trường 'result'
       if (data.containsKey('result')) {
         final result = data['result'];
@@ -25,31 +26,44 @@ abstract class BaseRemoteDatasource {
       return fromJson(data);
     }
 
-    // Fallback cho các kiểu dữ liệu primitive (String, int...)
+    // 3. Trường hợp data chính là List
+    if (data is List) {
+      return fromJson(data);
+    }
+
+    // 4. Fallback cho các kiểu dữ liệu primitive (String, int...)
     if (data is T) return data;
 
-    throw const InvalidResponseException();
+    throw InvalidResponseException(originalError: data);
   }
 
-  /// Bóc tách danh sách từ trường 'result' -> 'items' (PagedResult của ABP).
-  List<T> handleListResponse<T>(Response response, T Function(dynamic) fromJson) {
+  /// Bóc tách danh sách từ mảng List trực tiếp hoặc trường 'result' / 'items' (PagedResult).
+  List<T> handleListResponse<T>(
+    Response response,
+    T Function(dynamic) fromJson,
+  ) {
     final data = response.data;
 
     checkSecurity(data);
 
-    if (data is Map<String, dynamic>) {
+    // 1. Trường hợp data là JSON List trực tiếp: [ {...}, {...} ]
+    if (data is List) {
+      return data.map((item) => fromJson(item)).toList();
+    }
+
+    // 2. Trường hợp data là Map (bọc trong 'result' hoặc 'items')
+    if (data is Map) {
       final result = data['result'] ?? data;
-      if (result is Map<String, dynamic> && result['items'] is List) {
-        final items = result['items'] as List;
-        return items.map((item) => fromJson(item)).toList();
-      }
-      // Trường hợp result chính là mảng items
       if (result is List) {
         return result.map((item) => fromJson(item)).toList();
       }
+      if (result is Map && result['items'] is List) {
+        final items = result['items'] as List;
+        return items.map((item) => fromJson(item)).toList();
+      }
     }
 
-    // Nếu data bị parse lỗi (thành String raw) hoặc backend mất items do retry:
+    // Nếu data bị parse lỗi hoặc cấu trúc không khớp:
     throw InvalidResponseException(originalError: data);
   }
 

@@ -40,11 +40,19 @@ class UserRepositoryImpl implements UserRepository {
     int pageNumber = 1,
     int pageSize = 10,
     String? searchTerm,
+    String? email,
+    String? userName,
+    String? sortColumn,
+    int sortDirection = 1,
   }) async {
     final dto = await remoteDatasource.getUsers(
       pageNumber: pageNumber,
       pageSize: pageSize,
       searchTerm: searchTerm,
+      email: email,
+      userName: userName,
+      sortColumn: sortColumn,
+      sortDirection: sortDirection,
     );
     return UserMapper.toPagedEntity(dto);
   }

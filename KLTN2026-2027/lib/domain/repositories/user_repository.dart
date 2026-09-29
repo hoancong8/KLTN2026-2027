@@ -12,6 +12,10 @@ abstract class UserRepository {
     int pageNumber = 1,
     int pageSize = 10,
     String? searchTerm,
+    String? email,
+    String? userName,
+    String? sortColumn,
+    int sortDirection = 1,
   });
   Future<UserProfile> getUserById(String id);
   Future<void> createUser(String email, String password, List<String> roles);

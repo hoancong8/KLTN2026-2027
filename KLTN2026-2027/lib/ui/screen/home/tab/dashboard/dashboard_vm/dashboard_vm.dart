@@ -1,17 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/legacy.dart';
+import 'package:kltn2026_2027/app/provider.dart';
+import 'package:kltn2026_2027/domain/usecases/venue/get_venue_recommendations_usecase.dart';
 import 'dashboard_state.dart';
 
 final dashboardViewModelProvider =
     StateNotifierProvider.autoDispose<DashboardViewModel, DashboardState>((
       ref,
     ) {
-      return DashboardViewModel();
+      final getVenueRecommendationsUseCase =
+          ref.watch(getVenueRecommendationsUseCaseProvider);
+      return DashboardViewModel(
+        getVenueRecommendationsUseCase: getVenueRecommendationsUseCase,
+      );
     });
 
 class DashboardViewModel extends StateNotifier<DashboardState> {
-  DashboardViewModel() : super(const DashboardState()) {
+  final GetVenueRecommendationsUseCase _getVenueRecommendationsUseCase;
+
+  DashboardViewModel({
+    required GetVenueRecommendationsUseCase getVenueRecommendationsUseCase,
+  })  : _getVenueRecommendationsUseCase = getVenueRecommendationsUseCase,
+        super(const DashboardState()) {
     _initMockData();
+    fetchRecommendedVenues();
   }
 
   void _initMockData() {
@@ -80,11 +92,76 @@ class DashboardViewModel extends StateNotifier<DashboardState> {
     );
   }
 
+  bool _isGuid(String? val) {
+    if (val == null) return false;
+    return RegExp(
+      r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$',
+    ).hasMatch(val);
+  }
+
+  Future<void> fetchRecommendedVenues({
+    String? sportTypeId,
+    double? latitude,
+    double? longitude,
+  }) async {
+    if (!mounted) return;
+    state = state.copyWith(isLoadingVenues: true);
+    try {
+      final effectiveSportTypeId = _isGuid(sportTypeId) ? sportTypeId : null;
+
+      final result = await _getVenueRecommendationsUseCase.execute(
+        latitude: latitude,
+        longitude: longitude,
+        sportTypeId: effectiveSportTypeId,
+        pageNumber: 1,
+        pageSize: 20,
+      );
+
+      final venueItems = result.items.map((entity) {
+        final sportNames = entity.sportTypes.isNotEmpty
+            ? entity.sportTypes.map((s) => s.name.toUpperCase()).join(' • ')
+            : 'THỂ THAO';
+
+        final distanceStr = entity.distanceKm != null
+            ? '${entity.distanceKm!.toStringAsFixed(1)} km'
+            : '';
+
+        final priceStr = entity.minPricePerHour != null
+            ? 'Từ ${(entity.minPricePerHour! / 1000).toInt()}k/h →'
+            : 'Xem chi tiết →';
+
+        return VenueItem(
+          id: entity.idVenue,
+          name: entity.nameVenue,
+          categories: sportNames,
+          address: entity.address,
+          rating: entity.averageRating,
+          distance: distanceStr,
+          priceText: priceStr,
+          imageUrl: entity.primaryImageUrl ?? '',
+          isFavorite: entity.isFavourite,
+        );
+      }).toList();
+
+      if (!mounted) return;
+      state = state.copyWith(
+        isLoadingVenues: false,
+        venues: venueItems.isNotEmpty ? venueItems : state.venues,
+      );
+    } catch (e) {
+      if (!mounted) return;
+      state = state.copyWith(
+        isLoadingVenues: false,
+        error: e.toString(),
+      );
+    }
+  }
+
   Future<void> loadData() async {
     if (!mounted) return;
     state = state.copyWith(isLoading: true, error: null);
     try {
-      await Future.delayed(const Duration(milliseconds: 600));
+      await fetchRecommendedVenues(sportTypeId: state.selectedSportTypeId);
       if (!mounted) return;
       state = state.copyWith(isLoading: false);
     } catch (e) {
@@ -107,6 +184,11 @@ class DashboardViewModel extends StateNotifier<DashboardState> {
     final updatedCategories = state.categories.map((c) {
       return c.copyWith(isSelected: c.id == categoryId);
     }).toList();
-    state = state.copyWith(categories: updatedCategories);
+    final newSelectedSportTypeId = categoryId == state.selectedSportTypeId ? null : categoryId;
+    state = state.copyWith(
+      categories: updatedCategories,
+      selectedSportTypeId: newSelectedSportTypeId,
+    );
+    fetchRecommendedVenues(sportTypeId: newSelectedSportTypeId);
   }
 }

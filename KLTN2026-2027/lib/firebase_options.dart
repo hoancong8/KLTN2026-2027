@@ -47,30 +47,28 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyD6WjSu71wETelQNDnmAr9TPyUio8PcUaA',
-    appId: '1:70946259423:web:42b11d2e8122cce41e046a',
-    messagingSenderId: '70946259423',
-    projectId: 'notification-erp-72095',
-    authDomain: 'notification-erp-72095.firebaseapp.com',
-    storageBucket: 'notification-erp-72095.firebasestorage.app',
-    measurementId: 'G-17R5B6Y5ZY',
+    apiKey: 'AIzaSyA_wF_riP8kSiiLSojT2kAe0OwdXVz5-5E',
+    appId: '1:476605524890:web:471cda610fe48ddf4e6823',
+    messagingSenderId: '476605524890',
+    projectId: 'sports-venue-cb204',
+    authDomain: 'sports-venue-cb204.firebaseapp.com',
+    storageBucket: 'sports-venue-cb204.firebasestorage.app',
+    measurementId: 'G-JGM3HNSPYL',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyAFfKr0bbW6HIQAOg1ovU2vN1oUP_ZF31g',
-    appId: '1:70946259423:android:dc49a1db4df9ff5a1e046a',
-    messagingSenderId: '70946259423',
-    projectId: 'notification-erp-72095',
-    storageBucket: 'notification-erp-72095.firebasestorage.app',
+    apiKey: 'AIzaSyCpV_MJvoAsswVMjOyo4M7p5JoFko6Aoq4',
+    appId: '1:476605524890:android:d3673ad3489bbb874e6823',
+    messagingSenderId: '476605524890',
+    projectId: 'sports-venue-cb204',
+    storageBucket: 'sports-venue-cb204.firebasestorage.app',
   );
-
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyBfkwez9-E0KiUYHlTeMSTOvPn8oOB9A88',
-    appId: '1:70946259423:ios:d558588e89a349e41e046a',
-    messagingSenderId: '70946259423',
-    projectId: 'notification-erp-72095',
-    storageBucket: 'notification-erp-72095.firebasestorage.app',
+    apiKey: 'AIzaSyCCdme7MKwrjdvjoYJqKX1RKFXXvYCEtBE',
+    appId: '1:476605524890:ios:bc5d72c0bc129a004e6823',
+    messagingSenderId: '476605524890',
+    projectId: 'sports-venue-cb204',
+    storageBucket: 'sports-venue-cb204.firebasestorage.app',
     iosBundleId: 'com.ierp.ierpMobile',
   );
-
 }

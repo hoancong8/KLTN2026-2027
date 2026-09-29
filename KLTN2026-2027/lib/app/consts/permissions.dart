@@ -42,4 +42,10 @@ abstract class Permissions {
   static const String courtPricingsCreate = 'CourtPricings.Create';
   static const String courtPricingsUpdate = 'CourtPricings.Update';
   static const String courtPricingsDelete = 'CourtPricings.Delete';
+
+  // ===== Dashboard =====
+  static const String dashboardView = 'Dashboard.View';
+
+  // // ===== Reports =====
+  // static const String reportsView = 'Reports.View';
 }

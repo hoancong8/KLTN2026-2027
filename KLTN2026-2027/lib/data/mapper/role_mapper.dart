@@ -8,6 +8,8 @@ class RoleMapper {
       id: dto.id,
       name: dto.name,
       description: dto.description,
+      isDefault: dto.isDefault,
+      isStatic: dto.isStatic,
       permissions: dto.permissions
           .map((g) => PermissionGroupMapper.toGroupEntity(g))
           .toList(),

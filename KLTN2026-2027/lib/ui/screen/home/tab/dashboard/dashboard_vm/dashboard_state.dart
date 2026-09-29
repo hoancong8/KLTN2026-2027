@@ -107,15 +107,18 @@ class VenueItem {
 
 class DashboardState {
   final bool isLoading;
+  final bool isLoadingVenues;
   final String? error;
   final DashboardUserProfile userProfile;
   final List<QuickActionItem> quickActions;
   final List<SportCategoryItem> categories;
+  final String? selectedSportTypeId;
   final PromoBannerItem promoBanner;
   final List<VenueItem> venues;
 
   const DashboardState({
     this.isLoading = false,
+    this.isLoadingVenues = false,
     this.error,
     this.userProfile = const DashboardUserProfile(
       name: 'Nguyễn Văn An',
@@ -125,6 +128,7 @@ class DashboardState {
     ),
     this.quickActions = const [],
     this.categories = const [],
+    this.selectedSportTypeId,
     this.promoBanner = const PromoBannerItem(
       promoCode: 'SUMMER20',
       title: 'Đặt sân hôm nay - giảm đến 20%',
@@ -136,19 +140,23 @@ class DashboardState {
 
   DashboardState copyWith({
     bool? isLoading,
+    bool? isLoadingVenues,
     String? error,
     DashboardUserProfile? userProfile,
     List<QuickActionItem>? quickActions,
     List<SportCategoryItem>? categories,
+    String? selectedSportTypeId,
     PromoBannerItem? promoBanner,
     List<VenueItem>? venues,
   }) {
     return DashboardState(
       isLoading: isLoading ?? this.isLoading,
+      isLoadingVenues: isLoadingVenues ?? this.isLoadingVenues,
       error: error,
       userProfile: userProfile ?? this.userProfile,
       quickActions: quickActions ?? this.quickActions,
       categories: categories ?? this.categories,
+      selectedSportTypeId: selectedSportTypeId ?? this.selectedSportTypeId,
       promoBanner: promoBanner ?? this.promoBanner,
       venues: venues ?? this.venues,
     );

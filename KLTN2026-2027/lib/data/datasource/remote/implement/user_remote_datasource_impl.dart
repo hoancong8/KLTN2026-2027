@@ -51,14 +51,22 @@ class UserRemoteDatasourceImpl extends BaseRemoteDatasource implements UserRemot
     int pageNumber = 1,
     int pageSize = 10,
     String? searchTerm,
+    String? email,
+    String? userName,
+    String? sortColumn,
+    int sortDirection = 1,
   }) async {
     try {
       final response = await dio.get(
         AppConfig.usersPath,
         queryParameters: {
-          'pageNumber': pageNumber,
-          'pageSize': pageSize,
-          if (searchTerm != null && searchTerm.isNotEmpty) 'searchTerm': searchTerm,
+          'PageNumber': pageNumber,
+          'PageSize': pageSize,
+          'SortDirection': sortDirection,
+          if (searchTerm != null && searchTerm.isNotEmpty) 'SearchTerm': searchTerm,
+          if (email != null && email.isNotEmpty) 'Email': email,
+          if (userName != null && userName.isNotEmpty) 'UserName': userName,
+          if (sortColumn != null && sortColumn.isNotEmpty) 'SortColumn': sortColumn,
         },
       );
       return handleResponse(

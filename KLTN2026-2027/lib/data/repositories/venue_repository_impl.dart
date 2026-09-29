@@ -1,5 +1,6 @@
 import '../../domain/entities/paged_response.dart';
 import '../../domain/entities/venue.dart';
+import '../../domain/entities/venue_recommendation.dart';
 import '../../domain/repositories/venue_repository.dart';
 import '../datasource/remote/abstract/venue_remote_datasource.dart';
 import '../mapper/venue_mapper.dart';
@@ -46,5 +47,31 @@ class VenueRepositoryImpl implements VenueRepository {
   @override
   Future<void> deleteVenue(String id) async {
     await remoteDatasource.deleteVenue(id);
+  }
+
+  @override
+  Future<PagedResponse<VenueRecommendation>> getVenueRecommendations({
+    double? latitude,
+    double? longitude,
+    double maxDistanceKm = 20.0,
+    String? sportTypeId,
+    DateTime? date,
+    String? startTime,
+    String? endTime,
+    int pageNumber = 1,
+    int pageSize = 20,
+  }) async {
+    final dto = await remoteDatasource.getVenueRecommendations(
+      latitude: latitude,
+      longitude: longitude,
+      maxDistanceKm: maxDistanceKm,
+      sportTypeId: sportTypeId,
+      date: date,
+      startTime: startTime,
+      endTime: endTime,
+      pageNumber: pageNumber,
+      pageSize: pageSize,
+    );
+    return VenueMapper.toPagedRecommendationEntity(dto);
   }
 }

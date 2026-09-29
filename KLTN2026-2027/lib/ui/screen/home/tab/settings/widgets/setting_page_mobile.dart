@@ -28,62 +28,32 @@ class SettingsPageMobile extends ConsumerWidget {
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.all(16),
         children: [
-          // ── Account ──────────────────────────────────────────
-          buildSectionTitle(context, sections[0].title, sections[0].icon),
-          const SizedBox(height: 12),
-          buildSettingsCard(
-            children: sections[0].items
-                .map(
-                  (item) => buildSettingsItem(
+          // Render tất cả các section một cách động
+          for (final section in sections) ...[
+            buildSectionTitle(context, section.title, section.icon),
+            const SizedBox(height: 12),
+            buildSettingsCard(
+              children: [
+                for (int i = 0; i < section.items.length; i++) ...[
+                  if (i > 0) buildDivider(),
+                  buildSettingsItem(
                     context: context,
-                    icon: item.icon,
-                    color: item.color,
-                    title: item.title,
-                    subtitle: item.subtitle,
-                    onTap: item.onTap,
+                    icon: section.items[i].icon,
+                    color: section.items[i].color,
+                    title: section.items[i].title,
+                    subtitle: section.items[i].subtitle,
+                    onTap: section.items[i].onTap,
                   ),
-                )
-                .toList(),
-          ),
-          const SizedBox(height: 20),
-
-          // ── Security ─────────────────────────────────────────
-          buildSectionTitle(context, sections[1].title, sections[1].icon),
-          const SizedBox(height: 12),
-          buildSettingsCard(
-            children: [
-              buildSettingsItem(
-                context: context,
-                icon: sections[1].items[0].icon,
-                color: sections[1].items[0].color,
-                title: sections[1].items[0].title,
-                subtitle: sections[1].items[0].subtitle,
-                onTap: sections[1].items[0].onTap,
-              ),
-              buildDivider(),
-              const BiometricSettingsItem(),
-            ],
-          ),
-          const SizedBox(height: 20),
-
-          // ── Configuration ─────────────────────────────────────
-          buildSectionTitle(context, sections[2].title, sections[2].icon),
-          const SizedBox(height: 12),
-          buildSettingsCard(
-            children: sections[2].items
-                .map(
-                  (item) => buildSettingsItem(
-                    context: context,
-                    icon: item.icon,
-                    color: item.color,
-                    title: item.title,
-                    subtitle: item.subtitle,
-                    onTap: item.onTap,
-                  ),
-                )
-                .toList(),
-          ),
-          const SizedBox(height: 20),
+                ],
+                // Nếu là mục Bảo mật (Security), thêm mục Sinh trắc học vào cuối card
+                if (section.title == context.l10n.set_security) ...[
+                  buildDivider(),
+                  const BiometricSettingsItem(),
+                ],
+              ],
+            ),
+            const SizedBox(height: 20),
+          ],
 
           // ── Others / Logout ───────────────────────────────────
           buildSectionTitle(context, context.l10n.set_others, Icons.more_horiz),

@@ -152,3 +152,246 @@ Tài liệu này tổng hợp toàn bộ các API Endpoints trong hệ thống *
 ### 🔧 3. Dependency Injection Container (`lib/app/provider.dart`)
 - **App Configuration**: `AppConfig` (`lib/app/consts/app_config.dart`)
 - **Permission Constants**: `Permissions` (`lib/app/consts/permissions.dart`)
+
+---
+
+## 🛡️ Hướng Dẫn Sử Dụng Phân Quyền Trong Dự Án (RBAC & Permissions Guide)
+
+Hệ thống áp dụng mô hình **Role-Based Access Control (RBAC)** kết hợp **Fine-grained Claims-based Permissions** (Phân quyền chi tiết theo từng chức năng).
+
+```
+[ Backend API ] ──(Đăng nhập / JWT Token)──> [ /api/v1/user/me ]
+                                                      │
+                                                      ▼
+                                       [ currentUserProfileProvider ]
+                                                      │
+                       ┌──────────────────────────────┴─────────────────────────────┐
+                       ▼                                                            ▼
+         [ hasPermissionProvider(Perm) ]                             [ isAdminUserProvider ]
+                       │                                                            │
+                       ▼                                                            ▼
+         [ UI Guard: Menu / Buttons ]                                 [ Admin Bypass / Dashboard ]
+```
+
+---
+
+### 1. Danh Mục Hằng Số Quyền (`lib/app/consts/permissions.dart`)
+
+Tất cả các chuỗi quyền **bắt buộc sử dụng qua hằng số `Permissions`**, tuyệt đối không hardcode chuỗi string trong UI:
+
+| Phân hệ | Hằng số `Permissions` | Tên quyền Backend | Ý nghĩa |
+| :--- | :--- | :--- | :--- |
+| **Hệ thống** | `Permissions.systemAdministrator` | `System.Administrator` | Toàn quyền quản trị tối cao |
+| **Vai trò** | `Permissions.rolesRead` | `Roles.Read` | Xem danh sách vai trò & nhóm quyền |
+| | `Permissions.rolesCreate` | `Roles.Create` | Tạo vai trò mới |
+| | `Permissions.rolesUpdate` | `Roles.Update` | Chỉnh sửa tên, mô tả vai trò |
+| | `Permissions.rolesDelete` | `Roles.Delete` | Xóa vai trò |
+| | `Permissions.rolesAssignPermissions` | `Roles.AssignPermissions` | Gán/cập nhật cây quyền cho vai trò |
+| **Người dùng** | `Permissions.usersRead` | `Users.Read` | Xem danh sách tài khoản & chi tiết |
+| | `Permissions.usersCreate` | `Users.Create` | Tạo tài khoản người dùng mới |
+| | `Permissions.usersUpdate` | `Users.Update` | Cập nhật thông tin tài khoản |
+| | `Permissions.usersDelete` | `Users.Delete` | Xóa tài khoản |
+| | `Permissions.usersLock` | `Users.Lock` | Khóa / Mở khóa tài khoản |
+| | `Permissions.usersAssignRoles` | `Users.AssignRoles` | Gán danh sách vai trò cho tài khoản |
+| | `Permissions.usersResetPassword` | `Users.ResetPassword` | Đặt lại mật khẩu tài khoản |
+| **Cụm sân** | `Permissions.venuesRead` | `Venues.Read` | Xem danh sách cụm sân |
+| | `Permissions.venuesCreate` | `Venues.Create` | Tạo cụm sân mới |
+| | `Permissions.venuesUpdate` | `Venues.Update` | Cập nhật thông tin cụm sân |
+| | `Permissions.venuesDelete` | `Venues.Delete` | Xóa cụm sân |
+| **Sân cầu lông**| `Permissions.courtsRead` | `Courts.Read` | Xem danh sách sân |
+| | `Permissions.courtsCreate` | `Courts.Create` | Tạo sân mới |
+| | `Permissions.courtsUpdate` | `Courts.Update` | Chỉnh sửa thông tin sân |
+| | `Permissions.courtsDelete` | `Courts.Delete` | Xóa sân |
+| **Lịch hoạt động**| `Permissions.venueSchedulesRead` | `VenueSchedules.Read` | Xem lịch mở/đóng cửa |
+| | `Permissions.venueSchedulesCreate` | `VenueSchedules.Create` | Tạo cấu hình lịch mở cửa |
+| | `Permissions.venueSchedulesUpdate` | `VenueSchedules.Update` | Sửa lịch mở cửa |
+| | `Permissions.venueSchedulesDelete` | `VenueSchedules.Delete` | Xóa lịch mở cửa |
+| **Bảng giá sân**| `Permissions.courtPricingsRead` | `CourtPricings.Read` | Xem cấu hình bảng giá |
+| | `Permissions.courtPricingsCreate` | `CourtPricings.Create` | Tạo quy tắc tính giá |
+| | `Permissions.courtPricingsUpdate` | `CourtPricings.Update` | Sửa quy tắc tính giá |
+| | `Permissions.courtPricingsDelete` | `CourtPricings.Delete` | Xóa quy tắc tính giá |
+| **Dashboard** | `Permissions.dashboardView` | `Dashboard.View` | Xem tổng quan báo cáo thống kê |
+
+---
+
+### 2. Các Riverpod Providers Hỗ Trợ Kiểm Tra Quyền (`lib/app/provider.dart`)
+
+Hệ thống cung cấp sẵn các Provider tiện ích giúp kiểm tra quyền dễ dàng:
+
+```dart
+// 1. Lấy toàn bộ UserProfile (bao gồm danh sách roles và permissions)
+final userProfile = ref.watch(currentUserProfileProvider);
+
+// 2. Lấy danh sách tên quyền dạng List<String>
+final permissions = ref.watch(userPermissionsProvider);
+
+// 3. Kiểm tra xem user có quyền cụ thể hay không (Tự động bypass nếu là Admin)
+final canCreateUser = ref.watch(hasPermissionProvider(Permissions.usersCreate));
+
+// 4. Kiểm tra user có phải là Quản trị viên (Admin) hay không
+final isAdmin = ref.watch(isAdminUserProvider);
+```
+
+> [!TIP]
+> `hasPermissionProvider` đã được tích hợp cơ chế **Admin Bypass**: Nếu tài khoản có vai trò `Admin` hoặc quyền `System.Administrator`, Provider sẽ luôn trả về `true` cho mọi quyền.
+
+---
+
+### 3. Hướng Dẫn Sử Dụng Cụ Thể Trong Từng Trường Hợp
+
+#### 🔹 Trường hợp 1: Lọc Menu Navigation (Sidebar / Bottom Navigation)
+Khi hiển thị danh sách mục Menu, ta gắn `permission` tương ứng vào từng item và dùng `where` để chỉ hiển thị các mục người dùng có quyền:
+
+```dart
+class MyNavigationItem {
+  final String title;
+  final IconData icon;
+  final String? permission; // null = công khai, hoặc chuỗi Permissions.xxx
+  final Widget page;
+
+  const MyNavigationItem({
+    required this.title,
+    required this.icon,
+    this.permission,
+    required this.page,
+  });
+}
+
+// Trong Widget Build:
+final userPerms = ref.watch(userPermissionsProvider);
+final isAdmin = ref.watch(isAdminUserProvider);
+
+final allMenuItems = [
+  const MyNavigationItem(
+    title: 'Quản lý Người dùng',
+    icon: Icons.people_outline,
+    permission: Permissions.usersRead,
+    page: UserManagementScreen(),
+  ),
+  const MyNavigationItem(
+    title: 'Quản lý vai trò',
+    icon: Icons.shield_outlined,
+    permission: Permissions.rolesRead,
+    page: RoleManagementScreen(),
+  ),
+  const MyNavigationItem(
+    title: 'Cài đặt cá nhân',
+    icon: Icons.settings_outlined,
+    permission: null, // Mọi người dùng đều thấy
+    page: SettingsPage(),
+  ),
+];
+
+// Lọc danh sách menu hợp lệ:
+final visibleItems = allMenuItems.where((item) {
+  if (item.permission == null) return true;
+  if (isAdmin) return true;
+  return userPerms.contains(item.permission);
+}).toList();
+```
+
+---
+
+#### 🔹 Trường hợp 2: Ẩn / Hiện Nút Thao Tác (Button / Widget Guards)
+
+Dự án cung cấp Widget chuyên dụng **`HasPermission`** (`lib/widget/has_permission.dart`) giúp bọc và bảo vệ các thành phần UI một cách trực quan, sạch sẽ và tự động kích hoạt Admin Bypass:
+
+##### Cách 1: Dùng Widget `<HasPermission>` (Khuyên dùng - Declarative UI)
+```dart
+import 'package:kltn2026_2027/app/consts/permissions.dart';
+import 'package:kltn2026_2027/widget/has_permission.dart';
+
+// 1. Bảo vệ Nút Thêm (Ẩn đi nếu không có quyền Venues.Create)
+HasPermission(
+  permission: Permissions.venuesCreate,
+  child: ElevatedButton.icon(
+    onPressed: () => _openCreateDialog(context),
+    icon: const Icon(Icons.add),
+    label: const Text('Thêm sân mới'),
+  ),
+)
+
+// 2. Bảo vệ Nút Sửa & Nút Xóa trong thẻ Card/Danh sách
+Row(
+  mainAxisSize: MainAxisSize.min,
+  children: [
+    // Chỉ hiển thị nút Sửa nếu có quyền Venues.Update
+    HasPermission(
+      permission: Permissions.venuesUpdate,
+      child: IconButton(
+        icon: const Icon(Icons.edit, color: Colors.blue),
+        onPressed: () => _openEditDialog(venue),
+      ),
+    ),
+    // Chỉ hiển thị nút Xóa nếu có quyền Venues.Delete (hoặc hiển thị widget fallback nếu cần)
+    HasPermission(
+      permission: Permissions.venuesDelete,
+      child: IconButton(
+        icon: const Icon(Icons.delete, color: Colors.red),
+        onPressed: () => _confirmDelete(venue),
+      ),
+    ),
+  ],
+)
+```
+
+##### Cách 2: Dùng `ref.watch(hasPermissionProvider(...))` khi cần xử lý logic điều kiện trong code
+```dart
+@override
+Widget build(BuildContext context, WidgetRef ref) {
+  final canCreate = ref.watch(hasPermissionProvider(Permissions.venuesCreate));
+  final canEdit = ref.watch(hasPermissionProvider(Permissions.venuesUpdate));
+
+  if (!canCreate && !canEdit) {
+    return const Center(child: Text('Bạn chỉ có quyền xem dữ liệu (Read-only)'));
+  }
+
+  return ...;
+}
+```
+
+---
+
+#### 🔹 Trường hợp 3: Bảo Vệ Điều Hướng / Router Guards
+Khi người dùng truy cập trực tiếp bằng URL trên Web, có thể kiểm tra quyền tại `GoRoute.redirect`:
+
+```dart
+GoRoute(
+  path: AppConfig.adminUsersPath,
+  builder: (_, __) => const UserManagementScreen(),
+  redirect: (context, state) {
+    final container = ProviderScope.containerOf(context);
+    final hasPerm = container.read(hasPermissionProvider(Permissions.usersRead));
+    if (!hasPerm) {
+      return AppConfig.homePath; // Chặn truy cập và chuyển về trang Home
+    }
+    return null;
+  },
+),
+```
+
+---
+
+#### 🔹 Trường hợp 4: Xử Lý Lỗi Phân Quyền Từ Backend (`403 Forbidden`)
+Dù UI đã ẩn nút bấm, backend vẫn kiểm tra quyền tại tầng API. Nếu tài khoản bị thu hồi quyền đột ngột, Dio sẽ quăng mã lỗi `403`. 
+Hệ thống chuyển đổi lỗi này thành `ForbiddenException` qua [`AppExceptionHandler`](file:///c:/code/base_fe/KLTN2026-2027/KLTN2026-2027/lib/app/utils/app_exception_handler.dart):
+
+```dart
+try {
+  await manageUserUseCase.deleteUser(id);
+} on ForbiddenException catch (e) {
+  // Hiển thị thông báo khi bị từ chối truy cập:
+  state = state.copyWith(errorMessage: 'Bạn không có quyền thực hiện thao tác này');
+} on AppException catch (e) {
+  state = state.copyWith(errorMessage: e.message);
+}
+```
+
+---
+
+### 4. Quy Tắc Khi Bổ Sung Chức Năng Mới Có Phân Quyền
+1. **Bước 1**: Khai báo hằng số mới trong [`lib/app/consts/permissions.dart`](file:///c:/code/base_fe/KLTN2026-2027/KLTN2026-2027/lib/app/consts/permissions.dart) khớp chính xác với backend `AppPermissions.cs`.
+2. **Bước 2**: Đặt quyền vào menu navigation trong `HomeTablet` / `HomeMobile`.
+3. **Bước 3**: Dùng `ref.watch(hasPermissionProvider(Permissions.xxx))` tại các nút thao tác UI.
+4. **Bước 4**: Thêm UseCase và DataSource tương ứng theo đúng 3 tầng Clean Architecture.
+

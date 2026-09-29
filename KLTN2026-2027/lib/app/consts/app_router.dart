@@ -7,6 +7,8 @@ import 'package:kltn2026_2027/ui/screen/login/login_screen.dart';
 import 'package:kltn2026_2027/ui/screen/otp/otp_screen.dart';
 import 'package:kltn2026_2027/ui/screen/profile/profile_screen.dart';
 import 'package:kltn2026_2027/ui/screen/change_password/change_password_screen.dart';
+import '../../ui/screen/admin/role_management/role_management_screen.dart';
+import '../../ui/screen/admin/user_management/user_management_screen.dart';
 import '../../ui/screen/blocked_users/blocked_user_screen.dart';
 import '../../ui/screen/chat_detail/chat_detail_screen.dart';
 import '../../ui/screen/home/tab/chat/widgets/full_screen_image_screen.dart';
@@ -54,6 +56,14 @@ GoRouter generateAppRouter(String initialRoute) {
       GoRoute(
         path: AppConfig.blockedUsersPath,
         builder: (_, __) => const BlockedUsersScreen(),
+      ),
+      GoRoute(
+        path: AppConfig.adminUsersPath,
+        builder: (_, __) => const UserManagementScreen(),
+      ),
+      GoRoute(
+        path: AppConfig.adminRolesPath,
+        builder: (_, __) => const RoleManagementScreen(),
       ),
       GoRoute(
         path: AppConfig.chatDetailPath,

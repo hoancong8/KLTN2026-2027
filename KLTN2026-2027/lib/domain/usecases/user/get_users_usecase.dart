@@ -10,11 +10,19 @@ class GetUsersUseCase {
     int pageNumber = 1,
     int pageSize = 10,
     String? searchTerm,
+    String? email,
+    String? userName,
+    String? sortColumn,
+    int sortDirection = 1,
   }) {
     return repository.getUsers(
       pageNumber: pageNumber,
       pageSize: pageSize,
       searchTerm: searchTerm,
+      email: email,
+      userName: userName,
+      sortColumn: sortColumn,
+      sortDirection: sortDirection,
     );
   }
 }

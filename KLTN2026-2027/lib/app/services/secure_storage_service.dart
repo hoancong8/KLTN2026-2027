@@ -1,4 +1,6 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../domain/entities/auth_token.dart';
 import '../consts/storage_keys.dart';
 
@@ -17,6 +19,10 @@ class SecureStorageService {
       iOptions: IOSOptions(
         accessibility: KeychainAccessibility.first_unlock_this_device,
       ),
+      webOptions: WebOptions(
+        dbName: 'KLTN_SecureStorage',
+        publicKey: 'KLTN_PublicKey',
+      ),
     );
   }
 
@@ -28,50 +34,111 @@ class SecureStorageService {
 
   /// Save auth token to secure storage
   Future<void> saveAuthToken(AuthToken token) async {
-    await Future.wait([
-      _storage.write(key: StorageKeys.accessToken, value: token.accessToken),
-      _storage.write(key: StorageKeys.refreshToken, value: token.refreshToken),
-      if (token.userId != null)
-        _storage.write(key: StorageKeys.userId, value: token.userId.toString()),
-      if (token.twoFactorRememberClientToken != null)
+    try {
+      if (kIsWeb) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString(StorageKeys.accessToken, token.accessToken);
+        await prefs.setString(StorageKeys.refreshToken, token.refreshToken);
+        if (token.userId != null) {
+          await prefs.setString(StorageKeys.userId, token.userId.toString());
+        }
+        if (token.twoFactorRememberClientToken != null) {
+          await prefs.setString(
+            StorageKeys.twoFactorToken,
+            token.twoFactorRememberClientToken!,
+          );
+        }
+      }
+
+      await Future.wait([
+        _storage.write(key: StorageKeys.accessToken, value: token.accessToken),
         _storage.write(
-          key: StorageKeys.twoFactorToken,
-          value: token.twoFactorRememberClientToken,
+          key: StorageKeys.refreshToken,
+          value: token.refreshToken,
         ),
-    ]);
+        if (token.userId != null)
+          _storage.write(
+            key: StorageKeys.userId,
+            value: token.userId.toString(),
+          ),
+        if (token.twoFactorRememberClientToken != null)
+          _storage.write(
+            key: StorageKeys.twoFactorToken,
+            value: token.twoFactorRememberClientToken,
+          ),
+      ]);
+    } catch (_) {}
   }
 
   /// Get auth token from secure storage
   /// Returns null if token is not found or incomplete
   Future<AuthToken?> getAuthToken() async {
-    final accessToken = await _storage.read(key: StorageKeys.accessToken);
-    final refreshToken = await _storage.read(key: StorageKeys.refreshToken);
+    try {
+      if (kIsWeb) {
+        final prefs = await SharedPreferences.getInstance();
+        final accessToken = prefs.getString(StorageKeys.accessToken);
+        final refreshToken = prefs.getString(StorageKeys.refreshToken);
 
-    if (accessToken == null || refreshToken == null) {
+        if (accessToken != null && refreshToken != null) {
+          final userIdStr = prefs.getString(StorageKeys.userId);
+          final twoFactorToken = prefs.getString(StorageKeys.twoFactorToken);
+
+          return AuthToken(
+            accessToken: accessToken,
+            refreshToken: refreshToken,
+            userId: userIdStr != null ? int.tryParse(userIdStr) : null,
+            twoFactorRememberClientToken: twoFactorToken,
+          );
+        }
+      }
+
+      final accessToken = await _storage.read(key: StorageKeys.accessToken);
+      final refreshToken = await _storage.read(key: StorageKeys.refreshToken);
+
+      if (accessToken == null || refreshToken == null) {
+        return null;
+      }
+
+      final userIdStr = await _storage.read(key: StorageKeys.userId);
+      final twoFactorToken = await _storage.read(
+        key: StorageKeys.twoFactorToken,
+      );
+
+      return AuthToken(
+        accessToken: accessToken,
+        refreshToken: refreshToken,
+        userId: userIdStr != null ? int.tryParse(userIdStr) : null,
+        twoFactorRememberClientToken: twoFactorToken,
+      );
+    } catch (_) {
       return null;
     }
-
-    final userIdStr = await _storage.read(key: StorageKeys.userId);
-    final twoFactorToken = await _storage.read(key: StorageKeys.twoFactorToken);
-
-    return AuthToken(
-      accessToken: accessToken,
-      refreshToken: refreshToken,
-      userId: userIdStr != null ? int.tryParse(userIdStr) : null,
-      twoFactorRememberClientToken: twoFactorToken,
-    );
   }
 
   /// Clear all auth tokens from secure storage
   Future<void> clearAuthToken() async {
-    await Future.wait([
-      _storage.delete(key: StorageKeys.accessToken),
-      _storage.delete(key: StorageKeys.refreshToken),
-      _storage.delete(key: StorageKeys.userId),
-      _storage.delete(key: StorageKeys.employeeId),
-      _storage.delete(key: StorageKeys.tenantId),
-      _storage.delete(key: StorageKeys.twoFactorToken),
-    ]);
+    try {
+      if (kIsWeb) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.remove(StorageKeys.accessToken);
+        await prefs.remove(StorageKeys.refreshToken);
+        await prefs.remove(StorageKeys.userId);
+        await prefs.remove(StorageKeys.employeeId);
+        await prefs.remove(StorageKeys.tenantId);
+        await prefs.remove(StorageKeys.twoFactorToken);
+      }
+    } catch (_) {}
+
+    try {
+      await Future.wait([
+        _storage.delete(key: StorageKeys.accessToken),
+        _storage.delete(key: StorageKeys.refreshToken),
+        _storage.delete(key: StorageKeys.userId),
+        _storage.delete(key: StorageKeys.employeeId),
+        _storage.delete(key: StorageKeys.tenantId),
+        _storage.delete(key: StorageKeys.twoFactorToken),
+      ]);
+    } catch (_) {}
   }
 
   /// Save tenant ID
@@ -139,9 +206,9 @@ class SecureStorageService {
 
   /// Save credentials for biometric login
   Future<void> saveBiometricCredentials(
-      String username,
-      String password,
-      ) async {
+    String username,
+    String password,
+  ) async {
     await Future.wait([
       _storage.write(key: StorageKeys.biometricUsername, value: username),
       _storage.write(key: StorageKeys.biometricPassword, value: password),
@@ -162,9 +229,9 @@ class SecureStorageService {
 
   /// Save last login credentials (separate from biometric)
   Future<void> saveLastLoginCredentials(
-      String username,
-      String password,
-      ) async {
+    String username,
+    String password,
+  ) async {
     await Future.wait([
       _storage.write(key: StorageKeys.lastUsername, value: username),
       _storage.write(key: StorageKeys.lastPassword, value: password),
@@ -185,7 +252,10 @@ class SecureStorageService {
 
   /// Save biometric setup flag
   Future<void> setBiometricSetup(bool value) async {
-    await _storage.write(key: StorageKeys.biometricSetup, value: value.toString());
+    await _storage.write(
+      key: StorageKeys.biometricSetup,
+      value: value.toString(),
+    );
   }
 
   /// Get biometric setup flag

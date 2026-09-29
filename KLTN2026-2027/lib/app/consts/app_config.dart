@@ -17,11 +17,11 @@ class AppConfig {
   // URL mặc định theo environment và platform
   static String get _defaultBaseUrl {
     if (env == 'prod') {
-      return 'http://192.168.1.80:54796'; // Production
+      return 'http://192.168.1.9:54796'; // Production
     }
 
     if (kIsWeb) {
-      return 'https://localhost:44302'; // Web Browser
+      return 'https://192.168.1.9:44302'; // Web Browser
     }
 
     // Development - Tự động detect platform
@@ -54,6 +54,7 @@ class AppConfig {
 
   // ===== 🏢 3. Venues Management APIs (/api/v1/venues) =====
   static const venuesPath = '/api/v1/venues';
+  static const venueRecommendationsPath = '/api/v1/venues/recommendations';
 
   // ===== 📅 4. Venue Schedules Management APIs (/api/v1/venue-schedules) =====
   static const venueSchedulesPath = '/api/v1/venue-schedules';
@@ -101,4 +102,6 @@ class AppConfig {
   static const changePasswordPath = '/change-password';
   static const fullScreenImagePath = '/full-screen-image';
   static const blockedUsersPath = '/blockedUsers';
+  static const adminUsersPath = '/admin/users';
+  static const adminRolesPath = '/admin/roles';
 }

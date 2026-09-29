@@ -114,6 +114,7 @@ import '../domain/usecases/user/get_users_usecase.dart';
 import '../domain/usecases/user/lock_user_usecase.dart';
 import '../domain/usecases/user/update_user_roles_usecase.dart';
 import '../domain/usecases/venue/get_venues_usecase.dart';
+import '../domain/usecases/venue/get_venue_recommendations_usecase.dart';
 import '../domain/usecases/venue/manage_venue_usecase.dart';
 import '../domain/usecases/venue_schedule/get_venue_schedules_usecase.dart';
 import '../domain/usecases/venue_schedule/manage_venue_schedule_usecase.dart';
@@ -614,6 +615,10 @@ final updateUserRolesUseCaseProvider = Provider<UpdateUserRolesUseCase>((ref) {
 
 final getVenuesUseCaseProvider = Provider<GetVenuesUseCase>((ref) {
   return GetVenuesUseCase(ref.watch(venueRepositoryProvider));
+});
+
+final getVenueRecommendationsUseCaseProvider = Provider<GetVenueRecommendationsUseCase>((ref) {
+  return GetVenueRecommendationsUseCase(ref.watch(venueRepositoryProvider));
 });
 
 final manageVenueUseCaseProvider = Provider<ManageVenueUseCase>((ref) {

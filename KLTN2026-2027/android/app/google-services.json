@@ -1,32 +1,13 @@
 {
   "project_info": {
-    "project_number": "70946259423",
-    "project_id": "notification-erp-72095",
-    "storage_bucket": "notification-erp-72095.firebasestorage.app"
+    "project_number": "476605524890",
+    "project_id": "sports-venue-cb204",
+    "storage_bucket": "sports-venue-cb204.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:70946259423:android:74e5dcc5e5b5559b1e046a",
-        "android_client_info": {
-          "package_name": "com.ierp.ierp_mobile"
-        }
-      },
-      "oauth_client": [],
-      "api_key": [
-        {
-          "current_key": "AIzaSyAFfKr0bbW6HIQAOg1ovU2vN1oUP_ZF31g"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": []
-        }
-      }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:70946259423:android:dc49a1db4df9ff5a1e046a",
+        "mobilesdk_app_id": "1:476605524890:android:d3673ad3489bbb874e6823",
         "android_client_info": {
           "package_name": "com.sipm.sipm_mobile"
         }
@@ -34,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyAFfKr0bbW6HIQAOg1ovU2vN1oUP_ZF31g"
+          "current_key": "AIzaSyCpV_MJvoAsswVMjOyo4M7p5JoFko6Aoq4"
         }
       ],
       "services": {

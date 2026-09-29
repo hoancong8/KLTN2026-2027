@@ -18,22 +18,34 @@ class PagedResultDto<T> {
   });
 
   factory PagedResultDto.fromJson(
-    Map<String, dynamic> json,
+    dynamic rawJson,
     T Function(dynamic) itemFromJson,
   ) {
-    final rawItems = json['items'];
+    if (rawJson is! Map) {
+      return PagedResultDto<T>(
+        items: [],
+        totalCount: 0,
+        pageNumber: 1,
+        pageSize: 10,
+        totalPages: 0,
+        hasPreviousPage: false,
+        hasNextPage: false,
+      );
+    }
+
+    final rawItems = rawJson['items'];
     final items = (rawItems is List)
         ? rawItems.map((e) => itemFromJson(e)).toList()
         : <T>[];
 
     return PagedResultDto<T>(
       items: items,
-      totalCount: _parseInt(json['totalCount']),
-      pageNumber: _parseInt(json['pageNumber'], defaultValue: 1),
-      pageSize: _parseInt(json['pageSize'], defaultValue: 10),
-      totalPages: _parseInt(json['totalPages']),
-      hasPreviousPage: _parseBool(json['hasPreviousPage']),
-      hasNextPage: _parseBool(json['hasNextPage']),
+      totalCount: _parseInt(rawJson['totalCount']),
+      pageNumber: _parseInt(rawJson['pageNumber'], defaultValue: 1),
+      pageSize: _parseInt(rawJson['pageSize'], defaultValue: 10),
+      totalPages: _parseInt(rawJson['totalPages']),
+      hasPreviousPage: _parseBool(rawJson['hasPreviousPage']),
+      hasNextPage: _parseBool(rawJson['hasNextPage']),
     );
   }
 
