@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/legacy.dart';
 import 'package:kltn2026_2027/app/consts/app_log.dart';
 import 'package:kltn2026_2027/app/consts/app_router.dart';
 import 'package:kltn2026_2027/app/provider.dart';
+import 'package:kltn2026_2027/app/services/app_auth_interceptor.dart';
 import 'package:kltn2026_2027/domain/entities/employee.dart';
 import 'package:kltn2026_2027/domain/entities/notification_message.dart';
 import 'package:kltn2026_2027/domain/exceptions/auth_exceptions.dart';
@@ -297,6 +298,13 @@ class HomeViewModel extends StateNotifier<HomeState> {
       // 2) Logout backend / clear session
       await logoutUseCase.execute();
 
+      // 3) Xóa trạng thái auth và user trong Riverpod
+      ref.read(authTokenProvider.notifier).state = null;
+      ref.read(currentUserProfileProvider.notifier).clear();
+      ref.read(currentEmployeeProvider.notifier).state = null;
+      ref.read(homeTabProvider.notifier).state = 0;
+      AppAuthInterceptor.resetStaticState();
+
       if (!mounted) return false;
 
       state = state.copyWith(isLoading: false, didLogout: true);
@@ -304,12 +312,22 @@ class HomeViewModel extends StateNotifier<HomeState> {
     } on SessionExpiredException {
       if (!mounted) return true;
       await signalRService.disconnect(clear: true);
+      ref.read(authTokenProvider.notifier).state = null;
+      ref.read(currentUserProfileProvider.notifier).clear();
+      ref.read(currentEmployeeProvider.notifier).state = null;
+      ref.read(homeTabProvider.notifier).state = 0;
+      AppAuthInterceptor.resetStaticState();
       state = state.copyWith(isLoading: false, didLogout: true);
       return true;
     } catch (e) {
+      ref.read(authTokenProvider.notifier).state = null;
+      ref.read(currentUserProfileProvider.notifier).clear();
+      ref.read(currentEmployeeProvider.notifier).state = null;
+      ref.read(homeTabProvider.notifier).state = 0;
+      AppAuthInterceptor.resetStaticState();
       if (!mounted) return false;
-      state = state.copyWith(isLoading: false, error: e.toString());
-      return false;
+      state = state.copyWith(isLoading: false, error: e.toString(), didLogout: true);
+      return true;
     }
   }
 

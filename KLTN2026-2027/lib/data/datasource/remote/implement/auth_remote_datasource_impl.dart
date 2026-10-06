@@ -42,7 +42,7 @@ class AuthRemoteDatasourceImpl extends BaseRemoteDatasource implements AuthRemot
   @override
   Future<void> logout() async {
     try {
-      await dio.get(AppConfig.logOut);
+      await dio.post(AppConfig.logOut);
     } catch (e) {
       throw handleError(e);
     }

@@ -22,7 +22,12 @@ class LogoutUseCase {
       AppLog.info('[LogoutUseCase] Failed to delete device token: $e');
     }
 
-    await repository.logout();
+    try {
+      await repository.logout();
+    } catch (e) {
+      AppLog.info('[LogoutUseCase] Failed to logout from remote: $e');
+    }
+
     await tokenStorage.clearAuthToken();
   }
 }

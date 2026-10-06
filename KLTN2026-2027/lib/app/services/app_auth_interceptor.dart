@@ -58,6 +58,7 @@ class AppAuthInterceptor extends Interceptor {
       final path = err.requestOptions.path;
 
       if (path.contains(AppConfig.login) ||
+          path.contains(AppConfig.logOut) ||
           path.contains(AppConfig.sendTwoFactorCode) ||
           path.contains(AppConfig.refreshToken)) {
         return handler.next(err);

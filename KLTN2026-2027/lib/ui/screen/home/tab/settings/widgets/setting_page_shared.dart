@@ -298,6 +298,41 @@ Widget buildLogoutCard(BuildContext context, WidgetRef ref, bool isLoading) {
         isDestructive: true,
         isLoading: isLoading,
         onTap: () async {
+          final confirmed = await showDialog<bool>(
+            context: context,
+            builder: (ctx) => AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              title: Text(context.l10n.auth_logout),
+              content: Text(
+                context.l10n.localeName == 'vi'
+                    ? 'Bạn có chắc chắn muốn đăng xuất khỏi hệ thống không?'
+                    : 'Are you sure you want to log out of the system?',
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(ctx).pop(false),
+                  child: Text(context.l10n.com_cancel),
+                ),
+                ElevatedButton(
+                  onPressed: () => Navigator.of(ctx).pop(true),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColor.cError,
+                    foregroundColor: AppColor.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: Text(context.l10n.auth_logout),
+                ),
+              ],
+            ),
+          );
+
+          if (confirmed != true) return;
+
           final success = await ref
               .read(settingsViewModelProvider.notifier)
               .logout();

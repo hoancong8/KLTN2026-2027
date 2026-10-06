@@ -32,10 +32,14 @@ class SettingsViewModel extends StateNotifier<SettingsState> {
       // giữ biometric credentials, chỉ clear session
       await biometricService.clearSessionOnly();
 
-      state = state.copyWith(isLoading: false);
+      if (mounted) {
+        state = state.copyWith(isLoading: false);
+      }
       return ok;
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      if (mounted) {
+        state = state.copyWith(isLoading: false, error: e.toString());
+      }
       return false;
     }
   }

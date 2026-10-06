@@ -32,10 +32,13 @@ void main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   if (!kIsWeb) {
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+    try {
+      final token = await FirebaseMessaging.instance.getToken();
+      AppLog.info('===> FCM TOKEN: $token');
+    } catch (e) {
+      AppLog.info('===> FCM GET TOKEN ERROR: $e');
+    }
   }
-
-  final token = await FirebaseMessaging.instance.getToken();
-  print('===> FCM TOKEN: $token');
 
   // 3. Determine initial route concurrently under native splash
   String initialRoute = AppConfig.loginPath;
