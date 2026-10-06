@@ -1,0 +1,71 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [ master, main ]
+    paths:
+      - 'KLTN2026-2027/**'
+      - '.github/workflows/build-android.yml'
+  pull_request:
+    branches: [ master, main ]
+    paths:
+      - 'KLTN2026-2027/**'
+      - '.github/workflows/build-android.yml'
+  workflow_dispatch:
+
+jobs:
+  build-apk:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: KLTN2026-2027
+
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: ☕ Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'gradle'
+
+      - name: 🐦 Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+          cache-key: 'flutter-:os:-:channel:-:version:-:arch:-:hash:'
+
+      - name: 📦 Cài đặt dependencies
+        run: flutter pub get
+
+      - name: 🔧 Cấp quyền thực thi cho gradlew (nếu có)
+        run: |
+          if [ -f "android/gradlew" ]; then
+            chmod +x android/gradlew
+          fi
+
+      - name: 📱 Build Android APK
+        env:
+          ENV: ${{ secrets.ENV || 'prod' }}
+          BASE_URL: ${{ secrets.BASE_URL }}
+        run: |
+          CMD="flutter build apk --release --dart-define=ENV=${ENV}"
+          
+          if [ -n "${BASE_URL}" ]; then
+            CMD="$CMD --dart-define=BASE_URL=${BASE_URL}"
+          fi
+          
+          echo "Executing: $CMD"
+          eval $CMD
+
+      - name: 📤 Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: flutter-android-apk
+          path: KLTN2026-2027/build/app/outputs/flutter-apk/*.apk
+          retention-days: 14

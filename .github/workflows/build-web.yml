@@ -1,0 +1,58 @@
+name: Build Flutter Web
+
+on:
+  push:
+    branches: [ master, main ]
+    paths:
+      - 'KLTN2026-2027/**'
+      - '.github/workflows/build-web.yml'
+  pull_request:
+    branches: [ master, main ]
+    paths:
+      - 'KLTN2026-2027/**'
+      - '.github/workflows/build-web.yml'
+  workflow_dispatch:
+
+jobs:
+  build-web:
+    name: Build Flutter Web
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: KLTN2026-2027
+
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 🐦 Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+          cache-key: 'flutter-:os:-:channel:-:version:-:arch:-:hash:'
+
+      - name: 📦 Cài đặt dependencies
+        run: flutter pub get
+
+      - name: 🌐 Build Flutter Web
+        env:
+          ENV: ${{ secrets.ENV || 'prod' }}
+          BASE_URL: ${{ secrets.BASE_URL }}
+        run: |
+          CMD="flutter build web --release --dart-define=ENV=${ENV}"
+          
+          if [ -n "${BASE_URL}" ]; then
+            CMD="$CMD --dart-define=BASE_URL=${BASE_URL}"
+          fi
+          
+          echo "Executing: $CMD"
+          eval $CMD
+
+      - name: 📤 Upload Web Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: flutter-web-build
+          path: KLTN2026-2027/build/web/
+          retention-days: 14
