@@ -53,10 +53,16 @@ jobs:
           ENV: ${{ secrets.ENV || 'prod' }}
           BASE_URL: ${{ secrets.BASE_URL }}
         run: |
-          # Tự động lấy tên repository làm base-href (ví dụ /KLTN2026-2027/)
-          REPO_NAME="${GITHUB_REPOSITORY#*/}"
+          # Nếu có file CNAME (Custom Domain như sportclub.l7ungdz.id.vn), base-href là /
+          # Ngược lại nếu dùng domain mặc định github.io, base-href là /<repo_name>/
+          if [ -f "web/CNAME" ]; then
+            BASE_HREF="/"
+          else
+            REPO_NAME="${GITHUB_REPOSITORY#*/}"
+            BASE_HREF="/${REPO_NAME}/"
+          fi
           
-          CMD="flutter build web --release --base-href=/${REPO_NAME}/ --dart-define=ENV=${ENV}"
+          CMD="flutter build web --release --base-href=${BASE_HREF} --dart-define=ENV=${ENV}"
           
           if [ -n "${BASE_URL}" ]; then
             CMD="$CMD --dart-define=BASE_URL=${BASE_URL}"
