@@ -44,9 +44,9 @@ class AppAuthInterceptor extends Interceptor {
       options.headers['Authorization'] = 'Bearer ${token.accessToken}';
     }
 
-    final tenantId = await SecureStorageService.instance.getTenantId();
-    if (tenantId != null) {
-      options.headers['Abp.TenantId'] = tenantId.toString();
+    final activeClubId = await SecureStorageService.instance.getActiveClubId();
+    if (activeClubId != null && activeClubId.isNotEmpty) {
+      options.headers['X-Group-Id'] = activeClubId;
     }
 
     return handler.next(options);
@@ -59,7 +59,6 @@ class AppAuthInterceptor extends Interceptor {
 
       if (path.contains(AppConfig.login) ||
           path.contains(AppConfig.logOut) ||
-          path.contains(AppConfig.sendTwoFactorCode) ||
           path.contains(AppConfig.refreshToken)) {
         return handler.next(err);
       }
@@ -141,9 +140,10 @@ class AppAuthInterceptor extends Interceptor {
         final opts = err.requestOptions;
         opts.headers['Authorization'] = 'Bearer ${newToken.accessToken}';
 
-        final tenantId = await SecureStorageService.instance.getTenantId();
-        if (tenantId != null) {
-          opts.headers['Abp.TenantId'] = tenantId.toString();
+        final activeClubId =
+            await SecureStorageService.instance.getActiveClubId();
+        if (activeClubId != null && activeClubId.isNotEmpty) {
+          opts.headers['X-Group-Id'] = activeClubId;
         }
 
         AppLog.info(
@@ -204,22 +204,20 @@ class AppAuthInterceptor extends Interceptor {
         queryParameters: {'refreshToken': currentToken.refreshToken},
       );
 
-      final result = response.data['result'];
+      final data = response.data is Map<String, dynamic>
+          ? (response.data['result'] ?? response.data)
+          : response.data;
+      final accessToken = (data['accessToken'] ?? '') as String;
+      final refreshToken =
+          (data['refreshToken'] as String?) ?? currentToken.refreshToken;
       final newToken = AuthToken(
-        accessToken: result['accessToken'] as String,
-        refreshToken:
-        (result['refreshToken'] as String?) ?? currentToken.refreshToken,
+        accessToken: accessToken,
+        refreshToken: refreshToken,
         userId: currentToken.userId,
       );
 
       ref.read(authTokenProvider.notifier).state = newToken;
       await SecureStorageService.instance.saveAuthToken(newToken);
-
-      // Fix #6 + #1: notify SignalR to use the refreshed token immediately,
-      // and reset the refresh future so next token expiry starts a fresh cycle.
-      try {
-        ref.read(signalRServiceProvider).updateToken(newToken.accessToken);
-      } catch (_) {}
 
       AppLog.info('[AppAuthInterceptor] Refresh token successful');
       return newToken;

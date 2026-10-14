@@ -1,11 +1,21 @@
+import '../entities/player_profile.dart';
 import '../entities/user_profile.dart';
 import '../entities/paged_response.dart';
+import '../enums/session_enums.dart';
 
 import '../entities/permission_group.dart';
 import '../entities/user_permissions.dart';
 
 abstract class UserRepository {
   Future<UserProfile> getUserMe();
+  Future<PlayerProfile> getMyProfile();
+  Future<void> updateMyProfile({
+    required String fullName,
+    required int gender,
+    String? avatarUrl,
+    required SkillLevel skillLevel,
+    required bool isOpenForGuest,
+  });
   Future<UserPermissions> getUserPermissions();
   Future<List<PermissionGroup>> getAllPermissions();
   Future<PagedResponse<UserProfile>> getUsers({

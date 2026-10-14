@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kltn2026_2027/app/consts/app_color.dart';
 import 'package:kltn2026_2027/app/provider/localization_provider.dart';
 import 'package:kltn2026_2027/ui/screen/home/tab/report/report_vm/report_state.dart';
-import '../report_vm/report_vm.dart';
 
 class ReportTablet extends StatefulWidget {
   final ReportState state;
@@ -100,7 +98,7 @@ class _ReportTabletState extends State<ReportTablet> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: AppColor.cMain.withOpacity(0.1),
+                  color: AppColor.cMain.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Icon(Icons.bar_chart, color: AppColor.cMain, size: 20),
@@ -135,7 +133,7 @@ class _ReportTabletState extends State<ReportTablet> {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
           color: isActive
-              ? AppColor.cMain.withOpacity(0.1)
+              ? AppColor.cMain.withValues(alpha: 0.1)
               : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
         ),
@@ -239,7 +237,7 @@ class _ReportTabletState extends State<ReportTablet> {
             Icon(
               Icons.hourglass_empty,
               size: 24,
-              color: AppColor.cMuted.withOpacity(0.5),
+              color: AppColor.cMuted.withValues(alpha: 0.5),
             ),
             const SizedBox(height: 20),
             Text(
@@ -266,7 +264,7 @@ class _ReportTabletState extends State<ReportTablet> {
         border: Border.all(color: AppColor.cDivider),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: Colors.black.withValues(alpha: 0.02),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -277,7 +275,7 @@ class _ReportTabletState extends State<ReportTablet> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(16),
             ),
             child: Icon(icon, color: color, size: 32),

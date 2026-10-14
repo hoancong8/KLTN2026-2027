@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:local_auth/local_auth.dart';
 import 'package:kltn2026_2027/domain/services/i_biometric_service.dart';
 import '../../app/provider.dart';
 

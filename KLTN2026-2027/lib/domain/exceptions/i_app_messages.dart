@@ -10,11 +10,9 @@ abstract interface class IAppMessages {
   String get errorNotFound;
   String get errorServer;
   String get errorInvalidResponse;
-  String get errorSignalRNotConnected;
 
   // --- Auth ---
   String get errorSessionExpired;
-  String get otpVerification;
   String get authSessionExpiredTitle;
   String get authSessionExpiredMessage;
   String get authLoginAgain;

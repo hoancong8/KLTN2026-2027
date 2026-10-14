@@ -28,13 +28,18 @@ class AppExceptionHandler {
     final statusCode = response?.statusCode;
     final data = response?.data;
 
-    // 2. Thử bóc tách message từ nội dung trả về của Server (ABP Framework)
+    // 2. Thử bóc tách message từ nội dung trả về của Server (RFC 7807 ProblemDetails hoặc ABP)
     String? message;
     if (data is Map<String, dynamic>) {
-      // ABP thường để lỗi trong trường 'error'
-      final error = data['error'] ?? (data['result'] is Map ? data['result']['error'] : null);
-      if (error is Map) {
-        message = error['message']?.toString() ?? error['Message']?.toString();
+      // 2.1 Chuẩn RFC 7807 ProblemDetails (detail / title)
+      message = data['detail']?.toString() ?? data['title']?.toString();
+
+      // 2.2 Fallback ABP error object
+      if (message == null) {
+        final error = data['error'] ?? (data['result'] is Map ? data['result']['error'] : null);
+        if (error is Map) {
+          message = error['message']?.toString() ?? error['Message']?.toString();
+        }
       }
       message ??= data['message']?.toString();
     }

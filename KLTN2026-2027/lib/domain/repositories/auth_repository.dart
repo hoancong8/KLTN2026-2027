@@ -1,4 +1,5 @@
 import 'package:kltn2026_2027/domain/entities/auth_token.dart';
+import '../entities/auth_register_result.dart';
 
 abstract class AuthRepository {
   Future<AuthToken> login({
@@ -6,17 +7,16 @@ abstract class AuthRepository {
     required String password,
   });
 
-  Future<void> logout();
-
-  Future<void> sendOtp({
-    required String provider,
-  });
-
-  Future<AuthToken> loginWithOtp({
-    required String username,
+  Future<AuthRegisterResult> register({
+    required String fullName,
+    String? email,
+    String? phoneNumber,
     required String password,
-    required String code,
+    int gender = 0,
+    String skillLevel = 'NB',
   });
+
+  Future<void> logout();
 
   Future<void> changePassword({
     required String currentPassword,

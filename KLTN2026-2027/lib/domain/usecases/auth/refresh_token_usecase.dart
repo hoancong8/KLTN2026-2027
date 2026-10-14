@@ -8,12 +8,10 @@ class RefreshTokenUseCase {
 
   Future<AuthToken> execute(AuthToken currentToken) async {
     AuthToken apiResult = await repository.refreshToken(currentToken.refreshToken);
-    AuthToken result = apiResult.copyWith(
+    return apiResult.copyWith(
       accessToken: apiResult.accessToken,
       refreshToken: currentToken.refreshToken,
-      twoFactorRememberClientToken: currentToken.twoFactorRememberClientToken,
       userId: currentToken.userId,
     );
-    return result;
   }
 }

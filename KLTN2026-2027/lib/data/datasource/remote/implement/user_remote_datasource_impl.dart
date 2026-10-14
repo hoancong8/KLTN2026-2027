@@ -11,6 +11,9 @@ import '../../../dto/user/permission_group_response_dto.dart';
 import '../../../dto/user/user_permissions_response_dto.dart';
 import '../../../dto/user/user_management_request_dto.dart';
 
+import '../../../dto/user/player_profile_dto.dart';
+import '../../../dto/user/update_player_profile_request_dto.dart';
+
 class UserRemoteDatasourceImpl extends BaseRemoteDatasource implements UserRemoteDatasource {
   final Dio dio;
 
@@ -21,6 +24,25 @@ class UserRemoteDatasourceImpl extends BaseRemoteDatasource implements UserRemot
     try {
       final response = await dio.get(AppConfig.userMePath);
       return handleResponse(response, (data) => UserResponseDto.fromJson(data));
+    } catch (e) {
+      throw handleError(e);
+    }
+  }
+
+  @override
+  Future<PlayerProfileDto> getUserProfile() async {
+    try {
+      final response = await dio.get(AppConfig.userProfilePath);
+      return handleResponse(response, (data) => PlayerProfileDto.fromJson(data));
+    } catch (e) {
+      throw handleError(e);
+    }
+  }
+
+  @override
+  Future<void> updateUserProfile(UpdatePlayerProfileRequestDto request) async {
+    try {
+      await dio.put(AppConfig.userProfilePath, data: request.toJson());
     } catch (e) {
       throw handleError(e);
     }

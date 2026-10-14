@@ -15,7 +15,11 @@ class AppException implements Exception {
       (message?.isNotEmpty == true) ? message! : messages.errorSystem;
 
   @override
-  String toString() => message ?? runtimeType.toString();
+  String toString() {
+    if (message?.isNotEmpty == true) return message!;
+    if (originalError != null) return originalError.toString();
+    return runtimeType.toString();
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -56,10 +60,4 @@ class InvalidResponseException extends AppException {
   const InvalidResponseException({super.originalError});
   @override
   String resolve(IAppMessages messages) => messages.errorInvalidResponse;
-}
-
-class SignalRNotConnectedException extends AppException {
-  const SignalRNotConnectedException();
-  @override
-  String resolve(IAppMessages messages) => messages.errorSignalRNotConnected;
 }

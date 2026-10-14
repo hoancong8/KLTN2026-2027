@@ -1,0 +1,1026 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import '../../../app/consts/app_color.dart';
+import '../../../app/provider/localization_provider.dart';
+import '../../../app/utils/exception_ext.dart';
+import '../../../domain/entities/club/club_detail.dart';
+import '../../../domain/enums/session_enums.dart';
+import 'club_detail_vm/club_detail_vm.dart';
+
+class ClubDetailScreen extends ConsumerStatefulWidget {
+  final String clubId;
+  const ClubDetailScreen({super.key, required this.clubId});
+
+  @override
+  ConsumerState<ClubDetailScreen> createState() => _ClubDetailScreenState();
+}
+
+class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> {
+  void _copyToClipboard(String text, String message) {
+    Clipboard.setData(ClipboardData(text: text));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: AppColor.cMain,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  void _showJoinRequestDialog() {
+    final introController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Row(
+          children: [
+            Icon(Icons.edit_note_rounded, color: AppColor.cMain, size: 26),
+            SizedBox(width: 8),
+            Text('Xin gia nhập nhóm', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Gửi đôi lời giới thiệu về bạn và trình độ để Trưởng nhóm dễ duyệt đơn nhé:',
+              style: TextStyle(fontSize: 13, color: AppColor.cMuted),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: introController,
+              maxLines: 3,
+              decoration: InputDecoration(
+                hintText: 'Ví dụ: Mình đánh cầu được 2 năm, trình độ TB, muốn tìm nhóm sinh hoạt cố định...',
+                hintStyle: const TextStyle(fontSize: 12, color: AppColor.cMuted),
+                filled: true,
+                fillColor: const Color(0xFFF8FAFC),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                ),
+                contentPadding: const EdgeInsets.all(12),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Hủy', style: TextStyle(color: AppColor.cMuted)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColor.cMain,
+              foregroundColor: AppColor.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            onPressed: () async {
+              Navigator.of(ctx).pop();
+              await ref
+                  .read(clubDetailViewModelProvider(widget.clubId).notifier)
+                  .sendJoinRequest(introController.text.trim());
+            },
+            child: const Text('Gửi đơn'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showEditInfoDialog(ClubDetail club) {
+    final venueController = TextEditingController(text: club.fixedVenueName ?? '');
+    final addressController = TextEditingController(text: club.fixedAddress ?? '');
+    final descController = TextEditingController(text: club.description ?? '');
+    bool isRecruiting = club.isRecruiting;
+    SkillLevel minSkill = club.minSkillLevel ?? SkillLevel.nb;
+    SkillLevel maxSkill = club.maxSkillLevel ?? SkillLevel.k;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setSheetState) => Container(
+          padding: EdgeInsets.only(
+            top: 20,
+            left: 20,
+            right: 20,
+            bottom: MediaQuery.of(ctx).viewInsets.bottom + 20,
+          ),
+          decoration: const BoxDecoration(
+            color: AppColor.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Cấu hình sân & tuyển quân',
+                      style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: AppColor.cDark),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close_rounded),
+                      onPressed: () => Navigator.of(ctx).pop(),
+                    ),
+                  ],
+                ),
+                const Divider(),
+                const Text('Tên sân cố định', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                const SizedBox(height: 6),
+                TextField(
+                  controller: venueController,
+                  decoration: InputDecoration(
+                    hintText: 'Ví dụ: Sân Cầu Lông Kỳ Hòa',
+                    filled: true,
+                    fillColor: const Color(0xFFF8FAFC),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                const Text('Địa chỉ sân', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                const SizedBox(height: 6),
+                TextField(
+                  controller: addressController,
+                  decoration: InputDecoration(
+                    hintText: 'Ví dụ: 238 Đường 3/2, Phường 12, Quận 10',
+                    filled: true,
+                    fillColor: const Color(0xFFF8FAFC),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                const Text('Mô tả nhóm', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                const SizedBox(height: 6),
+                TextField(
+                  controller: descController,
+                  maxLines: 2,
+                  decoration: InputDecoration(
+                    hintText: 'Giới thiệu về không khí, chi phí hoặc yêu cầu...',
+                    filled: true,
+                    fillColor: const Color(0xFFF8FAFC),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+                    contentPadding: const EdgeInsets.all(12),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  activeThumbColor: AppColor.cMain,
+                  title: const Text('Mở tuyển thành viên mới', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                  value: isRecruiting,
+                  onChanged: (val) => setSheetState(() => isRecruiting = val),
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  height: 46,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColor.cMain,
+                      foregroundColor: AppColor.white,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                    onPressed: () async {
+                      Navigator.of(ctx).pop();
+                      await ref.read(clubDetailViewModelProvider(widget.clubId).notifier).updateInfo(
+                            groupName: club.groupName,
+                            fixedVenueName: venueController.text.trim(),
+                            fixedAddress: addressController.text.trim(),
+                            description: descController.text.trim(),
+                            minSkillLevel: minSkill,
+                            maxSkillLevel: maxSkill,
+                            isRecruiting: isRecruiting,
+                          );
+                    },
+                    child: const Text('Lưu thông tin sân', style: TextStyle(fontWeight: FontWeight.bold)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showEditSchedulesDialog(ClubDetail club) {
+    // 7 days: Day 1 (CN/T2 depending on convention: 1=Thứ 2.. 7=Chủ nhật)
+    final days = [
+      {'day': 1, 'name': 'Thứ Hai'},
+      {'day': 2, 'name': 'Thứ Ba'},
+      {'day': 3, 'name': 'Thứ Tư'},
+      {'day': 4, 'name': 'Thứ Năm'},
+      {'day': 5, 'name': 'Thứ Sáu'},
+      {'day': 6, 'name': 'Thứ Bảy'},
+      {'day': 0, 'name': 'Chủ Nhật'},
+    ];
+
+    final activeDays = <int, Map<String, String>>{};
+    for (final s in club.schedules) {
+      if (s.isActive) {
+        activeDays[s.dayOfWeek] = {
+          'start': s.startTime,
+          'end': s.endTime,
+        };
+      }
+    }
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setSheetState) => Container(
+          padding: EdgeInsets.only(
+            top: 20,
+            left: 20,
+            right: 20,
+            bottom: MediaQuery.of(ctx).viewInsets.bottom + 20,
+          ),
+          decoration: const BoxDecoration(
+            color: AppColor.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Lịch sinh hoạt định kỳ tuần',
+                      style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: AppColor.cDark),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close_rounded),
+                      onPressed: () => Navigator.of(ctx).pop(),
+                    ),
+                  ],
+                ),
+                const Text(
+                  'Chọn các ngày cố định và khung giờ nhóm sinh hoạt:',
+                  style: TextStyle(fontSize: 12, color: AppColor.cMuted),
+                ),
+                const Divider(height: 20),
+                for (final d in days) ...[
+                  Builder(builder: (context) {
+                    final dayNum = d['day'] as int;
+                    final dayName = d['name'] as String;
+                    final isChecked = activeDays.containsKey(dayNum);
+                    final start = activeDays[dayNum]?['start'] ?? '18:00';
+                    final end = activeDays[dayNum]?['end'] ?? '21:00';
+
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 8),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: isChecked ? AppColor.cMain.withValues(alpha: 0.06) : const Color(0xFFF8FAFC),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: isChecked ? AppColor.cMain.withValues(alpha: 0.4) : const Color(0xFFE2E8F0),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Checkbox(
+                            value: isChecked,
+                            activeColor: AppColor.cMain,
+                            onChanged: (val) {
+                              setSheetState(() {
+                                if (val == true) {
+                                  activeDays[dayNum] = {'start': '18:00', 'end': '21:00'};
+                                } else {
+                                  activeDays.remove(dayNum);
+                                }
+                              });
+                            },
+                          ),
+                          Text(
+                            dayName,
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: isChecked ? FontWeight.bold : FontWeight.w500,
+                              color: isChecked ? AppColor.cMain : AppColor.cDark,
+                            ),
+                          ),
+                          const Spacer(),
+                          if (isChecked)
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: AppColor.white,
+                                borderRadius: BorderRadius.circular(6),
+                                border: Border.all(color: const Color(0xFFCBD5E1)),
+                              ),
+                              child: Text(
+                                '$start - $end',
+                                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColor.cDark),
+                              ),
+                            ),
+                        ],
+                      ),
+                    );
+                  }),
+                ],
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  height: 46,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColor.cMain,
+                      foregroundColor: AppColor.white,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                    onPressed: () async {
+                      Navigator.of(ctx).pop();
+                      final inputList = activeDays.entries.map((e) {
+                        final s = e.value['start'] ?? '18:00';
+                        final end = e.value['end'] ?? '21:00';
+                        return ClubScheduleInput(
+                          dayOfWeek: e.key,
+                          startTime: s.length > 5 ? s.substring(0, 5) : s,
+                          endTime: end.length > 5 ? end.substring(0, 5) : end,
+                        );
+                      }).toList();
+
+                      await ref
+                          .read(clubDetailViewModelProvider(widget.clubId).notifier)
+                          .updateSchedules(inputList);
+                    },
+                    child: const Text('Lưu lịch tuần', style: TextStyle(fontWeight: FontWeight.bold)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final state = ref.watch(clubDetailViewModelProvider(widget.clubId));
+    final vm = ref.read(clubDetailViewModelProvider(widget.clubId).notifier);
+
+    ref.listen(clubDetailViewModelProvider(widget.clubId), (prev, next) {
+      if (next.error != null && next.error != prev?.error) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(next.error!.getDisplayMessage(context.l10n)),
+            backgroundColor: AppColor.cError,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+      if (next.successMessage != null && next.successMessage != prev?.successMessage) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(next.successMessage!),
+            backgroundColor: AppColor.cMain,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    });
+
+    final club = state.club;
+
+    return Scaffold(
+      backgroundColor: const Color(0xFFF8FAFC),
+      appBar: AppBar(
+        backgroundColor: AppColor.white,
+        elevation: 0,
+        title: Text(
+          club?.groupName ?? 'Chi tiết Câu lạc bộ',
+          style: const TextStyle(
+            color: AppColor.cDark,
+            fontSize: 17,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: AppColor.cDark),
+          onPressed: () => context.pop(),
+        ),
+        actions: [
+          if (club != null && club.currentUserStatus.isMember)
+            PopupMenuButton<String>(
+              icon: const Icon(Icons.more_vert_rounded, color: AppColor.cDark),
+              onSelected: (val) {
+                if (val == 'info') {
+                  _showEditInfoDialog(club);
+                } else if (val == 'schedules') {
+                  _showEditSchedulesDialog(club);
+                }
+              },
+              itemBuilder: (ctx) => [
+                const PopupMenuItem(
+                  value: 'info',
+                  child: Row(
+                    children: [
+                      Icon(Icons.edit_location_alt_rounded, size: 18, color: AppColor.cMain),
+                      SizedBox(width: 8),
+                      Text('Cấu hình sân & tuyển quân', style: TextStyle(fontSize: 13)),
+                    ],
+                  ),
+                ),
+                const PopupMenuItem(
+                  value: 'schedules',
+                  child: Row(
+                    children: [
+                      Icon(Icons.calendar_month_rounded, size: 18, color: AppColor.cMain),
+                      SizedBox(width: 8),
+                      Text('Thiết lập lịch tuần', style: TextStyle(fontSize: 13)),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+        ],
+      ),
+      body: state.isLoading && club == null
+          ? const Center(child: CircularProgressIndicator(color: AppColor.cMain))
+          : club == null
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.error_outline_rounded, size: 56, color: AppColor.cMuted),
+                      const SizedBox(height: 12),
+                      const Text(
+                        'Không thể tải thông tin câu lạc bộ',
+                        style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: () => vm.loadDetail(),
+                        child: const Text('Thử lại'),
+                      ),
+                    ],
+                  ),
+                )
+              : RefreshIndicator(
+                  color: AppColor.cMain,
+                  onRefresh: () => vm.loadDetail(),
+                  child: ListView(
+                    padding: const EdgeInsets.all(16),
+                    children: [
+                      // 1. Header Card
+                      _buildClubHeaderCard(club),
+                      const SizedBox(height: 16),
+
+                      // 2. Fixed Venue & Address Card
+                      _buildVenueCard(club),
+                      const SizedBox(height: 16),
+
+                      // 3. Weekly Schedules Card
+                      _buildSchedulesCard(club),
+                      const SizedBox(height: 16),
+
+                      // 4. Host Profile Card
+                      _buildHostCard(club),
+                      const SizedBox(height: 16),
+
+                      // 5. Club Standards & Intro
+                      _buildIntroCard(club),
+                      const SizedBox(height: 80), // Padding for bottom action bar
+                    ],
+                  ),
+                ),
+      bottomNavigationBar: club != null ? _buildBottomActionBar(club, vm, state.isSubmitting) : null,
+    );
+  }
+
+  Widget _buildClubHeaderCard(ClubDetail club) {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: AppColor.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(14),
+                child: Container(
+                  width: 60,
+                  height: 60,
+                  color: AppColor.cMain.withValues(alpha: 0.1),
+                  child: club.avatarUrl != null && club.avatarUrl!.isNotEmpty
+                      ? Image.network(
+                          club.avatarUrl!,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, _, _) => const Icon(
+                            Icons.sports_tennis_rounded,
+                            color: AppColor.cMain,
+                            size: 32,
+                          ),
+                        )
+                      : const Icon(
+                          Icons.sports_tennis_rounded,
+                          color: AppColor.cMain,
+                          size: 32,
+                        ),
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      club.groupName,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: AppColor.cDark,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    // Code chip with copy button
+                    InkWell(
+                      onTap: () => _copyToClipboard(club.code, 'Đã sao chép mã nhóm: ${club.code}'),
+                      borderRadius: BorderRadius.circular(6),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF1F5F9),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              'Mã: ${club.code}',
+                              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColor.cMuted),
+                            ),
+                            const SizedBox(width: 4),
+                            const Icon(Icons.copy_rounded, size: 12, color: AppColor.cMuted),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const Divider(height: 24),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildHeaderStat('Thành viên', '${club.memberCount}', Icons.groups_rounded, const Color(0xFF2563EB)),
+              _buildHeaderStat('Chất lượng', club.qualityScore.toStringAsFixed(1), Icons.star_rounded, const Color(0xFFF59E0B)),
+              _buildHeaderStat(
+                'Tuyển quân',
+                club.isRecruiting ? 'Đang mở' : 'Đã đủ',
+                Icons.how_to_reg_rounded,
+                club.isRecruiting ? const Color(0xFF16A34A) : const Color(0xFF94A3B8),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeaderStat(String label, String value, IconData icon, Color color) {
+    return Column(
+      children: [
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 16, color: color),
+            const SizedBox(width: 4),
+            Text(
+              value,
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: color),
+            ),
+          ],
+        ),
+        const SizedBox(height: 2),
+        Text(
+          label,
+          style: const TextStyle(fontSize: 11, color: AppColor.cMuted),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildVenueCard(ClubDetail club) {
+    final hasVenue = club.fixedVenueName != null && club.fixedVenueName!.isNotEmpty;
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColor.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
+            children: [
+              Icon(Icons.stadium_rounded, color: AppColor.cMain, size: 20),
+              SizedBox(width: 8),
+              Text(
+                'Sân sinh hoạt cố định',
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColor.cDark),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          if (hasVenue) ...[
+            Text(
+              club.fixedVenueName!,
+              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Color(0xFF1E293B)),
+            ),
+            if (club.fixedAddress != null && club.fixedAddress!.isNotEmpty) ...[
+              const SizedBox(height: 4),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Icon(Icons.location_on_rounded, size: 14, color: Color(0xFFEF4444)),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: Text(
+                      club.fixedAddress!,
+                      style: const TextStyle(fontSize: 13, color: AppColor.cMuted),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+            const SizedBox(height: 12),
+            InkWell(
+              onTap: () {
+                final query = club.lat != null && club.lng != null
+                    ? '${club.lat},${club.lng}'
+                    : club.fixedAddress ?? club.fixedVenueName!;
+                _copyToClipboard(
+                  'https://www.google.com/maps/search/?api=1&query=$query',
+                  'Đã sao chép liên kết chỉ đường Google Maps!',
+                );
+              },
+              borderRadius: BorderRadius.circular(8),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEFF6FF),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: const Color(0xFFBFDBFE)),
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.directions_rounded, size: 16, color: Color(0xFF2563EB)),
+                    SizedBox(width: 6),
+                    Text(
+                      'Sao chép link Google Maps chỉ đường',
+                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Color(0xFF2563EB)),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ] else ...[
+            const Text(
+              'CLB chưa thiết lập sân cố định',
+              style: TextStyle(fontSize: 13, color: AppColor.cMuted),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSchedulesCard(ClubDetail club) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColor.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
+            children: [
+              Icon(Icons.calendar_month_rounded, color: AppColor.cMain, size: 20),
+              SizedBox(width: 8),
+              Text(
+                'Lịch sinh hoạt định kỳ hàng tuần',
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColor.cDark),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          if (club.schedules.isEmpty)
+            const Text(
+              'Chưa có lịch sinh hoạt cố định trong tuần.',
+              style: TextStyle(fontSize: 13, color: AppColor.cMuted),
+            )
+          else
+            ...club.schedules.where((s) => s.isActive).map((s) {
+              return Container(
+                margin: const EdgeInsets.only(bottom: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF8FAFC),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: AppColor.cMain.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: const Icon(Icons.access_time_rounded, size: 16, color: AppColor.cMain),
+                    ),
+                    const SizedBox(width: 10),
+                    Text(
+                      s.dayName,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: AppColor.cDark,
+                      ),
+                    ),
+                    const Spacer(),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFEFF6FF),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        '${s.startTime} - ${s.endTime}',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF0284C7),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHostCard(ClubDetail club) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColor.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
+            children: [
+              Icon(Icons.person_pin_rounded, color: AppColor.cMain, size: 20),
+              SizedBox(width: 8),
+              Text(
+                'Thông tin Chủ nhiệm / Host',
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColor.cDark),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 22,
+                backgroundColor: AppColor.cMain.withValues(alpha: 0.12),
+                backgroundImage: club.host.avatarUrl != null && club.host.avatarUrl!.isNotEmpty
+                    ? NetworkImage(club.host.avatarUrl!)
+                    : null,
+                child: club.host.avatarUrl == null || club.host.avatarUrl!.isEmpty
+                    ? Text(
+                        club.host.fullName.isNotEmpty ? club.host.fullName[0].toUpperCase() : 'H',
+                        style: const TextStyle(fontWeight: FontWeight.bold, color: AppColor.cMain),
+                      )
+                    : null,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      club.host.fullName,
+                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColor.cDark),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      club.host.phoneNumber != null && club.host.phoneNumber!.isNotEmpty
+                          ? club.host.phoneNumber!
+                          : 'Chưa cập nhật số điện thoại',
+                      style: const TextStyle(fontSize: 12, color: AppColor.cMuted),
+                    ),
+                  ],
+                ),
+              ),
+              if (club.host.phoneNumber != null && club.host.phoneNumber!.isNotEmpty)
+                IconButton(
+                  icon: const Icon(Icons.phone_rounded, color: Color(0xFF16A34A)),
+                  tooltip: 'Sao chép SĐT Host',
+                  onPressed: () => _copyToClipboard(
+                    club.host.phoneNumber!,
+                    'Đã sao chép SĐT Trưởng nhóm: ${club.host.phoneNumber}',
+                  ),
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildIntroCard(ClubDetail club) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColor.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
+            children: [
+              Icon(Icons.notes_rounded, color: AppColor.cMain, size: 20),
+              SizedBox(width: 8),
+              Text(
+                'Giới thiệu & Tiêu chuẩn',
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColor.cDark),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text(
+            club.description != null && club.description!.isNotEmpty
+                ? club.description!
+                : 'Nhóm sinh hoạt phong trào cầu lông lành mạnh, đoàn kết, vui khỏe.',
+            style: const TextStyle(fontSize: 13, height: 1.4, color: Color(0xFF334155)),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              const Text('Khoảng trình độ: ', style: TextStyle(fontSize: 12, color: AppColor.cMuted)),
+              Text(
+                '${club.minSkillLevel?.code ?? "NB"} - ${club.maxSkillLevel?.code ?? "G"}',
+                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColor.cMain),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBottomActionBar(ClubDetail club, ClubDetailViewModel vm, bool isSubmitting) {
+    final status = club.currentUserStatus;
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColor.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 10,
+            offset: const Offset(0, -3),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        child: SizedBox(
+          width: double.infinity,
+          height: 50,
+          child: status.isMember
+              ? ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF16A34A),
+                    foregroundColor: AppColor.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  onPressed: isSubmitting
+                      ? null
+                      : () async {
+                          final success = await vm.switchContext();
+                          if (success && mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Đã chuyển sang CLB ${club.groupName}!'),
+                                backgroundColor: AppColor.cMain,
+                              ),
+                            );
+                            context.pop();
+                          }
+                        },
+                  icon: const Icon(Icons.login_rounded),
+                  label: isSubmitting
+                      ? const CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
+                      : const Text(
+                          'Vào sinh hoạt CLB',
+                          style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                        ),
+                )
+              : status.hasPendingJoinRequest
+                  ? ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFFEF3C7),
+                        foregroundColor: const Color(0xFFB45309),
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      onPressed: null,
+                      icon: const Icon(Icons.hourglass_top_rounded, color: Color(0xFFB45309)),
+                      label: const Text(
+                        'Đơn xin gia nhập đang chờ duyệt ⏳',
+                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFFB45309)),
+                      ),
+                    )
+                  : ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColor.cMain,
+                        foregroundColor: AppColor.white,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      onPressed: isSubmitting ? null : _showJoinRequestDialog,
+                      icon: const Icon(Icons.person_add_alt_1_rounded),
+                      label: isSubmitting
+                          ? const CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
+                          : const Text(
+                              'Gửi đơn xin gia nhập CLB',
+                              style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                            ),
+                    ),
+        ),
+      ),
+    );
+  }
+}

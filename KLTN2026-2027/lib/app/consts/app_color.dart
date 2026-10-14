@@ -11,8 +11,10 @@ class AppColor {
   static const Color cGray_50 = Color(0xFFF4F5FD);
   static const Color cYan_50 = Color(0xFFF4FDFA);
   static const Color cError = Color(0xFFCC1B1B);
+  static const Color cRed = cError;
   static const Color cGray_100 = Color(0xFFC0C0C0);
   static const Color cGreen_50 = Color(0xFF08E488);
+  static const Color cGreen = Color(0xFF16A34A);
   static const Color cBlue = Color(0xFF1F8BDA);
   static const Color cBlack = Color(0xFF000000);
   static const Color cRed_50 = Color(0xFFEE4D4D);
@@ -25,6 +27,7 @@ class AppColor {
   static const Color cMain = Color(0xFF3CC18E);
   static const Color cBorderInput = Color(0xFFB7BBC1);
   static const Color cTitle = Color(0xFF263238);
+  static const Color cDark = Color(0xFF0F172A);
   static const Color cWeak = Color(0xFFFAC71E);
   static const Color cNeedCheck = Color(0xFFFF6D0C);
   static const Color cAlert = Color(0xFFFA2020);

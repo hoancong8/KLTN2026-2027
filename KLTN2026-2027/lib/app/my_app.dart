@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import 'package:kltn2026_2027/app/consts/app_log.dart';
 import 'package:kltn2026_2027/app/consts/app_router.dart';
 import 'package:kltn2026_2027/app/consts/app_theme.dart';
-import 'package:kltn2026_2027/app/provider.dart';
 
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:kltn2026_2027/app/provider/localization_provider.dart';
@@ -31,16 +30,7 @@ class _MyAppState extends ConsumerState<MyApp> {
 
   Future<void> _initApp() async {
     await _initializeLocalization();
-    await _initializeNotification();
     if (mounted) setState(() => _isInit = true);
-  }
-
-  Future<void> _initializeNotification() async {
-    try {
-      await ref.read(initializeNotificationUseCaseProvider).execute();
-    } catch (e) {
-      AppLog.info('[MyApp] Failed to initialize notification: $e');
-    }
   }
 
   Future<void> _initializeLocalization() async {

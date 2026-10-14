@@ -23,7 +23,7 @@ class SettingsPage extends ConsumerWidget {
     });
 
     return Scaffold(
-      appBar: _SettingsAppBar(context),
+      appBar: _buildSettingsAppBar(context),
       body: const ResponsiveLayout(
         mobile: SettingsPageMobile(),
         tablet: SettingsPageTablet(),
@@ -31,7 +31,7 @@ class SettingsPage extends ConsumerWidget {
     );
   }
 
-  PreferredSizeWidget _SettingsAppBar(BuildContext context) {
+  PreferredSizeWidget _buildSettingsAppBar(BuildContext context) {
     return PreferredSize(
       preferredSize: const Size.fromHeight(72),
       child: Container(

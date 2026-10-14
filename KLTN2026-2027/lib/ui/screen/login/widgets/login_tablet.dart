@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:kltn2026_2027/app/consts/app_color.dart';
+import 'package:kltn2026_2027/app/consts/app_config.dart';
 import 'package:kltn2026_2027/app/l10n_gen/app_localizations.dart';
 import 'package:kltn2026_2027/app/provider.dart';
 
@@ -160,6 +162,20 @@ class LoginTablet extends ConsumerWidget {
           buildPrimaryButton(
             text: state.isLoading ? l10n.auth_logging_in : l10n.auth_login,
             onPressed: state.isLoading ? null : onLogin,
+          ),
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text('Chưa có tài khoản? ', style: TextStyle(color: AppColor.cMuted, fontSize: 14)),
+              GestureDetector(
+                onTap: () => context.push(AppConfig.registerPath),
+                child: const Text(
+                  'Đăng ký ngay',
+                  style: TextStyle(color: AppColor.cMain, fontWeight: FontWeight.bold, fontSize: 14),
+                ),
+              ),
+            ],
           ),
 
           if (state.error != null) ...[

@@ -37,8 +37,8 @@ class UserCard extends ConsumerWidget {
     final initials = _getInitials(user.userName, user.email);
     final rolesDisplay = user.roles.isNotEmpty ? user.roles.join(', ') : 'Nhân viên';
 
-    final canLock = ref.watch(hasPermissionProvider(Permissions.usersLock));
-    final canResetPassword = ref.watch(hasPermissionProvider(Permissions.usersResetPassword));
+    final canLock = ref.hasPermission(Permissions.usersLock);
+    final canResetPassword = ref.hasPermission(Permissions.usersResetPassword);
     final hasAnyMenuAction = canLock || canResetPassword;
 
     return Container(

@@ -40,13 +40,7 @@ class SecureStorageService {
         await prefs.setString(StorageKeys.accessToken, token.accessToken);
         await prefs.setString(StorageKeys.refreshToken, token.refreshToken);
         if (token.userId != null) {
-          await prefs.setString(StorageKeys.userId, token.userId.toString());
-        }
-        if (token.twoFactorRememberClientToken != null) {
-          await prefs.setString(
-            StorageKeys.twoFactorToken,
-            token.twoFactorRememberClientToken!,
-          );
+          await prefs.setString(StorageKeys.userId, token.userId!);
         }
       }
 
@@ -59,12 +53,7 @@ class SecureStorageService {
         if (token.userId != null)
           _storage.write(
             key: StorageKeys.userId,
-            value: token.userId.toString(),
-          ),
-        if (token.twoFactorRememberClientToken != null)
-          _storage.write(
-            key: StorageKeys.twoFactorToken,
-            value: token.twoFactorRememberClientToken,
+            value: token.userId!,
           ),
       ]);
     } catch (_) {}
@@ -81,13 +70,11 @@ class SecureStorageService {
 
         if (accessToken != null && refreshToken != null) {
           final userIdStr = prefs.getString(StorageKeys.userId);
-          final twoFactorToken = prefs.getString(StorageKeys.twoFactorToken);
 
           return AuthToken(
             accessToken: accessToken,
             refreshToken: refreshToken,
-            userId: userIdStr != null ? int.tryParse(userIdStr) : null,
-            twoFactorRememberClientToken: twoFactorToken,
+            userId: userIdStr,
           );
         }
       }
@@ -100,15 +87,11 @@ class SecureStorageService {
       }
 
       final userIdStr = await _storage.read(key: StorageKeys.userId);
-      final twoFactorToken = await _storage.read(
-        key: StorageKeys.twoFactorToken,
-      );
 
       return AuthToken(
         accessToken: accessToken,
         refreshToken: refreshToken,
-        userId: userIdStr != null ? int.tryParse(userIdStr) : null,
-        twoFactorRememberClientToken: twoFactorToken,
+        userId: userIdStr,
       );
     } catch (_) {
       return null;
@@ -123,9 +106,7 @@ class SecureStorageService {
         await prefs.remove(StorageKeys.accessToken);
         await prefs.remove(StorageKeys.refreshToken);
         await prefs.remove(StorageKeys.userId);
-        await prefs.remove(StorageKeys.employeeId);
-        await prefs.remove(StorageKeys.tenantId);
-        await prefs.remove(StorageKeys.twoFactorToken);
+        await prefs.remove(StorageKeys.activeClubId);
       }
     } catch (_) {}
 
@@ -134,36 +115,19 @@ class SecureStorageService {
         _storage.delete(key: StorageKeys.accessToken),
         _storage.delete(key: StorageKeys.refreshToken),
         _storage.delete(key: StorageKeys.userId),
-        _storage.delete(key: StorageKeys.employeeId),
-        _storage.delete(key: StorageKeys.tenantId),
-        _storage.delete(key: StorageKeys.twoFactorToken),
+        _storage.delete(key: StorageKeys.activeClubId),
       ]);
     } catch (_) {}
   }
 
-  /// Save tenant ID
-  Future<void> saveTenantId(int tenantId) async {
-    await _storage.write(key: StorageKeys.tenantId, value: tenantId.toString());
+  /// Save Active Club ID (Guid string)
+  Future<void> saveActiveClubId(String clubId) async {
+    await _storage.write(key: StorageKeys.activeClubId, value: clubId);
   }
 
-  /// Get tenant ID
-  Future<int?> getTenantId() async {
-    final tenantId = await _storage.read(key: StorageKeys.tenantId);
-    return tenantId != null ? int.tryParse(tenantId) : null;
-  }
-
-  /// Save Employee ID
-  Future<void> saveEmployeeId(int employeeId) async {
-    await _storage.write(
-      key: StorageKeys.employeeId,
-      value: employeeId.toString(),
-    );
-  }
-
-  /// Get Employee ID
-  Future<int?> getEmployeeId() async {
-    final employeeId = await _storage.read(key: StorageKeys.employeeId);
-    return employeeId != null ? int.tryParse(employeeId) : null;
+  /// Get Active Club ID (Guid string)
+  Future<String?> getActiveClubId() async {
+    return await _storage.read(key: StorageKeys.activeClubId);
   }
 
   /// Check if user is logged in (has valid token)

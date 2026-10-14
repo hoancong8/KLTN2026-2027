@@ -1,16 +1,23 @@
 // lib/app/consts/permissions.dart
 
+/// Hằng số phân quyền tập trung cho toàn ứng dụng.
+/// Đồng bộ 100% với hệ thống phân quyền Backend:
+/// LegendsTeamVN.Core.Identity.Authorization.AppPermissions
 abstract class Permissions {
+  // ===== 1. Nhóm Quản trị hệ thống (System) =====
+  static const String system = 'System';
   static const String systemAdministrator = 'System.Administrator';
 
-  // ===== Roles =====
+  // --- Vai trò & Quyền hạn (Roles) ---
+  static const String roles = 'Roles';
   static const String rolesRead = 'Roles.Read';
   static const String rolesCreate = 'Roles.Create';
   static const String rolesUpdate = 'Roles.Update';
   static const String rolesDelete = 'Roles.Delete';
   static const String rolesAssignPermissions = 'Roles.AssignPermissions';
 
-  // ===== Users =====
+  // --- Tài khoản người dùng (Users) ---
+  static const String users = 'Users';
   static const String usersRead = 'Users.Read';
   static const String usersCreate = 'Users.Create';
   static const String usersUpdate = 'Users.Update';
@@ -19,33 +26,14 @@ abstract class Permissions {
   static const String usersAssignRoles = 'Users.AssignRoles';
   static const String usersResetPassword = 'Users.ResetPassword';
 
-  // ===== Venues =====
-  static const String venuesRead = 'Venues.Read';
-  static const String venuesCreate = 'Venues.Create';
-  static const String venuesUpdate = 'Venues.Update';
-  static const String venuesDelete = 'Venues.Delete';
-
-  // ===== Courts =====
-  static const String courtsRead = 'Courts.Read';
-  static const String courtsCreate = 'Courts.Create';
-  static const String courtsUpdate = 'Courts.Update';
-  static const String courtsDelete = 'Courts.Delete';
-
-  // ===== VenueSchedules =====
-  static const String venueSchedulesRead = 'VenueSchedules.Read';
-  static const String venueSchedulesCreate = 'VenueSchedules.Create';
-  static const String venueSchedulesUpdate = 'VenueSchedules.Update';
-  static const String venueSchedulesDelete = 'VenueSchedules.Delete';
-
-  // ===== CourtPricings =====
-  static const String courtPricingsRead = 'CourtPricings.Read';
-  static const String courtPricingsCreate = 'CourtPricings.Create';
-  static const String courtPricingsUpdate = 'CourtPricings.Update';
-  static const String courtPricingsDelete = 'CourtPricings.Delete';
-
-  // ===== Dashboard =====
-  static const String dashboardView = 'Dashboard.View';
-
-  // // ===== Reports =====
-  // static const String reportsView = 'Reports.View';
+  // ===== 2. Nhóm Quản lý Câu lạc bộ (Clubs) =====
+  static const String clubs = 'Clubs';
+  static const String clubsRead = 'Clubs.Read';
+  static const String clubsCreate = 'Clubs.Create';
+  static const String clubsUpdate = 'Clubs.Update';
+  static const String clubsDelete = 'Clubs.Delete';
+  static const String clubsManageMembers = 'Clubs.ManageMembers';
 }
+
+/// Alias dùng chung tương thích
+typedef AppPermissions = Permissions;

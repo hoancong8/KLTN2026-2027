@@ -3,7 +3,6 @@ import '../../../../domain/exceptions/app_exception.dart';
 
 class LoginState {
   final bool isLoading;
-  final bool required2FA;
   final AuthToken? token;
   final AppException? error;
   final bool biometricSetup;
@@ -13,7 +12,6 @@ class LoginState {
 
   const LoginState({
     this.isLoading = false,
-    this.required2FA = false,
     this.token,
     this.error,
     this.biometricSetup = false,
@@ -24,7 +22,6 @@ class LoginState {
 
   LoginState copyWith({
     bool? isLoading,
-    bool? required2FA,
     AuthToken? token,
     AppException? error,
     bool? biometricSetup,
@@ -34,7 +31,6 @@ class LoginState {
   }) {
     return LoginState(
       isLoading: isLoading ?? this.isLoading,
-      required2FA: required2FA ?? this.required2FA,
       token: token ?? this.token,
       error: error,
       biometricSetup: biometricSetup ?? this.biometricSetup,

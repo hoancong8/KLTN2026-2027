@@ -1,9 +1,12 @@
 import '../../domain/entities/paged_response.dart';
+import '../../domain/entities/player_profile.dart';
 import '../../domain/entities/user_profile.dart';
+import '../../domain/enums/session_enums.dart';
 import '../../domain/repositories/user_repository.dart';
 import '../datasource/remote/abstract/user_remote_datasource.dart';
 import '../dto/user/user_lock_request_dto.dart';
 import '../dto/user/user_roles_request_dto.dart';
+import '../mapper/player_profile_mapper.dart';
 import '../mapper/user_mapper.dart';
 
 import '../../domain/entities/permission_group.dart';
@@ -21,6 +24,30 @@ class UserRepositoryImpl implements UserRepository {
   Future<UserProfile> getUserMe() async {
     final dto = await remoteDatasource.getUserMe();
     return UserMapper.toEntity(dto);
+  }
+
+  @override
+  Future<PlayerProfile> getMyProfile() async {
+    final dto = await remoteDatasource.getUserProfile();
+    return PlayerProfileMapper.toEntity(dto);
+  }
+
+  @override
+  Future<void> updateMyProfile({
+    required String fullName,
+    required int gender,
+    String? avatarUrl,
+    required SkillLevel skillLevel,
+    required bool isOpenForGuest,
+  }) async {
+    final request = PlayerProfileMapper.toUpdateRequestDto(
+      fullName: fullName,
+      gender: gender,
+      avatarUrl: avatarUrl,
+      skillLevel: skillLevel,
+      isOpenForGuest: isOpenForGuest,
+    );
+    await remoteDatasource.updateUserProfile(request);
   }
 
   @override

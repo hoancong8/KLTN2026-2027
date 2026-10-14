@@ -4,6 +4,8 @@ import 'package:kltn2026_2027/app/consts/app_color.dart';
 import 'package:flutter/services.dart';
 import 'dashboard_vm/dashboard_state.dart';
 import 'dashboard_vm/dashboard_vm.dart';
+import 'package:kltn2026_2027/ui/screen/club/club_vm/club_context_vm.dart';
+import 'package:kltn2026_2027/widget/club_switcher_dialog.dart';
 
 class DashboardPage extends ConsumerWidget {
   const DashboardPage({super.key});
@@ -32,7 +34,7 @@ class DashboardPage extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildHeader(context, state.userProfile),
+                _buildHeader(context, ref, state.userProfile),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: Column(
@@ -62,8 +64,11 @@ class DashboardPage extends ConsumerWidget {
   // ===========================================================================
   // 1. TOP HEADER WITH PROFILE & SEARCH BAR
   // ===========================================================================
-  Widget _buildHeader(BuildContext context, DashboardUserProfile profile) {
+  Widget _buildHeader(BuildContext context, WidgetRef ref, DashboardUserProfile profile) {
     final topPadding = MediaQuery.of(context).padding.top;
+    final clubContext = ref.watch(clubContextViewModelProvider);
+    final activeClubName = clubContext.currentClubName ?? 'Chọn CLB';
+    final roleName = clubContext.currentRole?.displayName;
 
     return Container(
       width: double.infinity,
@@ -106,7 +111,7 @@ class DashboardPage extends ConsumerWidget {
                 ),
               ),
               const SizedBox(width: 12),
-              // User Greeting & Member Tag
+              // User Greeting & Member Tier
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -149,35 +154,59 @@ class DashboardPage extends ConsumerWidget {
                   ],
                 ),
               ),
-              // Code Tag (CB7)
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  profile.code,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
               const SizedBox(width: 8),
-              // Heartbeat pulse icon button
-              Container(
-                width: 38,
-                height: 38,
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.monitor_heart_outlined,
-                  color: Colors.white,
-                  size: 20,
+
+              // Club Switcher Quick Chip (FR03 / FR04)
+              InkWell(
+                onTap: () => ClubSwitcherDialog.show(context),
+                borderRadius: BorderRadius.circular(14),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.22),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: Colors.white.withValues(alpha: 0.35)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.sports_tennis_rounded, color: Colors.white, size: 14),
+                      const SizedBox(width: 4),
+                      ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 85),
+                        child: Text(
+                          activeClubName,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      if (roleName != null) ...[
+                        const SizedBox(width: 4),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.3),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            roleName,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 9.5,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      ],
+                      const SizedBox(width: 2),
+                      const Icon(Icons.arrow_drop_down, color: Colors.white, size: 16),
+                    ],
+                  ),
                 ),
               ),
             ],

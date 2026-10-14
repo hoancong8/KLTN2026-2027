@@ -6,6 +6,8 @@ import 'package:kltn2026_2027/app/consts/app_config.dart';
 import 'package:kltn2026_2027/app/consts/permissions.dart';
 import 'package:kltn2026_2027/app/provider.dart';
 import '../../../../../../app/provider/localization_provider.dart';
+import '../../../../../../widget/club_switcher_dialog.dart';
+import '../../../../club/club_vm/club_context_vm.dart';
 import '../settings_vm/settings_vm.dart';
 
 class SettingsSection {
@@ -51,10 +53,35 @@ List<SettingsSection> buildSettingsSections(
   required bool isLoading,
 }) {
   final currentLocale = ref.watch(localizationProvider);
-  final canReadUsers = ref.watch(hasPermissionProvider(Permissions.usersRead));
-  final canReadRoles = ref.watch(hasPermissionProvider(Permissions.rolesRead));
+  final canReadUsers = ref.hasPermission(Permissions.usersRead);
+  final canReadRoles = ref.hasPermission(Permissions.rolesRead);
+  final clubContext = ref.watch(clubContextViewModelProvider);
 
   return [
+    SettingsSection(
+      title: 'Câu lạc bộ cầu lông',
+      icon: Icons.sports_tennis_rounded,
+      items: [
+        SettingsItemData(
+          icon: Icons.swap_horiz_rounded,
+          color: const Color(0xFF0284C7),
+          title: clubContext.currentClubName != null
+              ? 'Đang chọn: ${clubContext.currentClubName}'
+              : 'Chọn câu lạc bộ hoạt động',
+          subtitle: clubContext.currentRole != null
+              ? 'Vai trò hiện tại: ${clubContext.currentRole!.displayName}'
+              : 'Chuyển đổi nhóm và đồng bộ vai trò/quyền hạn',
+          onTap: () => ClubSwitcherDialog.show(context),
+        ),
+        SettingsItemData(
+          icon: Icons.groups_outlined,
+          color: const Color(0xFF16A34A),
+          title: 'Quản lý thành viên & vai trò',
+          subtitle: 'Xem danh sách thành viên và phân quyền trong nhóm',
+          onTap: () => context.push(AppConfig.clubManagementPath),
+        ),
+      ],
+    ),
     SettingsSection(
       title: context.l10n.set_account,
       icon: Icons.person_outline,

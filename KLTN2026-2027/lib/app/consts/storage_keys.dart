@@ -7,9 +7,7 @@ class StorageKeys {
   static const String accessToken = 'access_token';
   static const String refreshToken = 'refresh_token';
   static const String userId = 'user_id';
-  static const String employeeId = 'employee_id'; // NEW
-  static const String tenantId = 'tenant_id'; // NEW
-  static const String twoFactorToken = 'two_factor_token';
+  static const String activeClubId = 'active_club_id';
 
   // User preferences
   static const String rememberMe = 'remember_me';
@@ -23,6 +21,6 @@ class StorageKeys {
   static const String lastUsername = 'last_username';
   static const String lastPassword = 'last_password';
 
-  //user setting language
+  // User setting language
   static const String languageCode = 'language_code';
 }

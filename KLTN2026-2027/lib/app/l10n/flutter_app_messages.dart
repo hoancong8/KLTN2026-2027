@@ -35,9 +35,6 @@ class FlutterAppMessages implements IAppMessages {
   String get errorSessionExpired => _l.error_session_expired;
 
   @override
-  String get otpVerification => _l.auth_verify_otp;
-
-  @override
   String get authSessionExpiredMessage => _l.auth_session_expired_message;
 
   @override
@@ -45,9 +42,6 @@ class FlutterAppMessages implements IAppMessages {
 
   @override
   String get authLoginAgain => _l.auth_login_again;
-
-  @override
-  String get errorSignalRNotConnected => _l.error_signalr_disconnected;
 
   // --- Biometric ---
   @override

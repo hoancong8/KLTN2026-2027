@@ -2,13 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kltn2026_2027/app/consts/app_color.dart';
 import 'package:kltn2026_2027/app/provider.dart';
-import 'package:kltn2026_2027/ui/screen/home/home_vm/home_vm.dart';
-import 'package:kltn2026_2027/ui/screen/home/tab/chat/chat_page.dart';
 import 'package:kltn2026_2027/ui/screen/home/tab/report/report_page.dart';
 import 'package:kltn2026_2027/ui/screen/home/widgets/home_mobile.dart';
 import 'package:kltn2026_2027/ui/screen/home/widgets/home_tablet.dart';
 
 import '../../../widget/responsive_layout.dart';
+import 'tab/club/my_clubs_page.dart';
 import 'tab/dashboard/dashboard_page.dart';
 import 'tab/settings/settings_page.dart';
 
@@ -30,13 +29,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) return;
-
-      final token = ref.read(authTokenProvider);
-      if (token != null) {
-        ref
-            .read(homeViewModelProvider.notifier)
-            .initialize(token.accessToken, token.userId);
-      }
 
       // Tự động tải thông tin user & permissions nếu Riverpod chưa có (vd: sau khi reload trang)
       if (ref.read(currentUserProfileProvider) == null) {
@@ -71,7 +63,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget build(BuildContext context) {
     final pages = [
       const DashboardPage(),
-      const ChatPage(),
+      const MyClubsPage(),
       const ReportPage(),
       const SettingsPage(),
     ];

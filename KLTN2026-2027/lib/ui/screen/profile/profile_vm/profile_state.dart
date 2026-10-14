@@ -1,4 +1,5 @@
-import 'package:kltn2026_2027/domain/entities/employee.dart';
+import '../../../../domain/entities/player_profile.dart';
+import '../../../../domain/entities/user_profile.dart';
 import '../../../../domain/exceptions/app_exception.dart';
 
 class ProfileState {
@@ -6,14 +7,16 @@ class ProfileState {
   final bool isSaving;
   final AppException? error;
   final String? successMessage;
-  final Employee? employee;
+  final PlayerProfile? playerProfile;
+  final UserProfile? userProfile;
 
   const ProfileState({
     this.isLoading = false,
     this.isSaving = false,
     this.error,
     this.successMessage,
-    this.employee,
+    this.playerProfile,
+    this.userProfile,
   });
 
   ProfileState copyWith({
@@ -21,14 +24,16 @@ class ProfileState {
     bool? isSaving,
     AppException? error,
     String? successMessage,
-    Employee? employee,
+    PlayerProfile? playerProfile,
+    UserProfile? userProfile,
   }) {
     return ProfileState(
       isLoading: isLoading ?? this.isLoading,
       isSaving: isSaving ?? this.isSaving,
       error: error,
       successMessage: successMessage,
-      employee: employee ?? this.employee,
+      playerProfile: playerProfile ?? this.playerProfile,
+      userProfile: userProfile ?? this.userProfile,
     );
   }
 }

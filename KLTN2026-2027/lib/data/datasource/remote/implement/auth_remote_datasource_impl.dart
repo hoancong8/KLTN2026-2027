@@ -2,6 +2,8 @@ import '../../../../app/consts/app_config.dart';
 import '../../../dto/auth/change_password_request_dto.dart';
 import '../../../dto/auth/login_request_dto.dart';
 import '../../../dto/auth/login_response_dto.dart';
+import '../../../dto/auth/register_request_dto.dart';
+import '../../../dto/auth/register_response_dto.dart';
 import '../abstract/auth_remote_datasource.dart';
 import 'package:dio/dio.dart';
 import '../base_remote_datasource.dart';
@@ -20,6 +22,20 @@ class AuthRemoteDatasourceImpl extends BaseRemoteDatasource implements AuthRemot
       );
 
       return handleResponse(res, (data) => LoginResponseDto.fromJson(data));
+    } catch (e) {
+      throw handleError(e);
+    }
+  }
+
+  @override
+  Future<RegisterResponseDto> register(RegisterRequestDto request) async {
+    try {
+      final res = await dio.post(
+        AppConfig.register,
+        data: request.toJson(),
+      );
+
+      return handleResponse(res, (data) => RegisterResponseDto.fromJson(data));
     } catch (e) {
       throw handleError(e);
     }

@@ -1,12 +1,9 @@
-// ui/login/login_vm.dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import '../../../../app/provider.dart';
 import '../../../../app/services/secure_storage_service.dart';
-import '../../../../domain/exceptions/auth_exceptions.dart';
 import '../../../../domain/exceptions/i_app_messages.dart';
 import '../../../../domain/usecases/auth/login_usecase.dart';
-import '../../../../domain/usecases/auth/register_device_token_usecase.dart';
 import '../../../../domain/usecases/auth/biometric_usecase.dart';
 import '../../../../domain/exceptions/app_exception.dart';
 import 'login_state.dart';
@@ -17,7 +14,6 @@ final loginViewModelProvider =
       return LoginViewModel(
         ref,
         ref.watch(loginUseCaseProvider),
-        ref.watch(registerDeviceTokenUseCaseProvider),
         ref.watch(biometricUseCaseProvider),
       );
     });
@@ -30,13 +26,11 @@ final loginPasswordProvider = StateProvider<String>((ref) => '');
 class LoginViewModel extends StateNotifier<LoginState> {
   final Ref ref;
   final LoginUseCase loginUseCase;
-  final RegisterDeviceTokenUseCase registerDeviceTokenUseCase;
   final BiometricUseCase biometricUseCase;
 
   LoginViewModel(
     this.ref,
     this.loginUseCase,
-    this.registerDeviceTokenUseCase,
     this.biometricUseCase,
   ) : super(const LoginState()) {
     _checkBiometricSetup();
@@ -80,14 +74,8 @@ class LoginViewModel extends StateNotifier<LoginState> {
       state = state.copyWith(
         isLoading: false,
         token: token,
-        required2FA: false,
         isSuccess: true,
       );
-
-      // Register device token sau khi login thành công
-      await registerDeviceTokenUseCase.execute().catchError((_) {});
-    } on RequiresTwoFactorException {
-      state = state.copyWith(isLoading: false, required2FA: true);
     } on AppException catch (e) {
       state = state.copyWith(isLoading: false, error: e);
     } catch (e) {

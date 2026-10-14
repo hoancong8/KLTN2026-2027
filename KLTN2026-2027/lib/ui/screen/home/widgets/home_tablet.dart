@@ -5,13 +5,17 @@ import 'package:kltn2026_2027/app/consts/app_config.dart';
 import 'package:kltn2026_2027/app/consts/app_color.dart';
 import 'package:kltn2026_2027/app/consts/permissions.dart';
 import 'package:kltn2026_2027/app/provider.dart';
-import 'package:kltn2026_2027/ui/screen/home/home_vm/home_vm.dart';
-import 'package:kltn2026_2027/ui/screen/home/tab/chat/chat_page.dart';
+import 'package:kltn2026_2027/ui/screen/home/tab/club/my_clubs_page.dart';
 import 'package:kltn2026_2027/ui/screen/home/tab/dashboard/dashboard_page.dart';
 import 'package:kltn2026_2027/ui/screen/home/tab/report/report_page.dart';
 import 'package:kltn2026_2027/ui/screen/home/tab/settings/settings_page.dart';
+import 'package:kltn2026_2027/ui/screen/home/tab/explore/explore_recruitments_page.dart';
+import '../home_vm/home_vm.dart';
 import '../../admin/role_management/role_management_screen.dart';
 import '../../admin/user_management/user_management_screen.dart';
+import '../../club/club_management_screen.dart';
+import '../../club/club_vm/club_context_vm.dart';
+import '../../../../widget/club_switcher_dialog.dart';
 import '../../../../app/provider/localization_provider.dart';
 
 /// Model định nghĩa từng mục Menu Navigation kèm Quyền & Màn hình
@@ -56,29 +60,31 @@ class _HomeTabletState extends ConsumerState<HomeTablet> {
   int _activeItemIndex = 0;
 
   /// Toàn bộ danh mục Menu hệ thống
-  List<NavigationItem> _getAllNavItems(int unreadCount) {
+  List<NavigationItem> _getAllNavItems() {
     return [
       const NavigationItem(
         title: 'Dashboard',
         icon: Icons.grid_view_rounded,
-        permission: Permissions.dashboardView,
+        permission: null,
         page: DashboardPage(),
       ),
-      NavigationItem(
-        title: 'Quản lý Đối tác',
-        icon: Icons.storefront_outlined,
-        permission: Permissions.venuesRead,
-        badge: '2',
-        badgeColor: AppColor.cNeedCheck,
-        page: const SettingsPage(),
+      const NavigationItem(
+        title: 'Nhóm của tôi',
+        icon: Icons.groups_rounded,
+        permission: null,
+        page: MyClubsPage(),
       ),
-      NavigationItem(
-        title: 'Khiếu nại Đối tác',
-        icon: Icons.error_outline_rounded,
-        permission: Permissions.venuesRead,
-        badge: '3',
-        badgeColor: AppColor.cAlert,
-        page: const SettingsPage(),
+      const NavigationItem(
+        title: 'Kèo giao lưu',
+        icon: Icons.radar_rounded,
+        permission: null,
+        page: ExploreRecruitmentsPage(),
+      ),
+      const NavigationItem(
+        title: 'Quản lý Câu lạc bộ',
+        icon: Icons.groups_outlined,
+        permission: Permissions.clubsRead,
+        page: ClubManagementScreen(),
       ),
       const NavigationItem(
         title: 'Quản lý Người dùng',
@@ -95,21 +101,13 @@ class _HomeTabletState extends ConsumerState<HomeTablet> {
       const NavigationItem(
         title: 'Thống kê Nền tảng',
         icon: Icons.bar_chart_rounded,
-        permission: Permissions.courtPricingsRead,
+        permission: null,
         page: ReportPage(),
       ),
-      NavigationItem(
-        title: 'Trung tâm Thông báo',
-        icon: Icons.notifications_none_rounded,
-        permission: 'Chat.Read',
-        badge: unreadCount > 0 ? '$unreadCount' : '3',
-        badgeColor: AppColor.cMain,
-        page: const ChatPage(),
-      ),
       const NavigationItem(
-        title: 'Hồ sơ Super Admin',
+        title: 'Hồ sơ cá nhân',
         icon: Icons.person_outline_rounded,
-        permission: 'Settings.Read',
+        permission: null,
         page: SettingsPage(),
       ),
     ];
@@ -119,7 +117,6 @@ class _HomeTabletState extends ConsumerState<HomeTablet> {
   Widget build(BuildContext context) {
     final token = ref.watch(authTokenProvider);
     final userProfile = ref.watch(currentUserProfileProvider);
-    final userPerms = ref.watch(userPermissionsProvider);
     final unreadCount = 0; // Get unread count from providers
 
     // 0. Nếu token không tồn tại (chưa đăng nhập hoặc session mất) -> chuyển về Login
@@ -165,10 +162,10 @@ class _HomeTabletState extends ConsumerState<HomeTablet> {
     }
 
     // 2. Lọc danh sách item theo quyền của người dùng hiện tại
-    final allItems = _getAllNavItems(unreadCount);
+    final allItems = _getAllNavItems();
     final accessibleItems = allItems.where((item) {
       if (item.permission == null || item.permission!.isEmpty) return true;
-      return userPerms.contains(item.permission);
+      return ref.hasPermission(item.permission!);
     }).toList();
 
     // 3. Nếu User KHÔNG CÓ BẤT KỲ QUYỀN NÀO -> Hiển thị Màn hình 403 Access Denied
@@ -235,9 +232,12 @@ class _HomeTabletState extends ConsumerState<HomeTablet> {
           // 1. BRAND / LOGO HEADER
           _buildHeader(),
 
-          const SizedBox(height: 12),
+          // 2. ACTIVE CLUB SELECTOR (FR03 / FR04)
+          _buildClubSelector(context),
 
-          // 2. SECTION TITLE
+          const SizedBox(height: 8),
+
+          // 3. SECTION TITLE
           if (!_isCollapsed)
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 20, vertical: 8),
@@ -293,6 +293,77 @@ class _HomeTabletState extends ConsumerState<HomeTablet> {
           // 4. FOOTER: VERSION & COLLAPSE TOGGLE
           _buildFooter(),
         ],
+      ),
+    );
+  }
+
+  Widget _buildClubSelector(BuildContext context) {
+    final clubContext = ref.watch(clubContextViewModelProvider);
+    final activeClubName = clubContext.currentClubName ?? 'Chưa chọn CLB';
+    final roleName = clubContext.currentRole?.displayName ?? 'Khách';
+
+    if (_isCollapsed) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        child: IconButton(
+          tooltip: '$activeClubName ($roleName)',
+          icon: const Icon(Icons.sports_tennis_rounded, color: AppColor.cMain),
+          onPressed: () => ClubSwitcherDialog.show(context),
+        ),
+      );
+    }
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        color: AppColor.cChip,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: AppColor.cMain.withValues(alpha: 0.2)),
+      ),
+      child: InkWell(
+        onTap: () => ClubSwitcherDialog.show(context),
+        borderRadius: BorderRadius.circular(8),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: AppColor.cMain.withValues(alpha: 0.15),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.sports_tennis_rounded, color: AppColor.cMain, size: 16),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    activeClubName,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: AppColor.cTitle,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  Text(
+                    roleName,
+                    style: const TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w600,
+                      color: AppColor.cMain,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Icons.swap_horiz_rounded, size: 16, color: AppColor.cMuted),
+          ],
+        ),
       ),
     );
   }

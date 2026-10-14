@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:kltn2026_2027/app/consts/app_color.dart';
-import 'package:kltn2026_2027/app/l10n_gen/app_localizations.dart';
 import 'package:kltn2026_2027/app/provider/localization_provider.dart';
 
 /// A loading overlay widget that displays a centered loading indicator

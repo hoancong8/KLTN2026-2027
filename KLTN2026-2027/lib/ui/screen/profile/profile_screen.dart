@@ -1,73 +1,55 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:kltn2026_2027/app/consts/app_color.dart';
-import 'package:kltn2026_2027/app/provider.dart';
-import 'package:kltn2026_2027/app/utils/exception_ext.dart';
-import 'package:kltn2026_2027/domain/entities/employee.dart';
-import 'package:kltn2026_2027/widget/app_button/app_button.dart';
-import 'package:kltn2026_2027/widget/app_button/app_button_common.dart';
-import 'package:kltn2026_2027/widget/app_text_field/app_text_field.dart';
-import 'package:kltn2026_2027/widget/loading_overlay.dart';
-import '../../../app/utils/exception_ext.dart';
+import '../../../../app/consts/app_color.dart';
+import '../../../../app/provider/localization_provider.dart';
+import '../../../../app/utils/exception_ext.dart';
+import '../../../../domain/entities/player_profile.dart';
+import '../../../../domain/enums/session_enums.dart';
 import 'profile_vm/profile_vm.dart';
-import 'package:kltn2026_2027/app/provider/localization_provider.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
-  final Employee? initialEmployee;
-
-  const ProfileScreen({super.key, this.initialEmployee});
+  const ProfileScreen({super.key});
 
   @override
-  ConsumerState<ProfileScreen> createState() {
-    return _ProfileScreenState();
-  }
+  ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
 }
 
 class _ProfileScreenState extends ConsumerState<ProfileScreen> {
-  final _formKey = GlobalKey<FormState>();
-
-  late final TextEditingController _fullNameCtl;
-  late final TextEditingController _emailCtl;
-  late final TextEditingController _phoneCtl;
-  late final TextEditingController _addressCtl;
-  late final TextEditingController _hometownCtl;
-
-  DateTime? _selectedDoB;
-  int _selectedGender = 0;
-
   @override
   void initState() {
     super.initState();
-    final emp = widget.initialEmployee;
-
-    _fullNameCtl = TextEditingController(text: emp?.fullName ?? '');
-    _emailCtl = TextEditingController(text: emp?.email ?? '');
-    _phoneCtl = TextEditingController(text: emp?.phone ?? '');
-    _addressCtl = TextEditingController(text: emp?.address ?? '');
-    _hometownCtl = TextEditingController(text: emp?.hometown ?? '');
-    _selectedDoB = emp?.doB;
-    _selectedGender = emp?.gender ?? 0;
-
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (emp != null) {
-        ref.read(profileViewModelProvider.notifier).setEmployee(emp);
-      } else {
-        final token = ref.read(authTokenProvider);
-        final userId = token?.userId ?? 0;
-        ref.read(profileViewModelProvider.notifier).loadProfile(userId);
-      }
+      ref.read(profileViewModelProvider.notifier).reloadProfile();
     });
   }
 
-  @override
-  void dispose() {
-    _fullNameCtl.dispose();
-    _emailCtl.dispose();
-    _phoneCtl.dispose();
-    _addressCtl.dispose();
-    _hometownCtl.dispose();
-    super.dispose();
+  void _showEditProfileBottomSheet(BuildContext context, PlayerProfile profile) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => _EditProfileSheet(profile: profile),
+    );
+  }
+
+  Color _getSkillColor(SkillLevel level) {
+    switch (level) {
+      case SkillLevel.nb:
+        return const Color(0xFF9E9E9E);
+      case SkillLevel.y:
+        return const Color(0xFF8BC34A);
+      case SkillLevel.tby:
+        return const Color(0xFF4CAF50);
+      case SkillLevel.tb:
+        return const Color(0xFF0284C7);
+      case SkillLevel.tbk:
+        return const Color(0xFF3F51B5);
+      case SkillLevel.k:
+        return const Color(0xFFF59E0B);
+      case SkillLevel.g:
+        return const Color(0xFFEF4444);
+    }
   }
 
   @override
@@ -75,620 +57,808 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final state = ref.watch(profileViewModelProvider);
 
     ref.listen(profileViewModelProvider, (prev, next) {
-      if (next.employee != null && prev?.employee == null) {
-        final emp = next.employee!;
-        _fullNameCtl.text = emp.fullName ?? '';
-        _emailCtl.text = emp.email ?? '';
-        _phoneCtl.text = emp.phone ?? '';
-        _addressCtl.text = emp.address ?? '';
-        _hometownCtl.text = emp.hometown ?? '';
-        setState(() {
-          _selectedDoB = emp.doB;
-          _selectedGender = emp.gender ?? 0;
-        });
-      }
       if (next.error != null && next.error != prev?.error) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(next.error!.getDisplayMessage(context.l10n)),
             backgroundColor: AppColor.cError,
+            behavior: SnackBarBehavior.floating,
           ),
         );
       }
-      if (next.successMessage != null &&
-          next.successMessage != prev?.successMessage) {
+      if (next.successMessage != null && next.successMessage != prev?.successMessage) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(next.successMessage!),
             backgroundColor: AppColor.cMain,
+            behavior: SnackBarBehavior.floating,
           ),
         );
       }
     });
 
+    final profile = state.playerProfile;
+
     return Scaffold(
-      backgroundColor: AppColor.cGray_50,
+      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
         backgroundColor: AppColor.white,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: AppColor.cTitle),
-          onPressed: () {
-            context.pop();
-          },
-        ),
         title: const Text(
-          'Cập nhật thông tin',
+          'Hồ sơ & Trình độ cá nhân',
           style: TextStyle(
-            color: AppColor.cTitle,
-            fontWeight: FontWeight.w700,
+            color: AppColor.cDark,
             fontSize: 18,
+            fontWeight: FontWeight.w700,
           ),
         ),
-        centerTitle: true,
-      ),
-      body: Stack(
-        children: [
-          GestureDetector(
-            onTap: () {
-              FocusScope.of(context).unfocus();
-            },
-            child: state.isLoading
-                ? const Center(
-                    child: CircularProgressIndicator(color: AppColor.cMain),
-                  )
-                : Form(
-                    key: _formKey,
-                    child: SingleChildScrollView(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _buildAvatarSection(),
-                          const SizedBox(height: 24),
-                          _buildBasicInfoSection(),
-                          const SizedBox(height: 20),
-                          _buildAddressSection(),
-                          const SizedBox(height: 20),
-                          _buildWorkInfoSection(),
-                          const SizedBox(height: 32),
-                          _buildSaveButton(),
-                          const SizedBox(height: 24),
-                        ],
-                      ),
-                    ),
-                  ),
-          ),
-          if (state.isSaving)
-            const LoadingOverlay(message: 'Đang lưu thông tin...'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: AppColor.cDark),
+          onPressed: () => context.pop(),
+        ),
+        actions: [
+          if (profile != null)
+            IconButton(
+              icon: const Icon(Icons.edit_note_rounded, color: AppColor.cMain, size: 26),
+              tooltip: 'Chỉnh sửa hồ sơ',
+              onPressed: () => _showEditProfileBottomSheet(context, profile),
+            ),
         ],
       ),
+      body: state.isLoading && profile == null
+          ? const Center(child: CircularProgressIndicator(color: AppColor.cMain))
+          : profile == null
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.person_off_outlined, size: 64, color: AppColor.cMuted),
+                      const SizedBox(height: 12),
+                      const Text(
+                        'Không thể tải thông tin hồ sơ',
+                        style: TextStyle(fontSize: 15, color: AppColor.cDark, fontWeight: FontWeight.w600),
+                      ),
+                      const SizedBox(height: 16),
+                      ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColor.cMain,
+                          foregroundColor: AppColor.white,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        ),
+                        onPressed: () => ref.read(profileViewModelProvider.notifier).reloadProfile(),
+                        icon: const Icon(Icons.refresh_rounded),
+                        label: const Text('Thử lại'),
+                      ),
+                    ],
+                  ),
+                )
+              : RefreshIndicator(
+                  color: AppColor.cMain,
+                  onRefresh: () => ref.read(profileViewModelProvider.notifier).reloadProfile(),
+                  child: ListView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                    children: [
+                      // 1. Header Card (Avatar, Name, Score, Badges)
+                      _buildHeaderCard(profile),
+                      const SizedBox(height: 16),
+
+                      // 2. Guest Matching Radar Toggle Card
+                      _buildGuestToggleCard(profile),
+                      const SizedBox(height: 16),
+
+                      // 3. Skill Level Card with 7 Tiers Explanation
+                      _buildSkillLevelCard(profile),
+                      const SizedBox(height: 16),
+
+                      // 4. Contact & Personal Info Card
+                      _buildContactInfoCard(profile),
+                      const SizedBox(height: 24),
+
+                      // 5. Edit Button
+                      SizedBox(
+                        width: double.infinity,
+                        height: 48,
+                        child: ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColor.cMain,
+                            foregroundColor: AppColor.white,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                          onPressed: () => _showEditProfileBottomSheet(context, profile),
+                          icon: const Icon(Icons.edit_rounded, size: 20),
+                          label: const Text(
+                            'Chỉnh sửa hồ sơ & Trình độ',
+                            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                    ],
+                  ),
+                ),
     );
   }
 
-  Widget _buildAvatarSection() {
+  Widget _buildHeaderCard(PlayerProfile profile) {
+    final skillColor = _getSkillColor(profile.skillLevel);
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: AppColor.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColor.cDivider),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
-      child: Row(
+      child: Column(
         children: [
-          Stack(
+          Row(
             children: [
-              Container(
-                width: 80,
-                height: 80,
-                decoration: BoxDecoration(
-                  color: AppColor.cMain.withValues(alpha: 0.1),
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: AppColor.cMain.withValues(alpha: 0.3),
-                    width: 2,
-                  ),
-                ),
-                child: const Icon(
-                  Icons.person,
-                  size: 40,
-                  color: AppColor.cMain,
-                ),
+              // Avatar
+              CircleAvatar(
+                radius: 36,
+                backgroundColor: AppColor.cMain.withValues(alpha: 0.12),
+                backgroundImage: profile.avatarUrl != null && profile.avatarUrl!.isNotEmpty
+                    ? NetworkImage(profile.avatarUrl!)
+                    : null,
+                child: profile.avatarUrl == null || profile.avatarUrl!.isEmpty
+                    ? Text(
+                        profile.fullName.isNotEmpty
+                            ? profile.fullName[0].toUpperCase()
+                            : profile.userName.isNotEmpty
+                                ? profile.userName[0].toUpperCase()
+                                : 'U',
+                        style: const TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          color: AppColor.cMain,
+                        ),
+                      )
+                    : null,
               ),
-              Positioned(
-                bottom: 0,
-                right: 0,
-                child: AppButton(
-                  onTap: () {
-                    // Pick avatar
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.all(6),
-                    decoration: BoxDecoration(
-                      color: AppColor.cMain,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: AppColor.white, width: 2),
+              const SizedBox(width: 16),
+
+              // Name & Identity Info
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      profile.fullName.isNotEmpty ? profile.fullName : profile.userName,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: AppColor.cDark,
+                      ),
                     ),
-                    child: const Icon(
-                      Icons.camera_alt,
-                      size: 14,
-                      color: AppColor.white,
+                    const SizedBox(height: 4),
+                    Text(
+                      '@${profile.userName}',
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: AppColor.cMuted,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
-                  ),
+                    const SizedBox(height: 8),
+
+                    // Gender Chip
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: profile.gender == 1
+                                ? Colors.blue.withValues(alpha: 0.1)
+                                : profile.gender == 2
+                                    ? Colors.pink.withValues(alpha: 0.1)
+                                    : Colors.grey.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                profile.gender == 1
+                                    ? Icons.male_rounded
+                                    : profile.gender == 2
+                                        ? Icons.female_rounded
+                                        : Icons.transgender_rounded,
+                                size: 14,
+                                color: profile.gender == 1
+                                    ? Colors.blue[700]
+                                    : profile.gender == 2
+                                        ? Colors.pink[700]
+                                        : Colors.grey[700],
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                profile.gender == 1
+                                    ? 'Nam'
+                                    : profile.gender == 2
+                                        ? 'Nữ'
+                                        : 'Khác',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: profile.gender == 1
+                                      ? Colors.blue[700]
+                                      : profile.gender == 2
+                                          ? Colors.pink[700]
+                                          : Colors.grey[700],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  _fullNameCtl.text.isNotEmpty
-                      ? _fullNameCtl.text
-                      : 'Chưa cập nhật',
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                    color: AppColor.cTitle,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  _emailCtl.text.isNotEmpty ? _emailCtl.text : 'Chưa có email',
-                  style: TextStyle(fontSize: 13, color: AppColor.cMuted),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-  Widget _buildBasicInfoSection() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColor.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColor.cDivider),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildSectionHeader(
-            icon: Icons.person_outline,
-            title: 'Thông tin cơ bản',
-          ),
-          const SizedBox(height: 16),
-          AppEditText(
-            controller: _fullNameCtl,
-            labelText: 'Họ và tên',
-            hintText: 'Nhập họ và tên',
-            prefixIcon: const Icon(
-              Icons.badge_outlined,
-              color: AppColor.cMuted,
-              size: 20,
-            ),
-            focusedBorderColor: AppColor.cMain,
-            validator: (v) {
-              if (v == null || v.trim().isEmpty) {
-                return 'Vui lòng nhập họ tên';
-              }
-              return null;
-            },
-          ),
-          const SizedBox(height: 16),
-          AppEditText(
-            controller: _emailCtl,
-            labelText: 'Email',
-            hintText: 'Nhập địa chỉ email',
-            keyboardType: TextInputType.emailAddress,
-            prefixIcon: const Icon(
-              Icons.email_outlined,
-              color: AppColor.cMuted,
-              size: 20,
-            ),
-            focusedBorderColor: AppColor.cMain,
-          ),
-          const SizedBox(height: 16),
-          AppEditText(
-            controller: _phoneCtl,
-            labelText: 'Số điện thoại',
-            hintText: 'Nhập số điện thoại',
-            keyboardType: TextInputType.phone,
-            prefixIcon: const Icon(
-              Icons.phone_outlined,
-              color: AppColor.cMuted,
-              size: 20,
-            ),
-            focusedBorderColor: AppColor.cMain,
-          ),
-          const SizedBox(height: 16),
-          _buildDateField(),
-          const SizedBox(height: 16),
-          _buildGenderField(),
-        ],
-      ),
-    );
-  }
+          const Divider(height: 28),
 
-  Widget _buildAddressSection() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColor.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColor.cDivider),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildSectionHeader(
-            icon: Icons.location_on_outlined,
-            title: 'Địa chỉ',
-          ),
-          const SizedBox(height: 16),
-          AppEditText(
-            controller: _addressCtl,
-            labelText: 'Địa chỉ hiện tại',
-            hintText: 'Nhập địa chỉ hiện tại',
-            maxLines: 2,
-            prefixIcon: const Icon(
-              Icons.home_outlined,
-              color: AppColor.cMuted,
-              size: 20,
-            ),
-            focusedBorderColor: AppColor.cMain,
-          ),
-          const SizedBox(height: 16),
-          AppEditText(
-            controller: _hometownCtl,
-            labelText: 'Quê quán',
-            hintText: 'Nhập quê quán',
-            prefixIcon: const Icon(
-              Icons.place_outlined,
-              color: AppColor.cMuted,
-              size: 20,
-            ),
-            focusedBorderColor: AppColor.cMain,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildWorkInfoSection() {
-    final emp = widget.initialEmployee;
-    if (emp == null) {
-      return const SizedBox.shrink();
-    }
-
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColor.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColor.cDivider),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildSectionHeader(
-            icon: Icons.work_outline,
-            title: 'Thông tin công việc',
-          ),
-          const SizedBox(height: 16),
-          _buildInfoRow(
-            Icons.business_outlined,
-            'Phòng ban',
-            emp.workDepartmentName ?? '-',
-          ),
-          const SizedBox(height: 12),
-          _buildInfoRow(
-            Icons.badge_outlined,
-            'Chức vụ',
-            emp.workPositionName ?? '-',
-          ),
-          const SizedBox(height: 12),
-          _buildInfoRow(
-            Icons.admin_panel_settings_outlined,
-            'Vai trò',
-            emp.roleName ?? '-',
-          ),
-          const SizedBox(height: 12),
-          _buildInfoRow(
-            Icons.person_outline,
-            'Tên đăng nhập',
-            emp.userName ?? '-',
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSectionHeader({required IconData icon, required String title}) {
-    return Row(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: AppColor.cMain.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Icon(icon, color: AppColor.cMain, size: 20),
-        ),
-        const SizedBox(width: 12),
-        Text(
-          title,
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
-            color: AppColor.cTitle,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildDateField() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Ngày sinh',
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: Colors.black87,
-          ),
-        ),
-        const SizedBox(height: 8),
-        AppButton(
-          onTap: _selectDate,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            decoration: BoxDecoration(
-              color: Colors.grey[50],
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.grey[300]!),
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.calendar_today_outlined,
-                  color: AppColor.cMuted,
-                  size: 20,
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    _selectedDoB != null
-                        ? '${_selectedDoB!.day.toString().padLeft(2, '0')}/${_selectedDoB!.month.toString().padLeft(2, '0')}/${_selectedDoB!.year}'
-                        : 'Chọn ngày sinh',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: _selectedDoB != null
-                          ? Colors.black87
-                          : Colors.grey[400],
-                    ),
-                  ),
-                ),
-                Icon(Icons.arrow_drop_down, color: AppColor.cMuted),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildGenderField() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Giới tính',
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: Colors.black87,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Row(
-          children: [
-            Expanded(
-              child: AppButton(
-                onTap: () {
-                  setState(() {
-                    _selectedGender = 0;
-                  });
-                },
+          // Skill badge & Reputation chips
+          Row(
+            children: [
+              // Skill badge
+              Expanded(
                 child: Container(
-                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   decoration: BoxDecoration(
-                    color: _selectedGender == 0
-                        ? AppColor.cMain.withValues(alpha: 0.1)
-                        : Colors.grey[50],
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: _selectedGender == 0
-                          ? AppColor.cMain
-                          : Colors.grey[300]!,
-                    ),
+                    color: skillColor.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: skillColor.withValues(alpha: 0.3)),
                   ),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(
-                        Icons.male,
-                        color: _selectedGender == 0
-                            ? AppColor.cMain
-                            : AppColor.cMuted,
-                        size: 20,
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: skillColor,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          profile.skillLevel.code,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
                       ),
                       const SizedBox(width: 8),
-                      Text(
-                        'Nam',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: _selectedGender == 0
-                              ? AppColor.cMain
-                              : AppColor.cMuted,
+                      Expanded(
+                        child: Text(
+                          profile.skillLevel.displayName,
+                          style: TextStyle(
+                            color: skillColor,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 13,
+                          ),
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                     ],
                   ),
                 ),
               ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: AppButton(
-                onTap: () {
-                  setState(() {
-                    _selectedGender = 1;
-                  });
-                },
-                child: Container(
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  decoration: BoxDecoration(
-                    color: _selectedGender == 1
-                        ? AppColor.cMain.withValues(alpha: 0.1)
-                        : Colors.grey[50],
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: _selectedGender == 1
-                          ? AppColor.cMain
-                          : Colors.grey[300]!,
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.female,
-                        color: _selectedGender == 1
-                            ? AppColor.cMain
-                            : AppColor.cMuted,
-                        size: 20,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Nữ',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: _selectedGender == 1
-                              ? AppColor.cMain
-                              : AppColor.cMuted,
-                        ),
-                      ),
-                    ],
-                  ),
+              const SizedBox(width: 12),
+
+              // Reputation Score
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFEF3C7),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: const Color(0xFFFDE68A)),
                 ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.star_rounded, size: 18, color: Color(0xFFD97706)),
+                    const SizedBox(width: 4),
+                    Text(
+                      profile.reputationScore.toStringAsFixed(1),
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFFB45309),
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    const Text(
+                      'Uy tín',
+                      style: TextStyle(fontSize: 12, color: Color(0xFFB45309)),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGuestToggleCard(PlayerProfile profile) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColor.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: SwitchListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        activeThumbColor: AppColor.cMain,
+        title: const Row(
+          children: [
+            Icon(Icons.radar_rounded, color: AppColor.cMain, size: 20),
+            SizedBox(width: 8),
+            Text(
+              'Sẵn sàng nhận kèo giao lưu',
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+                color: AppColor.cDark,
               ),
             ),
           ],
         ),
-      ],
+        subtitle: const Padding(
+          padding: EdgeInsets.only(top: 4),
+          child: Text(
+            'Bật tùy chọn này để các CLB và nhóm vãng lai xung quanh có thể tìm thấy bạn qua Radar tuyển khách.',
+            style: TextStyle(fontSize: 12, color: AppColor.cMuted),
+          ),
+        ),
+        value: profile.isOpenForGuest,
+        onChanged: (val) {
+          ref.read(profileViewModelProvider.notifier).updateProfile(
+                fullName: profile.fullName,
+                gender: profile.gender,
+                avatarUrl: profile.avatarUrl,
+                skillLevel: profile.skillLevel,
+                isOpenForGuest: val,
+              );
+        },
+      ),
     );
   }
 
-  Widget _buildInfoRow(IconData icon, String label, String value) {
-    return Row(
-      children: [
-        Icon(icon, color: AppColor.cMuted, size: 18),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildSkillLevelCard(PlayerProfile profile) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColor.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
             children: [
+              Icon(Icons.sports_tennis_rounded, color: AppColor.cMain, size: 20),
+              SizedBox(width: 8),
               Text(
-                label,
-                style: TextStyle(fontSize: 12, color: AppColor.cMuted),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                value,
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: AppColor.cTitle,
+                'Thang đo trình độ chuẩn hóa (7 bậc)',
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  color: AppColor.cDark,
                 ),
               ),
             ],
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Hệ thống ghép kèo tự động dựa trên trình độ bạn khai báo để phân chia sân cân bằng nhất.',
+            style: TextStyle(fontSize: 12, color: AppColor.cMuted),
+          ),
+          const SizedBox(height: 12),
+
+          // List of 7 levels
+          ...SkillLevel.values.map((level) {
+            final isCurrent = level == profile.skillLevel;
+            final color = _getSkillColor(level);
+
+            return Container(
+              margin: const EdgeInsets.only(bottom: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              decoration: BoxDecoration(
+                color: isCurrent ? color.withValues(alpha: 0.08) : const Color(0xFFF8FAFC),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: isCurrent ? color : Colors.transparent,
+                  width: isCurrent ? 1.5 : 1,
+                ),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 38,
+                    height: 24,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: color,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      level.code,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          level.displayName,
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: isCurrent ? FontWeight.bold : FontWeight.w600,
+                            color: AppColor.cDark,
+                          ),
+                        ),
+                        Text(
+                          level.description,
+                          style: const TextStyle(fontSize: 11, color: AppColor.cMuted),
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (isCurrent)
+                    Icon(Icons.check_circle_rounded, color: color, size: 18),
+                ],
+              ),
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildContactInfoCard(PlayerProfile profile) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColor.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
+            children: [
+              Icon(Icons.info_outline_rounded, color: AppColor.cMain, size: 20),
+              SizedBox(width: 8),
+              Text(
+                'Thông tin tài khoản',
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  color: AppColor.cDark,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          _buildInfoRow('Tên đăng nhập', profile.userName, Icons.account_circle_outlined),
+          const Divider(height: 20),
+          _buildInfoRow('Email', profile.email, Icons.mail_outline_rounded),
+          const Divider(height: 20),
+          _buildInfoRow(
+            'Số điện thoại',
+            profile.phoneNumber != null && profile.phoneNumber!.isNotEmpty
+                ? profile.phoneNumber!
+                : 'Chưa cập nhật',
+            Icons.phone_outlined,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoRow(String label, String value, IconData icon) {
+    return Row(
+      children: [
+        Icon(icon, size: 18, color: AppColor.cMuted),
+        const SizedBox(width: 10),
+        Text(
+          label,
+          style: const TextStyle(fontSize: 13, color: AppColor.cMuted),
+        ),
+        const Spacer(),
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: AppColor.cDark,
           ),
         ),
       ],
     );
   }
+}
 
-  Widget _buildSaveButton() {
-    return AppButtonCommon(
-      text: 'Lưu thay đổi',
-      type: AppButtonType.primary,
-      backgroundColor: AppColor.cMain,
-      prefixIcon: const Icon(
-        Icons.save_outlined,
-        color: AppColor.white,
-        size: 20,
+class _EditProfileSheet extends ConsumerStatefulWidget {
+  final PlayerProfile profile;
+  const _EditProfileSheet({required this.profile});
+
+  @override
+  ConsumerState<_EditProfileSheet> createState() => _EditProfileSheetState();
+}
+
+class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
+  final _formKey = GlobalKey<FormState>();
+  late TextEditingController _nameController;
+  late int _gender;
+  late SkillLevel _skillLevel;
+  late bool _isOpenForGuest;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController = TextEditingController(text: widget.profile.fullName);
+    _gender = widget.profile.gender;
+    _skillLevel = widget.profile.skillLevel;
+    _isOpenForGuest = widget.profile.isOpenForGuest;
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    final success = await ref.read(profileViewModelProvider.notifier).updateProfile(
+          fullName: _nameController.text.trim(),
+          gender: _gender,
+          avatarUrl: widget.profile.avatarUrl,
+          skillLevel: _skillLevel,
+          isOpenForGuest: _isOpenForGuest,
+        );
+
+    if (success && mounted) {
+      Navigator.of(context).pop();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final state = ref.watch(profileViewModelProvider);
+
+    return Container(
+      padding: EdgeInsets.only(
+        top: 20,
+        left: 20,
+        right: 20,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 20,
       ),
-      onPressed: () async {
-        await _onSave();
-      },
+      decoration: const BoxDecoration(
+        color: AppColor.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      child: SingleChildScrollView(
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Chỉnh sửa hồ sơ',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: AppColor.cDark),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close_rounded, color: AppColor.cMuted),
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
+                ],
+              ),
+              const Divider(height: 16),
+
+              // Full Name
+              const Text(
+                'Họ và tên',
+                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColor.cDark),
+              ),
+              const SizedBox(height: 6),
+              TextFormField(
+                controller: _nameController,
+                decoration: InputDecoration(
+                  hintText: 'Nhập họ và tên...',
+                  filled: true,
+                  fillColor: const Color(0xFFF8FAFC),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide.none,
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                ),
+                validator: (val) {
+                  if (val == null || val.trim().isEmpty) return 'Vui lòng nhập họ tên';
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+
+              // Gender Selector
+              const Text(
+                'Giới tính',
+                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColor.cDark),
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  _buildGenderChip(1, 'Nam', Icons.male_rounded),
+                  const SizedBox(width: 8),
+                  _buildGenderChip(2, 'Nữ', Icons.female_rounded),
+                  const SizedBox(width: 8),
+                  _buildGenderChip(0, 'Khác', Icons.transgender_rounded),
+                ],
+              ),
+              const SizedBox(height: 16),
+
+              // Skill Level Selector
+              const Text(
+                'Trình độ tự đánh giá',
+                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColor.cDark),
+              ),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: SkillLevel.values.map((level) {
+                  final isSelected = _skillLevel == level;
+                  return ChoiceChip(
+                    label: Text('${level.code} - ${level.displayName}'),
+                    selected: isSelected,
+                    selectedColor: AppColor.cMain.withValues(alpha: 0.15),
+                    backgroundColor: const Color(0xFFF1F5F9),
+                    labelStyle: TextStyle(
+                      fontSize: 12,
+                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                      color: isSelected ? AppColor.cMain : AppColor.cDark,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      side: BorderSide(
+                        color: isSelected ? AppColor.cMain : Colors.transparent,
+                      ),
+                    ),
+                    onSelected: (val) {
+                      if (val) setState(() => _skillLevel = level);
+                    },
+                  );
+                }).toList(),
+              ),
+              const SizedBox(height: 16),
+
+              // Open for Guest Switch
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                activeThumbColor: AppColor.cMain,
+                title: const Text(
+                  'Nhận kèo giao lưu khách vãng lai',
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColor.cDark),
+                ),
+                subtitle: const Text(
+                  'Cho phép các nhóm quanh vị trí GPS quét tìm bạn',
+                  style: TextStyle(fontSize: 12, color: AppColor.cMuted),
+                ),
+                value: _isOpenForGuest,
+                onChanged: (val) => setState(() => _isOpenForGuest = val),
+              ),
+              const SizedBox(height: 20),
+
+              // Save Button
+              SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColor.cMain,
+                    foregroundColor: AppColor.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                  onPressed: state.isSaving ? null : _submit,
+                  child: state.isSaving
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                        )
+                      : const Text(
+                          'Lưu thay đổi',
+                          style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                        ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
-  Future<void> _selectDate() async {
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: _selectedDoB ?? DateTime(1990),
-      firstDate: DateTime(1950),
-      lastDate: DateTime.now(),
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.light(
-              primary: AppColor.cMain,
-              onPrimary: AppColor.white,
-              surface: AppColor.white,
-              onSurface: AppColor.cTitle,
+  Widget _buildGenderChip(int genderValue, String label, IconData icon) {
+    final isSelected = _gender == genderValue;
+    return Expanded(
+      child: InkWell(
+        onTap: () => setState(() => _gender = genderValue),
+        borderRadius: BorderRadius.circular(10),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          decoration: BoxDecoration(
+            color: isSelected ? AppColor.cMain.withValues(alpha: 0.1) : const Color(0xFFF8FAFC),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: isSelected ? AppColor.cMain : const Color(0xFFE2E8F0),
             ),
           ),
-          child: child!,
-        );
-      },
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                size: 16,
+                color: isSelected ? AppColor.cMain : AppColor.cMuted,
+              ),
+              const SizedBox(width: 4),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                  color: isSelected ? AppColor.cMain : AppColor.cDark,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
-    if (picked != null) {
-      setState(() {
-        _selectedDoB = picked;
-      });
-    }
-  }
-
-  Future<void> _onSave() async {
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
-
-    FocusScope.of(context).unfocus();
-
-    ref
-        .read(profileViewModelProvider.notifier)
-        .updateField(
-          fullName: _fullNameCtl.text.trim(),
-          email: _emailCtl.text.trim(),
-          phone: _phoneCtl.text.trim(),
-          address: _addressCtl.text.trim(),
-          hometown: _hometownCtl.text.trim(),
-          doB: _selectedDoB,
-          gender: _selectedGender,
-        );
-
-    await ref.read(profileViewModelProvider.notifier).saveProfile();
   }
 }

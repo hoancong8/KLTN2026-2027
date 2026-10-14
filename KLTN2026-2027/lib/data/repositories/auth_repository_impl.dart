@@ -1,18 +1,18 @@
+import '../../domain/entities/auth_register_result.dart';
 import '../../domain/entities/auth_token.dart';
 import '../../domain/exceptions/auth_exceptions.dart';
 import '../../domain/repositories/auth_repository.dart';
-import '../datasource/remote/abstract/auth_2fa_remote_datasource.dart';
 import '../datasource/remote/abstract/auth_remote_datasource.dart';
 import '../dto/auth/change_password_request_dto.dart';
 import '../dto/auth/login_request_dto.dart';
-import '../dto/auth/otp_login_request_dto.dart';
+import '../dto/auth/register_request_dto.dart';
 import '../mapper/auth_mapper.dart';
+import '../mapper/auth_register_mapper.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
   final AuthRemoteDatasource remote;
-  final Auth2FARemoteDatasource auth2faRemote;
 
-  AuthRepositoryImpl(this.remote, this.auth2faRemote);
+  AuthRepositoryImpl(this.remote);
 
   @override
   Future<AuthToken> login({
@@ -25,12 +25,28 @@ class AuthRepositoryImpl implements AuthRepository {
     );
 
     final res = await remote.login(dto);
-
-    if (res.requiresTwoFactorVerification) {
-      throw RequiresTwoFactorException();
-    }
-
     return AuthMapper.toEntity(res);
+  }
+
+  @override
+  Future<AuthRegisterResult> register({
+    required String fullName,
+    String? email,
+    String? phoneNumber,
+    required String password,
+    int gender = 0,
+    String skillLevel = 'NB',
+  }) async {
+    final dto = RegisterRequestDto(
+      fullName: fullName,
+      email: email,
+      phoneNumber: phoneNumber,
+      password: password,
+      gender: gender,
+      skillLevel: skillLevel,
+    );
+    final res = await remote.register(dto);
+    return AuthRegisterMapper.toEntity(res);
   }
 
   @override
@@ -46,35 +62,13 @@ class AuthRepositoryImpl implements AuthRepository {
     );
 
     if (!success) {
-      throw ChangePasswordFailedException();
+      throw const ChangePasswordFailedException();
     }
   }
 
   @override
   Future<void> logout() async {
     await remote.logout();
-  }
-
-  @override
-  Future<AuthToken> loginWithOtp({
-    required String username,
-    required String password,
-    required String code,
-  }) async {
-    final res = await auth2faRemote.loginWithOtp(
-      OtpLoginRequestDto(
-        username: username,
-        password: password,
-        code: code,
-      ),
-    );
-
-    return AuthMapper.toEntity(res);
-  }
-
-  @override
-  Future<void> sendOtp({required String provider}) async {
-    return await auth2faRemote.sendOtp(provider: provider);
   }
 
   @override

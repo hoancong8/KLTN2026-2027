@@ -1,17 +1,18 @@
 // app/router/app_router.dart
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:kltn2026_2027/domain/entities/employee.dart';
 import 'package:kltn2026_2027/ui/screen/home/home_screen.dart';
 import 'package:kltn2026_2027/ui/screen/login/login_screen.dart';
-import 'package:kltn2026_2027/ui/screen/otp/otp_screen.dart';
 import 'package:kltn2026_2027/ui/screen/profile/profile_screen.dart';
 import 'package:kltn2026_2027/ui/screen/change_password/change_password_screen.dart';
 import '../../ui/screen/admin/role_management/role_management_screen.dart';
 import '../../ui/screen/admin/user_management/user_management_screen.dart';
-import '../../ui/screen/blocked_users/blocked_user_screen.dart';
-import '../../ui/screen/chat_detail/chat_detail_screen.dart';
-import '../../ui/screen/home/tab/chat/widgets/full_screen_image_screen.dart';
+import '../../ui/screen/club/club_management_screen.dart';
+import '../../ui/screen/club/session_detail_screen.dart';
+import '../../ui/screen/club_detail/club_detail_screen.dart';
+import '../../ui/screen/explore_clubs/explore_clubs_screen.dart';
+import '../../ui/screen/home/tab/explore/explore_recruitments_page.dart';
+import '../../ui/screen/login/register_screen.dart';
 import 'app_config.dart';
 
 /// Global navigator key for accessing navigation from anywhere (e.g., Dio interceptor)
@@ -24,67 +25,61 @@ GoRouter generateAppRouter(String initialRoute) {
     routes: [
       GoRoute(
         path: AppConfig.splashPath,
-        builder: (_, __) =>
-            Scaffold(body: Center(child: Text("Splash Screen Obsolete"))),
+        builder: (_, _) =>
+            const Scaffold(body: Center(child: Text("Splash Screen Obsolete"))),
       ),
       GoRoute(
         path: AppConfig.loginPath,
-        builder: (_, __) => const LoginScreen(),
+        builder: (_, _) => const LoginScreen(),
       ),
       GoRoute(
-        path: AppConfig.otpPath,
-        builder: (context, state) {
-          final extra = state.extra as Map<String, String>;
-          return OtpScreen(
-            username: extra['username']!,
-            password: extra['password']!,
-          );
-        },
+        path: AppConfig.registerPath,
+        builder: (_, _) => const RegisterScreen(),
       ),
-      GoRoute(path: AppConfig.homePath, builder: (_, __) => const HomeScreen()),
+      GoRoute(
+        path: AppConfig.homePath,
+        builder: (_, _) => const HomeScreen(),
+      ),
       GoRoute(
         path: AppConfig.profilePath,
-        builder: (context, state) {
-          final initialEmployee = state.extra as Employee?;
-          return ProfileScreen(initialEmployee: initialEmployee);
-        },
+        builder: (_, _) => const ProfileScreen(),
       ),
       GoRoute(
         path: AppConfig.changePasswordPath,
-        builder: (_, __) => const ChangePasswordScreen(),
-      ),
-      GoRoute(
-        path: AppConfig.blockedUsersPath,
-        builder: (_, __) => const BlockedUsersScreen(),
+        builder: (_, _) => const ChangePasswordScreen(),
       ),
       GoRoute(
         path: AppConfig.adminUsersPath,
-        builder: (_, __) => const UserManagementScreen(),
+        builder: (_, _) => const UserManagementScreen(),
       ),
       GoRoute(
         path: AppConfig.adminRolesPath,
-        builder: (_, __) => const RoleManagementScreen(),
+        builder: (_, _) => const RoleManagementScreen(),
       ),
       GoRoute(
-        path: AppConfig.chatDetailPath,
-        builder: (context, state) {
-          final extra = state.extra as Map<String, dynamic>;
-          return ChatDetailScreen(
-            userId: extra['userId'] as int,
-            userName: extra['userName'] as String,
-            isOnline: extra['isOnline'] as bool,
-            isBlocked: extra['isBlocked'] as bool? ?? false,
-          );
+        path: AppConfig.clubManagementPath,
+        builder: (_, _) => const ClubManagementScreen(),
+      ),
+      GoRoute(
+        path: AppConfig.exploreRecruitmentsScreenPath,
+        builder: (_, _) => const ExploreRecruitmentsPage(),
+      ),
+      GoRoute(
+        path: AppConfig.exploreClubsScreenPath,
+        builder: (_, _) => const ExploreClubsScreen(),
+      ),
+      GoRoute(
+        path: '/club/:clubId',
+        builder: (_, state) {
+          final clubId = state.pathParameters['clubId'] ?? '';
+          return ClubDetailScreen(clubId: clubId);
         },
       ),
       GoRoute(
-        path: AppConfig.fullScreenImagePath,
-        builder: (context, state) {
-          final extra = state.extra as Map<String, dynamic>;
-          return FullScreenImageScreen(
-            imageUrl: extra['imageUrl'] as String,
-            headers: extra['headers'] as Map<String, String>?,
-          );
+        path: '/session/:sessionId',
+        builder: (_, state) {
+          final sessionId = state.pathParameters['sessionId'] ?? '';
+          return SessionDetailScreen(sessionId: sessionId);
         },
       ),
     ],

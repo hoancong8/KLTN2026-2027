@@ -3,13 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kltn2026_2027/app/consts/app_config.dart';
 import 'package:kltn2026_2027/app/consts/app_color.dart';
-import 'package:kltn2026_2027/app/consts/permissions.dart';
 import 'package:kltn2026_2027/app/provider.dart';
-import 'package:kltn2026_2027/ui/screen/home/home_vm/home_vm.dart';
-import 'package:kltn2026_2027/ui/screen/home/tab/chat/chat_page.dart';
+import 'package:kltn2026_2027/ui/screen/home/tab/club/my_clubs_page.dart';
 import 'package:kltn2026_2027/ui/screen/home/tab/dashboard/dashboard_page.dart';
+import 'package:kltn2026_2027/ui/screen/home/tab/explore/explore_recruitments_page.dart';
 import 'package:kltn2026_2027/ui/screen/home/tab/report/report_page.dart';
 import 'package:kltn2026_2027/ui/screen/home/tab/settings/settings_page.dart';
+import '../home_vm/home_vm.dart';
 import '../../../../app/provider/localization_provider.dart';
 
 /// Model định nghĩa từng mục Menu Navigation Mobile kèm Quyền & Màn hình
@@ -45,43 +45,41 @@ class HomeMobile extends ConsumerWidget {
 
   List<_MobileNavigationItem> _getAllNavItems(
     BuildContext context,
-    int unreadCount,
   ) {
     return [
       _MobileNavigationItem(
         title: context.l10n.com_home,
         icon: const Icon(Icons.home_outlined),
         selectedIcon: const Icon(Icons.home),
-        permission: Permissions.dashboardView,
+        permission: null,
         page: const DashboardPage(),
       ),
-      _MobileNavigationItem(
-        title: context.l10n.chat_messages,
-        icon: Badge(
-          label: Text('$unreadCount'),
-          isLabelVisible: unreadCount > 0,
-          child: const Icon(Icons.message_outlined),
-        ),
-        selectedIcon: Badge(
-          label: Text('$unreadCount'),
-          isLabelVisible: unreadCount > 0,
-          child: const Icon(Icons.message),
-        ),
-        permission: 'Chat.Read',
-        page: const ChatPage(),
+      const _MobileNavigationItem(
+        title: 'Nhóm của tôi',
+        icon: Icon(Icons.groups_outlined),
+        selectedIcon: Icon(Icons.groups_rounded),
+        permission: null,
+        page: MyClubsPage(),
+      ),
+      const _MobileNavigationItem(
+        title: 'Kèo giao lưu',
+        icon: Icon(Icons.radar_outlined),
+        selectedIcon: Icon(Icons.radar_rounded),
+        permission: null,
+        page: ExploreRecruitmentsPage(),
       ),
       _MobileNavigationItem(
         title: context.l10n.set_report,
         icon: const Icon(Icons.bar_chart_outlined),
         selectedIcon: const Icon(Icons.bar_chart),
-        permission: Permissions.courtPricingsRead,
+        permission: null,
         page: const ReportPage(),
       ),
       _MobileNavigationItem(
         title: context.l10n.set_title,
         icon: const Icon(Icons.settings_outlined),
         selectedIcon: const Icon(Icons.settings),
-        permission: Permissions.courtPricingsRead,
+        permission: null,
         page: const SettingsPage(),
       ),
     ];
@@ -91,9 +89,7 @@ class HomeMobile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final token = ref.watch(authTokenProvider);
     final userProfile = ref.watch(currentUserProfileProvider);
-    final userPerms = ref.watch(userPermissionsProvider);
     final tabIndex = ref.watch(homeTabProvider);
-    final unreadCount = 0; // Get unread count from providers
     ref.watch(localizationProvider);
 
     // 0. Nếu token không tồn tại -> chuyển hướng về Login
@@ -135,10 +131,10 @@ class HomeMobile extends ConsumerWidget {
     }
 
     // 2. Lọc danh sách Navigation Item theo quyền của người dùng
-    final allItems = _getAllNavItems(context, unreadCount);
+    final allItems = _getAllNavItems(context);
     final accessibleItems = allItems.where((item) {
       if (item.permission == null || item.permission!.isEmpty) return true;
-      return userPerms.contains(item.permission);
+      return ref.hasPermission(item.permission!);
     }).toList();
 
     // 3. Nếu không có bất kỳ quyền nào -> Hiển thị Màn hình 403 Access Denied

@@ -1,4 +1,6 @@
 import '../../../dto/common/paged_result_dto.dart';
+import '../../../dto/user/player_profile_dto.dart';
+import '../../../dto/user/update_player_profile_request_dto.dart';
 import '../../../dto/user/user_lock_request_dto.dart';
 import '../../../dto/user/user_response_dto.dart';
 import '../../../dto/user/user_roles_request_dto.dart';
@@ -8,6 +10,8 @@ import '../../../dto/user/user_management_request_dto.dart';
 
 abstract class UserRemoteDatasource {
   Future<UserResponseDto> getUserMe();
+  Future<PlayerProfileDto> getUserProfile();
+  Future<void> updateUserProfile(UpdatePlayerProfileRequestDto request);
   Future<UserPermissionsResponseDto> getUserPermissions();
   Future<List<PermissionGroupResponseDto>> getAllPermissions();
   Future<PagedResultDto<UserResponseDto>> getUsers({

@@ -6,7 +6,6 @@ class AuthMapper {
     return AuthToken(
       accessToken: dto.accessToken,
       refreshToken: dto.refreshToken,
-      twoFactorRememberClientToken: dto.twoFactorRememberClientToken,
       userId: dto.userId,
     );
   }

@@ -7,9 +7,5 @@ abstract class TokenStorageRepository {
   Future<void> setRememberMe(bool value);
   Future<bool> getRememberMe();
   Future<bool> isLoggedIn();
-  Future<void> saveTenantId(int tenantId);
-  Future<int?> getTenantId();
-  Future<void> saveEmployeeId(int employeeId);
-  Future<int?> getEmployeeId();
   Future<void> saveLastLoginCredentials(String username, String password);
 }
