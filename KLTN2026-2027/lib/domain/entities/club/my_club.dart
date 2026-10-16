@@ -12,6 +12,8 @@ class MyClub {
   final String? description;
   final String? avatarUrl;
   final ClubRole role;
+  final String? roleName;
+  final String? roleId;
   final ClubMemberStatus status;
   final DateTime? joinedAt;
 
@@ -22,6 +24,8 @@ class MyClub {
     this.description,
     this.avatarUrl,
     required this.role,
+    this.roleName,
+    this.roleId,
     required this.status,
     this.joinedAt,
   });

@@ -238,6 +238,8 @@ class MemberCard extends ConsumerWidget {
     switch (role) {
       case ClubRole.host:
         return const Color(0xFF9333EA);
+      case ClubRole.deputy:
+        return const Color(0xFF2563EB);
       case ClubRole.treasurer:
         return const Color(0xFFD97706);
       case ClubRole.member:

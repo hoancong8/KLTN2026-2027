@@ -1,6 +1,7 @@
 // lib/data/repositories/session_repository_impl.dart
 
 import '../../domain/entities/session/guest_recruitment.dart';
+import '../../domain/entities/session/my_booking_item.dart';
 import '../../domain/entities/session/session.dart';
 import '../../domain/entities/session/session_booking.dart';
 import '../../domain/entities/session/session_detail.dart';
@@ -9,6 +10,7 @@ import '../datasource/remote/abstract/session_remote_datasource.dart';
 import '../dto/session/create_recruitment_request_dto.dart';
 import '../dto/session/create_session_request_dto.dart';
 import '../dto/session/update_session_request_dto.dart';
+import '../mapper/my_booking_mapper.dart';
 import '../mapper/session_mapper.dart';
 
 class SessionRepositoryImpl implements SessionRepository {
@@ -109,6 +111,12 @@ class SessionRepositoryImpl implements SessionRepository {
   Future<SessionBooking?> getMyBooking(String sessionId) async {
     final dto = await remote.getMyBooking(sessionId);
     return dto != null ? SessionMapper.toBookingEntity(dto) : null;
+  }
+
+  @override
+  Future<List<MyBookingItem>> getMyBookings() async {
+    final dtos = await remote.getMyBookings();
+    return dtos.map(MyBookingMapper.toEntity).toList();
   }
 
   @override

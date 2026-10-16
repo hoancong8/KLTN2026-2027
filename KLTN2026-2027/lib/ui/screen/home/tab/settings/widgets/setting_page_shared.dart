@@ -80,6 +80,13 @@ List<SettingsSection> buildSettingsSections(
           subtitle: 'Xem danh sách thành viên và phân quyền trong nhóm',
           onTap: () => context.push(AppConfig.clubManagementPath),
         ),
+        SettingsItemData(
+          icon: Icons.event_available_rounded,
+          color: const Color(0xFF8B5CF6),
+          title: 'Lịch chơi tôi đã đăng ký',
+          subtitle: 'Xem toàn bộ vé tham gia, buổi tập và trạng thái điểm danh',
+          onTap: () => context.push(AppConfig.myBookingsRoutePath),
+        ),
       ],
     ),
     SettingsSection(

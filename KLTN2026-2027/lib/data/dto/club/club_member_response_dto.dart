@@ -7,6 +7,8 @@ class ClubMemberResponseDto {
   final String? userName;
   final String? email;
   final dynamic role;
+  final String? roleName;
+  final String? roleId;
   final dynamic status;
   final String? nickname;
   final String? joinedAt;
@@ -18,6 +20,8 @@ class ClubMemberResponseDto {
     this.userName,
     this.email,
     required this.role,
+    this.roleName,
+    this.roleId,
     required this.status,
     this.nickname,
     this.joinedAt,
@@ -32,11 +36,17 @@ class ClubMemberResponseDto {
         userName: null,
         email: null,
         role: 1,
+        roleName: null,
+        roleId: null,
         status: 1,
         nickname: null,
         joinedAt: null,
       );
     }
+
+    final roleName = rawJson['roleName']?.toString();
+    final roleId = rawJson['roleId']?.toString();
+    final role = rawJson['role'] ?? roleName ?? roleId;
 
     return ClubMemberResponseDto(
       id: rawJson['id']?.toString() ?? '',
@@ -44,7 +54,9 @@ class ClubMemberResponseDto {
       userId: rawJson['userId']?.toString() ?? '',
       userName: rawJson['userName']?.toString(),
       email: rawJson['email']?.toString(),
-      role: rawJson['role'],
+      role: role,
+      roleName: roleName,
+      roleId: roleId,
       status: rawJson['status'],
       nickname: rawJson['nickname']?.toString(),
       joinedAt: rawJson['joinedAt']?.toString(),

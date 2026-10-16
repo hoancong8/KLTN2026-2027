@@ -49,7 +49,38 @@ class ExploreRecruitmentsPage extends ConsumerWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('Bán kính tìm kiếm:', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColor.cTitle)),
+                    Row(
+                      children: [
+                        const Text('Bán kính tìm kiếm:', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColor.cTitle)),
+                        const SizedBox(width: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF7C3AED).withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                state.isLocating ? Icons.sync_rounded : Icons.my_location_rounded,
+                                size: 11,
+                                color: const Color(0xFF7C3AED),
+                              ),
+                              const SizedBox(width: 3),
+                              Text(
+                                state.isLocating ? 'Đang định vị...' : 'GPS Vị trí thật',
+                                style: const TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF7C3AED),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                     Text(
                       '${state.radiusKm.toStringAsFixed(0)} km quanh đây',
                       style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF7C3AED), fontSize: 13),
@@ -290,9 +321,28 @@ class _RecruitmentCard extends StatelessWidget {
                   ),
                 ),
                 if (match.distanceKm != null)
-                  Text(
-                    ' • Cách ${match.distanceKm!.toStringAsFixed(1)} km',
-                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF7C3AED)),
+                  Container(
+                    margin: const EdgeInsets.only(left: 6),
+                    padding: const EdgeInsets.symmetric(horizontal: 6.5, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF7C3AED).withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.near_me_rounded, size: 11, color: Color(0xFF7C3AED)),
+                        const SizedBox(width: 3),
+                        Text(
+                          'Cách ${match.distanceKm!.toStringAsFixed(1)} km',
+                          style: const TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF7C3AED),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
               ],
             ),

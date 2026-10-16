@@ -1,9 +1,8 @@
-// lib/ui/screen/club/club_management_vm/club_members_vm.dart
-
 import 'package:flutter_riverpod/legacy.dart';
 import '../../../../app/provider.dart';
 import '../../../../domain/enums/club_role.dart';
 import '../../../../domain/exceptions/app_exception.dart';
+import '../../../../domain/usecases/club/club_role_usecases.dart';
 import '../../../../domain/usecases/club/get_club_by_id_usecase.dart';
 import '../../../../domain/usecases/club/get_club_members_usecase.dart';
 import '../../../../domain/usecases/club/remove_club_member_usecase.dart';
@@ -20,6 +19,9 @@ final clubMembersViewModelProvider =
     getClubMembersUseCase: ref.watch(getClubMembersUseCaseProvider),
     updateMemberRoleUseCase: ref.watch(updateMemberRoleUseCaseProvider),
     removeClubMemberUseCase: ref.watch(removeClubMemberUseCaseProvider),
+    getClubRolesUseCase: ref.watch(getClubRolesUseCaseProvider),
+    getClubPermissionsUseCase: ref.watch(getClubPermissionsUseCaseProvider),
+    updateClubRolePermissionsUseCase: ref.watch(updateClubRolePermissionsUseCaseProvider),
   );
 });
 
@@ -29,6 +31,9 @@ class ClubMembersViewModel extends StateNotifier<ClubMembersState> {
   final GetClubMembersUseCase getClubMembersUseCase;
   final UpdateMemberRoleUseCase updateMemberRoleUseCase;
   final RemoveClubMemberUseCase removeClubMemberUseCase;
+  final GetClubRolesUseCase getClubRolesUseCase;
+  final GetClubPermissionsUseCase getClubPermissionsUseCase;
+  final UpdateClubRolePermissionsUseCase updateClubRolePermissionsUseCase;
 
   ClubMembersViewModel({
     required this.clubId,
@@ -36,6 +41,9 @@ class ClubMembersViewModel extends StateNotifier<ClubMembersState> {
     required this.getClubMembersUseCase,
     required this.updateMemberRoleUseCase,
     required this.removeClubMemberUseCase,
+    required this.getClubRolesUseCase,
+    required this.getClubPermissionsUseCase,
+    required this.updateClubRolePermissionsUseCase,
   }) : super(const ClubMembersState()) {
     if (clubId.isNotEmpty) {
       loadData();
@@ -132,6 +140,59 @@ class ClubMembersViewModel extends StateNotifier<ClubMembersState> {
       state = state.copyWith(
         isActionLoading: false,
         error: AppException(message: 'Không thể xóa thành viên: $e'),
+      );
+      return false;
+    }
+  }
+
+  /// Tải danh sách vai trò nội bộ và bảng quyền nhóm chuẩn
+  Future<void> loadRolesAndPermissions() async {
+    state = state.copyWith(isLoadingRoles: true, clearError: true);
+    try {
+      final results = await Future.wait([
+        getClubRolesUseCase.execute(clubId),
+        getClubPermissionsUseCase.execute(),
+      ]);
+
+      state = state.copyWith(
+        roles: results[0] as dynamic,
+        availablePermissions: results[1] as dynamic,
+        isLoadingRoles: false,
+      );
+    } on AppException catch (e) {
+      state = state.copyWith(isLoadingRoles: false, error: e);
+    } catch (e) {
+      state = state.copyWith(
+        isLoadingRoles: false,
+        error: AppException(message: 'Lỗi tải phân quyền: $e'),
+      );
+    }
+  }
+
+  /// Cập nhật danh sách quyền cho một vai trò trong nhóm (FR03)
+  Future<bool> updateRolePermissions(String roleId, List<String> permissionIds) async {
+    state = state.copyWith(isActionLoading: true, clearError: true, clearSuccess: true);
+    try {
+      final ok = await updateClubRolePermissionsUseCase.execute(clubId, roleId, permissionIds);
+      if (ok) {
+        // Tải lại vai trò để cập nhật UI
+        final updatedRoles = await getClubRolesUseCase.execute(clubId);
+        state = state.copyWith(
+          isActionLoading: false,
+          roles: updatedRoles,
+          successMessage: 'Cập nhật phân quyền thành công! 🎉',
+        );
+        return true;
+      }
+      state = state.copyWith(isActionLoading: false);
+      return false;
+    } on AppException catch (e) {
+      state = state.copyWith(isActionLoading: false, error: e);
+      return false;
+    } catch (e) {
+      state = state.copyWith(
+        isActionLoading: false,
+        error: AppException(message: 'Không thể cập nhật quyền: $e'),
       );
       return false;
     }

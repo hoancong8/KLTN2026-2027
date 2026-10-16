@@ -83,19 +83,64 @@ class ClubSessionsTab extends ConsumerWidget {
         color: AppColor.cMain,
         child: state.sessions.isEmpty
             ? _buildEmptyState(context)
-            : ListView.separated(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                itemCount: state.sessions.length,
-                separatorBuilder: (_, _) => const SizedBox(height: 12),
-                itemBuilder: (ctx, index) {
-                  final session = state.sessions[index];
-                  return _SessionCard(
-                    session: session,
-                    onTap: () {
-                      context.push(AppConfig.sessionDetailRoutePath(session.id));
-                    },
-                  );
-                },
+            : ListView(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                children: [
+                  // Banner truy cập nhanh: Lịch tôi đã đăng ký
+                  InkWell(
+                    onTap: () => context.push(AppConfig.myBookingsRoutePath),
+                    borderRadius: BorderRadius.circular(12),
+                    child: Container(
+                      margin: const EdgeInsets.only(bottom: 14),
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF0FDF4),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: AppColor.cMain.withValues(alpha: 0.35)),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(7),
+                            decoration: BoxDecoration(
+                              color: AppColor.cMain.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Icon(Icons.event_available_rounded, color: AppColor.cMain, size: 20),
+                          ),
+                          const SizedBox(width: 10),
+                          const Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Lịch tập tôi đã đăng ký',
+                                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppColor.cTitle),
+                                ),
+                                Text(
+                                  'Xem danh sách vé, check-in và trạng thái giữ chỗ',
+                                  style: TextStyle(fontSize: 11, color: AppColor.cMuted),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: AppColor.cMain),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  // Danh sách các buổi tập
+                  ...state.sessions.map((session) => Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: _SessionCard(
+                          session: session,
+                          onTap: () {
+                            context.push(AppConfig.sessionDetailRoutePath(session.id));
+                          },
+                        ),
+                      )),
+                ],
               ),
       ),
     );
@@ -119,7 +164,7 @@ class ClubSessionsTab extends ConsumerWidget {
             ),
             const SizedBox(height: 16),
             const Text(
-              'Chưa Có Buổi Sinh Hoạt Nào',
+              'Chưa Có Buổi Sinh Hoạt Mới',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColor.cTitle),
             ),
             const SizedBox(height: 8),
@@ -128,8 +173,20 @@ class ClubSessionsTab extends ConsumerWidget {
               style: TextStyle(fontSize: 13, color: AppColor.cMuted),
               textAlign: TextAlign.center,
             ),
+            const SizedBox(height: 18),
+            OutlinedButton.icon(
+              onPressed: () => context.push(AppConfig.myBookingsRoutePath),
+              icon: const Icon(Icons.event_available_rounded, size: 18),
+              label: const Text('Xem Lịch Tôi Đã Đăng Ký'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppColor.cMain,
+                side: const BorderSide(color: AppColor.cMain, width: 1.2),
+                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 11),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+            ),
             if (isHost) ...[
-              const SizedBox(height: 20),
+              const SizedBox(height: 12),
               ElevatedButton.icon(
                 onPressed: () => CreateSessionDialog.show(context, clubId: clubId, clubName: clubName),
                 icon: const Icon(Icons.add, size: 18),

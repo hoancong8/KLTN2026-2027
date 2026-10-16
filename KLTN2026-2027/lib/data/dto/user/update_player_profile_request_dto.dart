@@ -2,7 +2,7 @@ class UpdatePlayerProfileRequestDto {
   final String fullName;
   final int gender;
   final String? avatarUrl;
-  final String skillLevel;
+  final dynamic skillLevel;
   final bool isOpenForGuest;
 
   UpdatePlayerProfileRequestDto({

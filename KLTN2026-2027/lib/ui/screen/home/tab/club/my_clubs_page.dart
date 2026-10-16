@@ -111,6 +111,20 @@ class _MyClubsPageState extends ConsumerState<MyClubsPage> {
                   context.push(AppConfig.exploreClubsScreenPath);
                 },
               ),
+              const SizedBox(height: 12),
+
+              // Action 4: My Bookings
+              _buildBottomSheetActionTile(
+                icon: Icons.event_available_rounded,
+                iconColor: const Color(0xFF059669),
+                iconBgColor: const Color(0xFF059669).withValues(alpha: 0.12),
+                title: 'Lịch chơi tôi đã đăng ký',
+                subtitle: 'Xem toàn bộ vé tham gia, buổi tập và trạng thái điểm danh',
+                onTap: () {
+                  Navigator.of(ctx).pop();
+                  context.push(AppConfig.myBookingsRoutePath);
+                },
+              ),
               const SizedBox(height: 8),
             ],
           ),
@@ -578,6 +592,18 @@ class _MyClubsPageState extends ConsumerState<MyClubsPage> {
                 ),
               ),
         actions: [
+          IconButton(
+            tooltip: 'Lịch tôi đã đăng ký',
+            icon: Container(
+              padding: const EdgeInsets.all(6),
+              decoration: const BoxDecoration(
+                color: Color(0xFFF1F5F9),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.event_available_rounded, color: AppColor.cMain, size: 20),
+            ),
+            onPressed: () => context.push(AppConfig.myBookingsRoutePath),
+          ),
           IconButton(
             tooltip: 'Thêm / Tham gia nhóm',
             icon: Container(

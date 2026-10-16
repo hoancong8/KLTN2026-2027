@@ -48,15 +48,23 @@ class AppConfig {
   static String clubDetailPath(String id) => '$clubsPath/$id';
   static String clubInfoPath(String id) => '$clubsPath/$id/info';
   static String clubSchedulesPath(String id) => '$clubsPath/$id/schedules';
-  static String clubSwitchContextPath(String id) => '$clubsPath/$id/switch-context';
+  static String clubSwitchContextPath(String id) =>
+      '$clubsPath/$id/switch-context';
   static String clubMembersPath(String id) => '$clubsPath/$id/members';
-  static String clubMemberRolePath(String id, String userId) => '$clubsPath/$id/members/$userId/role';
+  static String clubMemberRolePath(String id, String userId) =>
+      '$clubsPath/$id/members/$userId/role';
+  static const clubPermissionsPath = '$clubsPath/permissions';
   static String clubRolesPath(String id) => '$clubsPath/$id/roles';
-  static String clubRolePermissionsPath(String id, String roleId) => '$clubsPath/$id/roles/$roleId/permissions';
-  static String clubRoleDetailPath(String id, String roleId) => '$clubsPath/$id/roles/$roleId';
-  static String clubJoinRequestsPath(String id) => '$clubsPath/$id/join-requests';
-  static String clubApproveJoinRequestPath(String id, String requestId) => '$clubsPath/$id/join-requests/$requestId/approve';
-  static String clubRejectJoinRequestPath(String id, String requestId) => '$clubsPath/$id/join-requests/$requestId/reject';
+  static String clubRolePermissionsPath(String id, String roleId) =>
+      '$clubsPath/$id/roles/$roleId/permissions';
+  static String clubRoleDetailPath(String id, String roleId) =>
+      '$clubsPath/$id/roles/$roleId';
+  static String clubJoinRequestsPath(String id) =>
+      '$clubsPath/$id/join-requests';
+  static String clubApproveJoinRequestPath(String id, String requestId) =>
+      '$clubsPath/$id/join-requests/$requestId/approve';
+  static String clubRejectJoinRequestPath(String id, String requestId) =>
+      '$clubsPath/$id/join-requests/$requestId/reject';
 
   // ===== 🛡️ 3. Roles Management APIs (/api/v1/roles) =====
   static const rolesPath = '/api/v1/roles';
@@ -84,14 +92,22 @@ class AppConfig {
   // ===== 🏸 9. Sessions Management APIs (/api/v1/sessions) =====
   static const sessionsPath = '/api/v1/sessions';
   static String sessionClubPath(String clubId) => '$sessionsPath/club/$clubId';
-  static String sessionDetailPath(String sessionId) => '$sessionsPath/$sessionId';
-  static String sessionStatusPath(String sessionId) => '$sessionsPath/$sessionId/status';
-  static String sessionBookingsPath(String sessionId) => '$sessionsPath/$sessionId/bookings';
-  static String sessionMyBookingPath(String sessionId) => '$sessionsPath/$sessionId/bookings/me';
-  static String sessionRecruitmentsPath(String sessionId) => '$sessionsPath/$sessionId/recruitments';
+  static String sessionDetailPath(String sessionId) =>
+      '$sessionsPath/$sessionId';
+  static String sessionStatusPath(String sessionId) =>
+      '$sessionsPath/$sessionId/status';
+  static String sessionBookingsPath(String sessionId) =>
+      '$sessionsPath/$sessionId/bookings';
+  static String sessionMyBookingPath(String sessionId) =>
+      '$sessionsPath/$sessionId/bookings/me';
+  static const myBookingsPath = '$sessionsPath/my-bookings';
+  static String sessionRecruitmentsPath(String sessionId) =>
+      '$sessionsPath/$sessionId/recruitments';
   static const exploreRecruitmentsPath = '$sessionsPath/recruitments/explore';
-  static String joinRecruitmentPath(String recruitmentId) => '$sessionsPath/recruitments/$recruitmentId/join';
-  static String cancelRecruitmentPath(String recruitmentId) => '$sessionsPath/recruitments/$recruitmentId/cancel';
+  static String joinRecruitmentPath(String recruitmentId) =>
+      '$sessionsPath/recruitments/$recruitmentId/join';
+  static String cancelRecruitmentPath(String recruitmentId) =>
+      '$sessionsPath/recruitments/$recruitmentId/cancel';
 
   // ===== 🚦 Routes App (GoRouter) =====
   static const splashPath = '/';
@@ -99,6 +115,7 @@ class AppConfig {
   static const registerPath = '/register';
   static const logoutPath = '/logOut';
   static const homePath = '/home';
+  static const myBookingsRoutePath = '/my-bookings';
   static const profilePath = '/profile';
   static const changePasswordPath = '/change-password';
   static const adminUsersPath = '/admin/users';
@@ -107,6 +124,8 @@ class AppConfig {
   static const exploreClubsScreenPath = '/explore-clubs';
   static const exploreRecruitmentsScreenPath = '/explore-recruitments';
   static String clubDetailRoutePath(String clubId) => '/club/$clubId';
-  static String sessionDetailRoutePath(String sessionId) => '/session/$sessionId';
-  static String createSessionRoutePath(String clubId) => '/session-create/$clubId';
+  static String sessionDetailRoutePath(String sessionId) =>
+      '/session/$sessionId';
+  static String createSessionRoutePath(String clubId) =>
+      '/session-create/$clubId';
 }

@@ -3,6 +3,7 @@
 import '../../../dto/session/create_recruitment_request_dto.dart';
 import '../../../dto/session/create_session_request_dto.dart';
 import '../../../dto/session/guest_recruitment_dto.dart';
+import '../../../dto/session/my_booking_item_dto.dart';
 import '../../../dto/session/session_booking_dto.dart';
 import '../../../dto/session/session_detail_dto.dart';
 import '../../../dto/session/session_dto.dart';
@@ -28,6 +29,8 @@ abstract class SessionRemoteDataSource {
   Future<List<SessionBookingDto>> getSessionBookings(String sessionId);
 
   Future<SessionBookingDto?> getMyBooking(String sessionId);
+
+  Future<List<MyBookingItemDto>> getMyBookings();
 
   Future<String> createRecruitment(String sessionId, CreateRecruitmentRequestDto request);
 

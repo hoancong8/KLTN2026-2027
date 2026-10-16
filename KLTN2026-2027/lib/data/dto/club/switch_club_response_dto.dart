@@ -5,6 +5,8 @@ class SwitchClubResponseDto {
   final String clubId;
   final String clubName;
   final dynamic role;
+  final String? roleName;
+  final String? roleId;
   final List<String> permissions;
 
   const SwitchClubResponseDto({
@@ -12,6 +14,8 @@ class SwitchClubResponseDto {
     required this.clubId,
     required this.clubName,
     required this.role,
+    this.roleName,
+    this.roleId,
     required this.permissions,
   });
 
@@ -22,6 +26,8 @@ class SwitchClubResponseDto {
         clubId: '',
         clubName: '',
         role: 1,
+        roleName: null,
+        roleId: null,
         permissions: [],
       );
     }
@@ -31,11 +37,17 @@ class SwitchClubResponseDto {
         ? rawPerms.map((e) => e.toString().trim()).where((e) => e.isNotEmpty).toList()
         : <String>[];
 
+    final roleName = rawJson['roleName']?.toString();
+    final roleId = rawJson['roleId']?.toString();
+    final role = rawJson['role'] ?? roleName ?? roleId;
+
     return SwitchClubResponseDto(
       accessToken: rawJson['accessToken']?.toString() ?? '',
       clubId: rawJson['clubId']?.toString() ?? '',
       clubName: rawJson['clubName']?.toString() ?? '',
-      role: rawJson['role'],
+      role: role,
+      roleName: roleName,
+      roleId: roleId,
       permissions: perms,
     );
   }

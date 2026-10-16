@@ -5,6 +5,7 @@ import '../../../../app/consts/app_config.dart';
 import '../../../dto/session/create_recruitment_request_dto.dart';
 import '../../../dto/session/create_session_request_dto.dart';
 import '../../../dto/session/guest_recruitment_dto.dart';
+import '../../../dto/session/my_booking_item_dto.dart';
 import '../../../dto/session/session_booking_dto.dart';
 import '../../../dto/session/session_detail_dto.dart';
 import '../../../dto/session/session_dto.dart';
@@ -131,6 +132,16 @@ class SessionRemoteDataSourceImpl extends BaseRemoteDatasource implements Sessio
         return null;
       }
       throw handleError(dioErr);
+    } catch (e) {
+      throw handleError(e);
+    }
+  }
+
+  @override
+  Future<List<MyBookingItemDto>> getMyBookings() async {
+    try {
+      final response = await dio.get(AppConfig.myBookingsPath);
+      return handleListResponse(response, (item) => MyBookingItemDto.fromJson(item));
     } catch (e) {
       throw handleError(e);
     }

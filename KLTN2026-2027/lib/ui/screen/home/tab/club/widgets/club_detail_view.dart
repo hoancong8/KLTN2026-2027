@@ -72,7 +72,8 @@ class _ClubDetailViewState extends ConsumerState<ClubDetailView> with SingleTick
     final membersState = ref.watch(clubMembersViewModelProvider);
     final membersVm = ref.read(clubMembersViewModelProvider.notifier);
     final contextVm = ref.read(clubContextViewModelProvider.notifier);
-    final isHost = widget.club.role == ClubRole.host;
+    final isHost = widget.club.role == ClubRole.host ||
+        (widget.club.roleName?.toLowerCase().contains('host') ?? false);
 
     return Column(
       children: [
@@ -247,7 +248,9 @@ class _ClubDetailViewState extends ConsumerState<ClubDetailView> with SingleTick
                             border: Border.all(color: roleColor.withValues(alpha: 0.5), width: 1),
                           ),
                           child: Text(
-                            widget.club.role.displayName,
+                            (widget.club.roleName != null && widget.club.roleName!.isNotEmpty)
+                                ? widget.club.roleName!
+                                : widget.club.role.displayName,
                             style: TextStyle(
                               color: roleColor,
                               fontSize: 11,
@@ -507,7 +510,27 @@ class _ClubDetailViewState extends ConsumerState<ClubDetailView> with SingleTick
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5),
                   ),
                   onPressed: () {
-                    context.push('${AppConfig.clubDetailRoutePath}?id=${widget.club.clubId}');
+                    context.push(AppConfig.clubDetailRoutePath(widget.club.clubId));
+                  },
+                ),
+              ),
+              const SizedBox(height: 10),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColor.cMain,
+                    side: const BorderSide(color: AppColor.cMain, width: 1.3),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                  icon: const Icon(Icons.event_available_rounded, size: 18),
+                  label: const Text(
+                    'Lịch Tôi Đã Đăng Ký (Vé & Điểm Danh)',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5),
+                  ),
+                  onPressed: () {
+                    context.push(AppConfig.myBookingsRoutePath);
                   },
                 ),
               ),
@@ -540,6 +563,8 @@ class _ClubDetailViewState extends ConsumerState<ClubDetailView> with SingleTick
     switch (role) {
       case ClubRole.host:
         return const Color(0xFFC084FC); // Light Purple
+      case ClubRole.deputy:
+        return const Color(0xFF60A5FA); // Light Blue
       case ClubRole.treasurer:
         return const Color(0xFFFBBF24); // Light Amber
       case ClubRole.member:

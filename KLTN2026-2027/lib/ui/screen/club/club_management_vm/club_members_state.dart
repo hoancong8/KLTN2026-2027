@@ -1,14 +1,16 @@
-// lib/ui/screen/club/club_management_vm/club_members_state.dart
-
 import '../../../../domain/entities/club/club.dart';
 import '../../../../domain/entities/club/club_member.dart';
+import '../../../../domain/entities/club/club_role_item.dart';
 import '../../../../domain/exceptions/app_exception.dart';
 
 class ClubMembersState {
   final Club? club;
   final List<ClubMember> members;
+  final List<ClubRoleItem> roles;
+  final List<ClubRolePermission> availablePermissions;
   final bool isLoading;
   final bool isActionLoading;
+  final bool isLoadingRoles;
   final AppException? error;
   final String? successMessage;
   final String searchQuery;
@@ -16,8 +18,11 @@ class ClubMembersState {
   const ClubMembersState({
     this.club,
     this.members = const [],
+    this.roles = const [],
+    this.availablePermissions = const [],
     this.isLoading = false,
     this.isActionLoading = false,
+    this.isLoadingRoles = false,
     this.error,
     this.successMessage,
     this.searchQuery = '',
@@ -38,8 +43,11 @@ class ClubMembersState {
   ClubMembersState copyWith({
     Club? club,
     List<ClubMember>? members,
+    List<ClubRoleItem>? roles,
+    List<ClubRolePermission>? availablePermissions,
     bool? isLoading,
     bool? isActionLoading,
+    bool? isLoadingRoles,
     AppException? error,
     bool clearError = false,
     String? successMessage,
@@ -49,8 +57,11 @@ class ClubMembersState {
     return ClubMembersState(
       club: club ?? this.club,
       members: members ?? this.members,
+      roles: roles ?? this.roles,
+      availablePermissions: availablePermissions ?? this.availablePermissions,
       isLoading: isLoading ?? this.isLoading,
       isActionLoading: isActionLoading ?? this.isActionLoading,
+      isLoadingRoles: isLoadingRoles ?? this.isLoadingRoles,
       error: clearError ? null : (error ?? this.error),
       successMessage: clearSuccess ? null : (successMessage ?? this.successMessage),
       searchQuery: searchQuery ?? this.searchQuery,

@@ -515,6 +515,8 @@ class _ClubItemCard extends StatelessWidget {
     switch (role) {
       case ClubRole.host:
         return const Color(0xFF9333EA); // Purple
+      case ClubRole.deputy:
+        return const Color(0xFF2563EB); // Blue
       case ClubRole.treasurer:
         return const Color(0xFFD97706); // Amber
       case ClubRole.member:

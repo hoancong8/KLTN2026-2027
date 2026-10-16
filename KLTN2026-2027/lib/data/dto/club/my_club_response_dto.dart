@@ -7,6 +7,8 @@ class MyClubResponseDto {
   final String? description;
   final String? avatarUrl;
   final dynamic role;
+  final String? roleName;
+  final String? roleId;
   final dynamic status;
   final String? joinedAt;
 
@@ -17,6 +19,8 @@ class MyClubResponseDto {
     this.description,
     this.avatarUrl,
     required this.role,
+    this.roleName,
+    this.roleId,
     required this.status,
     this.joinedAt,
   });
@@ -30,18 +34,26 @@ class MyClubResponseDto {
         description: null,
         avatarUrl: null,
         role: 1,
+        roleName: null,
+        roleId: null,
         status: 1,
         joinedAt: null,
       );
     }
 
+    final roleName = rawJson['roleName']?.toString();
+    final roleId = rawJson['roleId']?.toString();
+    final role = rawJson['role'] ?? roleName ?? roleId;
+
     return MyClubResponseDto(
-      clubId: rawJson['clubId']?.toString() ?? '',
-      clubName: rawJson['clubName']?.toString() ?? '',
-      clubCode: rawJson['clubCode']?.toString() ?? '',
+      clubId: (rawJson['clubId'] ?? rawJson['groupId'])?.toString() ?? '',
+      clubName: (rawJson['clubName'] ?? rawJson['groupName'])?.toString() ?? '',
+      clubCode: (rawJson['clubCode'] ?? rawJson['code'])?.toString() ?? '',
       description: rawJson['description']?.toString(),
       avatarUrl: rawJson['avatarUrl']?.toString(),
-      role: rawJson['role'],
+      role: role,
+      roleName: roleName,
+      roleId: roleId,
       status: rawJson['status'],
       joinedAt: rawJson['joinedAt']?.toString(),
     );

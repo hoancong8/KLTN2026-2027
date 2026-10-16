@@ -52,6 +52,8 @@ abstract class ClubRepository {
   Future<ActiveClubContext> switchClubContext(String clubId);
 
   // --- Club Roles (FR03) ---
+  Future<List<ClubRolePermission>> getClubPermissions();
+
   Future<List<ClubRoleItem>> getClubRoles(String clubId);
 
   Future<String> createClubRole({

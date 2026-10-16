@@ -11,6 +11,8 @@ class ClubMember {
   final String? userName;
   final String? email;
   final ClubRole role;
+  final String? roleName;
+  final String? roleId;
   final ClubMemberStatus status;
   final String? nickname;
   final DateTime? joinedAt;
@@ -22,6 +24,8 @@ class ClubMember {
     this.userName,
     this.email,
     required this.role,
+    this.roleName,
+    this.roleId,
     required this.status,
     this.nickname,
     this.joinedAt,

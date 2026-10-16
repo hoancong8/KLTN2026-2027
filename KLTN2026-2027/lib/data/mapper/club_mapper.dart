@@ -30,7 +30,9 @@ class ClubMapper {
       clubCode: dto.clubCode,
       description: dto.description,
       avatarUrl: dto.avatarUrl,
-      role: ClubRole.fromValue(dto.role),
+      role: ClubRole.fromValue(dto.role ?? dto.roleName),
+      roleName: dto.roleName,
+      roleId: dto.roleId,
       status: ClubMemberStatus.fromValue(dto.status),
       joinedAt: dto.joinedAt != null ? DateTime.tryParse(dto.joinedAt!) : null,
     );
@@ -43,7 +45,9 @@ class ClubMapper {
       userId: dto.userId,
       userName: dto.userName,
       email: dto.email,
-      role: ClubRole.fromValue(dto.role),
+      role: ClubRole.fromValue(dto.role ?? dto.roleName),
+      roleName: dto.roleName,
+      roleId: dto.roleId,
       status: ClubMemberStatus.fromValue(dto.status),
       nickname: dto.nickname,
       joinedAt: dto.joinedAt != null ? DateTime.tryParse(dto.joinedAt!) : null,
@@ -55,7 +59,7 @@ class ClubMapper {
       accessToken: dto.accessToken,
       clubId: dto.clubId,
       clubName: dto.clubName,
-      role: ClubRole.fromValue(dto.role),
+      role: ClubRole.fromValue(dto.role ?? dto.roleName),
       permissions: dto.permissions,
     );
   }

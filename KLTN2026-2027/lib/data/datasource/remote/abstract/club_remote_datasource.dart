@@ -33,6 +33,8 @@ abstract class ClubRemoteDatasource {
   Future<SwitchClubResponseDto> switchContext(String clubId);
 
   // --- Club Roles ---
+  Future<List<ClubRolePermissionItemDto>> getClubPermissions();
+
   Future<List<ClubRoleResponseDto>> getClubRoles(String clubId);
 
   Future<String> createClubRole(String clubId, CreateClubRoleRequestDto request);

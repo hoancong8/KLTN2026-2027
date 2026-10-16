@@ -17,6 +17,8 @@ import '../data/repositories/token_storage_repository_impl.dart';
 import '../domain/repositories/auth_repository.dart';
 import '../domain/repositories/token_storage_repository.dart';
 import '../domain/services/i_biometric_service.dart';
+import '../domain/services/i_location_service.dart';
+import '../data/services/location_service_impl.dart';
 import '../domain/usecases/auth/change_password_usecase.dart';
 import '../domain/usecases/auth/login_usecase.dart';
 import '../domain/usecases/auth/refresh_token_usecase.dart';
@@ -97,6 +99,7 @@ import '../data/datasource/remote/abstract/session_remote_datasource.dart';
 import '../data/datasource/remote/implement/session_remote_datasource_impl.dart';
 import '../domain/repositories/session_repository.dart';
 import '../data/repositories/session_repository_impl.dart';
+import '../domain/usecases/session/get_my_bookings_usecase.dart';
 import '../domain/usecases/session/session_usecases.dart';
 
 // ============================================================================
@@ -195,6 +198,11 @@ final homeTabProvider = StateProvider<int>((ref) => 0);
 /// BiometricService provider
 final biometricServiceProvider = Provider<IBiometricService>((ref) {
   return BiometricService();
+});
+
+/// LocationService provider
+final locationServiceProvider = Provider<ILocationService>((ref) {
+  return LocationServiceImpl();
 });
 
 // ============================================================================
@@ -471,6 +479,10 @@ final switchClubContextUseCaseProvider = Provider<SwitchClubContextUseCase>((ref
 });
 
 // Club Roles UseCases
+final getClubPermissionsUseCaseProvider = Provider<GetClubPermissionsUseCase>((ref) {
+  return GetClubPermissionsUseCase(ref.watch(clubRepositoryProvider));
+});
+
 final getClubRolesUseCaseProvider = Provider<GetClubRolesUseCase>((ref) {
   return GetClubRolesUseCase(ref.watch(clubRepositoryProvider));
 });
@@ -579,6 +591,10 @@ final getSessionBookingsUseCaseProvider = Provider<GetSessionBookingsUseCase>((r
 
 final getMyBookingUseCaseProvider = Provider<GetMyBookingUseCase>((ref) {
   return GetMyBookingUseCase(ref.watch(sessionRepositoryProvider));
+});
+
+final getMyBookingsUseCaseProvider = Provider<GetMyBookingsUseCase>((ref) {
+  return GetMyBookingsUseCase(ref.watch(sessionRepositoryProvider));
 });
 
 final createRecruitmentUseCaseProvider = Provider<CreateRecruitmentUseCase>((ref) {

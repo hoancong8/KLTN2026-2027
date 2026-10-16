@@ -142,6 +142,16 @@ class ClubRemoteDatasourceImpl extends BaseRemoteDatasource implements ClubRemot
 
   // --- Club Roles ---
   @override
+  Future<List<ClubRolePermissionItemDto>> getClubPermissions() async {
+    try {
+      final response = await dio.get(AppConfig.clubPermissionsPath);
+      return handleListResponse(response, (item) => ClubRolePermissionItemDto.fromJson(item));
+    } catch (e) {
+      throw handleError(e);
+    }
+  }
+
+  @override
   Future<List<ClubRoleResponseDto>> getClubRoles(String clubId) async {
     try {
       final response = await dio.get(

@@ -1,6 +1,7 @@
 // lib/domain/repositories/session_repository.dart
 
 import '../entities/session/guest_recruitment.dart';
+import '../entities/session/my_booking_item.dart';
 import '../entities/session/session.dart';
 import '../entities/session/session_booking.dart';
 import '../entities/session/session_detail.dart';
@@ -45,6 +46,8 @@ abstract class SessionRepository {
   Future<List<SessionBooking>> getSessionBookings(String sessionId);
 
   Future<SessionBooking?> getMyBooking(String sessionId);
+
+  Future<List<MyBookingItem>> getMyBookings();
 
   Future<String> createRecruitment({
     required String sessionId,

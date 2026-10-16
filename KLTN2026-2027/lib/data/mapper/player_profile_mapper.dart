@@ -31,7 +31,7 @@ class PlayerProfileMapper {
       fullName: fullName,
       gender: gender,
       avatarUrl: avatarUrl,
-      skillLevel: skillLevel.code,
+      skillLevel: skillLevel.level,
       isOpenForGuest: isOpenForGuest,
     );
   }

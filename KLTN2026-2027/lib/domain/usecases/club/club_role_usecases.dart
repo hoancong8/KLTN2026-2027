@@ -3,6 +3,13 @@
 import '../../entities/club/club_role_item.dart';
 import '../../repositories/club_repository.dart';
 
+class GetClubPermissionsUseCase {
+  final ClubRepository repository;
+  GetClubPermissionsUseCase(this.repository);
+
+  Future<List<ClubRolePermission>> execute() => repository.getClubPermissions();
+}
+
 class GetClubRolesUseCase {
   final ClubRepository repository;
   GetClubRolesUseCase(this.repository);

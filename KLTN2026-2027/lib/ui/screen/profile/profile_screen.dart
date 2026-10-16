@@ -637,6 +637,9 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
     _gender = widget.profile.gender;
     _skillLevel = widget.profile.skillLevel;
     _isOpenForGuest = widget.profile.isOpenForGuest;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(profileViewModelProvider.notifier).clearMessages();
+    });
   }
 
   @override
@@ -791,7 +794,30 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
                 value: _isOpenForGuest,
                 onChanged: (val) => setState(() => _isOpenForGuest = val),
               ),
-              const SizedBox(height: 20),
+              if (state.error != null) ...[
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: AppColor.cError.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: AppColor.cError.withValues(alpha: 0.3)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.error_outline_rounded, color: AppColor.cError, size: 20),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          state.error!.getDisplayMessage(context.l10n),
+                          style: const TextStyle(color: AppColor.cError, fontSize: 13, fontWeight: FontWeight.w500),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ],
 
               // Save Button
               SizedBox(

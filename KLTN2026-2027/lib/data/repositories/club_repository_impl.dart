@@ -83,7 +83,37 @@ class ClubRepositoryImpl implements ClubRepository {
     required String userId,
     required ClubRole role,
   }) async {
-    final request = UpdateMemberRoleRequestDto(role: role.value);
+    String? roleId;
+    try {
+      final roles = await remoteDatasource.getClubRoles(clubId);
+      final matched = roles.where((r) {
+        final lower = r.roleName.toLowerCase();
+        switch (role) {
+          case ClubRole.host:
+            return r.isHostRole || lower.contains('host');
+          case ClubRole.deputy:
+            return lower.contains('phó') || lower.contains('deputy');
+          case ClubRole.treasurer:
+            return lower.contains('thủ quỹ') || lower.contains('quỹ') || lower.contains('treasurer');
+          case ClubRole.guest:
+            return lower.contains('khách') || lower.contains('guest');
+          case ClubRole.member:
+            return r.isDefault || lower.contains('thành viên') || lower.contains('member');
+        }
+      }).toList();
+
+      if (matched.isNotEmpty) {
+        roleId = matched.first.id;
+      }
+    } catch (_) {
+      // Fallback to role code if getClubRoles fails
+    }
+
+    final request = UpdateMemberRoleRequestDto(
+      role: role.value,
+      roleId: roleId,
+      roleName: role.displayName,
+    );
     return remoteDatasource.updateMemberRole(clubId, userId, request);
   }
 
@@ -102,6 +132,19 @@ class ClubRepositoryImpl implements ClubRepository {
   }
 
   // --- Club Roles ---
+  @override
+  Future<List<ClubRolePermission>> getClubPermissions() async {
+    final dtos = await remoteDatasource.getClubPermissions();
+    return dtos
+        .map((p) => ClubRolePermission(
+              id: p.id,
+              code: p.code,
+              name: p.name,
+              moduleGroup: p.moduleGroup,
+            ))
+        .toList();
+  }
+
   @override
   Future<List<ClubRoleItem>> getClubRoles(String clubId) async {
     final dtos = await remoteDatasource.getClubRoles(clubId);
