@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import '../../../../app/provider.dart';
 import '../../../../domain/entities/club/club_detail.dart';
@@ -8,11 +9,13 @@ import '../../../../domain/usecases/club/join_request_usecases.dart';
 import '../../../../domain/usecases/club/switch_club_context_usecase.dart';
 import '../../../../domain/usecases/club/update_club_info_usecase.dart';
 import '../../../../domain/usecases/club/update_club_schedules_usecase.dart';
+import '../../club/club_vm/club_context_vm.dart';
 import 'club_detail_state.dart';
 
 final clubDetailViewModelProvider = StateNotifierProvider.autoDispose
     .family<ClubDetailViewModel, ClubDetailState, String>((ref, clubId) {
   return ClubDetailViewModel(
+    ref: ref,
     clubId: clubId,
     getClubDetailUseCase: ref.watch(getClubDetailUseCaseProvider),
     createJoinRequestUseCase: ref.watch(createJoinRequestUseCaseProvider),
@@ -23,6 +26,7 @@ final clubDetailViewModelProvider = StateNotifierProvider.autoDispose
 });
 
 class ClubDetailViewModel extends StateNotifier<ClubDetailState> {
+  final Ref ref;
   final String clubId;
   final GetClubDetailUseCase getClubDetailUseCase;
   final CreateJoinRequestUseCase createJoinRequestUseCase;
@@ -31,6 +35,7 @@ class ClubDetailViewModel extends StateNotifier<ClubDetailState> {
   final UpdateClubSchedulesUseCase updateClubSchedulesUseCase;
 
   ClubDetailViewModel({
+    required this.ref,
     required this.clubId,
     required this.getClubDetailUseCase,
     required this.createJoinRequestUseCase,
@@ -81,9 +86,9 @@ class ClubDetailViewModel extends StateNotifier<ClubDetailState> {
   Future<bool> switchContext() async {
     state = state.copyWith(isSubmitting: true, error: null);
     try {
-      await switchClubContextUseCase.execute(clubId);
+      final success = await ref.read(clubContextViewModelProvider.notifier).switchClub(clubId);
       state = state.copyWith(isSubmitting: false);
-      return true;
+      return success;
     } on AppException catch (e) {
       state = state.copyWith(isSubmitting: false, error: e);
       return false;

@@ -40,8 +40,9 @@ class ExploreRecruitmentsViewModel extends StateNotifier<ExploreRecruitmentsStat
         longitude: loc.longitude,
         isLocating: false,
       );
-      await explore();
     } catch (_) {
+      state = state.copyWith(isLocating: false);
+    } finally {
       state = state.copyWith(isLocating: false);
       await explore();
     }
@@ -69,6 +70,10 @@ class ExploreRecruitmentsViewModel extends StateNotifier<ExploreRecruitmentsStat
       state = state.copyWith(isLoading: false, recruitments: results);
     } catch (e) {
       state = state.copyWith(isLoading: false, errorMessage: e.toString());
+    } finally {
+      if (state.isLoading) {
+        state = state.copyWith(isLoading: false);
+      }
     }
   }
 

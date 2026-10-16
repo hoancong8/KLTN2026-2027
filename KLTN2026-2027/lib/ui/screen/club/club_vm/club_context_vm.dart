@@ -168,6 +168,13 @@ class ClubContextViewModel extends StateNotifier<ClubContextState> {
     required String name,
     String? description,
     String? avatarUrl,
+    String? fixedVenueName,
+    String? fixedAddress,
+    double? lat,
+    double? lng,
+    int? minSkillLevel,
+    int? maxSkillLevel,
+    List<dynamic>? schedules,
   }) async {
     state = state.copyWith(isLoading: true, clearError: true, clearSuccess: true);
     try {
@@ -175,6 +182,13 @@ class ClubContextViewModel extends StateNotifier<ClubContextState> {
         name: name,
         description: description,
         avatarUrl: avatarUrl,
+        fixedVenueName: fixedVenueName,
+        fixedAddress: fixedAddress,
+        lat: lat,
+        lng: lng,
+        minSkillLevel: minSkillLevel,
+        maxSkillLevel: maxSkillLevel,
+        schedules: schedules,
       ));
 
       await loadMyClubs();

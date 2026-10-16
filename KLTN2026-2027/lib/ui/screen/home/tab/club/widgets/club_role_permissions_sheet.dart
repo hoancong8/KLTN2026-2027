@@ -321,12 +321,28 @@ class _ClubRolePermissionsSheetState extends ConsumerState<ClubRolePermissionsSh
                     child: Center(child: CircularProgressIndicator(color: AppColor.cMain)),
                   )
                 : roles.isEmpty
-                    ? const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 30),
+                    ? Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 30),
                         child: Center(
-                          child: Text(
-                            'Chưa có dữ liệu vai trò nội bộ',
-                            style: TextStyle(color: AppColor.cMuted, fontSize: 13),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                state.error != null
+                                    ? 'Không thể tải vai trò: ${state.error?.message}'
+                                    : 'Chưa có dữ liệu vai trò nội bộ',
+                                style: const TextStyle(color: AppColor.cMuted, fontSize: 13),
+                                textAlign: TextAlign.center,
+                              ),
+                              if (state.error != null) ...[
+                                const SizedBox(height: 12),
+                                TextButton.icon(
+                                  onPressed: widget.vm.loadRolesAndPermissions,
+                                  icon: const Icon(Icons.refresh_rounded, size: 16),
+                                  label: const Text('Thử lại'),
+                                ),
+                              ],
+                            ],
                           ),
                         ),
                       )

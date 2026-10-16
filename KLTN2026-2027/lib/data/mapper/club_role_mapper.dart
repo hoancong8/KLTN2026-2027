@@ -19,6 +19,7 @@ class ClubRoleMapper {
                 code: p.code,
                 name: p.name,
                 moduleGroup: p.moduleGroup,
+                description: p.description,
               ))
           .toList(),
     );

@@ -5,12 +5,14 @@ class ClubRolePermissionItemDto {
   final String code;
   final String name;
   final String moduleGroup;
+  final String? description;
 
   ClubRolePermissionItemDto({
     required this.id,
     required this.code,
     required this.name,
     required this.moduleGroup,
+    this.description,
   });
 
   factory ClubRolePermissionItemDto.fromJson(Map<String, dynamic> json) {
@@ -19,6 +21,7 @@ class ClubRolePermissionItemDto {
       code: (json['code'] as String?) ?? '',
       name: (json['name'] as String?) ?? '',
       moduleGroup: (json['moduleGroup'] as String?) ?? '',
+      description: json['description']?.toString(),
     );
   }
 }

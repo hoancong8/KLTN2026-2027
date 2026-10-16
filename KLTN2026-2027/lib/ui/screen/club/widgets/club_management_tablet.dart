@@ -4,9 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/consts/app_color.dart';
+import '../../../../domain/enums/club_role.dart';
 import '../../../../widget/club_switcher_dialog.dart';
 import '../club_management_vm/club_members_vm.dart';
 import '../club_vm/club_context_vm.dart';
+import '../role_management/club_role_management_screen.dart';
 import 'member_card.dart';
 
 class ClubManagementTablet extends ConsumerWidget {
@@ -143,6 +145,24 @@ class ClubManagementTablet extends ConsumerWidget {
                               const SizedBox(height: 16),
                             ],
                             const Spacer(),
+                            if (activeContext.role == ClubRole.host ||
+                                activeContext.role.displayName.toLowerCase().contains('host')) ...[
+                              SizedBox(
+                                width: double.infinity,
+                                child: ElevatedButton.icon(
+                                  icon: const Icon(Icons.shield_rounded, size: 18),
+                                  label: const Text('Vai trò & Phân quyền', style: TextStyle(fontWeight: FontWeight.bold)),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFF9333EA),
+                                    foregroundColor: Colors.white,
+                                    padding: const EdgeInsets.symmetric(vertical: 12),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                  ),
+                                  onPressed: () => ClubRoleManagementScreen.show(context, clubId: activeContext.clubId),
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                            ],
                             SizedBox(
                               width: double.infinity,
                               child: OutlinedButton.icon(

@@ -19,6 +19,7 @@ import '../dto/club/create_club_role_request_dto.dart';
 import '../dto/club/create_join_request_dto.dart';
 import '../dto/club/join_club_request_dto.dart';
 import '../dto/club/my_club_response_dto.dart';
+import '../dto/club/update_club_schedules_request_dto.dart';
 import '../dto/club/update_member_role_request_dto.dart';
 import '../mapper/club_detail_mapper.dart';
 import '../mapper/club_mapper.dart';
@@ -48,11 +49,35 @@ class ClubRepositoryImpl implements ClubRepository {
     required String name,
     String? description,
     String? avatarUrl,
+    String? fixedVenueName,
+    String? fixedAddress,
+    double? lat,
+    double? lng,
+    int? minSkillLevel,
+    int? maxSkillLevel,
+    List<dynamic>? schedules,
   }) async {
+    final List<ClubScheduleItemRequestDto>? scheduleDtos = schedules?.map<ClubScheduleItemRequestDto>((s) {
+      if (s is ClubScheduleItemRequestDto) return s;
+      final map = s as Map<String, dynamic>;
+      return ClubScheduleItemRequestDto(
+        dayOfWeek: map['dayOfWeek'] as int? ?? 1,
+        startTime: map['startTime']?.toString() ?? '18:00',
+        endTime: map['endTime']?.toString() ?? '20:00',
+      );
+    }).toList();
+
     final request = CreateClubRequestDto(
       name: name,
       description: description,
       avatarUrl: avatarUrl,
+      fixedVenueName: fixedVenueName,
+      fixedAddress: fixedAddress,
+      lat: lat,
+      lng: lng,
+      minSkillLevel: minSkillLevel,
+      maxSkillLevel: maxSkillLevel,
+      schedules: scheduleDtos,
     );
     return remoteDatasource.createClub(request);
   }

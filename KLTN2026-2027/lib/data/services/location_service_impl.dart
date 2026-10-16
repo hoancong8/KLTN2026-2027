@@ -12,15 +12,24 @@ class LocationServiceImpl implements ILocationService {
   @override
   Future<({double latitude, double longitude})> getCurrentLocation() async {
     try {
-      final serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      final serviceEnabled = await Geolocator.isLocationServiceEnabled().timeout(
+        const Duration(seconds: 2),
+        onTimeout: () => false,
+      );
       if (!serviceEnabled) {
         debugPrint('[LocationService] Dịch vụ định vị chưa bật. Dùng tọa độ mặc định TP.HCM.');
         return (latitude: defaultLat, longitude: defaultLng);
       }
 
-      var permission = await Geolocator.checkPermission();
+      var permission = await Geolocator.checkPermission().timeout(
+        const Duration(seconds: 2),
+        onTimeout: () => LocationPermission.denied,
+      );
       if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
+        permission = await Geolocator.requestPermission().timeout(
+          const Duration(seconds: 3),
+          onTimeout: () => LocationPermission.denied,
+        );
         if (permission == LocationPermission.denied) {
           debugPrint('[LocationService] Quyền định vị bị từ chối. Dùng tọa độ mặc định.');
           return (latitude: defaultLat, longitude: defaultLng);
@@ -32,18 +41,23 @@ class LocationServiceImpl implements ILocationService {
         return (latitude: defaultLat, longitude: defaultLng);
       }
 
-      // Lấy vị trí với timeout 6 giây để không chặn UI quá lâu nếu GPS yếu
+      // Lấy vị trí với timeout 3 giây bằng Dart Future.timeout để không bị treo trên Web/Emulators
       final position = await Geolocator.getCurrentPosition(
         locationSettings: const LocationSettings(
           accuracy: LocationAccuracy.medium,
-          timeLimit: Duration(seconds: 6),
         ),
+      ).timeout(
+        const Duration(seconds: 3),
+        onTimeout: () {
+          debugPrint('[LocationService] Quá thời gian chờ GPS (timeout). Dùng tọa độ mặc định TP.HCM.');
+          throw Exception('Location Timeout');
+        },
       );
 
       debugPrint('[LocationService] Lấy tọa độ GPS thành công: (${position.latitude}, ${position.longitude})');
       return (latitude: position.latitude, longitude: position.longitude);
     } catch (e) {
-      debugPrint('[LocationService] Lỗi khi lấy GPS: $e. Fallback về tọa độ mặc định.');
+      debugPrint('[LocationService] Lỗi hoặc timeout khi lấy GPS: $e. Fallback về tọa độ mặc định TP.HCM.');
       return (latitude: defaultLat, longitude: defaultLng);
     }
   }

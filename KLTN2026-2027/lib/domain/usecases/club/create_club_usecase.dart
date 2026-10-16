@@ -6,11 +6,25 @@ class CreateClubParams {
   final String name;
   final String? description;
   final String? avatarUrl;
+  final String? fixedVenueName;
+  final String? fixedAddress;
+  final double? lat;
+  final double? lng;
+  final int? minSkillLevel;
+  final int? maxSkillLevel;
+  final List<dynamic>? schedules;
 
   const CreateClubParams({
     required this.name,
     this.description,
     this.avatarUrl,
+    this.fixedVenueName,
+    this.fixedAddress,
+    this.lat,
+    this.lng,
+    this.minSkillLevel,
+    this.maxSkillLevel,
+    this.schedules,
   });
 }
 
@@ -24,6 +38,13 @@ class CreateClubUseCase {
       name: params.name,
       description: params.description,
       avatarUrl: params.avatarUrl,
+      fixedVenueName: params.fixedVenueName,
+      fixedAddress: params.fixedAddress,
+      lat: params.lat,
+      lng: params.lng,
+      minSkillLevel: params.minSkillLevel,
+      maxSkillLevel: params.maxSkillLevel,
+      schedules: params.schedules,
     );
   }
 }

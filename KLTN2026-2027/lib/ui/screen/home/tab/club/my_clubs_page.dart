@@ -7,6 +7,8 @@ import '../../../../../app/consts/app_color.dart';
 import '../../../../../app/consts/app_config.dart';
 import '../../../../../domain/entities/club/my_club.dart';
 import '../../../../../domain/enums/club_role.dart';
+import '../../../../../domain/enums/session_enums.dart';
+import '../../../club/club_management_vm/club_members_vm.dart';
 import '../../../club/club_vm/club_context_state.dart';
 import '../../../club/club_vm/club_context_vm.dart';
 import 'widgets/club_detail_view.dart';
@@ -28,6 +30,14 @@ class _MyClubsPageState extends ConsumerState<MyClubsPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(clubContextViewModelProvider.notifier).loadMyClubs();
     });
+  }
+
+  Future<void> _switchSelectedClub(String clubId, ClubContextViewModel vm) async {
+    setState(() => _selectedClubId = clubId);
+    final ok = await vm.switchClub(clubId);
+    if (ok && mounted) {
+      ref.read(clubMembersViewModelProvider.notifier).loadForClub(clubId);
+    }
   }
 
   void _showAddOrJoinSheet(BuildContext context, ClubContextViewModel vm) {
@@ -244,8 +254,8 @@ class _MyClubsPageState extends ConsumerState<MyClubsPage> {
                       borderRadius: BorderRadius.circular(14),
                       child: InkWell(
                         onTap: () {
-                          setState(() => _selectedClubId = club.clubId);
                           Navigator.of(ctx).pop();
+                          _switchSelectedClub(club.clubId, vm);
                         },
                         borderRadius: BorderRadius.circular(14),
                         child: Padding(
@@ -342,107 +352,6 @@ class _MyClubsPageState extends ConsumerState<MyClubsPage> {
   void _showJoinClubDialog(BuildContext context, ClubContextViewModel vm) {
     final codeController = TextEditingController();
     final nicknameController = TextEditingController();
-    ClubRole selectedRole = ClubRole.member;
-
-    showDialog(
-      context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setState) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: const Row(
-            children: [
-              Icon(Icons.tag_rounded, color: Color(0xFF0284C7)),
-              SizedBox(width: 8),
-              Text('Tham Gia Bằng Mã Code', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            ],
-          ),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('Mã câu lạc bộ (Code) *', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
-                const SizedBox(height: 6),
-                TextField(
-                  controller: codeController,
-                  textCapitalization: TextCapitalization.characters,
-                  decoration: InputDecoration(
-                    prefixIcon: const Icon(Icons.tag_rounded, color: AppColor.cMuted),
-                    hintText: 'Ví dụ: CLB-8839',
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                  ),
-                ),
-                const SizedBox(height: 14),
-                const Text('Biệt danh thi đấu (Nickname)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
-                const SizedBox(height: 6),
-                TextField(
-                  controller: nicknameController,
-                  decoration: InputDecoration(
-                    prefixIcon: const Icon(Icons.person_outline_rounded, color: AppColor.cMuted),
-                    hintText: 'Tùy chọn (ví dụ: Hoàng Smash)',
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                  ),
-                ),
-                const SizedBox(height: 14),
-                const Text('Vai trò mong muốn', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
-                const SizedBox(height: 6),
-                DropdownButtonFormField<ClubRole>(
-                  initialValue: selectedRole,
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                  ),
-                  items: [ClubRole.member, ClubRole.guest].map((role) {
-                    return DropdownMenuItem(value: role, child: Text(role.displayName));
-                  }).toList(),
-                  onChanged: (val) {
-                    if (val != null) setState(() => selectedRole = val);
-                  },
-                ),
-              ],
-            ),
-          ),
-          actionsPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop(),
-              child: const Text('Hủy', style: TextStyle(color: AppColor.cMuted)),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF0284C7),
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-              ),
-              onPressed: () async {
-                final code = codeController.text.trim();
-                if (code.isEmpty) return;
-                Navigator.of(ctx).pop();
-                final ok = await vm.joinClub(
-                  clubCode: code,
-                  role: selectedRole,
-                  nickname: nicknameController.text.trim().isNotEmpty ? nicknameController.text.trim() : null,
-                );
-                if (ok && context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Đã gửi yêu cầu tham gia nhóm thành công!'), backgroundColor: AppColor.cGreen),
-                  );
-                }
-              },
-              child: const Text('Gửi yêu cầu', style: TextStyle(fontWeight: FontWeight.bold)),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _showCreateClubDialog(BuildContext context, ClubContextViewModel vm) {
-    final nameController = TextEditingController();
-    final descController = TextEditingController();
 
     showDialog(
       context: context,
@@ -450,9 +359,9 @@ class _MyClubsPageState extends ConsumerState<MyClubsPage> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Row(
           children: [
-            Icon(Icons.add_business_rounded, color: AppColor.cMain),
+            Icon(Icons.tag_rounded, color: Color(0xFF0284C7)),
             SizedBox(width: 8),
-            Text('Tạo Câu Lạc Bộ Mới', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            Text('Tham Gia Bằng Mã Code', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           ],
         ),
         content: SingleChildScrollView(
@@ -460,26 +369,48 @@ class _MyClubsPageState extends ConsumerState<MyClubsPage> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Tên câu lạc bộ *', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF0FDF4),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFFBBF7D0)),
+                ),
+                child: const Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(Icons.how_to_reg_rounded, color: Color(0xFF16A34A), size: 20),
+                    SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        'Yêu cầu của bạn sẽ được gửi vào danh sách duyệt đơn của Host và Ban quản trị. Sau khi được duyệt, bạn sẽ là Thành viên chính thức của nhóm.',
+                        style: TextStyle(fontSize: 12, color: Color(0xFF15803D), height: 1.4),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Text('Mã câu lạc bộ (Code) *', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
               const SizedBox(height: 6),
               TextField(
-                controller: nameController,
+                controller: codeController,
+                textCapitalization: TextCapitalization.characters,
                 decoration: InputDecoration(
-                  prefixIcon: const Icon(Icons.groups_rounded, color: AppColor.cMuted),
-                  hintText: 'Ví dụ: CLB Cầu Lông Thủ Đức',
+                  prefixIcon: const Icon(Icons.tag_rounded, color: AppColor.cMuted),
+                  hintText: 'Ví dụ: CLB-E22A0E',
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                 ),
               ),
               const SizedBox(height: 14),
-              const Text('Mô tả nhóm', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+              const Text('Biệt danh thi đấu (Nickname)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
               const SizedBox(height: 6),
               TextField(
-                controller: descController,
-                maxLines: 2,
+                controller: nicknameController,
                 decoration: InputDecoration(
-                  prefixIcon: const Icon(Icons.notes_rounded, color: AppColor.cMuted),
-                  hintText: 'Lịch sinh hoạt cố định, đối tượng...',
+                  prefixIcon: const Icon(Icons.person_outline_rounded, color: AppColor.cMuted),
+                  hintText: 'Tùy chọn (ví dụ: Hoàng Smash)',
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                 ),
@@ -495,31 +426,284 @@ class _MyClubsPageState extends ConsumerState<MyClubsPage> {
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColor.cMain,
+              backgroundColor: const Color(0xFF0284C7),
               foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             ),
             onPressed: () async {
-              final name = nameController.text.trim();
-              if (name.isEmpty) return;
+              final code = codeController.text.trim();
+              if (code.isEmpty) return;
               Navigator.of(ctx).pop();
-              final ok = await vm.createClub(
-                name: name,
-                description: descController.text.trim().isNotEmpty ? descController.text.trim() : null,
+              final ok = await vm.joinClub(
+                clubCode: code,
+                role: ClubRole.member,
+                nickname: nicknameController.text.trim().isNotEmpty ? nicknameController.text.trim() : null,
               );
               if (ok && context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text('Tạo nhóm thành công! Bạn là Chủ nhóm (Host).'),
+                    content: Text('Đã gửi yêu cầu tham gia thành công! Vui lòng chờ Ban quản trị duyệt đơn.'),
                     backgroundColor: AppColor.cGreen,
                   ),
                 );
               }
             },
-            child: const Text('Tạo ngay', style: TextStyle(fontWeight: FontWeight.bold)),
+            child: const Text('Gửi đơn xin gia nhập', style: TextStyle(fontWeight: FontWeight.bold)),
           ),
         ],
+      ),
+    );
+  }
+
+  void _showCreateClubDialog(BuildContext context, ClubContextViewModel vm) {
+    final nameController = TextEditingController();
+    final descController = TextEditingController();
+    final venueController = TextEditingController();
+    final addressController = TextEditingController();
+    SkillLevel minLevel = SkillLevel.nb;
+    SkillLevel maxLevel = SkillLevel.k;
+    int fixedDay = 3; // Thứ 4
+    final startTimeController = TextEditingController(text: '19:00');
+    final endTimeController = TextEditingController(text: '21:00');
+    bool hasSchedule = false;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: const Row(
+            children: [
+              Icon(Icons.add_business_rounded, color: AppColor.cMain),
+              SizedBox(width: 8),
+              Text('Tạo Câu Lạc Bộ Mới', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            ],
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Tên câu lạc bộ *', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                const SizedBox(height: 6),
+                TextField(
+                  controller: nameController,
+                  decoration: InputDecoration(
+                    prefixIcon: const Icon(Icons.groups_rounded, color: AppColor.cMuted),
+                    hintText: 'Ví dụ: CLB Cầu Lông Chiến Binh',
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                const Text('Mô tả nhóm', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                const SizedBox(height: 6),
+                TextField(
+                  controller: descController,
+                  maxLines: 2,
+                  decoration: InputDecoration(
+                    prefixIcon: const Icon(Icons.notes_rounded, color: AppColor.cMuted),
+                    hintText: 'Mục tiêu giao lưu, đối tượng tham gia...',
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                const Text('Sân cố định & Địa chỉ', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                const SizedBox(height: 6),
+                TextField(
+                  controller: venueController,
+                  decoration: InputDecoration(
+                    prefixIcon: const Icon(Icons.stadium_outlined, color: AppColor.cMuted),
+                    hintText: 'Tên sân (Ví dụ: Sân Cầu Lông Kỳ Hòa)',
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: addressController,
+                  decoration: InputDecoration(
+                    prefixIcon: const Icon(Icons.location_on_outlined, color: AppColor.cMuted),
+                    hintText: 'Địa chỉ (Ví dụ: 238 Đường 3/2, Quận 10)',
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                const Text('Khoảng trình độ tuyển chọn', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    Expanded(
+                      child: DropdownButtonFormField<SkillLevel>(
+                        initialValue: minLevel,
+                        decoration: InputDecoration(
+                          labelText: 'Từ',
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                        ),
+                        items: SkillLevel.values.map((s) => DropdownMenuItem(value: s, child: Text(s.displayName, style: const TextStyle(fontSize: 12)))).toList(),
+                        onChanged: (val) {
+                          if (val != null) setDialogState(() => minLevel = val);
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: DropdownButtonFormField<SkillLevel>(
+                        initialValue: maxLevel,
+                        decoration: InputDecoration(
+                          labelText: 'Đến',
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                        ),
+                        items: SkillLevel.values.map((s) => DropdownMenuItem(value: s, child: Text(s.displayName, style: const TextStyle(fontSize: 12)))).toList(),
+                        onChanged: (val) {
+                          if (val != null) setDialogState(() => maxLevel = val);
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Checkbox(
+                      value: hasSchedule,
+                      activeColor: AppColor.cMain,
+                      onChanged: (val) => setDialogState(() => hasSchedule = val ?? false),
+                    ),
+                    const Text('Thiết lập lịch sinh hoạt cố định', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                  ],
+                ),
+                if (hasSchedule) ...[
+                  Row(
+                    children: [
+                      Expanded(
+                        child: DropdownButtonFormField<int>(
+                          initialValue: fixedDay,
+                          decoration: InputDecoration(
+                            labelText: 'Thứ',
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                          ),
+                          items: const [
+                            DropdownMenuItem(value: 1, child: Text('Thứ 2', style: TextStyle(fontSize: 12))),
+                            DropdownMenuItem(value: 2, child: Text('Thứ 3', style: TextStyle(fontSize: 12))),
+                            DropdownMenuItem(value: 3, child: Text('Thứ 4', style: TextStyle(fontSize: 12))),
+                            DropdownMenuItem(value: 4, child: Text('Thứ 5', style: TextStyle(fontSize: 12))),
+                            DropdownMenuItem(value: 5, child: Text('Thứ 6', style: TextStyle(fontSize: 12))),
+                            DropdownMenuItem(value: 6, child: Text('Thứ 7', style: TextStyle(fontSize: 12))),
+                            DropdownMenuItem(value: 0, child: Text('Chủ Nhật', style: TextStyle(fontSize: 12))),
+                          ],
+                          onChanged: (val) {
+                            if (val != null) setDialogState(() => fixedDay = val);
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: TextField(
+                          controller: startTimeController,
+                          decoration: InputDecoration(
+                            labelText: 'Bắt đầu',
+                            hintText: '19:00',
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: TextField(
+                          controller: endTimeController,
+                          decoration: InputDecoration(
+                            labelText: 'Kết thúc',
+                            hintText: '21:00',
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                ],
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF1F5F9),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Row(
+                    children: [
+                      Icon(Icons.shield_outlined, size: 16, color: AppColor.cMuted),
+                      SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Bạn sẽ là Host tối cao. Nhóm sẽ tự động khởi tạo 4 vai trò chuẩn: Phó nhóm, Thủ quỹ, Thành viên (Mặc định) và Khách vãng lai.',
+                          style: TextStyle(fontSize: 11, color: AppColor.cMuted, height: 1.3),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actionsPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text('Hủy', style: TextStyle(color: AppColor.cMuted)),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColor.cMain,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+              onPressed: () async {
+                final name = nameController.text.trim();
+                if (name.isEmpty) return;
+                Navigator.of(ctx).pop();
+
+                final schedulesList = hasSchedule
+                    ? [
+                        {
+                          'dayOfWeek': fixedDay,
+                          'startTime': startTimeController.text.trim().isNotEmpty ? startTimeController.text.trim() : '19:00',
+                          'endTime': endTimeController.text.trim().isNotEmpty ? endTimeController.text.trim() : '21:00',
+                        }
+                      ]
+                    : null;
+
+                final ok = await vm.createClub(
+                  name: name,
+                  description: descController.text.trim().isNotEmpty ? descController.text.trim() : null,
+                  fixedVenueName: venueController.text.trim().isNotEmpty ? venueController.text.trim() : null,
+                  fixedAddress: addressController.text.trim().isNotEmpty ? addressController.text.trim() : null,
+                  minSkillLevel: minLevel.level,
+                  maxSkillLevel: maxLevel.level,
+                  schedules: schedulesList,
+                );
+                if (ok && context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Tạo nhóm thành công! Bạn là Chủ nhóm (Host).'),
+                      backgroundColor: AppColor.cGreen,
+                    ),
+                  );
+                }
+              },
+              child: const Text('Tạo ngay', style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -532,10 +716,16 @@ class _MyClubsPageState extends ConsumerState<MyClubsPage> {
     final activeId = state.activeContext?.clubId;
     final isTablet = MediaQuery.of(context).size.width >= 700;
 
-    // Chọn CLB active hoặc CLB đầu tiên nếu chưa chọn
+    // Chọn CLB active hoặc CLB đầu tiên nếu chưa chọn và tự động switch context
     if (_selectedClubId == null && clubs.isNotEmpty) {
       final activeClub = clubs.where((c) => c.clubId == activeId).firstOrNull;
-      _selectedClubId = activeClub?.clubId ?? clubs.first.clubId;
+      final targetClub = activeClub ?? clubs.first;
+      _selectedClubId = targetClub.clubId;
+      if (activeId != targetClub.clubId) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _switchSelectedClub(targetClub.clubId, vm);
+        });
+      }
     }
 
     final selectedClub = clubs.where((c) => c.clubId == _selectedClubId).firstOrNull ??
@@ -622,7 +812,7 @@ class _MyClubsPageState extends ConsumerState<MyClubsPage> {
           preferredSize: Size.fromHeight(clubs.length > 1 ? 64 : 1),
           child: Column(
             children: [
-              if (clubs.length > 1) _buildHorizontalClubStrip(clubs, activeId),
+              if (clubs.length > 1) _buildHorizontalClubStrip(clubs, activeId, vm),
               Container(height: 1, color: const Color(0xFFE2E8F0)),
             ],
           ),
@@ -641,7 +831,7 @@ class _MyClubsPageState extends ConsumerState<MyClubsPage> {
   }
 
   /// Dải avatar ngang khi user tham gia nhiều hơn 1 CLB
-  Widget _buildHorizontalClubStrip(List<MyClub> clubs, String? activeId) {
+  Widget _buildHorizontalClubStrip(List<MyClub> clubs, String? activeId, ClubContextViewModel vm) {
     return Container(
       height: 60,
       color: Colors.white,
@@ -659,7 +849,7 @@ class _MyClubsPageState extends ConsumerState<MyClubsPage> {
               : 'CLB';
 
           return GestureDetector(
-            onTap: () => setState(() => _selectedClubId = club.clubId),
+            onTap: () => _switchSelectedClub(club.clubId, vm),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -728,9 +918,7 @@ class _MyClubsPageState extends ConsumerState<MyClubsPage> {
               clubs: clubs,
               selectedClubId: _selectedClubId,
               activeClubId: activeId,
-              onClubSelected: (club) {
-                setState(() => _selectedClubId = club.clubId);
-              },
+              onClubSelected: (club) => _switchSelectedClub(club.clubId, vm),
               onAddClubPressed: () => _showAddOrJoinSheet(context, vm),
             ),
             Expanded(

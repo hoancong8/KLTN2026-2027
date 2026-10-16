@@ -135,21 +135,49 @@ class ExploreRecruitmentsPage extends ConsumerWidget {
                 : RefreshIndicator(
                     onRefresh: vm.explore,
                     color: const Color(0xFF7C3AED),
-                    child: state.recruitments.isEmpty
-                        ? _buildEmptyState(context, vm)
-                        : ListView.separated(
-                            padding: const EdgeInsets.all(16),
-                            itemCount: state.recruitments.length,
-                            separatorBuilder: (_, _) => const SizedBox(height: 12),
-                            itemBuilder: (ctx, index) {
-                              final match = state.recruitments[index];
-                              return _RecruitmentCard(
-                                match: match,
-                                isJoining: state.isJoining,
-                                onJoin: () => _confirmJoin(context, vm, match),
-                              );
-                            },
-                          ),
+                    child: state.errorMessage != null && state.recruitments.isEmpty
+                        ? Center(
+                            child: Padding(
+                              padding: const EdgeInsets.all(24),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(Icons.error_outline_rounded, size: 48, color: Colors.orange),
+                                  const SizedBox(height: 12),
+                                  Text(
+                                    state.errorMessage!,
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(fontSize: 13, color: AppColor.cMuted),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  ElevatedButton.icon(
+                                    onPressed: vm.explore,
+                                    icon: const Icon(Icons.refresh_rounded, size: 18),
+                                    label: const Text('Thử lại'),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: const Color(0xFF7C3AED),
+                                      foregroundColor: Colors.white,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          )
+                        : state.recruitments.isEmpty
+                            ? _buildEmptyState(context, vm)
+                            : ListView.separated(
+                                padding: const EdgeInsets.all(16),
+                                itemCount: state.recruitments.length,
+                                separatorBuilder: (_, _) => const SizedBox(height: 12),
+                                itemBuilder: (ctx, index) {
+                                  final match = state.recruitments[index];
+                                  return _RecruitmentCard(
+                                    match: match,
+                                    isJoining: state.isJoining,
+                                    onJoin: () => _confirmJoin(context, vm, match),
+                                  );
+                                },
+                              ),
                   ),
           ),
         ],

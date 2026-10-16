@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../app/consts/app_color.dart';
+import '../../../app/provider.dart';
 import '../../../domain/entities/session/guest_recruitment.dart';
 import '../../../domain/entities/session/session.dart';
 import '../../../domain/entities/session/session_booking.dart';
@@ -696,8 +697,19 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
   }
 
   Widget _buildBottomActionBar(BuildContext context, Session session, bool isSubmitting) {
-    final isBooked = session.isBookedByCurrentUser;
-    final isConfirmed = session.currentUserBookingStatus == BookingStatus.confirmed;
+    final detail = ref.watch(sessionDetailViewModelProvider(widget.sessionId)).detail;
+    final currentUserId = ref.watch(currentUserProfileProvider)?.id ?? ref.watch(authTokenProvider)?.userId;
+
+    final isUserInConfirmed = currentUserId != null && detail != null &&
+        detail.confirmedPlayers.any((p) => p.userId.toLowerCase() == currentUserId.toLowerCase());
+    final isUserInWaiting = currentUserId != null && detail != null &&
+        detail.waitingQueue.any((p) => p.userId.toLowerCase() == currentUserId.toLowerCase());
+
+    final isBooked = session.isBookedByCurrentUser || isUserInConfirmed || isUserInWaiting;
+    final isConfirmed = session.currentUserBookingStatus == BookingStatus.confirmed || isUserInConfirmed;
+    final waitingOrder = session.currentUserQueueOrder > 0
+        ? session.currentUserQueueOrder
+        : (detail?.waitingQueue.where((p) => p.userId.toLowerCase() == currentUserId?.toLowerCase()).firstOrNull?.queueOrder ?? 1);
     final isOpen = session.status == SessionStatus.open;
 
     return Container(
@@ -722,7 +734,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          isConfirmed ? 'Bạn đã có slot chính thức 🎉' : 'Đang ở hàng đợi số #${session.currentUserQueueOrder} ⏳',
+                          isConfirmed ? 'Bạn đã có slot chính thức 🎉' : 'Đang ở hàng đợi số #$waitingOrder ⏳',
                           style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.bold,

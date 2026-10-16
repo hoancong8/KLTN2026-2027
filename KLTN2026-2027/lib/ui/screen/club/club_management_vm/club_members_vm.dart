@@ -22,6 +22,8 @@ final clubMembersViewModelProvider =
     getClubRolesUseCase: ref.watch(getClubRolesUseCaseProvider),
     getClubPermissionsUseCase: ref.watch(getClubPermissionsUseCaseProvider),
     updateClubRolePermissionsUseCase: ref.watch(updateClubRolePermissionsUseCaseProvider),
+    createClubRoleUseCase: ref.watch(createClubRoleUseCaseProvider),
+    deleteClubRoleUseCase: ref.watch(deleteClubRoleUseCaseProvider),
   );
 });
 
@@ -34,6 +36,8 @@ class ClubMembersViewModel extends StateNotifier<ClubMembersState> {
   final GetClubRolesUseCase getClubRolesUseCase;
   final GetClubPermissionsUseCase getClubPermissionsUseCase;
   final UpdateClubRolePermissionsUseCase updateClubRolePermissionsUseCase;
+  final CreateClubRoleUseCase createClubRoleUseCase;
+  final DeleteClubRoleUseCase deleteClubRoleUseCase;
 
   ClubMembersViewModel({
     required this.clubId,
@@ -44,6 +48,8 @@ class ClubMembersViewModel extends StateNotifier<ClubMembersState> {
     required this.getClubRolesUseCase,
     required this.getClubPermissionsUseCase,
     required this.updateClubRolePermissionsUseCase,
+    required this.createClubRoleUseCase,
+    required this.deleteClubRoleUseCase,
   }) : super(const ClubMembersState()) {
     if (clubId.isNotEmpty) {
       loadData();
@@ -193,6 +199,71 @@ class ClubMembersViewModel extends StateNotifier<ClubMembersState> {
       state = state.copyWith(
         isActionLoading: false,
         error: AppException(message: 'Không thể cập nhật quyền: $e'),
+      );
+      return false;
+    }
+  }
+
+  /// Tạo vai trò mới cho câu lạc bộ (FR03)
+  Future<bool> createRole({
+    required String roleName,
+    String? description,
+    List<String> permissionIds = const [],
+    bool isDefault = false,
+  }) async {
+    state = state.copyWith(isActionLoading: true, clearError: true, clearSuccess: true);
+    try {
+      await createClubRoleUseCase.execute(CreateClubRoleParams(
+        clubId: clubId,
+        roleName: roleName,
+        description: description,
+        permissionIds: permissionIds,
+        isDefault: isDefault,
+      ));
+
+      // Tải lại danh sách vai trò
+      final updatedRoles = await getClubRolesUseCase.execute(clubId);
+      state = state.copyWith(
+        isActionLoading: false,
+        roles: updatedRoles,
+        successMessage: 'Tạo vai trò mới thành công! 🎉',
+      );
+      return true;
+    } on AppException catch (e) {
+      state = state.copyWith(isActionLoading: false, error: e);
+      return false;
+    } catch (e) {
+      state = state.copyWith(
+        isActionLoading: false,
+        error: AppException(message: 'Không thể tạo vai trò: $e'),
+      );
+      return false;
+    }
+  }
+
+  /// Xóa vai trò tùy chỉnh khỏi câu lạc bộ (FR03)
+  Future<bool> deleteRole(String roleId) async {
+    state = state.copyWith(isActionLoading: true, clearError: true, clearSuccess: true);
+    try {
+      final ok = await deleteClubRoleUseCase.execute(clubId, roleId);
+      if (ok) {
+        final updatedRoles = await getClubRolesUseCase.execute(clubId);
+        state = state.copyWith(
+          isActionLoading: false,
+          roles: updatedRoles,
+          successMessage: 'Đã xóa vai trò thành công!',
+        );
+        return true;
+      }
+      state = state.copyWith(isActionLoading: false);
+      return false;
+    } on AppException catch (e) {
+      state = state.copyWith(isActionLoading: false, error: e);
+      return false;
+    } catch (e) {
+      state = state.copyWith(
+        isActionLoading: false,
+        error: AppException(message: 'Không thể xóa vai trò: $e'),
       );
       return false;
     }

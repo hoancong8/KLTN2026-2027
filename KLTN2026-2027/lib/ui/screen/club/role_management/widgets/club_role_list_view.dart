@@ -1,0 +1,276 @@
+// lib/ui/screen/club/role_management/widgets/club_role_list_view.dart
+
+import 'package:flutter/material.dart';
+import '../../../../../app/consts/app_color.dart';
+import '../../../../../domain/entities/club/club_member.dart';
+import '../../../../../domain/entities/club/club_role_item.dart';
+import 'club_role_color_helper.dart';
+
+class ClubRoleListView extends StatefulWidget {
+  final List<ClubRoleItem> roles;
+  final List<ClubMember> members;
+  final ClubRoleItem? selectedRole;
+  final ValueChanged<ClubRoleItem> onRoleSelected;
+  final VoidCallback onAddRolePressed;
+  final bool isHost;
+
+  const ClubRoleListView({
+    super.key,
+    required this.roles,
+    required this.members,
+    required this.selectedRole,
+    required this.onRoleSelected,
+    required this.onAddRolePressed,
+    required this.isHost,
+  });
+
+  @override
+  State<ClubRoleListView> createState() => _ClubRoleListViewState();
+}
+
+class _ClubRoleListViewState extends State<ClubRoleListView> {
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  int _getMemberCountForRole(ClubRoleItem role) {
+    return widget.members.where((m) {
+      if (m.roleId != null && m.roleId!.isNotEmpty) {
+        return m.roleId == role.id;
+      }
+      final rName = m.roleName?.toLowerCase().trim();
+      final target = role.roleName.toLowerCase().trim();
+      return rName == target;
+    }).length;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final filteredRoles = widget.roles.where((r) {
+      if (_searchQuery.isEmpty) return true;
+      final q = _searchQuery.toLowerCase();
+      return r.roleName.toLowerCase().contains(q) ||
+          (r.description?.toLowerCase().contains(q) ?? false);
+    }).toList();
+
+    return Column(
+      children: [
+        // Header & Add Role Button
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Vai trò nội bộ',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: AppColor.cTitle,
+                    ),
+                  ),
+                  Text(
+                    '${widget.roles.length} vai trò trong câu lạc bộ',
+                    style: const TextStyle(fontSize: 12, color: AppColor.cMuted),
+                  ),
+                ],
+              ),
+              if (widget.isHost)
+                ElevatedButton.icon(
+                  onPressed: widget.onAddRolePressed,
+                  icon: const Icon(Icons.add_rounded, size: 16),
+                  label: const Text('Thêm vai trò', style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColor.cMain,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                  ),
+                ),
+            ],
+          ),
+        ),
+
+        // Search Field
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+          child: TextField(
+            controller: _searchController,
+            onChanged: (val) => setState(() => _searchQuery = val.trim()),
+            decoration: InputDecoration(
+              hintText: 'Tìm kiếm vai trò...',
+              hintStyle: const TextStyle(fontSize: 13, color: AppColor.cMuted),
+              prefixIcon: const Icon(Icons.search_rounded, size: 20, color: AppColor.cMuted),
+              suffixIcon: _searchQuery.isNotEmpty
+                  ? IconButton(
+                      icon: const Icon(Icons.clear_rounded, size: 16, color: AppColor.cMuted),
+                      onPressed: () {
+                        _searchController.clear();
+                        setState(() => _searchQuery = '');
+                      },
+                    )
+                  : null,
+              filled: true,
+              fillColor: const Color(0xFFF3F4F6),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide.none,
+              ),
+            ),
+          ),
+        ),
+
+        const Divider(height: 12, color: AppColor.cDivider),
+
+        // Role List
+        Expanded(
+          child: filteredRoles.isEmpty
+              ? const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(24),
+                    child: Text(
+                      'Không tìm thấy vai trò phù hợp',
+                      style: TextStyle(color: AppColor.cMuted, fontSize: 13),
+                    ),
+                  ),
+                )
+              : ListView.separated(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  itemCount: filteredRoles.length,
+                  separatorBuilder: (_, _) => const SizedBox(height: 6),
+                  itemBuilder: (context, index) {
+                    final role = filteredRoles[index];
+                    final isSelected = widget.selectedRole?.id == role.id;
+                    final roleColor = ClubRoleColorHelper.getRoleColor(role.roleName, isHost: role.isHostRole);
+                    final memberCount = _getMemberCountForRole(role);
+
+                    return Material(
+                      color: isSelected
+                          ? AppColor.cMain.withValues(alpha: 0.10)
+                          : Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      child: InkWell(
+                        onTap: () => widget.onRoleSelected(role),
+                        borderRadius: BorderRadius.circular(12),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: isSelected
+                                  ? AppColor.cMain
+                                  : const Color(0xFFE5E7EB),
+                              width: isSelected ? 1.5 : 1.0,
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              // Discord Role Colored Dot / Badge
+                              Container(
+                                width: 14,
+                                height: 14,
+                                decoration: BoxDecoration(
+                                  color: roleColor,
+                                  shape: BoxShape.circle,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: roleColor.withValues(alpha: 0.4),
+                                      blurRadius: 4,
+                                      offset: const Offset(0, 1),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+
+                              // Name & Subtitle
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Text(
+                                          role.roleName,
+                                          style: TextStyle(
+                                            fontSize: 14.5,
+                                            fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                                            color: AppColor.cTitle,
+                                          ),
+                                        ),
+                                        if (role.isHostRole) ...[
+                                          const SizedBox(width: 6),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xFF9333EA).withValues(alpha: 0.12),
+                                              borderRadius: BorderRadius.circular(4),
+                                            ),
+                                            child: const Text(
+                                              'Chủ nhóm',
+                                              style: TextStyle(
+                                                color: Color(0xFF9333EA),
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
+                                        ] else if (role.isDefault) ...[
+                                          const SizedBox(width: 6),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xFF16A34A).withValues(alpha: 0.12),
+                                              borderRadius: BorderRadius.circular(4),
+                                            ),
+                                            child: const Text(
+                                              'Mặc định',
+                                              style: TextStyle(
+                                                color: Color(0xFF16A34A),
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ],
+                                    ),
+                                    const SizedBox(height: 3),
+                                    Text(
+                                      '${role.permissions.length} quyền • $memberCount thành viên',
+                                      style: TextStyle(
+                                        fontSize: 11.5,
+                                        color: isSelected ? AppColor.cTitle : AppColor.cMuted,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                              Icon(
+                                Icons.chevron_right_rounded,
+                                size: 20,
+                                color: isSelected ? AppColor.cMain : AppColor.cMuted,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+        ),
+      ],
+    );
+  }
+}

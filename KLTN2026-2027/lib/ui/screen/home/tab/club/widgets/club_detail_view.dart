@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../../../app/consts/app_color.dart';
 import '../../../../../../app/consts/app_config.dart';
+import '../../../../../../app/provider.dart';
 import '../../../../../../domain/entities/club/my_club.dart';
 import '../../../../../../domain/enums/club_role.dart';
 import '../../../../club/club_management_vm/club_members_vm.dart';
@@ -29,15 +30,23 @@ class ClubDetailView extends ConsumerStatefulWidget {
 }
 
 class _ClubDetailViewState extends ConsumerState<ClubDetailView> with SingleTickerProviderStateMixin {
-  late TabController _tabController;
+  TabController? _tabController;
+  bool _canManageJoinRequests = false;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(clubMembersViewModelProvider.notifier).loadForClub(widget.club.clubId);
     });
+  }
+
+  void _onTabChanged() {
+    if (_tabController != null && !_tabController!.indexIsChanging) {
+      if (_canManageJoinRequests && _tabController!.index == 2) {
+        ref.read(clubContextViewModelProvider.notifier).switchClub(widget.club.clubId);
+      }
+    }
   }
 
   @override
@@ -50,7 +59,8 @@ class _ClubDetailViewState extends ConsumerState<ClubDetailView> with SingleTick
 
   @override
   void dispose() {
-    _tabController.dispose();
+    _tabController?.removeListener(_onTabChanged);
+    _tabController?.dispose();
     super.dispose();
   }
 
@@ -74,6 +84,19 @@ class _ClubDetailViewState extends ConsumerState<ClubDetailView> with SingleTick
     final contextVm = ref.read(clubContextViewModelProvider.notifier);
     final isHost = widget.club.role == ClubRole.host ||
         (widget.club.roleName?.toLowerCase().contains('host') ?? false);
+    final isDeputy = widget.club.role == ClubRole.deputy ||
+        (widget.club.roleName?.toLowerCase().contains('phó') ?? false);
+    final canManageJoinRequests = isHost || isDeputy ||
+        ref.watch(hasPermissionProvider('MEMBER.JOIN_REQUEST.MANAGE'));
+    _canManageJoinRequests = canManageJoinRequests;
+
+    final expectedLength = canManageJoinRequests ? 4 : 3;
+    if (_tabController == null || _tabController!.length != expectedLength) {
+      _tabController?.removeListener(_onTabChanged);
+      _tabController?.dispose();
+      _tabController = TabController(length: expectedLength, vsync: this);
+      _tabController!.addListener(_onTabChanged);
+    }
 
     return Column(
       children: [
@@ -84,7 +107,7 @@ class _ClubDetailViewState extends ConsumerState<ClubDetailView> with SingleTick
         Container(
           color: AppColor.white,
           child: TabBar(
-            controller: _tabController,
+            controller: _tabController!,
             isScrollable: true,
             tabAlignment: TabAlignment.start,
             labelColor: AppColor.cMain,
@@ -112,16 +135,17 @@ class _ClubDetailViewState extends ConsumerState<ClubDetailView> with SingleTick
                   ],
                 ),
               ),
-              const Tab(
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.how_to_reg_outlined, size: 18),
-                    SizedBox(width: 6),
-                    Text('Duyệt đơn'),
-                  ],
+              if (canManageJoinRequests)
+                const Tab(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.how_to_reg_outlined, size: 18),
+                      SizedBox(width: 6),
+                      Text('Duyệt đơn'),
+                    ],
+                  ),
                 ),
-              ),
               const Tab(
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -139,7 +163,7 @@ class _ClubDetailViewState extends ConsumerState<ClubDetailView> with SingleTick
         // 3. Tab Views
         Expanded(
           child: TabBarView(
-            controller: _tabController,
+            controller: _tabController!,
             children: [
               // Tab 1: Sessions (FR13)
               ClubSessionsTab(
@@ -157,8 +181,9 @@ class _ClubDetailViewState extends ConsumerState<ClubDetailView> with SingleTick
                       vm: membersVm,
                     ),
 
-              // Tab 3: Join Requests
-              ClubJoinRequestsTab(clubId: widget.club.clubId),
+              // Tab 3: Join Requests (Chỉ hiện khi có quyền duyệt)
+              if (canManageJoinRequests)
+                ClubJoinRequestsTab(clubId: widget.club.clubId),
 
               // Tab 4: Invite Friends & About
               _buildInviteAndAboutTab(context),
@@ -292,71 +317,25 @@ class _ClubDetailViewState extends ConsumerState<ClubDetailView> with SingleTick
             ],
           ),
 
-          const SizedBox(height: 12),
-
-          // Actions Row: Switch Context + Copy Code
-          Row(
-            children: [
-              // Switch Context Button (nếu chưa kích hoạt)
-              if (!widget.isActiveContext)
+          // Action Row: Copy Club Code
+          if (widget.club.clubCode.isNotEmpty)
+            Row(
+              children: [
                 Expanded(
-                  child: ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColor.cMain,
+                  child: OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      side: BorderSide(color: Colors.white.withValues(alpha: 0.3)),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                      elevation: 0,
                     ),
-                    icon: const Icon(Icons.sync_rounded, size: 16),
-                    label: const Text('Kích hoạt nhóm này', style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold)),
-                    onPressed: () async {
-                      final success = await contextVm.switchClub(widget.club.clubId);
-                      if (success && context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Đã kích hoạt nhóm ${widget.club.clubName} làm ngữ cảnh chính!'),
-                            backgroundColor: AppColor.cMain,
-                          ),
-                        );
-                      }
-                    },
-                  ),
-                )
-              else
-                Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Center(
-                      child: Text(
-                        '✓ Ngữ cảnh hoạt động hiện tại',
-                        style: TextStyle(color: AppColor.cGreen_50, fontSize: 12, fontWeight: FontWeight.w600),
-                      ),
-                    ),
+                    icon: const Icon(Icons.copy_rounded, size: 14),
+                    label: Text('Mã nhóm: ${widget.club.clubCode}', style: const TextStyle(fontSize: 12)),
+                    onPressed: () => _copyClubCode(context),
                   ),
                 ),
-
-              const SizedBox(width: 8),
-
-              // Copy Code Button
-              if (widget.club.clubCode.isNotEmpty)
-                OutlinedButton.icon(
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: Colors.white,
-                    side: BorderSide(color: Colors.white.withValues(alpha: 0.3)),
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                  ),
-                  icon: const Icon(Icons.copy_rounded, size: 14),
-                  label: Text('Mã: ${widget.club.clubCode}', style: const TextStyle(fontSize: 12)),
-                  onPressed: () => _copyClubCode(context),
-                ),
-            ],
-          ),
+              ],
+            ),
         ],
       ),
     );

@@ -4,9 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/consts/app_color.dart';
+import '../../../../domain/enums/club_role.dart';
 import '../../../../widget/club_switcher_dialog.dart';
 import '../club_management_vm/club_members_vm.dart';
 import '../club_vm/club_context_vm.dart';
+import '../role_management/club_role_management_screen.dart';
 import 'member_card.dart';
 
 class ClubManagementMobile extends ConsumerWidget {
@@ -178,7 +180,63 @@ class ClubManagementMobile extends ConsumerWidget {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 16),
+
+                  // Host Role & Permission Management Action
+                  if (activeContext.role == ClubRole.host ||
+                      activeContext.role.displayName.toLowerCase().contains('host'))
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 16),
+                      child: InkWell(
+                        onTap: () => ClubRoleManagementScreen.show(context, clubId: activeContext.clubId),
+                        borderRadius: BorderRadius.circular(12),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: const Color(0xFFE5E7EB)),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.03),
+                                blurRadius: 6,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: const Row(
+                            children: [
+                              CircleAvatar(
+                                radius: 18,
+                                backgroundColor: Color(0xFFF3E8FF),
+                                child: Icon(Icons.shield_rounded, color: Color(0xFF9333EA), size: 20),
+                              ),
+                              SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Vai trò & Phân quyền (FR03)',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold,
+                                        color: AppColor.cTitle,
+                                      ),
+                                    ),
+                                    Text(
+                                      'Quản lý danh sách vai trò và phân quyền Discord-style',
+                                      style: TextStyle(fontSize: 11.5, color: AppColor.cMuted),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Icon(Icons.arrow_forward_ios_rounded, size: 14, color: AppColor.cMuted),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
 
                   // 2. Members Section Header & Search
                   Row(

@@ -23,6 +23,13 @@ abstract class ClubRepository {
     required String name,
     String? description,
     String? avatarUrl,
+    String? fixedVenueName,
+    String? fixedAddress,
+    double? lat,
+    double? lng,
+    int? minSkillLevel,
+    int? maxSkillLevel,
+    List<dynamic>? schedules,
   });
 
   /// Tham gia câu lạc bộ bằng mã Code với vai trò mong muốn (FR03)

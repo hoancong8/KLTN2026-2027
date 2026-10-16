@@ -8,7 +8,7 @@ import '../../../../../../domain/entities/club/club_member.dart';
 import '../../../../../../domain/entities/user_profile.dart';
 import '../../../../../../domain/enums/club_role.dart';
 import '../../../../club/club_management_vm/club_members_vm.dart';
-import 'club_role_permissions_sheet.dart';
+import '../../../../club/role_management/club_role_management_screen.dart';
 
 class ClubMemberSection extends ConsumerStatefulWidget {
   final List<ClubMember> members;
@@ -136,7 +136,7 @@ class _ClubMemberSectionState extends ConsumerState<ClubMemberSection> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
             child: InkWell(
-              onTap: () => ClubRolePermissionsSheet.show(context, widget.vm),
+              onTap: () => ClubRoleManagementScreen.show(context, clubId: widget.vm.clubId),
               borderRadius: BorderRadius.circular(12),
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
