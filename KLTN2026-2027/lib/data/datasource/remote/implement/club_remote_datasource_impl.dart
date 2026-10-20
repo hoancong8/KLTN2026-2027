@@ -54,7 +54,12 @@ class ClubRemoteDatasourceImpl extends BaseRemoteDatasource implements ClubRemot
         data: request.toJson(),
       );
       // BE returns Results.Created($"/api/v1/clubs/{clubId}", clubId)
-      return handleResponse(response, (data) => data?.toString() ?? '');
+      return handleResponse(response, (data) {
+        if (data is Map) {
+          return (data['clubId'] ?? data['id'] ?? data['result'] ?? '').toString();
+        }
+        return data?.toString() ?? '';
+      });
     } catch (e) {
       throw handleError(e);
     }

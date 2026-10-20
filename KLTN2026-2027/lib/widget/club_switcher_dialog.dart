@@ -6,6 +6,7 @@ import '../app/consts/app_color.dart';
 import '../domain/entities/club/my_club.dart';
 import '../domain/enums/club_role.dart';
 import '../ui/screen/club/club_vm/club_context_vm.dart';
+import '../ui/screen/home/tab/club/widgets/club_create_dialog.dart';
 
 /// Hộp thoại / BottomSheet chuyển đổi Câu lạc bộ đang hoạt động
 class ClubSwitcherDialog extends ConsumerWidget {
@@ -202,7 +203,7 @@ class ClubSwitcherDialog extends ConsumerWidget {
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                     ),
                     onPressed: () {
-                      _showCreateClubDialog(context, vm);
+                      ClubCreateDialog.show(context);
                     },
                   ),
                 ),
@@ -311,79 +312,6 @@ class ClubSwitcherDialog extends ConsumerWidget {
     );
   }
 
-  void _showCreateClubDialog(BuildContext context, ClubContextViewModel vm) {
-    final nameController = TextEditingController();
-    final descController = TextEditingController();
-
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Tạo Câu Lạc Bộ Mới', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text('Tên câu lạc bộ *', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
-              const SizedBox(height: 6),
-              TextField(
-                controller: nameController,
-                decoration: InputDecoration(
-                  hintText: 'Ví dụ: CLB Cầu Lông Thủ Đức',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                ),
-              ),
-              const SizedBox(height: 14),
-              const Text('Mô tả nhóm', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
-              const SizedBox(height: 6),
-              TextField(
-                controller: descController,
-                maxLines: 2,
-                decoration: InputDecoration(
-                  hintText: 'Lịch sinh hoạt, đối tượng tham gia...',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                ),
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Hủy'),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColor.cMain,
-              foregroundColor: AppColor.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-            ),
-            onPressed: () async {
-              final name = nameController.text.trim();
-              if (name.isEmpty) return;
-              Navigator.of(ctx).pop();
-              final ok = await vm.createClub(
-                name: name,
-                description: descController.text.trim().isNotEmpty ? descController.text.trim() : null,
-              );
-              if (ok && context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Tạo nhóm thành công! Bạn đang giữ vai trò Chủ nhóm (Host).'),
-                    backgroundColor: AppColor.cGreen,
-                  ),
-                );
-              }
-            },
-            child: const Text('Tạo ngay'),
-          ),
-        ],
-      ),
-    );
-  }
 }
 
 class _ClubItemCard extends StatelessWidget {
