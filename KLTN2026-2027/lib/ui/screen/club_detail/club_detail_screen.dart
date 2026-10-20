@@ -7,6 +7,7 @@ import '../../../app/provider/localization_provider.dart';
 import '../../../app/utils/exception_ext.dart';
 import '../../../domain/entities/club/club_detail.dart';
 import '../../../domain/enums/session_enums.dart';
+import '../home/tab/club/widgets/club_schedule_planner.dart';
 import 'club_detail_vm/club_detail_vm.dart';
 
 class ClubDetailScreen extends ConsumerStatefulWidget {
@@ -215,27 +216,29 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> {
     );
   }
 
-  void _showEditSchedulesDialog(ClubDetail club) {
-    // 7 days: Day 1 (CN/T2 depending on convention: 1=Thứ 2.. 7=Chủ nhật)
-    final days = [
-      {'day': 1, 'name': 'Thứ Hai'},
-      {'day': 2, 'name': 'Thứ Ba'},
-      {'day': 3, 'name': 'Thứ Tư'},
-      {'day': 4, 'name': 'Thứ Năm'},
-      {'day': 5, 'name': 'Thứ Sáu'},
-      {'day': 6, 'name': 'Thứ Bảy'},
-      {'day': 0, 'name': 'Chủ Nhật'},
-    ];
-
-    final activeDays = <int, Map<String, String>>{};
-    for (final s in club.schedules) {
-      if (s.isActive) {
-        activeDays[s.dayOfWeek] = {
-          'start': s.startTime,
-          'end': s.endTime,
-        };
-      }
+  TimeOfDay _parseTimeOfDay(String timeStr, TimeOfDay fallback) {
+    try {
+      final parts = timeStr.trim().split(':');
+      if (parts.isEmpty) return fallback;
+      final h = int.parse(parts[0]);
+      final m = parts.length > 1 ? int.parse(parts[1]) : 0;
+      return TimeOfDay(hour: h, minute: m);
+    } catch (_) {
+      return fallback;
     }
+  }
+
+  void _showEditSchedulesDialog(ClubDetail club) {
+    final initialSchedules = club.schedules
+        .where((s) => s.isActive)
+        .map((s) => ClubScheduleEntry(
+              dayOfWeek: s.dayOfWeek,
+              startTime: _parseTimeOfDay(s.startTime, const TimeOfDay(hour: 18, minute: 0)),
+              endTime: _parseTimeOfDay(s.endTime, const TimeOfDay(hour: 20, minute: 0)),
+            ))
+        .toList();
+
+    List<ClubScheduleEntry> currentSchedules = List.from(initialSchedules);
 
     showModalBottomSheet(
       context: context,
@@ -243,118 +246,117 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> {
       backgroundColor: Colors.transparent,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setSheetState) => Container(
-          padding: EdgeInsets.only(
-            top: 20,
-            left: 20,
-            right: 20,
-            bottom: MediaQuery.of(ctx).viewInsets.bottom + 20,
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(ctx).size.height * 0.90,
           ),
           decoration: const BoxDecoration(
             color: AppColor.white,
             borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
           ),
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Header
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 16, 12, 10),
+                child: Row(
                   children: [
-                    const Text(
-                      'Lịch sinh hoạt định kỳ tuần',
-                      style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: AppColor.cDark),
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: AppColor.cMain.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(Icons.event_repeat_rounded, color: AppColor.cMain, size: 20),
+                    ),
+                    const SizedBox(width: 12),
+                    const Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Thiết lập lịch sinh hoạt định kỳ',
+                            style: TextStyle(fontSize: 16.5, fontWeight: FontWeight.bold, color: AppColor.cTitle),
+                          ),
+                          SizedBox(height: 2),
+                          Text(
+                            'Lịch tháng, chọn ngày và cài đặt giờ cố định hoặc tùy chỉnh',
+                            style: TextStyle(fontSize: 11.5, color: AppColor.cMuted),
+                          ),
+                        ],
+                      ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.close_rounded),
+                      icon: const Icon(Icons.close_rounded, color: AppColor.cMuted),
                       onPressed: () => Navigator.of(ctx).pop(),
                     ),
                   ],
                 ),
-                const Text(
-                  'Chọn các ngày cố định và khung giờ nhóm sinh hoạt:',
-                  style: TextStyle(fontSize: 12, color: AppColor.cMuted),
-                ),
-                const Divider(height: 20),
-                for (final d in days) ...[
-                  Builder(builder: (context) {
-                    final dayNum = d['day'] as int;
-                    final dayName = d['name'] as String;
-                    final isChecked = activeDays.containsKey(dayNum);
-                    final start = activeDays[dayNum]?['start'] ?? '18:00';
-                    final end = activeDays[dayNum]?['end'] ?? '21:00';
+              ),
+              const Divider(height: 1, color: Color(0xFFE2E8F0)),
 
-                    return Container(
-                      margin: const EdgeInsets.only(bottom: 8),
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: isChecked ? AppColor.cMain.withValues(alpha: 0.06) : const Color(0xFFF8FAFC),
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(
-                          color: isChecked ? AppColor.cMain.withValues(alpha: 0.4) : const Color(0xFFE2E8F0),
-                        ),
-                      ),
-                      child: Row(
-                        children: [
-                          Checkbox(
-                            value: isChecked,
-                            activeColor: AppColor.cMain,
-                            onChanged: (val) {
-                              setSheetState(() {
-                                if (val == true) {
-                                  activeDays[dayNum] = {'start': '18:00', 'end': '21:00'};
-                                } else {
-                                  activeDays.remove(dayNum);
-                                }
-                              });
-                            },
-                          ),
-                          Text(
-                            dayName,
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: isChecked ? FontWeight.bold : FontWeight.w500,
-                              color: isChecked ? AppColor.cMain : AppColor.cDark,
-                            ),
-                          ),
-                          const Spacer(),
-                          if (isChecked)
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: AppColor.white,
-                                borderRadius: BorderRadius.circular(6),
-                                border: Border.all(color: const Color(0xFFCBD5E1)),
-                              ),
-                              child: Text(
-                                '$start - $end',
-                                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColor.cDark),
-                              ),
-                            ),
-                        ],
-                      ),
-                    );
-                  }),
-                ],
-                const SizedBox(height: 16),
-                SizedBox(
+              // Planner Body
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  child: ClubSchedulePlanner(
+                    initialSchedules: initialSchedules,
+                    onChanged: (updated) {
+                      currentSchedules = updated;
+                    },
+                  ),
+                ),
+              ),
+
+              // Footer Action
+              const Divider(height: 1, color: Color(0xFFE2E8F0)),
+              Padding(
+                padding: EdgeInsets.fromLTRB(16, 12, 16, MediaQuery.of(ctx).viewInsets.bottom + 16),
+                child: SizedBox(
                   width: double.infinity,
-                  height: 46,
+                  height: 48,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColor.cMain,
                       foregroundColor: AppColor.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
                     onPressed: () async {
+                      if (currentSchedules.isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Vui lòng chọn ít nhất một ngày sinh hoạt trong tuần.'),
+                            backgroundColor: AppColor.cRed,
+                          ),
+                        );
+                        return;
+                      }
+
+                      for (final entry in currentSchedules) {
+                        final startMin = entry.startTime.hour * 60 + entry.startTime.minute;
+                        final endMin = entry.endTime.hour * 60 + entry.endTime.minute;
+                        if (startMin >= endMin) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Giờ bắt đầu phải trước giờ kết thúc.'),
+                              backgroundColor: AppColor.cRed,
+                            ),
+                          );
+                          return;
+                        }
+                      }
+
                       Navigator.of(ctx).pop();
-                      final inputList = activeDays.entries.map((e) {
-                        final s = e.value['start'] ?? '18:00';
-                        final end = e.value['end'] ?? '21:00';
+                      final inputList = currentSchedules.map((entry) {
+                        final hStart = entry.startTime.hour.toString().padLeft(2, '0');
+                        final mStart = entry.startTime.minute.toString().padLeft(2, '0');
+                        final hEnd = entry.endTime.hour.toString().padLeft(2, '0');
+                        final mEnd = entry.endTime.minute.toString().padLeft(2, '0');
                         return ClubScheduleInput(
-                          dayOfWeek: e.key,
-                          startTime: s.length > 5 ? s.substring(0, 5) : s,
-                          endTime: end.length > 5 ? end.substring(0, 5) : end,
+                          dayOfWeek: entry.dayOfWeek,
+                          startTime: '$hStart:$mStart',
+                          endTime: '$hEnd:$mEnd',
                         );
                       }).toList();
 
@@ -362,11 +364,14 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> {
                           .read(clubDetailViewModelProvider(widget.clubId).notifier)
                           .updateSchedules(inputList);
                     },
-                    child: const Text('Lưu lịch tuần', style: TextStyle(fontWeight: FontWeight.bold)),
+                    child: const Text(
+                      'Lưu lịch sinh hoạt',
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                    ),
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
@@ -744,14 +749,39 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             children: [
-              Icon(Icons.calendar_month_rounded, color: AppColor.cMain, size: 20),
-              SizedBox(width: 8),
-              Text(
+              const Icon(Icons.calendar_month_rounded, color: AppColor.cMain, size: 20),
+              const SizedBox(width: 8),
+              const Text(
                 'Lịch sinh hoạt định kỳ hàng tuần',
                 style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColor.cDark),
               ),
+              const Spacer(),
+              if (club.currentUserStatus.isMember)
+                InkWell(
+                  onTap: () => _showEditSchedulesDialog(club),
+                  borderRadius: BorderRadius.circular(8),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AppColor.cMain.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: AppColor.cMain.withValues(alpha: 0.25)),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.edit_calendar_rounded, size: 14, color: AppColor.cMain),
+                        SizedBox(width: 4),
+                        Text(
+                          'Thiết lập',
+                          style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold, color: AppColor.cMain),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
             ],
           ),
           const SizedBox(height: 12),
