@@ -171,17 +171,19 @@ class _ClubCreateDialogState extends ConsumerState<ClubCreateDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
+    final mediaQuery = MediaQuery.of(context);
+    final screenWidth = mediaQuery.size.width;
     final dialogWidth = screenWidth > 580 ? 540.0 : screenWidth * 0.94;
+    final availableHeight = mediaQuery.size.height - mediaQuery.viewInsets.bottom;
 
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       backgroundColor: Colors.white,
-      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       child: ConstrainedBox(
         constraints: BoxConstraints(
           maxWidth: dialogWidth,
-          maxHeight: MediaQuery.of(context).size.height * 0.88,
+          maxHeight: (availableHeight * 0.92).clamp(280.0, mediaQuery.size.height * 0.9),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -566,22 +568,23 @@ class _ClubCreateDialogState extends ConsumerState<ClubCreateDialog> {
                     child: const Text('Hủy', style: TextStyle(color: AppColor.cMuted)),
                   ),
                   const SizedBox(width: 12),
-                  ElevatedButton(
+                  ElevatedButton.icon(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColor.cMain,
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                       elevation: 0,
                     ),
                     onPressed: _isSubmitting ? null : _submit,
-                    child: _isSubmitting
+                    icon: _isSubmitting
                         ? const SizedBox(
-                            width: 18,
-                            height: 18,
+                            width: 16,
+                            height: 16,
                             child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                           )
-                        : const Text('Hoàn tất tạo CLB', style: TextStyle(fontWeight: FontWeight.bold)),
+                        : const Icon(Icons.check_circle_outline_rounded, size: 18),
+                    label: const Text('Xác nhận tạo CLB', style: TextStyle(fontWeight: FontWeight.bold)),
                   ),
                 ],
               ),

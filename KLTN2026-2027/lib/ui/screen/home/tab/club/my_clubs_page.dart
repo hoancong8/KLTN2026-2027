@@ -40,8 +40,8 @@ class _MyClubsPageState extends ConsumerState<MyClubsPage> {
     }
   }
 
-  void _showAddOrJoinSheet(BuildContext context, ClubContextViewModel vm) {
-    showModalBottomSheet(
+  void _showAddOrJoinSheet(BuildContext context, ClubContextViewModel vm) async {
+    final action = await showModalBottomSheet<String>(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
@@ -86,10 +86,7 @@ class _MyClubsPageState extends ConsumerState<MyClubsPage> {
                 iconBgColor: AppColor.cMain.withValues(alpha: 0.12),
                 title: 'Tạo câu lạc bộ mới',
                 subtitle: 'Bạn sẽ là Chủ nhóm (Host) quản lý lịch chơi, thu quỹ và duyệt đơn',
-                onTap: () {
-                  Navigator.of(ctx).pop();
-                  ClubCreateDialog.show(context);
-                },
+                onTap: () => Navigator.of(ctx).pop('create'),
               ),
 
               const SizedBox(height: 12),
@@ -101,10 +98,7 @@ class _MyClubsPageState extends ConsumerState<MyClubsPage> {
                 iconBgColor: AppColors.roleSky.withValues(alpha: 0.12),
                 title: 'Tham gia bằng mã Code',
                 subtitle: 'Nhập mã Code được Host chia sẻ để vào nhóm ngay',
-                onTap: () {
-                  Navigator.of(ctx).pop();
-                  _showJoinClubDialog(context, vm);
-                },
+                onTap: () => Navigator.of(ctx).pop('join'),
               ),
 
               const SizedBox(height: 12),
@@ -116,10 +110,7 @@ class _MyClubsPageState extends ConsumerState<MyClubsPage> {
                 iconBgColor: AppColors.roleViolet.withValues(alpha: 0.12),
                 title: 'Quét tìm CLB quanh đây (Radar GPS)',
                 subtitle: 'Tìm các câu lạc bộ cầu lông đang hoạt động trong khu vực của bạn',
-                onTap: () {
-                  Navigator.of(ctx).pop();
-                  context.push(AppConfig.exploreClubsScreenPath);
-                },
+                onTap: () => Navigator.of(ctx).pop('explore'),
               ),
               const SizedBox(height: 12),
 
@@ -130,10 +121,7 @@ class _MyClubsPageState extends ConsumerState<MyClubsPage> {
                 iconBgColor: AppColors.primaryDark.withValues(alpha: 0.12),
                 title: 'Lịch chơi tôi đã đăng ký',
                 subtitle: 'Xem toàn bộ vé tham gia, buổi tập và trạng thái điểm danh',
-                onTap: () {
-                  Navigator.of(ctx).pop();
-                  context.push(AppConfig.myBookingsRoutePath);
-                },
+                onTap: () => Navigator.of(ctx).pop('bookings'),
               ),
               const SizedBox(height: 8),
             ],
@@ -141,6 +129,17 @@ class _MyClubsPageState extends ConsumerState<MyClubsPage> {
         ),
       ),
     );
+
+    if (!context.mounted || action == null) return;
+    if (action == 'create') {
+      ClubCreateDialog.show(context);
+    } else if (action == 'join') {
+      _showJoinClubDialog(context, vm);
+    } else if (action == 'explore') {
+      context.push(AppConfig.exploreClubsScreenPath);
+    } else if (action == 'bookings') {
+      context.push(AppConfig.myBookingsRoutePath);
+    }
   }
 
   Widget _buildBottomSheetActionTile({
@@ -205,8 +204,8 @@ class _MyClubsPageState extends ConsumerState<MyClubsPage> {
     List<MyClub> clubs,
     String? activeId,
     ClubContextViewModel vm,
-  ) {
-    showModalBottomSheet(
+  ) async {
+    final action = await showModalBottomSheet<String>(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
@@ -326,27 +325,49 @@ class _MyClubsPageState extends ConsumerState<MyClubsPage> {
                 ),
               ),
               const SizedBox(height: 14),
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    side: const BorderSide(color: AppColor.cMain),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        side: const BorderSide(color: AppColor.cMain),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      icon: const Icon(Icons.tag_rounded, color: AppColor.cMain, size: 18),
+                      label: const Text('Nhập mã Code', style: TextStyle(fontWeight: FontWeight.bold, color: AppColor.cMain, fontSize: 13)),
+                      onPressed: () => Navigator.of(ctx).pop('join'),
+                    ),
                   ),
-                  icon: const Icon(Icons.add_rounded, color: AppColor.cMain),
-                  label: const Text('Thêm hoặc tham gia nhóm khác', style: TextStyle(fontWeight: FontWeight.bold, color: AppColor.cMain)),
-                  onPressed: () {
-                    Navigator.of(ctx).pop();
-                    _showAddOrJoinSheet(context, vm);
-                  },
-                ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColor.cMain,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      icon: const Icon(Icons.add_rounded, size: 18),
+                      label: const Text('Tạo CLB mới', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                      onPressed: () => Navigator.of(ctx).pop('create'),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
         ),
       ),
     );
+
+    if (!context.mounted || action == null) return;
+    if (action == 'create') {
+      ClubCreateDialog.show(context);
+    } else if (action == 'join') {
+      _showJoinClubDialog(context, vm);
+    }
   }
 
   void _showJoinClubDialog(BuildContext context, ClubContextViewModel vm) {
@@ -586,9 +607,41 @@ class _MyClubsPageState extends ConsumerState<MyClubsPage> {
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-        itemCount: clubs.length,
+        itemCount: clubs.length + 1,
         separatorBuilder: (_, _) => const SizedBox(width: 10),
         itemBuilder: (context, index) {
+          if (index == clubs.length) {
+            return InkWell(
+              onTap: () => ClubCreateDialog.show(context),
+              borderRadius: BorderRadius.circular(20),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppColor.cMain.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: AppColor.cMain.withValues(alpha: 0.4),
+                    width: 1,
+                  ),
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.add_rounded, size: 18, color: AppColor.cMain),
+                    SizedBox(width: 4),
+                    Text(
+                      'Tạo CLB mới',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: AppColor.cMain,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
           final club = clubs[index];
           final isSelected = club.clubId == _selectedClubId;
           final isActive = club.clubId == activeId;
