@@ -6,23 +6,24 @@ import '../../../../domain/exceptions/i_app_messages.dart';
 import '../../../../domain/usecases/auth/login_usecase.dart';
 import '../../../../domain/usecases/auth/biometric_usecase.dart';
 import '../../../../domain/exceptions/app_exception.dart';
+import '../../club/club_vm/club_context_vm.dart';
 import 'login_state.dart';
 
-//Provider for LoginViewModel
+// Provider for LoginViewModel
 final loginViewModelProvider =
     StateNotifierProvider<LoginViewModel, LoginState>((ref) {
-      return LoginViewModel(
-        ref,
-        ref.watch(loginUseCaseProvider),
-        ref.watch(biometricUseCaseProvider),
-      );
-    });
+  return LoginViewModel(
+    ref,
+    ref.watch(loginUseCaseProvider),
+    ref.watch(biometricUseCaseProvider),
+  );
+});
 
 final loginUsernameProvider = StateProvider<String>((ref) => '');
 
 final loginPasswordProvider = StateProvider<String>((ref) => '');
 
-//LoginViewModel
+// LoginViewModel
 class LoginViewModel extends StateNotifier<LoginState> {
   final Ref ref;
   final LoginUseCase loginUseCase;
@@ -53,11 +54,18 @@ class LoginViewModel extends StateNotifier<LoginState> {
         password: password,
       );
 
-      // Lưu auth token vào provider toàn cục
+      // Lưu auth token vào provider toàn cục (chỉ dùng định danh phiên đăng nhập)
       ref.read(authTokenProvider.notifier).state = token;
 
-      // Lấy thông tin người dùng và danh sách quyền (permissions)
+      // Lấy thông tin người dùng và danh sách quyền hệ thống (permissions)
       await ref.read(currentUserProfileProvider.notifier).fetchProfile();
+
+      // Khởi tạo danh sách CLB & kích hoạt ngữ cảnh CLB mặc định (Giai đoạn 1 & 2)
+      try {
+        await ref.read(clubContextViewModelProvider.notifier).loadMyClubs();
+      } catch (_) {
+        // Không block đăng nhập nếu tải CLB ban đầu gặp sự cố mạng
+      }
 
       // Lưu last login credentials để tự điền hoặc dùng cho sinh trắc
       if (username.trim().isNotEmpty && password.isNotEmpty) {

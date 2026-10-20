@@ -40,11 +40,13 @@ class AppAuthInterceptor extends Interceptor {
       ) async {
     final token = ref.read(authTokenProvider);
     options.headers['FromMobile'] = 'true';
-    if (token != null) {
+    if (token != null && token.accessToken.isNotEmpty) {
       options.headers['Authorization'] = 'Bearer ${token.accessToken}';
     }
 
-    final activeClubId = await SecureStorageService.instance.getActiveClubId();
+    // Tự động đính kèm X-Group-Id nếu đang đứng trong ngữ cảnh của 1 CLB
+    final activeClubId = ref.read(activeClubIdProvider) ??
+        await SecureStorageService.instance.getActiveClubId();
     if (activeClubId != null && activeClubId.isNotEmpty) {
       options.headers['X-Group-Id'] = activeClubId;
     }
@@ -54,6 +56,13 @@ class AppAuthInterceptor extends Interceptor {
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) async {
+    if (err.response?.statusCode == 403) {
+      AppLog.info(
+        '[AppAuthInterceptor] 403 Forbidden: Không có quyền thực hiện thao tác này trong nhóm (${err.requestOptions.path})',
+      );
+      return handler.next(err);
+    }
+
     if (err.response?.statusCode == 401) {
       final path = err.requestOptions.path;
 
@@ -140,7 +149,7 @@ class AppAuthInterceptor extends Interceptor {
         final opts = err.requestOptions;
         opts.headers['Authorization'] = 'Bearer ${newToken.accessToken}';
 
-        final activeClubId =
+        final activeClubId = ref.read(activeClubIdProvider) ??
             await SecureStorageService.instance.getActiveClubId();
         if (activeClubId != null && activeClubId.isNotEmpty) {
           opts.headers['X-Group-Id'] = activeClubId;
@@ -236,6 +245,7 @@ class AppAuthInterceptor extends Interceptor {
     _refreshFuture = null;
 
     ref.read(authTokenProvider.notifier).state = null;
+    ref.read(activeClubContextProvider.notifier).state = null;
     SecureStorageService.instance.clearAuthToken();
 
     final context = rootNavigatorKey.currentContext;

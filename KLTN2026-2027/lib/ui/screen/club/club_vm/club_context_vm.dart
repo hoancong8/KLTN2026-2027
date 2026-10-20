@@ -5,8 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import '../../../../app/provider.dart';
 import '../../../../app/services/secure_storage_service.dart';
-import '../../../../domain/entities/auth_token.dart';
-import '../../../../domain/entities/user_profile.dart';
 import '../../../../domain/enums/club_role.dart';
 import '../../../../domain/exceptions/app_exception.dart';
 import '../../../../domain/usecases/club/create_club_usecase.dart';
@@ -47,7 +45,7 @@ class ClubContextViewModel extends StateNotifier<ClubContextState> {
     loadMyClubs();
   }
 
-  /// Tải danh sách các câu lạc bộ người dùng tham gia kèm vai trò (FR03)
+  /// Tải danh sách các câu lạc bộ người dùng tham gia kèm vai trò và quyền hạn (FR03)
   Future<void> loadMyClubs() async {
     state = state.copyWith(isLoading: true, clearError: true);
     try {
@@ -57,14 +55,18 @@ class ClubContextViewModel extends StateNotifier<ClubContextState> {
         isLoading: false,
       );
 
-      // Nếu chưa có active context và có ít nhất 1 CLB, thử lấy clubId đã lưu hoặc chọn CLB đầu tiên
-      if (state.activeContext == null && clubs.isNotEmpty) {
+      // Nếu có ít nhất 1 CLB: ưu tiên khôi phục activeClubId đã lưu hoặc chọn CLB đầu tiên
+      if (clubs.isNotEmpty) {
         final savedClubId = await SecureStorageService.instance.getActiveClubId();
         final targetClub = clubs.firstWhere(
           (c) => c.clubId == savedClubId,
           orElse: () => clubs.first,
         );
         await switchClub(targetClub.clubId);
+      } else {
+        await SecureStorageService.instance.saveActiveClubId('');
+        ref.read(activeClubContextProvider.notifier).state = null;
+        state = state.copyWith(clearActiveContext: true);
       }
     } on AppException catch (e) {
       state = state.copyWith(isLoading: false, error: e);
@@ -77,7 +79,7 @@ class ClubContextViewModel extends StateNotifier<ClubContextState> {
   }
 
   /// Chuyển đổi ngữ cảnh Câu lạc bộ đang hoạt động (FR04)
-  /// Trả về Token và danh sách quyền hạn độc lập tương ứng với vai trò ở CLB đó.
+  /// Thiết lập Active Context và cập nhật Header X-Group-Id mà không thay đổi AccessToken toàn cục.
   Future<bool> switchClub(String clubId) async {
     if (state.isSwitching) return false;
     state = state.copyWith(isSwitching: true, clearError: true, clearSuccess: true);
@@ -85,39 +87,21 @@ class ClubContextViewModel extends StateNotifier<ClubContextState> {
     try {
       final activeContext = await switchClubContextUseCase.execute(clubId);
 
-      // 1. Cập nhật Token mới vào provider và lưu local storage
-      final currentToken = ref.read(authTokenProvider);
-      final newToken = AuthToken(
-        accessToken: activeContext.accessToken,
-        refreshToken: currentToken?.refreshToken ?? '',
-        userId: currentToken?.userId,
-      );
-      ref.read(authTokenProvider.notifier).state = newToken;
-      await SecureStorageService.instance.saveAuthToken(newToken);
+      // 1. Lưu activeClubId vào SecureStorage để Dio Interceptor tự động gắn Header X-Group-Id
       await SecureStorageService.instance.saveActiveClubId(clubId);
 
-      // 2. Cập nhật quyền và vai trò mới vào UserProfile
-      final currentProfile = ref.read(currentUserProfileProvider);
-      if (currentProfile != null) {
-        final updatedProfile = UserProfile(
-          id: currentProfile.id,
-          email: currentProfile.email,
-          userName: currentProfile.userName,
-          phoneNumber: currentProfile.phoneNumber,
-          isLocked: currentProfile.isLocked,
-          lockoutEnd: currentProfile.lockoutEnd,
-          roles: [activeContext.role.name],
-          permissions: activeContext.permissions,
-        );
-        ref.read(currentUserProfileProvider.notifier).setProfile(updatedProfile);
-      }
+      // 2. Cập nhật provider ngữ cảnh toàn cục (Contextual RBAC)
+      ref.read(activeClubContextProvider.notifier).state = activeContext;
+
+      // 3. AccessToken toàn cục giữ nguyên suốt phiên làm việc (Clean Context-Based Auth)
+      // Không ghi đè authTokenProvider hay Token trong SecureStorage.
 
       state = state.copyWith(
         activeContext: activeContext,
         isSwitching: false,
         successMessage: 'Đã chuyển sang nhóm ${activeContext.clubName} (${activeContext.role.displayName})',
       );
-      debugPrint('[ClubContextVM] Switched to ${activeContext.clubName} as ${activeContext.role.displayName}');
+      debugPrint('[ClubContextVM] Switched context to ${activeContext.clubName} as ${activeContext.role.displayName} (X-Group-Id: $clubId)');
       return true;
     } on AppException catch (e) {
       state = state.copyWith(isSwitching: false, error: e);
@@ -225,6 +209,7 @@ class ClubContextViewModel extends StateNotifier<ClubContextState> {
 
       // Nếu đang ở trong CLB bị rời -> clear activeContext
       if (state.currentClubId == clubId) {
+        ref.read(activeClubContextProvider.notifier).state = null;
         state = state.copyWith(clearActiveContext: true);
       }
 

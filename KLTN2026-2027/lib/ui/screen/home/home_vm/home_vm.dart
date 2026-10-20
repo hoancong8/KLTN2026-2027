@@ -32,6 +32,7 @@ class HomeViewModel extends StateNotifier<HomeState> {
       await logoutUseCase.execute();
 
       ref.read(authTokenProvider.notifier).state = null;
+      ref.read(activeClubContextProvider.notifier).state = null;
       ref.read(currentUserProfileProvider.notifier).clear();
       ref.read(homeTabProvider.notifier).state = 0;
       AppAuthInterceptor.resetStaticState();
@@ -43,6 +44,7 @@ class HomeViewModel extends StateNotifier<HomeState> {
     } on SessionExpiredException {
       if (!mounted) return true;
       ref.read(authTokenProvider.notifier).state = null;
+      ref.read(activeClubContextProvider.notifier).state = null;
       ref.read(currentUserProfileProvider.notifier).clear();
       ref.read(homeTabProvider.notifier).state = 0;
       AppAuthInterceptor.resetStaticState();
@@ -50,6 +52,7 @@ class HomeViewModel extends StateNotifier<HomeState> {
       return true;
     } catch (e) {
       ref.read(authTokenProvider.notifier).state = null;
+      ref.read(activeClubContextProvider.notifier).state = null;
       ref.read(currentUserProfileProvider.notifier).clear();
       ref.read(homeTabProvider.notifier).state = 0;
       AppAuthInterceptor.resetStaticState();

@@ -18,6 +18,11 @@ enum ClubRole {
     if (val == null) return ClubRole.member;
 
     if (val is int) {
+      if (val == 0 || val == 3) return ClubRole.host;
+      if (val == 1) return ClubRole.member;
+      if (val == 2) return ClubRole.treasurer;
+      if (val == 4) return ClubRole.guest;
+      if (val == 5) return ClubRole.deputy;
       return ClubRole.values.firstWhere(
         (e) => e.value == val,
         orElse: () => ClubRole.member,

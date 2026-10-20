@@ -16,6 +16,7 @@ class MyClub {
   final String? roleId;
   final ClubMemberStatus status;
   final DateTime? joinedAt;
+  final List<String> permissions;
 
   const MyClub({
     required this.clubId,
@@ -28,5 +29,18 @@ class MyClub {
     this.roleId,
     required this.status,
     this.joinedAt,
+    this.permissions = const [],
   });
+
+  /// Kiểm tra xem CLB hiện tại có quyền hạn cụ thể hay không
+  bool hasPermission(String permissionCode) =>
+      permissions.contains(permissionCode);
+
+  /// Kiểm tra có ít nhất một trong các quyền
+  bool hasAnyPermission(Iterable<String> permissionCodes) =>
+      permissionCodes.any(permissions.contains);
+
+  /// Kiểm tra có toàn bộ các quyền yêu cầu
+  bool hasAllPermissions(Iterable<String> permissionCodes) =>
+      permissionCodes.every(permissions.contains);
 }

@@ -10,6 +10,7 @@ import '../../domain/entities/club/join_request.dart';
 import '../../domain/entities/club/my_club.dart';
 import '../../domain/enums/club_role.dart';
 import '../../domain/enums/session_enums.dart';
+import '../../domain/exceptions/app_exception.dart';
 import '../../domain/repositories/club_repository.dart';
 import '../datasource/remote/abstract/club_remote_datasource.dart';
 import '../dto/club/approve_join_request_dto.dart';
@@ -29,13 +30,16 @@ import '../mapper/join_request_mapper.dart';
 
 class ClubRepositoryImpl implements ClubRepository {
   final ClubRemoteDatasource remoteDatasource;
+  List<MyClub>? _cachedMyClubs;
 
   ClubRepositoryImpl(this.remoteDatasource);
 
   @override
   Future<List<MyClub>> getMyClubs() async {
     final List<MyClubResponseDto> dtos = await remoteDatasource.getMyClubs();
-    return dtos.map((MyClubResponseDto e) => ClubMapper.toMyClubEntity(e)).toList();
+    final clubs = dtos.map((MyClubResponseDto e) => ClubMapper.toMyClubEntity(e)).toList();
+    _cachedMyClubs = clubs;
+    return clubs;
   }
 
   @override
@@ -152,8 +156,17 @@ class ClubRepositoryImpl implements ClubRepository {
 
   @override
   Future<ActiveClubContext> switchClubContext(String clubId) async {
-    final dto = await remoteDatasource.switchContext(clubId);
-    return ClubMapper.toActiveContextEntity(dto);
+    var clubs = _cachedMyClubs ?? await getMyClubs();
+    var match = clubs.where((c) => c.clubId == clubId);
+    if (match.isEmpty) {
+      clubs = await getMyClubs();
+      match = clubs.where((c) => c.clubId == clubId);
+    }
+    if (match.isEmpty) {
+      throw const AppException(message: 'Không tìm thấy CLB trong danh sách CLB của bạn');
+    }
+    final club = match.first;
+    return ClubMapper.fromMyClub(club);
   }
 
   // --- Club Roles ---

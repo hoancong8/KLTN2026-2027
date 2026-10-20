@@ -35,6 +35,7 @@ class ClubMapper {
       roleId: dto.roleId,
       status: ClubMemberStatus.fromValue(dto.status),
       joinedAt: dto.joinedAt != null ? DateTime.tryParse(dto.joinedAt!) : null,
+      permissions: dto.permissions,
     );
   }
 
@@ -54,12 +55,25 @@ class ClubMapper {
     );
   }
 
+  static ActiveClubContext fromMyClub(MyClub club) {
+    return ActiveClubContext(
+      clubId: club.clubId,
+      clubName: club.clubName,
+      role: club.role,
+      roleName: club.roleName,
+      roleId: club.roleId,
+      permissions: club.permissions,
+    );
+  }
+
   static ActiveClubContext toActiveContextEntity(SwitchClubResponseDto dto) {
     return ActiveClubContext(
       accessToken: dto.accessToken,
       clubId: dto.clubId,
       clubName: dto.clubName,
       role: ClubRole.fromValue(dto.role ?? dto.roleName),
+      roleName: dto.roleName,
+      roleId: dto.roleId,
       permissions: dto.permissions,
     );
   }

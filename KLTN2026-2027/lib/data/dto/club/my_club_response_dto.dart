@@ -11,6 +11,7 @@ class MyClubResponseDto {
   final String? roleId;
   final dynamic status;
   final String? joinedAt;
+  final List<String> permissions;
 
   const MyClubResponseDto({
     required this.clubId,
@@ -23,6 +24,7 @@ class MyClubResponseDto {
     this.roleId,
     required this.status,
     this.joinedAt,
+    this.permissions = const [],
   });
 
   factory MyClubResponseDto.fromJson(dynamic rawJson) {
@@ -38,12 +40,21 @@ class MyClubResponseDto {
         roleId: null,
         status: 1,
         joinedAt: null,
+        permissions: [],
       );
     }
 
     final roleName = rawJson['roleName']?.toString();
     final roleId = rawJson['roleId']?.toString();
     final role = rawJson['role'] ?? roleName ?? roleId;
+
+    final rawPerms = rawJson['permissions'];
+    final permissions = (rawPerms is List)
+        ? rawPerms
+            .map((e) => e?.toString().trim() ?? '')
+            .where((e) => e.isNotEmpty)
+            .toList()
+        : const <String>[];
 
     return MyClubResponseDto(
       clubId: (rawJson['clubId'] ?? rawJson['groupId'])?.toString() ?? '',
@@ -56,6 +67,7 @@ class MyClubResponseDto {
       roleId: roleId,
       status: rawJson['status'],
       joinedAt: rawJson['joinedAt']?.toString(),
+      permissions: permissions,
     );
   }
 }

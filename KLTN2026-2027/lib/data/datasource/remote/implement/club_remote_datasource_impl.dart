@@ -14,7 +14,6 @@ import '../../../dto/club/explore_club_dto.dart';
 import '../../../dto/club/join_club_request_dto.dart';
 import '../../../dto/club/join_request_response_dto.dart';
 import '../../../dto/club/my_club_response_dto.dart';
-import '../../../dto/club/switch_club_response_dto.dart';
 import '../../../dto/club/update_club_info_request_dto.dart';
 import '../../../dto/club/update_club_schedules_request_dto.dart';
 import '../../../dto/club/update_member_role_request_dto.dart';
@@ -128,18 +127,6 @@ class ClubRemoteDatasourceImpl extends BaseRemoteDatasource implements ClubRemot
         }
         return true;
       });
-    } catch (e) {
-      throw handleError(e);
-    }
-  }
-
-  @override
-  Future<SwitchClubResponseDto> switchContext(String clubId) async {
-    try {
-      final response = await dio.post(
-        '${AppConfig.clubsPath}/$clubId/switch-context',
-      );
-      return handleResponse(response, (data) => SwitchClubResponseDto.fromJson(data));
     } catch (e) {
       throw handleError(e);
     }

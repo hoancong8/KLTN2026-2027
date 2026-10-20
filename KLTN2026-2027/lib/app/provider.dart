@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/legacy.dart';
 import 'package:kltn2026_2027/app/consts/app_validator.dart';
 import 'package:kltn2026_2027/app/services/secure_storage_service.dart';
 import 'package:kltn2026_2027/domain/entities/auth_token.dart';
+import '../domain/entities/club/active_club_context.dart';
 import '../domain/entities/user_profile.dart';
 import 'package:kltn2026_2027/domain/usecases/auth/logout_usecase.dart';
 import 'package:kltn2026_2027/domain/usecases/auth/biometric_usecase.dart';
@@ -109,6 +110,20 @@ import '../domain/usecases/session/session_usecases.dart';
 /// Global auth token provider
 final authTokenProvider = StateProvider<AuthToken?>((ref) => null);
 
+/// Ngữ cảnh Câu lạc bộ đang hoạt động (Contextual Multi-Club RBAC)
+final activeClubContextProvider =
+    StateProvider<ActiveClubContext?>((ref) => null);
+
+/// Active Club ID hiện tại (dùng cho Dio Interceptor và API query)
+final activeClubIdProvider = Provider<String?>((ref) {
+  return ref.watch(activeClubContextProvider)?.clubId;
+});
+
+/// Danh sách permissions của CLB đang hoạt động
+final activeClubPermissionsProvider = Provider<List<String>>((ref) {
+  return ref.watch(activeClubContextProvider)?.permissions ?? const [];
+});
+
 /// Notifier quản lý thông tin profile & permissions người dùng đang đăng nhập
 class CurrentUserProfileNotifier extends Notifier<UserProfile?> {
   final UserProfile? initialValue;
@@ -143,10 +158,18 @@ final currentUserProfileProvider =
   CurrentUserProfileNotifier.new,
 );
 
-/// Global provider danh sách permissions của user hiện tại
+/// Global provider danh sách permissions của user hiện tại (gộp cả System permissions và Active Club permissions)
 final userPermissionsProvider = Provider<List<String>>((ref) {
   final userProfile = ref.watch(currentUserProfileProvider);
-  return userProfile?.permissions ?? [];
+  final activeContext = ref.watch(activeClubContextProvider);
+  final result = <String>{};
+  if (userProfile != null) {
+    result.addAll(userProfile.permissions);
+  }
+  if (activeContext != null) {
+    result.addAll(activeContext.permissions);
+  }
+  return result.toList();
 });
 
 /// Helper check role Admin từ user profile
@@ -157,35 +180,70 @@ final isAdminUserProvider = Provider<bool>((ref) {
       userProfile.permissions.contains('System.Administrator');
 });
 
-/// Helper check permission của user hiện tại (tự động hỗ trợ Admin bypass)
-final hasPermissionProvider = Provider.family<bool, String>((ref, permissionName) {
+/// Helper check permission trong CLB đang hoạt động
+final hasClubPermissionProvider =
+    Provider.family<bool, String>((ref, permissionCode) {
+  if (permissionCode.isEmpty) return true;
+  final isAdmin = ref.watch(isAdminUserProvider);
+  if (isAdmin) return true;
+
+  final activeContext = ref.watch(activeClubContextProvider);
+  if (activeContext == null) return false;
+  return activeContext.permissions.contains(permissionCode);
+});
+
+/// Helper check permission của user hiện tại (hỗ trợ Admin bypass, Contextual Club & System Permissions)
+final hasPermissionProvider =
+    Provider.family<bool, String>((ref, permissionName) {
   if (permissionName.isEmpty) return true;
   final isAdmin = ref.watch(isAdminUserProvider);
   if (isAdmin) return true; // Admin có toàn quyền
 
+  // 1. Kiểm tra quyền trong ngữ cảnh CLB đang chọn (Contextual RBAC - X-Group-Id)
+  final activeContext = ref.watch(activeClubContextProvider);
+  if (activeContext != null &&
+      activeContext.permissions.contains(permissionName)) {
+    return true;
+  }
+
+  // 2. Kiểm tra quyền hệ thống từ UserProfile
   final userProfile = ref.watch(currentUserProfileProvider);
-  if (userProfile == null) return false;
-  return userProfile.permissions.contains(permissionName);
+  if (userProfile != null &&
+      userProfile.permissions.contains(permissionName)) {
+    return true;
+  }
+
+  return false;
 });
 
 /// Extension hỗ trợ kiểm tra quyền dùng chung qua Ref
 extension PermissionRefX on Ref {
-  bool hasPermission(String permission) => watch(hasPermissionProvider(permission));
+  bool hasPermission(String permission) =>
+      watch(hasPermissionProvider(permission));
+  bool hasClubPermission(String permission) =>
+      watch(hasClubPermissionProvider(permission));
   bool hasAnyPermission(Iterable<String> permissions) =>
       permissions.any((p) => watch(hasPermissionProvider(p)));
   bool hasAllPermissions(Iterable<String> permissions) =>
       permissions.every((p) => watch(hasPermissionProvider(p)));
   bool get isAdmin => watch(isAdminUserProvider);
+  ActiveClubContext? get activeClubContext => watch(activeClubContextProvider);
+  String? get activeClubId => watch(activeClubIdProvider);
 }
 
 /// Extension hỗ trợ kiểm tra quyền dùng chung qua WidgetRef
 extension PermissionWidgetRefX on WidgetRef {
-  bool hasPermission(String permission) => watch(hasPermissionProvider(permission));
+  bool hasPermission(String permission) =>
+      watch(hasPermissionProvider(permission));
+  bool hasClubPermission(String permission) =>
+      watch(hasClubPermissionProvider(permission));
   bool hasAnyPermission(Iterable<String> permissions) =>
       permissions.any((p) => watch(hasPermissionProvider(p)));
   bool hasAllPermissions(Iterable<String> permissions) =>
       permissions.every((p) => watch(hasPermissionProvider(p)));
   bool get isAdmin => watch(isAdminUserProvider);
+  ActiveClubContext? get activeClubContext => watch(activeClubContextProvider);
+  String? get activeClubId => watch(activeClubIdProvider);
 }
 
 /// Provider for current tab index in Home Screen
@@ -620,4 +678,3 @@ final joinRecruitmentUseCaseProvider = Provider<JoinRecruitmentUseCase>((ref) {
 final cancelRecruitmentBookingUseCaseProvider = Provider<CancelRecruitmentBookingUseCase>((ref) {
   return CancelRecruitmentBookingUseCase(ref.watch(sessionRepositoryProvider));
 });
-

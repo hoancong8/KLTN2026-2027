@@ -44,12 +44,11 @@ class AppConfig {
 
   // ===== [API] 2. Clubs Management APIs (/api/v1/clubs) =====
   static const clubsPath = '/api/v1/clubs';
+  static const myClubsPath = '$clubsPath/my-clubs';
   static const clubsExplorePath = '$clubsPath/explore';
   static String clubDetailPath(String id) => '$clubsPath/$id';
   static String clubInfoPath(String id) => '$clubsPath/$id/info';
   static String clubSchedulesPath(String id) => '$clubsPath/$id/schedules';
-  static String clubSwitchContextPath(String id) =>
-      '$clubsPath/$id/switch-context';
   static String clubMembersPath(String id) => '$clubsPath/$id/members';
   static String clubMemberRolePath(String id, String userId) =>
       '$clubsPath/$id/members/$userId/role';

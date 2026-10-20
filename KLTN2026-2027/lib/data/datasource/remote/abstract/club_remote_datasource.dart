@@ -10,7 +10,6 @@ import '../../../dto/club/explore_club_dto.dart';
 import '../../../dto/club/join_club_request_dto.dart';
 import '../../../dto/club/join_request_response_dto.dart';
 import '../../../dto/club/my_club_response_dto.dart';
-import '../../../dto/club/switch_club_response_dto.dart';
 import '../../../dto/club/update_club_info_request_dto.dart';
 import '../../../dto/club/update_club_schedules_request_dto.dart';
 import '../../../dto/club/update_member_role_request_dto.dart';
@@ -29,8 +28,6 @@ abstract class ClubRemoteDatasource {
   Future<bool> updateMemberRole(String clubId, String userId, UpdateMemberRoleRequestDto request);
 
   Future<bool> removeMember(String clubId, String userId);
-
-  Future<SwitchClubResponseDto> switchContext(String clubId);
 
   // --- Club Roles ---
   Future<List<ClubRolePermissionItemDto>> getClubPermissions();
