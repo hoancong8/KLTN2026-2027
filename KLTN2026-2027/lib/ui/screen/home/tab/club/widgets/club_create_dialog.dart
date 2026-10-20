@@ -504,25 +504,6 @@ class _ClubCreateDialogState extends ConsumerState<ClubCreateDialog> {
                           onChanged: (val) {
                             setState(() {
                               _hasSchedule = val;
-                              if (_hasSchedule && _schedules.isEmpty) {
-                                _schedules.addAll([
-                                  ClubScheduleEntry(
-                                    dayOfWeek: 1,
-                                    startTime: const TimeOfDay(hour: 18, minute: 0),
-                                    endTime: const TimeOfDay(hour: 20, minute: 0),
-                                  ),
-                                  ClubScheduleEntry(
-                                    dayOfWeek: 3,
-                                    startTime: const TimeOfDay(hour: 18, minute: 0),
-                                    endTime: const TimeOfDay(hour: 20, minute: 0),
-                                  ),
-                                  ClubScheduleEntry(
-                                    dayOfWeek: 5,
-                                    startTime: const TimeOfDay(hour: 18, minute: 0),
-                                    endTime: const TimeOfDay(hour: 20, minute: 0),
-                                  ),
-                                ]);
-                              }
                             });
                           },
                         ),
