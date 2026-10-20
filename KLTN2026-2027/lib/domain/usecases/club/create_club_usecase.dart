@@ -10,8 +10,8 @@ class CreateClubParams {
   final String? fixedAddress;
   final double? lat;
   final double? lng;
-  final int? minSkillLevel;
-  final int? maxSkillLevel;
+  final String? minSkillLevel;
+  final String? maxSkillLevel;
   final List<dynamic>? schedules;
 
   const CreateClubParams({

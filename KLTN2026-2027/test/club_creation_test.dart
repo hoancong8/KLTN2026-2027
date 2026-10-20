@@ -1,6 +1,8 @@
 // test/club_creation_test.dart
 
+import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kltn2026_2027/app/utils/app_exception_handler.dart';
 import 'package:kltn2026_2027/data/dto/club/club_detail_dto.dart';
 import 'package:kltn2026_2027/data/dto/club/create_club_request_dto.dart';
 import 'package:kltn2026_2027/data/dto/club/update_club_schedules_request_dto.dart';
@@ -30,8 +32,8 @@ void main() {
         fixedAddress: '238 Đường 3/2, Quận 10',
         lat: 10.7712,
         lng: 106.6685,
-        minSkillLevel: 1,
-        maxSkillLevel: 5,
+        minSkillLevel: 'NB',
+        maxSkillLevel: 'TBK',
         schedules: [schedule1, schedule2],
       );
 
@@ -44,8 +46,8 @@ void main() {
       expect(json['fixedAddress'], '238 Đường 3/2, Quận 10');
       expect(json['lat'], 10.7712);
       expect(json['lng'], 106.6685);
-      expect(json['minSkillLevel'], 1);
-      expect(json['maxSkillLevel'], 5);
+      expect(json['minSkillLevel'], 'NB');
+      expect(json['maxSkillLevel'], 'TBK');
       expect(json['schedules'], isA<List>());
       expect((json['schedules'] as List).length, 2);
 
@@ -73,14 +75,14 @@ void main() {
       const params = CreateClubParams(
         name: 'CLB Test',
         description: 'Test Desc',
-        minSkillLevel: 2,
-        maxSkillLevel: 4,
+        minSkillLevel: 'Y',
+        maxSkillLevel: 'TB',
       );
 
       expect(params.name, 'CLB Test');
       expect(params.description, 'Test Desc');
-      expect(params.minSkillLevel, 2);
-      expect(params.maxSkillLevel, 4);
+      expect(params.minSkillLevel, 'Y');
+      expect(params.maxSkillLevel, 'TB');
     });
 
     test('ClubDetailDto parses BE response with name, schedulesSummary and host role', () {
@@ -146,6 +148,28 @@ void main() {
       expect(entity.currentUserStatus.isHost, isTrue);
       expect(entity.schedules.length, 3);
       expect(entity.schedules[0].dayOfWeek, 2);
+    });
+
+    test('AppExceptionHandler extracts first error from RFC 7807 ValidationProblemDetails', () {
+      final dioException = DioException(
+        requestOptions: RequestOptions(path: '/api/v1/clubs'),
+        response: Response(
+          requestOptions: RequestOptions(path: '/api/v1/clubs'),
+          statusCode: 400,
+          data: {
+            'type': 'https://tools.ietf.org/html/rfc7231#section-6.5.1',
+            'title': 'One or more validation errors occurred.',
+            'status': 400,
+            'errors': {
+              'Name': ['Tên câu lạc bộ không được để trống.'],
+              'Schedules[0].StartTime': ['Giờ bắt đầu phải nhỏ hơn giờ kết thúc.'],
+            },
+          },
+        ),
+      );
+
+      final appException = AppExceptionHandler.handle(dioException);
+      expect(appException.message, 'Tên câu lạc bộ không được để trống.');
     });
   });
 }

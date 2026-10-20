@@ -27,8 +27,8 @@ abstract class ClubRepository {
     String? fixedAddress,
     double? lat,
     double? lng,
-    int? minSkillLevel,
-    int? maxSkillLevel,
+    String? minSkillLevel,
+    String? maxSkillLevel,
     List<dynamic>? schedules,
   });
 

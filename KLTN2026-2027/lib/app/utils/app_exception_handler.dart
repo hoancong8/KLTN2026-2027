@@ -30,11 +30,31 @@ class AppExceptionHandler {
 
     // 2. Thử bóc tách message từ nội dung trả về của Server (RFC 7807 ProblemDetails hoặc ABP)
     String? message;
-    if (data is Map<String, dynamic>) {
-      // 2.1 Chuẩn RFC 7807 ProblemDetails (detail / title)
-      message = data['detail']?.toString() ?? data['title']?.toString();
+    if (data is Map) {
+      // 2.1 Bóc tách mảng errors trong RFC 7807 ValidationProblemDetails trước tiên
+      if (data.containsKey('errors') && data['errors'] is Map) {
+        final errors = data['errors'] as Map;
+        final errorMessages = <String>[];
+        for (final entry in errors.entries) {
+          if (entry.value is List) {
+            for (final msg in (entry.value as List)) {
+              if (msg != null && msg.toString().trim().isNotEmpty) {
+                errorMessages.add(msg.toString().trim());
+              }
+            }
+          } else if (entry.value != null && entry.value.toString().trim().isNotEmpty) {
+            errorMessages.add(entry.value.toString().trim());
+          }
+        }
+        if (errorMessages.isNotEmpty) {
+          message = errorMessages.first;
+        }
+      }
 
-      // 2.2 Fallback ABP error object
+      // 2.2 Chuẩn RFC 7807 ProblemDetails (detail)
+      message ??= data['detail']?.toString();
+
+      // 2.3 Fallback ABP error object
       if (message == null) {
         final error = data['error'] ?? (data['result'] is Map ? data['result']['error'] : null);
         if (error is Map) {
@@ -42,6 +62,14 @@ class AppExceptionHandler {
         }
       }
       message ??= data['message']?.toString();
+
+      // 2.4 Fallback title nếu không có message cụ thể và title không phải chuỗi chung chung
+      if (message == null && data['title'] != null) {
+        final title = data['title'].toString();
+        if (title.isNotEmpty && title != 'One or more validation errors occurred.') {
+          message = title;
+        }
+      }
     }
 
     // 3. Nếu là lỗi xác thực 401

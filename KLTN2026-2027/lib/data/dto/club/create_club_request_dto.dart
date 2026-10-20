@@ -8,8 +8,8 @@ class CreateClubRequestDto {
   final String? fixedAddress;
   final double? lat;
   final double? lng;
-  final int? minSkillLevel;
-  final int? maxSkillLevel;
+  final String? minSkillLevel;
+  final String? maxSkillLevel;
   final List<ClubScheduleItemRequestDto>? schedules;
 
   const CreateClubRequestDto({

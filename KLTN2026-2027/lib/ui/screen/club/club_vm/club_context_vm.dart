@@ -156,8 +156,8 @@ class ClubContextViewModel extends StateNotifier<ClubContextState> {
     String? fixedAddress,
     double? lat,
     double? lng,
-    int? minSkillLevel,
-    int? maxSkillLevel,
+    String? minSkillLevel,
+    String? maxSkillLevel,
     List<dynamic>? schedules,
   }) async {
     state = state.copyWith(isLoading: true, clearError: true, clearSuccess: true);

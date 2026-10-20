@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kltn2026_2027/app/provider.dart';
 import 'package:kltn2026_2027/app/theme/theme.dart';
 import '../../../../../../domain/enums/session_enums.dart';
 import '../../../../club/club_vm/club_context_vm.dart';
@@ -30,6 +31,10 @@ class _ClubCreateDialogState extends ConsumerState<ClubCreateDialog> {
   late final TextEditingController _descController;
   late final TextEditingController _venueController;
   late final TextEditingController _addressController;
+
+  double? _lat;
+  double? _lng;
+  bool _isGettingLocation = false;
 
   SkillLevel _minLevel = SkillLevel.nb;
   SkillLevel _maxLevel = SkillLevel.k;
@@ -93,6 +98,38 @@ class _ClubCreateDialogState extends ConsumerState<ClubCreateDialog> {
     }
   }
 
+  Future<void> _getCurrentLocation() async {
+    setState(() => _isGettingLocation = true);
+    try {
+      final locationService = ref.read(locationServiceProvider);
+      final loc = await locationService.getCurrentLocation();
+      if (!mounted) return;
+      setState(() {
+        _lat = loc.latitude;
+        _lng = loc.longitude;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Đã cập nhật tọa độ GPS: (${loc.latitude.toStringAsFixed(4)}, ${loc.longitude.toStringAsFixed(4)})'),
+          backgroundColor: AppColors.success,
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Không thể lấy tọa độ GPS. Vui lòng kiểm tra quyền truy cập vị trí.'),
+          backgroundColor: AppColors.error,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isGettingLocation = false);
+    }
+  }
+
   Future<void> _submit() async {
     setState(() => _errorMessage = null);
 
@@ -103,7 +140,7 @@ class _ClubCreateDialogState extends ConsumerState<ClubCreateDialog> {
     if (_hasSchedule) {
       if (_schedules.isEmpty) {
         setState(() {
-          _errorMessage = 'Vui lòng chọn ít nhất một ngày sinh hoạt trong tháng hoặc tắt thiết lập lịch định kỳ.';
+          _errorMessage = 'Vui lòng chọn ít nhất một thứ sinh hoạt trong tuần hoặc tắt thiết lập lịch định kỳ.';
         });
         return;
       }
@@ -144,8 +181,10 @@ class _ClubCreateDialogState extends ConsumerState<ClubCreateDialog> {
       avatarUrl: _avatarUrlController.text.trim().isNotEmpty ? _avatarUrlController.text.trim() : null,
       fixedVenueName: _venueController.text.trim().isNotEmpty ? _venueController.text.trim() : null,
       fixedAddress: _addressController.text.trim().isNotEmpty ? _addressController.text.trim() : null,
-      minSkillLevel: _minLevel.level,
-      maxSkillLevel: _maxLevel.level,
+      lat: _lat,
+      lng: _lng,
+      minSkillLevel: _minLevel.code,
+      maxSkillLevel: _maxLevel.code,
       schedules: schedulesList,
     );
 
@@ -157,7 +196,7 @@ class _ClubCreateDialogState extends ConsumerState<ClubCreateDialog> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Chúc mừng! Bạn đã tạo CLB thành công và trở thành Chủ nhóm (Host).'),
-          backgroundColor: AppColor.cGreen,
+          backgroundColor: AppColors.success,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -288,8 +327,8 @@ class _ClubCreateDialogState extends ConsumerState<ClubCreateDialog> {
                           if (v.trim().length < 3) {
                             return 'Tên câu lạc bộ phải có ít nhất 3 ký tự';
                           }
-                          if (v.trim().length > 100) {
-                            return 'Tên câu lạc bộ tối đa 100 ký tự';
+                          if (v.trim().length > 255) {
+                            return 'Tên câu lạc bộ tối đa 255 ký tự';
                           }
                           return null;
                         },
@@ -371,12 +410,14 @@ class _ClubCreateDialogState extends ConsumerState<ClubCreateDialog> {
                       TextFormField(
                         controller: _descController,
                         maxLines: 2,
+                        maxLength: 500,
                         textInputAction: TextInputAction.next,
                         decoration: InputDecoration(
                           hintText: 'Mục tiêu giao lưu, đối tượng thành viên...',
                           prefixIcon: const Icon(Icons.notes_rounded, color: AppColor.cMuted, size: 20),
                           border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                           contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                          counterText: '',
                         ),
                       ),
 
@@ -407,6 +448,64 @@ class _ClubCreateDialogState extends ConsumerState<ClubCreateDialog> {
                           border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                           contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                         ),
+                      ),
+                      const SizedBox(height: 8),
+
+                      // GPS Coordinates Control
+                      Row(
+                        children: [
+                          if (_lat != null && _lng != null) ...[
+                            Expanded(
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                decoration: BoxDecoration(
+                                  color: AppColors.surfaceSubtle,
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(color: AppColors.borderStrong),
+                                ),
+                                child: Row(
+                                  children: [
+                                    const Icon(Icons.my_location_rounded, size: 16, color: AppColor.cMain),
+                                    const SizedBox(width: 6),
+                                    Expanded(
+                                      child: Text(
+                                        'GPS: ${_lat!.toStringAsFixed(4)}, ${_lng!.toStringAsFixed(4)}',
+                                        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColor.cTitle),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                    InkWell(
+                                      onTap: () => setState(() {
+                                        _lat = null;
+                                        _lng = null;
+                                      }),
+                                      child: const Icon(Icons.close_rounded, size: 16, color: AppColor.cMuted),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                          ],
+                          OutlinedButton.icon(
+                            style: OutlinedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            ),
+                            onPressed: _isGettingLocation ? null : _getCurrentLocation,
+                            icon: _isGettingLocation
+                                ? const SizedBox(
+                                    width: 14,
+                                    height: 14,
+                                    child: CircularProgressIndicator(strokeWidth: 2, color: AppColor.cMain),
+                                  )
+                                : const Icon(Icons.my_location_rounded, size: 16, color: AppColor.cMain),
+                            label: Text(
+                              _lat != null ? 'Cập nhật GPS' : 'Lấy vị trí GPS',
+                              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColor.cMain),
+                            ),
+                          ),
+                        ],
                       ),
 
                       const SizedBox(height: 14),
@@ -471,8 +570,8 @@ class _ClubCreateDialogState extends ConsumerState<ClubCreateDialog> {
                       ),
 
                       const SizedBox(height: 20),
-                      // Section 3: Lich sinh hoat dinh ky
-                      _buildSectionHeader('3. Lịch sinh hoạt định kỳ', Icons.event_repeat_rounded),
+                      // Section 3: Lich sinh hoat dinh ky hang tuan
+                      _buildSectionHeader('3. Lịch sinh hoạt định kỳ hàng tuần', Icons.event_repeat_rounded),
                       const SizedBox(height: 8),
 
                       Container(
@@ -500,7 +599,7 @@ class _ClubCreateDialogState extends ConsumerState<ClubCreateDialog> {
                             ),
                           ),
                           subtitle: const Text(
-                            'Lên lịch theo tháng, chọn ngày và thiết lập giờ cố định hoặc tùy chỉnh',
+                            'Thiết lập các thứ sinh hoạt cố định trong tuần (Thứ 2 - Chủ Nhật) và khung giờ',
                             style: TextStyle(fontSize: 11, color: AppColor.cMuted),
                           ),
                           onChanged: (val) {

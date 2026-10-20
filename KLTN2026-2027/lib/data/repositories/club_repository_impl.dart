@@ -57,8 +57,8 @@ class ClubRepositoryImpl implements ClubRepository {
     String? fixedAddress,
     double? lat,
     double? lng,
-    int? minSkillLevel,
-    int? maxSkillLevel,
+    String? minSkillLevel,
+    String? maxSkillLevel,
     List<dynamic>? schedules,
   }) async {
     final List<ClubScheduleItemRequestDto>? scheduleDtos = schedules?.map<ClubScheduleItemRequestDto>((s) {
