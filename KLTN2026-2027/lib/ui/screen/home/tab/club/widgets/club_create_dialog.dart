@@ -5,18 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../../app/consts/app_color.dart';
 import '../../../../../../domain/enums/session_enums.dart';
 import '../../../../club/club_vm/club_context_vm.dart';
-
-class _ScheduleEntry {
-  int dayOfWeek;
-  TimeOfDay startTime;
-  TimeOfDay endTime;
-
-  _ScheduleEntry({
-    required this.dayOfWeek,
-    required this.startTime,
-    required this.endTime,
-  });
-}
+import 'club_schedule_planner.dart';
 
 class ClubCreateDialog extends ConsumerStatefulWidget {
   const ClubCreateDialog({super.key});
@@ -46,20 +35,10 @@ class _ClubCreateDialogState extends ConsumerState<ClubCreateDialog> {
   SkillLevel _maxLevel = SkillLevel.k;
 
   bool _hasSchedule = false;
-  final List<_ScheduleEntry> _schedules = [];
+  final List<ClubScheduleEntry> _schedules = [];
 
   bool _isSubmitting = false;
   String? _errorMessage;
-
-  static const List<MapEntry<int, String>> _dayOptions = [
-    MapEntry(1, 'Thứ 2'),
-    MapEntry(2, 'Thứ 3'),
-    MapEntry(3, 'Thứ 4'),
-    MapEntry(4, 'Thứ 5'),
-    MapEntry(5, 'Thứ 6'),
-    MapEntry(6, 'Thứ 7'),
-    MapEntry(0, 'Chủ Nhật'),
-  ];
 
   static const List<String> _avatarPresets = [
     'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=150',
@@ -93,50 +72,25 @@ class _ClubCreateDialogState extends ConsumerState<ClubCreateDialog> {
     return '$h:$m';
   }
 
-  Future<void> _pickTime(int index, bool isStart) async {
-    final item = _schedules[index];
-    final initial = isStart ? item.startTime : item.endTime;
-    final picked = await showTimePicker(
-      context: context,
-      initialTime: initial,
-      builder: (context, child) {
-        return MediaQuery(
-          data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
-          child: child ?? const SizedBox(),
-        );
-      },
-    );
-
-    if (picked != null) {
-      setState(() {
-        if (isStart) {
-          item.startTime = picked;
-        } else {
-          item.endTime = picked;
-        }
-      });
+  String _getDayName(int dayOfWeek) {
+    switch (dayOfWeek) {
+      case 1:
+        return 'Thứ 2';
+      case 2:
+        return 'Thứ 3';
+      case 3:
+        return 'Thứ 4';
+      case 4:
+        return 'Thứ 5';
+      case 5:
+        return 'Thứ 6';
+      case 6:
+        return 'Thứ 7';
+      case 0:
+        return 'Chủ Nhật';
+      default:
+        return 'Thứ $dayOfWeek';
     }
-  }
-
-  void _addScheduleEntry() {
-    setState(() {
-      _schedules.add(
-        _ScheduleEntry(
-          dayOfWeek: 3,
-          startTime: const TimeOfDay(hour: 19, minute: 0),
-          endTime: const TimeOfDay(hour: 21, minute: 0),
-        ),
-      );
-    });
-  }
-
-  void _removeScheduleEntry(int index) {
-    setState(() {
-      _schedules.removeAt(index);
-      if (_schedules.isEmpty) {
-        _hasSchedule = false;
-      }
-    });
   }
 
   Future<void> _submit() async {
@@ -149,7 +103,7 @@ class _ClubCreateDialogState extends ConsumerState<ClubCreateDialog> {
     if (_hasSchedule) {
       if (_schedules.isEmpty) {
         setState(() {
-          _errorMessage = 'Vui lòng thêm ít nhất một khung giờ sinh hoạt hoặc bỏ chọn lịch cố định.';
+          _errorMessage = 'Vui lòng chọn ít nhất một ngày sinh hoạt trong tháng hoặc tắt thiết lập lịch định kỳ.';
         });
         return;
       }
@@ -160,7 +114,7 @@ class _ClubCreateDialogState extends ConsumerState<ClubCreateDialog> {
         final endMin = entry.endTime.hour * 60 + entry.endTime.minute;
         if (startMin >= endMin) {
           setState(() {
-            _errorMessage = 'Buổi thứ ${i + 1}: Giờ bắt đầu (${_formatTime(entry.startTime)}) phải trước giờ kết thúc (${_formatTime(entry.endTime)}).';
+            _errorMessage = 'Buổi ${_getDayName(entry.dayOfWeek)}: Giờ bắt đầu (${_formatTime(entry.startTime)}) phải trước giờ kết thúc (${_formatTime(entry.endTime)}).';
           });
           return;
         }
@@ -511,161 +465,73 @@ class _ClubCreateDialogState extends ConsumerState<ClubCreateDialog> {
                       const SizedBox(height: 20),
                       // Section 3: Lich sinh hoat dinh ky
                       _buildSectionHeader('3. Lịch sinh hoạt định kỳ', Icons.event_repeat_rounded),
-                      const SizedBox(height: 6),
+                      const SizedBox(height: 8),
 
-                      Row(
-                        children: [
-                          Checkbox(
-                            value: _hasSchedule,
-                            activeColor: AppColor.cMain,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                            onChanged: (val) {
-                              setState(() {
-                                _hasSchedule = val ?? false;
-                                if (_hasSchedule && _schedules.isEmpty) {
-                                  _addScheduleEntry();
-                                }
-                              });
-                            },
+                      Container(
+                        decoration: BoxDecoration(
+                          color: _hasSchedule
+                              ? AppColor.cMain.withValues(alpha: 0.05)
+                              : const Color(0xFFF8FAFC),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: _hasSchedule
+                                ? AppColor.cMain.withValues(alpha: 0.3)
+                                : const Color(0xFFE2E8F0),
                           ),
-                          const Expanded(
-                            child: Text(
-                              'Thiết lập các buổi tập cố định trong tuần',
-                              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColor.cTitle),
+                        ),
+                        child: SwitchListTile(
+                          value: _hasSchedule,
+                          activeThumbColor: AppColor.cMain,
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
+                          title: const Text(
+                            'Thiết lập lịch sinh hoạt định kỳ',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                              color: AppColor.cTitle,
                             ),
                           ),
-                        ],
+                          subtitle: const Text(
+                            'Lên lịch theo tháng, chọn ngày và thiết lập giờ cố định hoặc tùy chỉnh',
+                            style: TextStyle(fontSize: 11, color: AppColor.cMuted),
+                          ),
+                          onChanged: (val) {
+                            setState(() {
+                              _hasSchedule = val;
+                              if (_hasSchedule && _schedules.isEmpty) {
+                                _schedules.addAll([
+                                  ClubScheduleEntry(
+                                    dayOfWeek: 1,
+                                    startTime: const TimeOfDay(hour: 18, minute: 0),
+                                    endTime: const TimeOfDay(hour: 20, minute: 0),
+                                  ),
+                                  ClubScheduleEntry(
+                                    dayOfWeek: 3,
+                                    startTime: const TimeOfDay(hour: 18, minute: 0),
+                                    endTime: const TimeOfDay(hour: 20, minute: 0),
+                                  ),
+                                  ClubScheduleEntry(
+                                    dayOfWeek: 5,
+                                    startTime: const TimeOfDay(hour: 18, minute: 0),
+                                    endTime: const TimeOfDay(hour: 20, minute: 0),
+                                  ),
+                                ]);
+                              }
+                            });
+                          },
+                        ),
                       ),
 
                       if (_hasSchedule) ...[
-                        const SizedBox(height: 6),
-                        ..._schedules.asMap().entries.map((entry) {
-                          final idx = entry.key;
-                          final schedule = entry.value;
-
-                          return Container(
-                            margin: const EdgeInsets.only(bottom: 10),
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFF8FAFC),
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: const Color(0xFFE2E8F0)),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    Text(
-                                      'Buổi ${idx + 1}',
-                                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColor.cMain),
-                                    ),
-                                    const Spacer(),
-                                    IconButton(
-                                      icon: const Icon(Icons.delete_outline_rounded, color: AppColor.cRed, size: 18),
-                                      padding: EdgeInsets.zero,
-                                      constraints: const BoxConstraints(),
-                                      onPressed: () => _removeScheduleEntry(idx),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 8),
-                                Row(
-                                  children: [
-                                    // Day of week
-                                    Expanded(
-                                      flex: 3,
-                                      child: DropdownButtonFormField<int>(
-                                        initialValue: schedule.dayOfWeek,
-                                        decoration: InputDecoration(
-                                          labelText: 'Thứ',
-                                          contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                                        ),
-                                        items: _dayOptions.map((opt) {
-                                          return DropdownMenuItem(
-                                            value: opt.key,
-                                            child: Text(opt.value, style: const TextStyle(fontSize: 12)),
-                                          );
-                                        }).toList(),
-                                        onChanged: (val) {
-                                          if (val != null) {
-                                            setState(() => schedule.dayOfWeek = val);
-                                          }
-                                        },
-                                      ),
-                                    ),
-                                    const SizedBox(width: 8),
-
-                                    // Start Time
-                                    Expanded(
-                                      flex: 3,
-                                      child: InkWell(
-                                        onTap: () => _pickTime(idx, true),
-                                        borderRadius: BorderRadius.circular(8),
-                                        child: InputDecorator(
-                                          decoration: InputDecoration(
-                                            labelText: 'Bắt đầu',
-                                            contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                                          ),
-                                          child: Row(
-                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              Text(
-                                                _formatTime(schedule.startTime),
-                                                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
-                                              ),
-                                              const Icon(Icons.access_time_rounded, size: 14, color: AppColor.cMuted),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 8),
-
-                                    // End Time
-                                    Expanded(
-                                      flex: 3,
-                                      child: InkWell(
-                                        onTap: () => _pickTime(idx, false),
-                                        borderRadius: BorderRadius.circular(8),
-                                        child: InputDecorator(
-                                          decoration: InputDecoration(
-                                            labelText: 'Kết thúc',
-                                            contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                                          ),
-                                          child: Row(
-                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              Text(
-                                                _formatTime(schedule.endTime),
-                                                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
-                                              ),
-                                              const Icon(Icons.access_time_rounded, size: 14, color: AppColor.cMuted),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          );
-                        }),
-
-                        OutlinedButton.icon(
-                          icon: const Icon(Icons.add_rounded, size: 16),
-                          label: const Text('Thêm khung giờ / ngày chơi'),
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: AppColor.cMain,
-                            side: const BorderSide(color: AppColor.cMain),
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                          ),
-                          onPressed: _addScheduleEntry,
+                        const SizedBox(height: 12),
+                        ClubSchedulePlanner(
+                          initialSchedules: _schedules,
+                          onChanged: (updated) {
+                            setState(() {
+                              _schedules.clear();
+                              _schedules.addAll(updated);
+                            });
+                          },
                         ),
                       ],
 
