@@ -11,7 +11,7 @@ import '../../../../../../domain/enums/session_enums.dart';
 import '../../../../club/session_vm/club_sessions_vm.dart';
 import '../../../../club/widgets/create_session_dialog.dart';
 
-class ClubSessionsTab extends ConsumerWidget {
+class ClubSessionsTab extends ConsumerStatefulWidget {
   final String clubId;
   final String clubName;
   final bool isHost;
@@ -24,9 +24,68 @@ class ClubSessionsTab extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final state = ref.watch(clubSessionsViewModelProvider(clubId));
-    final vm = ref.read(clubSessionsViewModelProvider(clubId).notifier);
+  ConsumerState<ClubSessionsTab> createState() => _ClubSessionsTabState();
+}
+
+class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
+  late DateTime _focusedMonth;
+  DateTime? _selectedDate;
+
+  @override
+  void initState() {
+    super.initState();
+    final now = DateTime.now();
+    _focusedMonth = DateTime(now.year, now.month, 1);
+  }
+
+  String _getWeekdayName(DateTime date) {
+    switch (date.weekday) {
+      case DateTime.monday:
+        return 'Thứ Hai';
+      case DateTime.tuesday:
+        return 'Thứ Ba';
+      case DateTime.wednesday:
+        return 'Thứ Tư';
+      case DateTime.thursday:
+        return 'Thứ Năm';
+      case DateTime.friday:
+        return 'Thứ Sáu';
+      case DateTime.saturday:
+        return 'Thứ Bảy';
+      case DateTime.sunday:
+        return 'Chủ Nhật';
+      default:
+        return '';
+    }
+  }
+
+  String _getTimeRemainingLabel(DateTime sessionTime) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final sessionDate = DateTime(sessionTime.year, sessionTime.month, sessionTime.day);
+    final diffDays = sessionDate.difference(today).inDays;
+
+    if (diffDays == 0) {
+      if (sessionTime.isAfter(now)) {
+        return 'Hôm nay';
+      } else {
+        return 'Đang diễn ra';
+      }
+    } else if (diffDays == 1) {
+      return 'Ngày mai';
+    } else if (diffDays > 1 && diffDays <= 7) {
+      return 'Còn $diffDays ngày';
+    } else if (diffDays > 7) {
+      return DateFormat('dd/MM').format(sessionTime);
+    } else {
+      return 'Đã kết thúc';
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final state = ref.watch(clubSessionsViewModelProvider(widget.clubId));
+    final vm = ref.read(clubSessionsViewModelProvider(widget.clubId).notifier);
 
     if (state.isLoading) {
       return const Center(child: CircularProgressIndicator(color: AppColor.cMain));
@@ -58,15 +117,38 @@ class ClubSessionsTab extends ConsumerWidget {
       );
     }
 
+    final now = DateTime.now();
+    final sortedSessions = List<Session>.from(state.sessions)
+      ..sort((a, b) => a.startTime.compareTo(b.startTime));
+
+    final upcomingSessions = sortedSessions.where(
+      (s) => s.endTime.isAfter(now) && s.status != SessionStatus.completed,
+    ).toList();
+
+    final Session? nearestSession = upcomingSessions.isNotEmpty
+        ? upcomingSessions.first
+        : (sortedSessions.isNotEmpty ? sortedSessions.last : null);
+
+    final List<Session> displaySessions;
+    if (_selectedDate != null) {
+      displaySessions = sortedSessions.where((s) {
+        return s.startTime.year == _selectedDate!.year &&
+            s.startTime.month == _selectedDate!.month &&
+            s.startTime.day == _selectedDate!.day;
+      }).toList();
+    } else {
+      displaySessions = sortedSessions;
+    }
+
     return Scaffold(
       backgroundColor: AppColors.neutral50,
-      floatingActionButton: isHost
+      floatingActionButton: widget.isHost
           ? FloatingActionButton.extended(
               onPressed: () async {
                 final sessionId = await CreateSessionDialog.show(
                   context,
-                  clubId: clubId,
-                  clubName: clubName,
+                  clubId: widget.clubId,
+                  clubName: widget.clubName,
                 );
                 if (sessionId != null && context.mounted) {
                   context.push(AppConfig.sessionDetailRoutePath(sessionId));
@@ -75,7 +157,7 @@ class ClubSessionsTab extends ConsumerWidget {
               backgroundColor: AppColor.cMain,
               foregroundColor: AppColor.white,
               icon: const Icon(Icons.add, size: 20),
-              label: const Text('Tạo buổi chơi (FR13)', style: TextStyle(fontWeight: FontWeight.bold)),
+              label: const Text('Tạo buổi chơi', style: TextStyle(fontWeight: FontWeight.bold)),
             )
           : null,
       body: RefreshIndicator(
@@ -86,7 +168,11 @@ class ClubSessionsTab extends ConsumerWidget {
             : ListView(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 children: [
-                  // Banner truy cập nhanh: Lịch tôi đã đăng ký
+                  // 1. Buổi tập gần nhất (Đưa lên trên cùng để nhận biết lịch tiếp theo)
+                  if (nearestSession != null)
+                    _buildNearestSessionHero(context, nearestSession),
+
+                  // 2. Banner truy cập nhanh: Lịch tôi đã đăng ký
                   InkWell(
                     onTap: () => context.push(AppConfig.myBookingsRoutePath),
                     borderRadius: BorderRadius.circular(12),
@@ -130,18 +216,577 @@ class ClubSessionsTab extends ConsumerWidget {
                     ),
                   ),
 
-                  // Danh sách các buổi tập
-                  ...state.sessions.map((session) => Padding(
-                        padding: const EdgeInsets.only(bottom: 12),
-                        child: _SessionCard(
-                          session: session,
-                          onTap: () {
-                            context.push(AppConfig.sessionDetailRoutePath(session.id));
-                          },
+                  // 3. Lịch tháng trực quan về các ngày tập
+                  _buildMonthCalendarCard(sortedSessions, nearestSession),
+
+                  // 4. Thanh lọc ngày đã chọn trên lịch
+                  if (_selectedDate != null) ...[
+                    Container(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryContainer,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: AppColor.cMain.withValues(alpha: 0.25)),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.filter_alt_rounded, size: 16, color: AppColor.cMain),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Text(
+                              'Lịch ngày ${DateFormat('dd/MM/yyyy').format(_selectedDate!)} (${displaySessions.length} buổi)',
+                              style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold, color: AppColor.cTitle),
+                            ),
+                          ),
+                          InkWell(
+                            onTap: () => setState(() => _selectedDate = null),
+                            child: const Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                              child: Text(
+                                'Xem tất cả',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColor.cMain,
+                                  decoration: TextDecoration.underline,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+
+                  // 5. Danh sách các buổi tập
+                  if (displaySessions.isEmpty)
+                    Container(
+                      padding: const EdgeInsets.all(24),
+                      margin: const EdgeInsets.only(bottom: 16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: AppColors.border),
+                      ),
+                      child: Center(
+                        child: Column(
+                          children: [
+                            const Icon(Icons.event_busy_rounded, color: AppColor.cMuted, size: 36),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Không có buổi tập nào vào ngày ${DateFormat('dd/MM/yyyy').format(_selectedDate!)}',
+                              style: const TextStyle(fontSize: 13, color: AppColor.cMuted),
+                            ),
+                            const SizedBox(height: 8),
+                            TextButton(
+                              onPressed: () => setState(() => _selectedDate = null),
+                              child: const Text('Xem tất cả các buổi tập'),
+                            ),
+                          ],
                         ),
-                      )),
+                      ),
+                    )
+                  else
+                    ...displaySessions.map((session) => Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: _SessionCard(
+                            session: session,
+                            onTap: () {
+                              context.push(AppConfig.sessionDetailRoutePath(session.id));
+                            },
+                          ),
+                        )),
                 ],
               ),
+      ),
+    );
+  }
+
+  /// 1. Card Buổi tập gần nhất (Đưa lên trên cùng)
+  Widget _buildNearestSessionHero(BuildContext context, Session session) {
+    final remainingLabel = _getTimeRemainingLabel(session.startTime);
+    final isToday = remainingLabel == 'Hôm nay' || remainingLabel == 'Đang diễn ra';
+    final progress = session.maxPlayers > 0 ? (session.confirmedCount / session.maxPlayers).clamp(0.0, 1.0) : 0.0;
+    final isFull = session.isFull;
+    final timeRange = '${DateFormat('HH:mm').format(session.startTime)} - ${DateFormat('HH:mm').format(session.endTime)}';
+    final dateStr = '${_getWeekdayName(session.startTime)}, ngày ${DateFormat('dd/MM/yyyy').format(session.startTime)}';
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 14),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            AppColor.cMain.withValues(alpha: 0.08),
+            AppColors.primaryContainer.withValues(alpha: 0.5),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColor.cMain.withValues(alpha: 0.35), width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: AppColor.cMain.withValues(alpha: 0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: InkWell(
+        onTap: () => context.push(AppConfig.sessionDetailRoutePath(session.id)),
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header: Badge Lịch gần nhất + Tag thời gian
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AppColor.cMain,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.bolt_rounded, size: 14, color: Colors.white),
+                        SizedBox(width: 4),
+                        Text(
+                          'BUỔI TẬP GẦN NHẤT',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 0.3,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: isToday
+                          ? AppColors.accentOrange.withValues(alpha: 0.15)
+                          : AppColors.roleSky.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: isToday
+                            ? AppColors.accentOrange.withValues(alpha: 0.4)
+                            : AppColors.roleSky.withValues(alpha: 0.3),
+                      ),
+                    ),
+                    child: Text(
+                      remainingLabel,
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        color: isToday ? AppColors.accentOrange : AppColors.roleSky,
+                      ),
+                    ),
+                  ),
+                  const Spacer(),
+                  if (session.isBookedByCurrentUser)
+                    _buildUserTicketBadge(session.currentUserBookingStatus, session.currentUserQueueOrder),
+                ],
+              ),
+              const SizedBox(height: 12),
+
+              // Title
+              Text(
+                session.title,
+                style: const TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.bold,
+                  color: AppColor.cTitle,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 10),
+
+              // Date & Time Row
+              Row(
+                children: [
+                  const Icon(Icons.calendar_today_rounded, size: 14, color: AppColor.cMain),
+                  const SizedBox(width: 6),
+                  Text(
+                    dateStr,
+                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColor.cTitle),
+                  ),
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: AppColors.border),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.access_time_rounded, size: 12, color: AppColor.cMuted),
+                        const SizedBox(width: 4),
+                        Text(
+                          timeRange,
+                          style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold, color: AppColor.cTitle),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+
+              // Court location
+              Row(
+                children: [
+                  const Icon(Icons.place_outlined, size: 15, color: AppColor.cMuted),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      session.courtLocation,
+                      style: const TextStyle(fontSize: 13, color: AppColor.cMuted),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+
+              // Capacity Progress Bar
+              Row(
+                children: [
+                  Expanded(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: LinearProgressIndicator(
+                        value: progress,
+                        minHeight: 6,
+                        backgroundColor: AppColors.border,
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          isFull ? AppColors.accentOrange : AppColor.cMain,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Text(
+                    '${session.confirmedCount}/${session.maxPlayers} slot',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: isFull ? AppColors.accentOrange : AppColor.cMain,
+                    ),
+                  ),
+                  if (session.waitingCount > 0) ...[
+                    const SizedBox(width: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: AppColors.warningLight,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        '${session.waitingCount} chờ',
+                        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.warning),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+              const SizedBox(height: 14),
+
+              // Action button
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColor.cMain,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(vertical: 11),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                  icon: const Icon(Icons.sports_tennis_rounded, size: 18),
+                  label: Text(
+                    session.isBookedByCurrentUser ? 'Xem chi tiết & Điểm danh' : 'Xem chi tiết & Giữ chỗ',
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                  ),
+                  onPressed: () => context.push(AppConfig.sessionDetailRoutePath(session.id)),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 2. Giao diện Lịch Tháng trực quan về các ngày tập
+  Widget _buildMonthCalendarCard(List<Session> allSessions, Session? nearestSession) {
+    final now = DateTime.now();
+    final totalDaysInMonth = DateTime(_focusedMonth.year, _focusedMonth.month + 1, 0).day;
+    final firstWeekday = DateTime(_focusedMonth.year, _focusedMonth.month, 1).weekday;
+    // Monday is 1 -> 0 blanks; Sunday is 7 -> 6 blanks
+    final leadingBlanks = (firstWeekday - 1) % 7;
+
+    // Lọc các buổi tập trong tháng đang xem
+    final sessionsInMonth = allSessions.where((s) {
+      return s.startTime.year == _focusedMonth.year && s.startTime.month == _focusedMonth.month;
+    }).toList();
+
+    // Map các ngày trong tháng có buổi tập
+    final Map<int, List<Session>> sessionsByDay = {};
+    for (final s in sessionsInMonth) {
+      sessionsByDay.putIfAbsent(s.startTime.day, () => []).add(s);
+    }
+
+    const weekdays = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.border),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Month Header Row with Navigation
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: AppColor.cMain.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.calendar_month_rounded, size: 18, color: AppColor.cMain),
+              ),
+              const SizedBox(width: 10),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Lịch Tập Tháng ${DateFormat('MM/yyyy').format(_focusedMonth)}',
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: AppColor.cTitle,
+                    ),
+                  ),
+                  Text(
+                    '${sessionsInMonth.length} buổi tập dự kiến',
+                    style: const TextStyle(fontSize: 11, color: AppColor.cMuted),
+                  ),
+                ],
+              ),
+              const Spacer(),
+              // Month Navigation Buttons
+              IconButton(
+                icon: const Icon(Icons.chevron_left_rounded, size: 22, color: AppColor.cTitle),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                onPressed: () {
+                  setState(() {
+                    _focusedMonth = DateTime(_focusedMonth.year, _focusedMonth.month - 1, 1);
+                  });
+                },
+              ),
+              IconButton(
+                icon: const Icon(Icons.chevron_right_rounded, size: 22, color: AppColor.cTitle),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                onPressed: () {
+                  setState(() {
+                    _focusedMonth = DateTime(_focusedMonth.year, _focusedMonth.month + 1, 1);
+                  });
+                },
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+
+          // Weekday Header Row
+          Row(
+            children: weekdays.map((label) {
+              final isWeekend = label == 'T7' || label == 'CN';
+              return Expanded(
+                child: Center(
+                  child: Text(
+                    label,
+                    style: TextStyle(
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.bold,
+                      color: isWeekend ? AppColors.accentOrange : AppColors.neutral500,
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+          const SizedBox(height: 8),
+
+          // Calendar Days Grid
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: leadingBlanks + totalDaysInMonth,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 7,
+              mainAxisSpacing: 6,
+              crossAxisSpacing: 6,
+              childAspectRatio: 1.05,
+            ),
+            itemBuilder: (context, index) {
+              if (index < leadingBlanks) {
+                return const SizedBox.shrink();
+              }
+
+              final day = index - leadingBlanks + 1;
+              final date = DateTime(_focusedMonth.year, _focusedMonth.month, day);
+              final daySessions = sessionsByDay[day] ?? [];
+              final hasSessions = daySessions.isNotEmpty;
+
+              final isToday = date.year == now.year && date.month == now.month && date.day == now.day;
+              final isSelected = _selectedDate != null &&
+                  date.year == _selectedDate!.year &&
+                  date.month == _selectedDate!.month &&
+                  date.day == _selectedDate!.day;
+              final isNearest = nearestSession != null &&
+                  date.year == nearestSession.startTime.year &&
+                  date.month == nearestSession.startTime.month &&
+                  date.day == nearestSession.startTime.day;
+
+              // Visual styling
+              Color bgColor = Colors.transparent;
+              Color textColor = AppColor.cTitle;
+              Border? border;
+
+              if (isSelected) {
+                bgColor = AppColor.cMain;
+                textColor = Colors.white;
+              } else if (hasSessions) {
+                if (isNearest) {
+                  bgColor = AppColor.cMain.withValues(alpha: 0.18);
+                  border = Border.all(color: AppColor.cMain, width: 1.5);
+                  textColor = AppColor.cMain;
+                } else {
+                  bgColor = AppColor.cMain.withValues(alpha: 0.08);
+                  textColor = AppColor.cMain;
+                }
+              } else if (isToday) {
+                border = Border.all(color: AppColors.neutral400, width: 1);
+              }
+
+              return InkWell(
+                onTap: () {
+                  setState(() {
+                    if (isSelected) {
+                      _selectedDate = null;
+                    } else {
+                      _selectedDate = date;
+                    }
+                  });
+                },
+                borderRadius: BorderRadius.circular(10),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 180),
+                  decoration: BoxDecoration(
+                    color: bgColor,
+                    borderRadius: BorderRadius.circular(10),
+                    border: border,
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        '$day',
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          fontWeight: (hasSessions || isSelected || isToday) ? FontWeight.bold : FontWeight.w500,
+                          color: textColor,
+                        ),
+                      ),
+                      if (hasSessions) ...[
+                        const SizedBox(height: 2),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Container(
+                              width: 5,
+                              height: 5,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: isSelected ? Colors.white : AppColor.cMain,
+                              ),
+                            ),
+                            if (daySessions.length > 1) ...[
+                              const SizedBox(width: 2),
+                              Container(
+                                width: 3,
+                                height: 3,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: isSelected ? Colors.white.withValues(alpha: 0.7) : AppColors.accentOrange,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+
+          // Legend
+          const SizedBox(height: 10),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 8,
+                height: 8,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColor.cMain,
+                ),
+              ),
+              const SizedBox(width: 5),
+              const Text('Ngày có buổi tập', style: TextStyle(fontSize: 11, color: AppColor.cMuted)),
+              const SizedBox(width: 14),
+              Container(
+                width: 12,
+                height: 12,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(3),
+                  color: AppColor.cMain.withValues(alpha: 0.18),
+                  border: Border.all(color: AppColor.cMain, width: 1),
+                ),
+              ),
+              const SizedBox(width: 5),
+              const Text('Buổi gần nhất', style: TextStyle(fontSize: 11, color: AppColor.cMuted)),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -185,12 +830,12 @@ class ClubSessionsTab extends ConsumerWidget {
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               ),
             ),
-            if (isHost) ...[
+            if (widget.isHost) ...[
               const SizedBox(height: 12),
               ElevatedButton.icon(
-                onPressed: () => CreateSessionDialog.show(context, clubId: clubId, clubName: clubName),
+                onPressed: () => CreateSessionDialog.show(context, clubId: widget.clubId, clubName: widget.clubName),
                 icon: const Icon(Icons.add, size: 18),
-                label: const Text('Tạo Buổi Chơi Đầu Tiên (FR13)'),
+                label: const Text('Tạo Buổi Chơi Đầu Tiên'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColor.cMain,
                   foregroundColor: AppColor.white,
@@ -201,6 +846,48 @@ class ClubSessionsTab extends ConsumerWidget {
             ],
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildUserTicketBadge(BookingStatus? status, int queueOrder) {
+    if (status == BookingStatus.waiting) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+        decoration: BoxDecoration(
+          color: Colors.orange.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(6),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.schedule_rounded, size: 12, color: Colors.orange),
+            const SizedBox(width: 4),
+            Text(
+              'Hàng đợi #$queueOrder',
+              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.orange),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: AppColor.cMain.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: const Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.check_circle_rounded, size: 12, color: AppColor.cMain),
+          SizedBox(width: 4),
+          Text(
+            'Đã giữ chỗ',
+            style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColor.cMain),
+          ),
+        ],
       ),
     );
   }
