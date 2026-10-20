@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kltn2026_2027/app/consts/app_log.dart';
+import 'package:kltn2026_2027/app/theme/theme.dart';
 
 import 'app_button.dart';
 
@@ -108,21 +109,13 @@ class AppButtonCommonState extends State<AppButtonCommon> {
           boxShadow: widget.elevation != null && !isDisabled
               ? [
                   BoxShadow(
-                    color: Colors.black.withAlpha(25),
+                    color: Colors.black.withValues(alpha: 0.1),
                     blurRadius: widget.elevation!,
                     offset: Offset(0, widget.elevation! / 2),
                   ),
                 ]
               : widget.type == AppButtonType.primary && !isDisabled
-              ? [
-                  BoxShadow(
-                    color: (getBackgroundColor(false) ?? Colors.blue).withAlpha(
-                      75,
-                    ),
-                    blurRadius: 8,
-                    offset: const Offset(0, 4),
-                  ),
-                ]
+              ? AppShadows.primaryGlow(getBackgroundColor(false))
               : null,
         ),
         child: isLoadingState
@@ -172,25 +165,25 @@ class AppButtonCommonState extends State<AppButtonCommon> {
   /// Size configurations
   double getHeight() {
     return switch (widget.size) {
-      AppButtonSize.small => 40,
-      AppButtonSize.medium => 48,
-      AppButtonSize.large => 56,
+      AppButtonSize.small => AppSpacing.buttonHeightSm,
+      AppButtonSize.medium => AppSpacing.buttonHeightMd,
+      AppButtonSize.large => AppSpacing.buttonHeightLg,
     };
   }
 
   EdgeInsetsGeometry getPadding() {
     return switch (widget.size) {
       AppButtonSize.small => const EdgeInsets.symmetric(
-        horizontal: 16,
-        vertical: 8,
+        horizontal: AppSpacing.base,
+        vertical: AppSpacing.sm,
       ),
       AppButtonSize.medium => const EdgeInsets.symmetric(
-        horizontal: 20,
-        vertical: 12,
+        horizontal: AppSpacing.lg,
+        vertical: AppSpacing.md,
       ),
       AppButtonSize.large => const EdgeInsets.symmetric(
-        horizontal: 24,
-        vertical: 16,
+        horizontal: AppSpacing.xl,
+        vertical: AppSpacing.base,
       ),
     };
   }
@@ -205,9 +198,9 @@ class AppButtonCommonState extends State<AppButtonCommon> {
 
   double getBorderRadius() {
     return switch (widget.size) {
-      AppButtonSize.small => 8,
-      AppButtonSize.medium => 10,
-      AppButtonSize.large => 12,
+      AppButtonSize.small => AppRadius.sm,
+      AppButtonSize.medium => AppRadius.md,
+      AppButtonSize.large => AppRadius.md,
     };
   }
 
@@ -230,7 +223,7 @@ class AppButtonCommonState extends State<AppButtonCommon> {
   /// Color configurations
   Color? getBackgroundColor(bool isDisabled) {
     if (isDisabled) {
-      return Colors.grey[300];
+      return AppColors.neutral200;
     }
 
     if (widget.backgroundColor != null) {
@@ -238,16 +231,16 @@ class AppButtonCommonState extends State<AppButtonCommon> {
     }
 
     return switch (widget.type) {
-      AppButtonType.primary => const Color(0xFF4CAF50),
-      AppButtonType.secondary => const Color(0xFF2196F3),
+      AppButtonType.primary => AppColors.primary,
+      AppButtonType.secondary => AppColors.secondary,
       AppButtonType.outlined || AppButtonType.text => Colors.transparent,
-      AppButtonType.danger => const Color(0xFFF44336),
+      AppButtonType.danger => AppColors.error,
     };
   }
 
   Color getTextColor(bool isDisabled) {
     if (isDisabled) {
-      return Colors.grey[600]!;
+      return AppColors.neutral500;
     }
 
     if (widget.textColor != null) {
@@ -257,24 +250,24 @@ class AppButtonCommonState extends State<AppButtonCommon> {
     return switch (widget.type) {
       AppButtonType.primary ||
       AppButtonType.secondary ||
-      AppButtonType.danger => Colors.white,
-      AppButtonType.outlined => widget.borderColor ?? const Color(0xFF4CAF50),
-      AppButtonType.text => const Color(0xFF4CAF50),
+      AppButtonType.danger => AppColors.white,
+      AppButtonType.outlined => widget.borderColor ?? AppColors.primary,
+      AppButtonType.text => AppColors.primary,
     };
   }
 
-  /// Loading color dựa trên button type
+  /// Loading color based on button type
   Color getLoadingColor(bool isDisabled) {
     if (isDisabled) {
-      return Colors.grey[600]!;
+      return AppColors.neutral500;
     }
 
     return switch (widget.type) {
       AppButtonType.primary ||
       AppButtonType.secondary ||
-      AppButtonType.danger => Colors.white,
-      AppButtonType.outlined => widget.borderColor ?? const Color(0xFF4CAF50),
-      AppButtonType.text => const Color(0xFF4CAF50),
+      AppButtonType.danger => AppColors.white,
+      AppButtonType.outlined => widget.borderColor ?? AppColors.primary,
+      AppButtonType.text => AppColors.primary,
     };
   }
 
@@ -282,9 +275,9 @@ class AppButtonCommonState extends State<AppButtonCommon> {
     if (widget.type == AppButtonType.outlined) {
       return Border.all(
         color: isDisabled
-            ? Colors.grey[400]!
-            : (widget.borderColor ?? const Color(0xFF4CAF50)),
-        width: 1,
+            ? AppColors.neutral300
+            : (widget.borderColor ?? AppColors.primary),
+        width: 1.5,
       );
     }
     return null;

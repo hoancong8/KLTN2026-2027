@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:kltn2026_2027/app/theme/theme.dart';
 
 class AppEditText extends StatefulWidget {
   // Controller
@@ -64,7 +65,7 @@ class AppEditText extends StatefulWidget {
     this.borderColor,
     this.focusedBorderColor,
     this.errorBorderColor,
-    this.borderRadius = 12,
+    this.borderRadius = AppRadius.md,
     this.contentPadding,
     this.keyboardType,
     this.textInputAction,
@@ -140,15 +141,13 @@ class _AppEditTextState extends State<AppEditText> {
         if (widget.labelText != null) ...[
           Text(
             widget.labelText!,
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
+            style: AppTypography.titleSmall.copyWith(
               color: widget.errorText != null
-                  ? (widget.errorBorderColor ?? Colors.red)
-                  : Colors.black87,
+                  ? (widget.errorBorderColor ?? AppColors.error)
+                  : AppColors.textPrimary,
             ),
           ),
-          const SizedBox(height: 8),
+          AppSpacing.gapH8,
         ],
 
         SizedBox(
@@ -175,37 +174,30 @@ class _AppEditTextState extends State<AppEditText> {
             onFieldSubmitted: widget.onSubmitted,
             onTap: widget.onTap,
             onEditingComplete: widget.onEditingComplete,
-            style:
-                widget.textStyle ??
-                const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w400,
-                  color: Colors.black87,
-                ),
+            style: widget.textStyle ?? AppTypography.bodyMedium,
             decoration: InputDecoration(
               isDense: true,
               hintText: widget.hintText,
-              hintStyle:
-                  widget.hintStyle ??
-                  TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w400,
-                    color: Colors.grey[400],
+              hintStyle: widget.hintStyle ??
+                  AppTypography.bodyMedium.copyWith(
+                    color: AppColors.textPlaceholder,
                   ),
               helperText: widget.helperText,
               errorText: widget.errorText,
               filled: true,
               fillColor: widget.enabled
-                  ? (widget.fillColor ?? Colors.grey[50])
-                  : Colors.grey[200],
-              contentPadding:
-                  widget.contentPadding ??
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  ? (widget.fillColor ?? AppColors.neutral100.withValues(alpha: 0.5))
+                  : AppColors.neutral200,
+              contentPadding: widget.contentPadding ??
+                  const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.base,
+                    vertical: AppSpacing.md + 2,
+                  ),
 
               prefixIcon: widget.prefixIcon,
               prefix: widget.prefix,
               prefixText: widget.prefixText,
-              prefixStyle: const TextStyle(fontSize: 14, color: Colors.black87),
+              prefixStyle: AppTypography.bodyMedium,
 
               suffixIcon: widget.obscureText
                   ? IconButton(
@@ -213,47 +205,47 @@ class _AppEditTextState extends State<AppEditText> {
                         obscurePassword
                             ? Icons.visibility_off_outlined
                             : Icons.visibility_outlined,
-                        color: Colors.grey[600],
-                        size: 20,
+                        color: AppColors.neutral500,
+                        size: AppSpacing.iconMd,
                       ),
                       onPressed: togglePasswordVisibility,
                     )
                   : widget.suffixIcon,
               suffix: widget.suffix,
               suffixText: widget.suffixText,
-              suffixStyle: const TextStyle(fontSize: 14, color: Colors.black87),
+              suffixStyle: AppTypography.bodyMedium,
 
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(widget.borderRadius),
                 borderSide: BorderSide(
-                  color: widget.borderColor ?? Colors.grey[300]!,
+                  color: widget.borderColor ?? AppColors.border,
                   width: 1,
                 ),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(widget.borderRadius),
                 borderSide: BorderSide(
-                  color: widget.focusedBorderColor ?? Colors.blue,
-                  width: 1,
+                  color: widget.focusedBorderColor ?? AppColors.primary,
+                  width: 1.5,
                 ),
               ),
               errorBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(widget.borderRadius),
                 borderSide: BorderSide(
-                  color: widget.errorBorderColor ?? Colors.red,
+                  color: widget.errorBorderColor ?? AppColors.error,
                   width: 1,
                 ),
               ),
               focusedErrorBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(widget.borderRadius),
                 borderSide: BorderSide(
-                  color: widget.errorBorderColor ?? Colors.red,
-                  width: 1,
+                  color: widget.errorBorderColor ?? AppColors.error,
+                  width: 1.5,
                 ),
               ),
               disabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(widget.borderRadius),
-                borderSide: BorderSide(color: Colors.grey[300]!, width: 1),
+                borderSide: const BorderSide(color: AppColors.borderSubtle, width: 1),
               ),
             ),
           ),
