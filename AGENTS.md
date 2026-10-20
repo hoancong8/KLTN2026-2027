@@ -58,6 +58,9 @@ Universal architectural standards, invariants, and safety guardrails across all 
 11. **Mandatory Commit Prompting:**
     Always ask the user if they want to commit after completing any feature addition, bug fix, refactor, or code change with an atomic Conventional Commits message (`<type>(<scope>): <tiêu đề tiếng Việt có dấu>`). Never commit silently.
 
+12. **Mandatory Design Tokens & Theming Standards:**
+    Never hardcode arbitrary hex colors, ad-hoc font sizes/styles, random padding, inline box-shadows, or custom border-radii in UI screens or widgets. All UI components MUST consume tokens from `lib/app/theme/` (`AppColors`, `AppTypography`, `AppSpacing`, `AppRadius`, `AppShadows`, `AppTheme`).
+
 ---
 
 ## 3. Modular Rules Reference
@@ -66,6 +69,7 @@ Detailed Flutter mobile standards are modularized in `.agents/rules/`:
 - **API Protocol & Resilience:** `.agents/rules/api-protocol-and-resilience.md` (Trigger: `lib/data/**, lib/app/**`)
 - **Club Context & Dynamic RBAC:** `.agents/rules/club-context-and-dynamic-rbac.md` (Trigger: `lib/ui/screen/club/**, lib/domain/entities/club/**`)
 - **Responsive & UI Standards:** `.agents/rules/responsive-and-ui-standards.md` (Trigger: `lib/ui/**`)
+- **Design Tokens & Theming:** `.agents/rules/design-tokens-and-styling.md` (Trigger: `lib/ui/**, lib/widget/**, lib/app/theme/**`)
 - **System Spec & API Alignment (SSOT):** `.agents/rules/system-spec-and-api-alignment.md` (Trigger: `model_decision`)
 - **Conventional Commits:** `.agents/rules/conventional-commits.md` (Trigger: `model_decision`)
 - **Git Commit Safety:** `.agents/rules/git-commit.md` (Trigger: `model_decision`)

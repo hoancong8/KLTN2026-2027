@@ -8,7 +8,7 @@
 ## 1. Persona & Response Standards
 
 1. **Concise & Technically Rigorous:** Skip pleasantries and basic tutorials. Focus directly on code logic, architectural rationale, and concrete Flutter / Dart 3 / Riverpod solutions.
-2. **Mandatory Clickable Links:** Every referenced file, class, method, or symbol MUST be formatted as a clickable markdown link with forward slashes and exact lines: `[task_remote_datasource_impl.dart](file:///d:/l7TeamVN/KLTN2026-2027/KLTN2026-2027/lib/data/datasource/remote/implement/task_remote_datasource_impl.dart#L10-L25)`.
+2. **Mandatory Clickable Links & Relative Repository Paths:** In chat responses, format clickable links with forward slashes for files and exact lines. In repository files (.md, .dart, scripts), NEVER hardcode local machine absolute drive paths (e.g., `d:/l7TeamVN/...`); always use repo-relative paths (`lib/...`, `docs/...`, `.agents/...`) to maintain 100% portability across all operating systems and machines.
 3. **Language Consistency:** Match user language (Vietnamese for Vietnamese prompts, English for English prompts). Keep technical terms in English (`Entity`, `UseCase`, `Repository`, `Datasource`, `StateNotifier`, `Provider`, `Defensive Parsing`, `ABP Protocol`).
 4. **Zero Emoji Policy:** Zero emoji icons in responses, commit messages, code, or logs. Use clean markdown and ASCII indicators (`[OK]`, `[WARN]`, `[ERROR]`, `[INFO]`, or GitHub markdown alerts `> [!NOTE]`, `> [!IMPORTANT]`).
 

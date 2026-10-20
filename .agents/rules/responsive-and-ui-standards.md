@@ -128,5 +128,6 @@ class ClubListViewModel extends StateNotifier<ClubListState> {
 2. **Hiển thị lỗi thông qua `AppException`:**
    - ❌ `Text(state.error.toString());`
    - ✅ `Text(state.error?.getDisplayMessage(context.l10n) ?? context.l10n.unknownError);`
-3. **Màu sắc và Kiểu dáng:**
-   - Sử dụng màu tập trung từ `AppColors` (hoặc `Theme.of(context)`). Không sử dụng mã màu hex tùy tiện rải rác trong code.
+3. **Bắt buộc tuân thủ Design Tokens & Theming:**
+   - Sử dụng tập trung các Design Tokens từ `package:kltn2026_2027/app/theme/theme.dart` (`AppColors`, `AppTypography`, `AppSpacing`, `AppRadius`, `AppShadows`).
+   - Nghiêm cấm hoàn toàn hardcode mã màu hex, font size/style tự chế, hoặc padding/gaps tùy tiện theo quy định chi tiết tại [design-tokens-and-styling.md](.agents/rules/design-tokens-and-styling.md).

@@ -7,7 +7,7 @@ description: >-
 # System Spec & API Alignment Tracer (Flutter Client)
 
 ## Goal (Single Responsibility)
-Trace Functional Requirements (FR01 - FR23), Use Cases (UC01 - UC20), and API endpoints directly to Flutter Screens, ViewModels, Domain UseCases, and Data DTOs based on [07_THIET_KE_CLIENT_FLUTTER_MOBILE.md](file:///d:/l7TeamVN/KLTN2026-2027/docs/07_THIET_KE_CLIENT_FLUTTER_MOBILE.md).
+Trace Functional Requirements (FR01 - FR23), Use Cases (UC01 - UC20), and API endpoints directly to Flutter Screens, ViewModels, Domain UseCases, and Data DTOs based on [07_THIET_KE_CLIENT_FLUTTER_MOBILE.md](docs/07_THIET_KE_CLIENT_FLUTTER_MOBILE.md).
 
 ---
 

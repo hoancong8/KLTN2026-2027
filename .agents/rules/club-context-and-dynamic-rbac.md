@@ -31,7 +31,7 @@ Mọi thao tác quản trị nội bộ câu lạc bộ (quản lý thành viên
 ## 2. Quy Tắc Kiểm Soát Hiển Thị Giao Diện Dựa Trên Quyền Hạn
 
 1. **Sử dụng mã quyền chuẩn từ `ClubRolePermission`:**
-   Mọi quyền hạn phải được đối chiếu từ danh mục quyền chuẩn tại [club_role_item.dart](file:///d:/l7TeamVN/KLTN2026-2027/KLTN2026-2027/lib/domain/entities/club/club_role_item.dart):
+   Mọi quyền hạn phải được đối chiếu từ danh mục quyền chuẩn tại [club_role_item.dart](KLTN2026-2027/lib/domain/entities/club/club_role_item.dart):
    - Quản lý lịch sinh hoạt: `OPERATIONS.SCHEDULE.MANAGE`
    - Xem buổi sinh hoạt: `OPERATIONS.SESSION.VIEW`
    - Tạo buổi sinh hoạt: `OPERATIONS.SESSION.CREATE`
