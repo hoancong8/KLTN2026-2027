@@ -35,15 +35,19 @@ class ClubScheduleEntity {
 class ClubUserStatusEntity {
   final bool isMember;
   final String? roleName;
+  final String? status;
   final bool hasPendingJoinRequest;
   final String? pendingRequestId;
 
   const ClubUserStatusEntity({
     required this.isMember,
     this.roleName,
+    this.status,
     required this.hasPendingJoinRequest,
     this.pendingRequestId,
   });
+
+  bool get isHost => roleName?.toLowerCase() == 'host';
 }
 
 class ClubDetail {
@@ -63,6 +67,7 @@ class ClubDetail {
   final int memberCount;
   final ClubHostEntity host;
   final List<ClubScheduleEntity> schedules;
+  final String? schedulesSummary;
   final ClubUserStatusEntity currentUserStatus;
 
   const ClubDetail({
@@ -82,6 +87,7 @@ class ClubDetail {
     required this.memberCount,
     required this.host,
     required this.schedules,
+    this.schedulesSummary,
     required this.currentUserStatus,
   });
 }

@@ -37,9 +37,11 @@ class ClubDetailMapper {
                 isActive: s.isActive,
               ))
           .toList(),
+      schedulesSummary: dto.schedulesSummary,
       currentUserStatus: ClubUserStatusEntity(
         isMember: dto.currentUserStatus.isMember,
         roleName: dto.currentUserStatus.roleName,
+        status: dto.currentUserStatus.status,
         hasPendingJoinRequest: dto.currentUserStatus.hasPendingJoinRequest,
         pendingRequestId: dto.currentUserStatus.pendingRequestId,
       ),

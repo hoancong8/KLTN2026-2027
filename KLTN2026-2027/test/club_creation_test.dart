@@ -1,8 +1,10 @@
 // test/club_creation_test.dart
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kltn2026_2027/data/dto/club/club_detail_dto.dart';
 import 'package:kltn2026_2027/data/dto/club/create_club_request_dto.dart';
 import 'package:kltn2026_2027/data/dto/club/update_club_schedules_request_dto.dart';
+import 'package:kltn2026_2027/data/mapper/club_detail_mapper.dart';
 import 'package:kltn2026_2027/domain/usecases/club/create_club_usecase.dart';
 
 void main() {
@@ -79,6 +81,71 @@ void main() {
       expect(params.description, 'Test Desc');
       expect(params.minSkillLevel, 2);
       expect(params.maxSkillLevel, 4);
+    });
+
+    test('ClubDetailDto parses BE response with name, schedulesSummary and host role', () {
+      final backendJson = {
+        'id': 'b86fa2e7-03b6-4299-923c-a93108ce8968',
+        'name': 'CLB Cầu Lông Tân Bình Legends',
+        'code': 'CLB-E38F1A',
+        'description': 'Nhóm giao lưu rèn luyện sức khỏe, giao lưu sau giờ làm việc',
+        'avatarUrl': 'https://storage.googleapis.com/badminton-club/avatar.png',
+        'fixedVenueName': 'Sân Cầu Lông Viettel',
+        'fixedAddress': '158 Hoàng Hoa Thám, Phường 12, Quận Tân Bình, TP. Hồ Chí Minh',
+        'lat': 10.7981,
+        'lng': 106.6521,
+        'minSkillLevel': 'TBY',
+        'maxSkillLevel': 'TBK',
+        'groupQualityScore': 5.0,
+        'isRecruiting': true,
+        'schedulesSummary': 'T3, T5, T7 (18:00 - 21:00)',
+        'currentUserStatus': {
+          'isMember': true,
+          'roleName': 'Host',
+          'status': 'ACTIVE',
+        },
+        'schedules': [
+          {
+            'id': 'c1a2b3d4-1111',
+            'dayOfWeek': 2,
+            'dayName': 'Thứ 3',
+            'startTime': '18:00',
+            'endTime': '21:00',
+          },
+          {
+            'id': 'c1a2b3d4-2222',
+            'dayOfWeek': 4,
+            'dayName': 'Thứ 5',
+            'startTime': '18:00',
+            'endTime': '21:00',
+          },
+          {
+            'id': 'c1a2b3d4-3333',
+            'dayOfWeek': 6,
+            'dayName': 'Thứ 7',
+            'startTime': '18:00',
+            'endTime': '21:00',
+          },
+        ],
+      };
+
+      final dto = ClubDetailDto.fromJson(backendJson);
+      expect(dto.id, 'b86fa2e7-03b6-4299-923c-a93108ce8968');
+      expect(dto.groupName, 'CLB Cầu Lông Tân Bình Legends');
+      expect(dto.code, 'CLB-E38F1A');
+      expect(dto.schedulesSummary, 'T3, T5, T7 (18:00 - 21:00)');
+      expect(dto.currentUserStatus.isMember, isTrue);
+      expect(dto.currentUserStatus.roleName, 'Host');
+      expect(dto.currentUserStatus.isHost, isTrue);
+      expect(dto.schedules.length, 3);
+
+      final entity = ClubDetailMapper.toEntity(dto);
+      expect(entity.id, 'b86fa2e7-03b6-4299-923c-a93108ce8968');
+      expect(entity.groupName, 'CLB Cầu Lông Tân Bình Legends');
+      expect(entity.schedulesSummary, 'T3, T5, T7 (18:00 - 21:00)');
+      expect(entity.currentUserStatus.isHost, isTrue);
+      expect(entity.schedules.length, 3);
+      expect(entity.schedules[0].dayOfWeek, 2);
     });
   });
 }

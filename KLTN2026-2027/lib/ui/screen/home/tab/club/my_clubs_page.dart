@@ -132,7 +132,10 @@ class _MyClubsPageState extends ConsumerState<MyClubsPage> {
 
     if (!context.mounted || action == null) return;
     if (action == 'create') {
-      ClubCreateDialog.show(context);
+      final newClubId = await ClubCreateDialog.show(context);
+      if (newClubId != null && newClubId.isNotEmpty && context.mounted) {
+        context.push('/club/$newClubId');
+      }
     } else if (action == 'join') {
       _showJoinClubDialog(context, vm);
     } else if (action == 'explore') {
@@ -364,7 +367,10 @@ class _MyClubsPageState extends ConsumerState<MyClubsPage> {
 
     if (!context.mounted || action == null) return;
     if (action == 'create') {
-      ClubCreateDialog.show(context);
+      final newClubId = await ClubCreateDialog.show(context);
+      if (newClubId != null && newClubId.isNotEmpty && context.mounted) {
+        context.push('/club/$newClubId');
+      }
     } else if (action == 'join') {
       _showJoinClubDialog(context, vm);
     }
@@ -612,7 +618,12 @@ class _MyClubsPageState extends ConsumerState<MyClubsPage> {
         itemBuilder: (context, index) {
           if (index == clubs.length) {
             return InkWell(
-              onTap: () => ClubCreateDialog.show(context),
+              onTap: () async {
+                final newClubId = await ClubCreateDialog.show(context);
+                if (newClubId != null && newClubId.isNotEmpty && context.mounted) {
+                  context.push('/club/$newClubId');
+                }
+              },
               borderRadius: BorderRadius.circular(20),
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
@@ -804,7 +815,12 @@ class _MyClubsPageState extends ConsumerState<MyClubsPage> {
               description: 'Bạn là Chủ nhóm (Host) lên lịch buổi chơi, quản lý quỹ và duyệt thành viên',
               icon: Icons.add_business_rounded,
               accentColor: AppColor.cMain,
-              onTap: () => ClubCreateDialog.show(context),
+              onTap: () async {
+                final newClubId = await ClubCreateDialog.show(context);
+                if (newClubId != null && newClubId.isNotEmpty && context.mounted) {
+                  context.push('/club/$newClubId');
+                }
+              },
             ),
 
             const SizedBox(height: 14),

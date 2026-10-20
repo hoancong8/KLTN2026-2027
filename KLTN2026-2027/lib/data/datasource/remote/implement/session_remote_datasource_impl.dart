@@ -40,10 +40,7 @@ class SessionRemoteDataSourceImpl extends BaseRemoteDatasource implements Sessio
   @override
   Future<List<SessionDto>> getClubSessions(String clubId) async {
     try {
-      final response = await dio.get(
-        AppConfig.sessionClubPath(clubId),
-        options: Options(headers: {'X-Group-Id': clubId}),
-      );
+      final response = await dio.get(AppConfig.sessionClubPath(clubId));
       return handleListResponse(response, (item) => SessionDto.fromJson(item));
     } catch (e) {
       throw handleError(e);

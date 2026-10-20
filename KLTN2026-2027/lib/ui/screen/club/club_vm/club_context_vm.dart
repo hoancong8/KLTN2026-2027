@@ -164,7 +164,7 @@ class ClubContextViewModel extends StateNotifier<ClubContextState> {
   }
 
   /// Tạo một câu lạc bộ mới (người tạo tự động trở thành Host)
-  Future<bool> createClub({
+  Future<String?> createClub({
     required String name,
     String? description,
     String? avatarUrl,
@@ -199,16 +199,16 @@ class ClubContextViewModel extends StateNotifier<ClubContextState> {
         isLoading: false,
         successMessage: 'Tạo câu lạc bộ mới thành công! Bạn là Chủ nhóm (Host).',
       );
-      return true;
+      return newClubId;
     } on AppException catch (e) {
       state = state.copyWith(isLoading: false, error: e);
-      return false;
+      return null;
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
         error: AppException(message: 'Không thể tạo nhóm: $e'),
       );
-      return false;
+      return null;
     }
   }
 

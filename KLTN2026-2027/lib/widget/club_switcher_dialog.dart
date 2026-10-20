@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../app/consts/app_color.dart';
 import '../domain/entities/club/my_club.dart';
 import '../domain/enums/club_role.dart';
@@ -202,8 +203,12 @@ class ClubSwitcherDialog extends ConsumerWidget {
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                     ),
-                    onPressed: () {
-                      ClubCreateDialog.show(context);
+                    onPressed: () async {
+                      Navigator.of(context).pop();
+                      final newClubId = await ClubCreateDialog.show(context);
+                      if (newClubId != null && newClubId.isNotEmpty && context.mounted) {
+                        context.push('/club/$newClubId');
+                      }
                     },
                   ),
                 ),

@@ -10,8 +10,8 @@ import 'club_schedule_planner.dart';
 class ClubCreateDialog extends ConsumerStatefulWidget {
   const ClubCreateDialog({super.key});
 
-  static Future<bool?> show(BuildContext context) {
-    return showDialog<bool>(
+  static Future<String?> show(BuildContext context) {
+    return showDialog<String>(
       context: context,
       barrierDismissible: false,
       builder: (_) => const ClubCreateDialog(),
@@ -138,7 +138,7 @@ class _ClubCreateDialogState extends ConsumerState<ClubCreateDialog> {
         ? distinctSchedules.values.toList()
         : null;
 
-    final ok = await vm.createClub(
+    final newClubId = await vm.createClub(
       name: _nameController.text.trim(),
       description: _descController.text.trim().isNotEmpty ? _descController.text.trim() : null,
       avatarUrl: _avatarUrlController.text.trim().isNotEmpty ? _avatarUrlController.text.trim() : null,
@@ -152,8 +152,8 @@ class _ClubCreateDialogState extends ConsumerState<ClubCreateDialog> {
     if (!mounted) return;
     setState(() => _isSubmitting = false);
 
-    if (ok) {
-      Navigator.of(context).pop(true);
+    if (newClubId != null && newClubId.isNotEmpty) {
+      Navigator.of(context).pop(newClubId);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Chúc mừng! Bạn đã tạo CLB thành công và trở thành Chủ nhóm (Host).'),

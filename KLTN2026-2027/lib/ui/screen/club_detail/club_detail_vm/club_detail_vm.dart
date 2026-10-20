@@ -10,6 +10,7 @@ import '../../../../domain/usecases/club/switch_club_context_usecase.dart';
 import '../../../../domain/usecases/club/update_club_info_usecase.dart';
 import '../../../../domain/usecases/club/update_club_schedules_usecase.dart';
 import '../../club/club_vm/club_context_vm.dart';
+import '../../club/session_vm/club_sessions_vm.dart';
 import 'club_detail_state.dart';
 
 final clubDetailViewModelProvider = StateNotifierProvider.autoDispose
@@ -151,6 +152,7 @@ class ClubDetailViewModel extends StateNotifier<ClubDetailState> {
     try {
       await updateClubSchedulesUseCase.execute(clubId, schedules);
       await loadDetail();
+      ref.invalidate(clubSessionsViewModelProvider(clubId));
       state = state.copyWith(
         isSubmitting: false,
         successMessage: 'Cập nhật lịch tuần CLB thành công!',

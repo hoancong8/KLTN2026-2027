@@ -7,39 +7,45 @@ import 'package:kltn2026_2027/domain/enums/session_enums.dart';
 
 void main() {
   group('Session & Booking API Mapper Verification', () {
-    test('SessionDto parses ABP json correctly and maps to Session entity', () {
+    test('SessionDto parses ABP json correctly and maps to Session entity with local timezone conversion', () {
       final json = {
-        'id': 'sess-123',
+        'id': '7f1e9b2c-0000-0000-0000-000000000001',
         'groupId': 'club-456',
         'clubName': 'Legends Team',
-        'title': 'Buổi đánh cầu thứ 7',
-        'startTime': '2026-10-18T18:00:00Z',
-        'endTime': '2026-10-18T20:00:00Z',
-        'courtLocation': 'Sân Cầu Lông Kỳ Hòa',
-        'courtCount': 2,
+        'title': 'Buổi sinh hoạt Thứ 3 (18:00 - 21:00)',
+        'startTime': '2026-10-21T11:00:00Z',
+        'endTime': '2026-10-21T14:00:00Z',
+        'courtLocation': 'Sân Cầu Lông Viettel, 158 Hoàng Hoa Thám, P.12, Tân Bình, TP.HCM',
+        'courtCount': 1,
         'targetPlayerPerCourt': 6,
-        'maxPlayers': 12,
-        'deadlineBooking': '2026-10-18T12:00:00Z',
-        'courtRentalCost': 150000.0,
+        'maxPlayers': 6,
+        'deadlineBooking': '2026-10-21T09:00:00Z',
+        'courtRentalCost': 0.00,
         'status': 'OPEN',
-        'confirmedCount': 10,
-        'waitingCount': 2,
+        'confirmedCount': 0,
+        'waitingCount': 0,
         'isBookedByCurrentUser': false,
         'currentUserBookingStatus': null,
         'currentUserQueueOrder': 0,
       };
 
       final dto = SessionDto.fromJson(json);
-      expect(dto.id, 'sess-123');
-      expect(dto.maxPlayers, 12);
-      expect(dto.confirmedCount, 10);
-      expect(dto.waitingCount, 2);
+      expect(dto.id, '7f1e9b2c-0000-0000-0000-000000000001');
+      expect(dto.maxPlayers, 6);
+      expect(dto.confirmedCount, 0);
+      expect(dto.waitingCount, 0);
 
       final entity = SessionMapper.toEntity(dto);
-      expect(entity.id, 'sess-123');
+      expect(entity.id, '7f1e9b2c-0000-0000-0000-000000000001');
       expect(entity.status, SessionStatus.open);
       expect(entity.isFull, false);
-      expect(entity.slotsRemaining, 2);
+      expect(entity.slotsRemaining, 6);
+
+      // Verify UTC to Local conversion
+      expect(entity.startTime.isUtc, isFalse);
+      expect(entity.endTime.isUtc, isFalse);
+      expect(entity.deadlineBooking.isUtc, isFalse);
+      expect(entity.startTime.toUtc(), DateTime.parse('2026-10-21T11:00:00Z'));
     });
 
     test('SessionBookingDto maps CONFIRMED and WAITING status with queueOrder', () {
@@ -68,9 +74,11 @@ void main() {
 
       expect(b1.status, BookingStatus.confirmed);
       expect(b1.queueOrder, 0);
+      expect(b1.bookedAt.isUtc, isFalse);
 
       expect(b2.status, BookingStatus.waiting);
       expect(b2.queueOrder, 1);
+      expect(b2.bookedAt.isUtc, isFalse);
     });
 
     test('GuestRecruitmentDto maps recruitment and explore payload safely', () {
@@ -79,15 +87,15 @@ void main() {
         'sessionId': 'sess-123',
         'clubName': 'Legends Badminton Team',
         'courtLocation': 'Sân Kỳ Hòa Quận 10',
-        'startTime': '2026-10-18T18:00:00Z',
-        'endTime': '2026-10-18T20:00:00Z',
+        'startTime': '2026-10-18T11:00:00Z',
+        'endTime': '2026-10-18T13:00:00Z',
         'slotsNeeded': 2,
         'slotsRemaining': 2,
         'minSkillLevel': 'TB',
         'sharedCost': 80000.0,
         'scanRadiusKm': 5.0,
         'status': 'ACTIVE',
-        'broadcastAt': '2026-10-18T10:00:00Z',
+        'broadcastAt': '2026-10-18T03:00:00Z',
         'distanceKm': 2.4,
       };
 
@@ -96,6 +104,7 @@ void main() {
       expect(entity.slotsNeeded, 2);
       expect(entity.minSkillLevel, SkillLevel.tb);
       expect(entity.distanceKm, 2.4);
+      expect(entity.startTime.isUtc, isFalse);
     });
   });
 }

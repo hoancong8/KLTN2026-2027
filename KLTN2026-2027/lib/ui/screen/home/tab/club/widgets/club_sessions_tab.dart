@@ -9,7 +9,6 @@ import '../../../../../../app/consts/app_config.dart';
 import '../../../../../../domain/entities/session/session.dart';
 import '../../../../../../domain/enums/session_enums.dart';
 import '../../../../club/session_vm/club_sessions_vm.dart';
-import '../../../../club/widgets/create_session_dialog.dart';
 
 class ClubSessionsTab extends ConsumerStatefulWidget {
   final String clubId;
@@ -107,7 +106,7 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
               ),
               const SizedBox(height: 16),
               ElevatedButton.icon(
-                onPressed: vm.loadSessions,
+                onPressed: () => ref.read(clubSessionsViewModelProvider(widget.clubId).notifier).loadSessions(),
                 icon: const Icon(Icons.refresh, size: 18),
                 label: const Text('Thử lại'),
               ),
@@ -142,24 +141,7 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
 
     return Scaffold(
       backgroundColor: AppColors.neutral50,
-      floatingActionButton: widget.isHost
-          ? FloatingActionButton.extended(
-              onPressed: () async {
-                final sessionId = await CreateSessionDialog.show(
-                  context,
-                  clubId: widget.clubId,
-                  clubName: widget.clubName,
-                );
-                if (sessionId != null && context.mounted) {
-                  context.push(AppConfig.sessionDetailRoutePath(sessionId));
-                }
-              },
-              backgroundColor: AppColor.cMain,
-              foregroundColor: AppColor.white,
-              icon: const Icon(Icons.add, size: 20),
-              label: const Text('Tạo buổi chơi', style: TextStyle(fontWeight: FontWeight.bold)),
-            )
-          : null,
+      floatingActionButton: null,
       body: RefreshIndicator(
         onRefresh: vm.loadSessions,
         color: AppColor.cMain,
@@ -833,9 +815,9 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
             if (widget.isHost) ...[
               const SizedBox(height: 12),
               ElevatedButton.icon(
-                onPressed: () => CreateSessionDialog.show(context, clubId: widget.clubId, clubName: widget.clubName),
-                icon: const Icon(Icons.add, size: 18),
-                label: const Text('Tạo Buổi Chơi Đầu Tiên'),
+                onPressed: () => ref.read(clubSessionsViewModelProvider(widget.clubId).notifier).loadSessions(),
+                icon: const Icon(Icons.refresh_rounded, size: 18),
+                label: const Text('Tải lại lịch tập tự động'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColor.cMain,
                   foregroundColor: AppColor.white,

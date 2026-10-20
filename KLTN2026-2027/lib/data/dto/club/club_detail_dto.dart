@@ -67,20 +67,25 @@ class ClubScheduleItemDto {
 class ClubCurrentUserStatusDto {
   final bool isMember;
   final String? roleName;
+  final String? status;
   final bool hasPendingJoinRequest;
   final String? pendingRequestId;
 
   ClubCurrentUserStatusDto({
     required this.isMember,
     this.roleName,
+    this.status,
     required this.hasPendingJoinRequest,
     this.pendingRequestId,
   });
+
+  bool get isHost => roleName?.toLowerCase() == 'host';
 
   factory ClubCurrentUserStatusDto.fromJson(Map<String, dynamic> json) {
     return ClubCurrentUserStatusDto(
       isMember: _parseBool(json['isMember']),
       roleName: json['roleName']?.toString(),
+      status: json['status']?.toString(),
       hasPendingJoinRequest: _parseBool(json['hasPendingJoinRequest']),
       pendingRequestId: json['pendingRequestId']?.toString(),
     );
@@ -111,6 +116,7 @@ class ClubDetailDto {
   final int memberCount;
   final ClubHostDto host;
   final List<ClubScheduleItemDto> schedules;
+  final String? schedulesSummary;
   final ClubCurrentUserStatusDto currentUserStatus;
 
   ClubDetailDto({
@@ -130,13 +136,14 @@ class ClubDetailDto {
     required this.memberCount,
     required this.host,
     required this.schedules,
+    this.schedulesSummary,
     required this.currentUserStatus,
   });
 
   factory ClubDetailDto.fromJson(Map<String, dynamic> json) {
     return ClubDetailDto(
       id: json['id']?.toString() ?? '',
-      groupName: json['groupName']?.toString() ?? '',
+      groupName: json['name']?.toString() ?? json['groupName']?.toString() ?? '',
       code: json['code']?.toString() ?? '',
       description: json['description']?.toString(),
       avatarUrl: json['avatarUrl']?.toString(),
@@ -156,6 +163,7 @@ class ClubDetailDto {
           .whereType<Map<String, dynamic>>()
           .map((e) => ClubScheduleItemDto.fromJson(e))
           .toList(),
+      schedulesSummary: json['schedulesSummary']?.toString(),
       currentUserStatus: json['currentUserStatus'] is Map<String, dynamic>
           ? ClubCurrentUserStatusDto.fromJson(json['currentUserStatus'] as Map<String, dynamic>)
           : ClubCurrentUserStatusDto(isMember: false, hasPendingJoinRequest: false),

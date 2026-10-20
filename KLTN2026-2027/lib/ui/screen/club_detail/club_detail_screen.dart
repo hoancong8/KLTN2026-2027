@@ -8,6 +8,7 @@ import '../../../app/utils/exception_ext.dart';
 import '../../../domain/entities/club/club_detail.dart';
 import '../../../domain/enums/session_enums.dart';
 import '../home/tab/club/widgets/club_schedule_planner.dart';
+import '../home/tab/club/widgets/club_sessions_tab.dart';
 import 'club_detail_vm/club_detail_vm.dart';
 
 class ClubDetailScreen extends ConsumerStatefulWidget {
@@ -18,7 +19,20 @@ class ClubDetailScreen extends ConsumerStatefulWidget {
   ConsumerState<ClubDetailScreen> createState() => _ClubDetailScreenState();
 }
 
-class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> {
+class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
   void _copyToClipboard(String text, String message) {
     Clipboard.setData(ClipboardData(text: text));
     ScaffoldMessenger.of(context).showSnackBar(
@@ -426,7 +440,23 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> {
           onPressed: () => context.pop(),
         ),
         actions: [
-          if (club != null && club.currentUserStatus.isMember)
+          if (club != null && club.currentUserStatus.isHost) ...[
+            IconButton(
+              icon: const Icon(Icons.settings_outlined, color: AppColor.cDark, size: 22),
+              tooltip: 'Cài đặt CLB',
+              onPressed: () => _showEditInfoDialog(club),
+            ),
+            IconButton(
+              icon: const Icon(Icons.calendar_month_outlined, color: AppColor.cDark, size: 22),
+              tooltip: 'Sửa lịch tuần',
+              onPressed: () => _showEditSchedulesDialog(club),
+            ),
+            IconButton(
+              icon: const Icon(Icons.people_outline_rounded, color: AppColor.cDark, size: 22),
+              tooltip: 'Quản lý thành viên',
+              onPressed: () => context.push('/club/${widget.clubId}/roles'),
+            ),
+          ] else if (club != null && club.currentUserStatus.isMember)
             PopupMenuButton<String>(
               icon: const Icon(Icons.more_vert_rounded, color: AppColor.cDark),
               onSelected: (val) {
@@ -460,6 +490,41 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> {
               ],
             ),
         ],
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(48),
+          child: Container(
+            color: AppColor.white,
+            child: TabBar(
+              controller: _tabController,
+              labelColor: AppColor.cMain,
+              unselectedLabelColor: AppColor.cMuted,
+              indicatorColor: AppColor.cMain,
+              indicatorWeight: 3,
+              tabs: const [
+                Tab(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.calendar_month_rounded, size: 18),
+                      SizedBox(width: 6),
+                      Text('Lịch sinh hoạt'),
+                    ],
+                  ),
+                ),
+                Tab(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.info_outline_rounded, size: 18),
+                      SizedBox(width: 6),
+                      Text('Thông tin CLB'),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
       body: state.isLoading && club == null
           ? const Center(child: CircularProgressIndicator(color: AppColor.cMain))
@@ -482,33 +547,37 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> {
                     ],
                   ),
                 )
-              : RefreshIndicator(
-                  color: AppColor.cMain,
-                  onRefresh: () => vm.loadDetail(),
-                  child: ListView(
-                    padding: const EdgeInsets.all(16),
-                    children: [
-                      // 1. Header Card
-                      _buildClubHeaderCard(club),
-                      const SizedBox(height: 16),
+              : TabBarView(
+                  controller: _tabController,
+                  children: [
+                    // Tab 1: Danh sách các buổi tập 14 ngày tới (tự động khởi tạo)
+                    ClubSessionsTab(
+                      clubId: widget.clubId,
+                      clubName: club.groupName,
+                      isHost: club.currentUserStatus.isHost,
+                    ),
 
-                      // 2. Fixed Venue & Address Card
-                      _buildVenueCard(club),
-                      const SizedBox(height: 16),
-
-                      // 3. Weekly Schedules Card
-                      _buildSchedulesCard(club),
-                      const SizedBox(height: 16),
-
-                      // 4. Host Profile Card
-                      _buildHostCard(club),
-                      const SizedBox(height: 16),
-
-                      // 5. Club Standards & Intro
-                      _buildIntroCard(club),
-                      const SizedBox(height: 80), // Padding for bottom action bar
-                    ],
-                  ),
+                    // Tab 2: Thông tin chi tiết & sân cố định
+                    RefreshIndicator(
+                      color: AppColor.cMain,
+                      onRefresh: () => vm.loadDetail(),
+                      child: ListView(
+                        padding: const EdgeInsets.all(16),
+                        children: [
+                          _buildClubHeaderCard(club),
+                          const SizedBox(height: 16),
+                          _buildVenueCard(club),
+                          const SizedBox(height: 16),
+                          _buildSchedulesCard(club),
+                          const SizedBox(height: 16),
+                          _buildHostCard(club),
+                          const SizedBox(height: 16),
+                          _buildIntroCard(club),
+                          const SizedBox(height: 80),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
       bottomNavigationBar: club != null ? _buildBottomActionBar(club, vm, state.isSubmitting) : null,
     );
@@ -593,6 +662,32 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> {
                         ),
                       ),
                     ),
+                    if (club.currentUserStatus.isHost) ...[
+                      const SizedBox(height: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: AppColors.roleHost.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(color: AppColors.roleHost.withValues(alpha: 0.3)),
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.shield_rounded, size: 12, color: AppColors.roleHost),
+                            SizedBox(width: 4),
+                            Text(
+                              'CHỦ NHÓM (HOST)',
+                              style: TextStyle(
+                                fontSize: 10.5,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.roleHost,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -612,6 +707,34 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> {
               ),
             ],
           ),
+          if (club.schedulesSummary != null && club.schedulesSummary!.isNotEmpty) ...[
+            const SizedBox(height: 14),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: AppColors.primaryContainer,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: AppColor.cMain.withValues(alpha: 0.25)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.event_repeat_rounded, size: 16, color: AppColor.cMain),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Lịch sinh hoạt: ${club.schedulesSummary!}',
+                      style: const TextStyle(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.bold,
+                        color: AppColor.cTitle,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ],
       ),
     );

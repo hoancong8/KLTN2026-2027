@@ -341,7 +341,6 @@ class ClubRemoteDatasourceImpl extends BaseRemoteDatasource implements ClubRemot
       await dio.put(
         AppConfig.clubSchedulesPath(clubId),
         data: request.toJson(),
-        options: Options(headers: {'X-Group-Id': clubId}),
       );
     } catch (e) {
       throw handleError(e);
