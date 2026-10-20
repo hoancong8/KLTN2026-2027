@@ -5,32 +5,38 @@ import '../../../../../../app/consts/app_color.dart';
 
 /// Che do cai dat gio cho lich dinh ky
 enum ScheduleTimeMode {
-  /// Gio co dinh ap dung chung cho tat ca cac ngay da chon
+  /// Gio co dinh ap dung chung cho tat ca cac ngay da tich chon
   fixed,
 
-  /// Gio tuy chinh rieng biet cho tung ngay da chon
+  /// Gio tuy chinh rieng biet cho tung ngay da tich chon
   custom,
 }
 
-/// Thong tin mot buoi tap dinh ky trong tuan
+/// Thong tin mot buoi tap tich chon tren lich
 class ClubScheduleEntry {
+  /// Ngay cu the duoc chon trong thang (VD: 2026-10-05)
+  final DateTime? date;
+
   /// 0 = Chu Nhat, 1 = Thu 2, ..., 6 = Thu 7 (chuan ABP / C# DayOfWeek)
   final int dayOfWeek;
   TimeOfDay startTime;
   TimeOfDay endTime;
 
   ClubScheduleEntry({
+    this.date,
     required this.dayOfWeek,
     required this.startTime,
     required this.endTime,
   });
 
   ClubScheduleEntry copyWith({
+    DateTime? date,
     int? dayOfWeek,
     TimeOfDay? startTime,
     TimeOfDay? endTime,
   }) {
     return ClubScheduleEntry(
+      date: date ?? this.date,
       dayOfWeek: dayOfWeek ?? this.dayOfWeek,
       startTime: startTime ?? this.startTime,
       endTime: endTime ?? this.endTime,
@@ -38,7 +44,7 @@ class ClubScheduleEntry {
   }
 }
 
-/// Widget hien thi Lich Thang va thiet lap Gio sinh hoat dinh ky cho CLB / Nhom
+/// Widget hien thi Lich Thang 30/31 ngay, cho phep tich chon tung ngay va cai dat gio
 class ClubSchedulePlanner extends StatefulWidget {
   final List<ClubScheduleEntry> initialSchedules;
   final ValueChanged<List<ClubScheduleEntry>> onChanged;
@@ -60,8 +66,8 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
   TimeOfDay _commonStartTime = const TimeOfDay(hour: 18, minute: 0);
   TimeOfDay _commonEndTime = const TimeOfDay(hour: 20, minute: 0);
 
-  // Map luu tru theo dayOfWeek (0 = Chu Nhat, 1..6 = Thu 2..7)
-  final Map<int, ClubScheduleEntry> _schedulesMap = {};
+  /// Map luu tru cac ngay da tich chon theo DateTime chuan hoa (nam-thang-ngay)
+  final Map<DateTime, ClubScheduleEntry> _selectedDatesMap = {};
 
   // Thu tu cac thu trong tuan theo chuan Viet Nam (Thu 2 -> Chu Nhat)
   static const List<int> _weekdayOrder = [1, 2, 3, 4, 5, 6, 0];
@@ -76,6 +82,8 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
     'CN',
   ];
 
+  DateTime _normalizeDate(DateTime d) => DateTime(d.year, d.month, d.day);
+
   @override
   void initState() {
     super.initState();
@@ -83,16 +91,34 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
     _focusedMonth = DateTime(now.year, now.month, 1);
 
     if (widget.initialSchedules.isNotEmpty) {
-      for (final s in widget.initialSchedules) {
-        _schedulesMap[s.dayOfWeek] = s.copyWith();
-      }
       _commonStartTime = widget.initialSchedules.first.startTime;
       _commonEndTime = widget.initialSchedules.first.endTime;
 
-      // Kiem tra xem cac ngay co cung khung gio khong
-      bool allSame = true;
       for (final s in widget.initialSchedules) {
-        if (s.startTime != _commonStartTime || s.endTime != _commonEndTime) {
+        if (s.date != null) {
+          _selectedDatesMap[_normalizeDate(s.date!)] = s.copyWith();
+        } else {
+          // Neu chi co dayOfWeek (tu cau hinh tuan cu), tich cac ngay tuong ung trong thang hien tai
+          final totalDays = DateTime(_focusedMonth.year, _focusedMonth.month + 1, 0).day;
+          for (int day = 1; day <= totalDays; day++) {
+            final date = DateTime(_focusedMonth.year, _focusedMonth.month, day);
+            final dow = date.weekday == 7 ? 0 : date.weekday;
+            if (dow == s.dayOfWeek) {
+              _selectedDatesMap[_normalizeDate(date)] = ClubScheduleEntry(
+                date: date,
+                dayOfWeek: dow,
+                startTime: s.startTime,
+                endTime: s.endTime,
+              );
+            }
+          }
+        }
+      }
+
+      // Kiem tra xem tat ca cac ngay da chon co cung khung gio khong
+      bool allSame = true;
+      for (final entry in _selectedDatesMap.values) {
+        if (entry.startTime != _commonStartTime || entry.endTime != _commonEndTime) {
           allSame = false;
           break;
         }
@@ -149,7 +175,14 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
     }
   }
 
-  /// Tinh thoi luong giua 2 khung gio
+  String _formatFullDate(DateTime d) {
+    final dow = d.weekday == 7 ? 0 : d.weekday;
+    final dayName = _getDayFullName(dow);
+    final dayStr = d.day.toString().padLeft(2, '0');
+    final monthStr = d.month.toString().padLeft(2, '0');
+    return '$dayName, ngày $dayStr/$monthStr';
+  }
+
   String _calculateDuration(TimeOfDay start, TimeOfDay end) {
     final startMin = start.hour * 60 + start.minute;
     final endMin = end.hour * 60 + end.minute;
@@ -167,33 +200,20 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
     return startMin < endMin;
   }
 
-  /// Danh sach cac ngay trong thang hien tai tuong ung voi thu (dayOfWeek)
-  List<int> _getDaysInMonthForWeekday(int apiDayOfWeek) {
-    final days = <int>[];
-    final totalDays = DateTime(_focusedMonth.year, _focusedMonth.month + 1, 0).day;
-    for (int day = 1; day <= totalDays; day++) {
-      final date = DateTime(_focusedMonth.year, _focusedMonth.month, day);
-      final dow = date.weekday == 7 ? 0 : date.weekday;
-      if (dow == apiDayOfWeek) {
-        days.add(day);
-      }
-    }
-    return days;
-  }
-
   void _notifyChange() {
-    final sorted = _weekdayOrder
-        .where((dow) => _schedulesMap.containsKey(dow))
-        .map((dow) => _schedulesMap[dow]!)
-        .toList();
-    widget.onChanged(sorted);
+    final sortedKeys = _selectedDatesMap.keys.toList()..sort();
+    final sortedList = sortedKeys.map((k) => _selectedDatesMap[k]!).toList();
+    widget.onChanged(sortedList);
   }
 
-  void _toggleDay(int apiDayOfWeek) {
+  /// Tich hoac bo tich dung mot ngay cu the tren lich thang
+  void _toggleSpecificDate(DateTime date) {
+    final norm = _normalizeDate(date);
     setState(() {
-      if (_schedulesMap.containsKey(apiDayOfWeek)) {
-        _schedulesMap.remove(apiDayOfWeek);
+      if (_selectedDatesMap.containsKey(norm)) {
+        _selectedDatesMap.remove(norm);
       } else {
+        final dow = date.weekday == 7 ? 0 : date.weekday;
         final start = _timeMode == ScheduleTimeMode.fixed
             ? _commonStartTime
             : const TimeOfDay(hour: 18, minute: 0);
@@ -201,8 +221,9 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
             ? _commonEndTime
             : const TimeOfDay(hour: 20, minute: 0);
 
-        _schedulesMap[apiDayOfWeek] = ClubScheduleEntry(
-          dayOfWeek: apiDayOfWeek,
+        _selectedDatesMap[norm] = ClubScheduleEntry(
+          date: date,
+          dayOfWeek: dow,
           startTime: start,
           endTime: end,
         );
@@ -211,23 +232,64 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
     _notifyChange();
   }
 
-  void _setPreset(List<int> days) {
+  /// Tich hoac bo tich toan bo cac ngay thu dow trong thang hien tai
+  void _toggleAllDatesOfWeekdayInFocusedMonth(int apiDayOfWeek) {
+    final totalDays = DateTime(_focusedMonth.year, _focusedMonth.month + 1, 0).day;
+    final datesInMonth = <DateTime>[];
+    for (int day = 1; day <= totalDays; day++) {
+      final date = DateTime(_focusedMonth.year, _focusedMonth.month, day);
+      final dow = date.weekday == 7 ? 0 : date.weekday;
+      if (dow == apiDayOfWeek) {
+        datesInMonth.add(_normalizeDate(date));
+      }
+    }
+
+    final allSelected = datesInMonth.every(_selectedDatesMap.containsKey);
+
     setState(() {
-      _schedulesMap.clear();
-      for (final d in days) {
-        _schedulesMap[d] = ClubScheduleEntry(
-          dayOfWeek: d,
-          startTime: _commonStartTime,
-          endTime: _commonEndTime,
-        );
+      if (allSelected) {
+        for (final d in datesInMonth) {
+          _selectedDatesMap.remove(d);
+        }
+      } else {
+        for (final d in datesInMonth) {
+          final dow = d.weekday == 7 ? 0 : d.weekday;
+          _selectedDatesMap[d] = ClubScheduleEntry(
+            date: d,
+            dayOfWeek: dow,
+            startTime: _commonStartTime,
+            endTime: _commonEndTime,
+          );
+        }
       }
     });
     _notifyChange();
   }
 
-  void _clearAllDays() {
+  void _applyPresetToFocusedMonth(List<int> weekdays) {
+    final totalDays = DateTime(_focusedMonth.year, _focusedMonth.month + 1, 0).day;
     setState(() {
-      _schedulesMap.clear();
+      _selectedDatesMap.clear();
+      for (int day = 1; day <= totalDays; day++) {
+        final date = DateTime(_focusedMonth.year, _focusedMonth.month, day);
+        final dow = date.weekday == 7 ? 0 : date.weekday;
+        if (weekdays.contains(dow)) {
+          final norm = _normalizeDate(date);
+          _selectedDatesMap[norm] = ClubScheduleEntry(
+            date: date,
+            dayOfWeek: dow,
+            startTime: _commonStartTime,
+            endTime: _commonEndTime,
+          );
+        }
+      }
+    });
+    _notifyChange();
+  }
+
+  void _clearAllSelectedDates() {
+    setState(() {
+      _selectedDatesMap.clear();
     });
     _notifyChange();
   }
@@ -252,11 +314,10 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
         } else {
           _commonEndTime = picked;
         }
-        // Neu o che do co dinh, cap nhat toan bo cac ngay da chon
         if (_timeMode == ScheduleTimeMode.fixed) {
-          for (final key in _schedulesMap.keys) {
-            final entry = _schedulesMap[key]!;
-            _schedulesMap[key] = entry.copyWith(
+          for (final key in _selectedDatesMap.keys) {
+            final entry = _selectedDatesMap[key]!;
+            _selectedDatesMap[key] = entry.copyWith(
               startTime: _commonStartTime,
               endTime: _commonEndTime,
             );
@@ -268,10 +329,10 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
   }
 
   Future<void> _pickCustomTime({
-    required int dayOfWeek,
+    required DateTime dateKey,
     required bool isStart,
   }) async {
-    final entry = _schedulesMap[dayOfWeek];
+    final entry = _selectedDatesMap[dateKey];
     if (entry == null) return;
 
     final initial = isStart ? entry.startTime : entry.endTime;
@@ -298,14 +359,14 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
     }
   }
 
-  void _copyTimeToAll(int sourceDayOfWeek) {
-    final source = _schedulesMap[sourceDayOfWeek];
+  void _copyTimeToAllDates(DateTime sourceDateKey) {
+    final source = _selectedDatesMap[sourceDateKey];
     if (source == null) return;
 
     setState(() {
-      for (final key in _schedulesMap.keys) {
-        if (key != sourceDayOfWeek) {
-          _schedulesMap[key] = _schedulesMap[key]!.copyWith(
+      for (final key in _selectedDatesMap.keys) {
+        if (key != sourceDateKey) {
+          _selectedDatesMap[key] = _selectedDatesMap[key]!.copyWith(
             startTime: source.startTime,
             endTime: source.endTime,
           );
@@ -317,7 +378,7 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          'Đã sao chép khung giờ ${_formatTime(source.startTime)} - ${_formatTime(source.endTime)} cho tất cả các ngày.',
+          'Đã sao chép khung giờ ${_formatTime(source.startTime)} - ${_formatTime(source.endTime)} cho tất cả các ngày đã chọn.',
         ),
         duration: const Duration(seconds: 2),
         behavior: SnackBarBehavior.floating,
@@ -330,7 +391,6 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
     final currentMonthFirst = DateTime(now.year, now.month, 1);
     final prev = DateTime(_focusedMonth.year, _focusedMonth.month - 1, 1);
 
-    // Khong cho lui ve truoc thang hien tai
     if (prev.isBefore(currentMonthFirst)) return;
 
     setState(() {
@@ -346,34 +406,36 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
 
   @override
   Widget build(BuildContext context) {
+    final selectedCount = _selectedDatesMap.length;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // 1. Giao dien Lich Thang
+        // 1. Giao dien Lich Thang 30/31 ngay (Tich chon tung ngay)
         _buildMonthCalendarCard(),
 
-        const SizedBox(height: 14),
+        const SizedBox(height: 12),
 
-        // 2. Chon nhanh cac ngay trong tuan & Presets
+        // 2. Chon nhanh hoac tich theo thu
         _buildQuickWeekdaySelector(),
 
         const SizedBox(height: 16),
 
         // 3. Tab lua chon Che do Gio: Co dinh vs Tuy chinh theo ngay
-        _buildTimeModeSelector(),
+        _buildTimeModeSelector(selectedCount),
 
         const SizedBox(height: 12),
 
         // 4. Panel thiet lap gio chi tiet theo che do
         if (_timeMode == ScheduleTimeMode.fixed)
-          _buildFixedTimeCard()
+          _buildFixedTimeCard(selectedCount)
         else
           _buildCustomTimeList(),
       ],
     );
   }
 
-  /// 1. Giao dien Lich Thang
+  /// 1. Giao dien Lich Thang 30/31 ngay
   Widget _buildMonthCalendarCard() {
     final now = DateTime.now();
     final currentMonthFirst = DateTime(now.year, now.month, 1);
@@ -416,9 +478,25 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
                   Text(
                     'Tháng ${_focusedMonth.month} / ${_focusedMonth.year}',
                     style: const TextStyle(
-                      fontSize: 14,
+                      fontSize: 14.5,
                       fontWeight: FontWeight.bold,
                       color: AppColor.cTitle,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: AppColor.cMain.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      '${_selectedDatesMap.length} ngày đã chọn',
+                      style: const TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        color: AppColor.cMain,
+                      ),
                     ),
                   ),
                 ],
@@ -432,38 +510,29 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
             ],
           ),
 
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
 
           // Day of week labels (T2, T3, T4, T5, T6, T7, CN)
           Row(
             children: List.generate(7, (idx) {
               final isSunday = idx == 6;
               final apiDow = _weekdayOrder[idx];
-              final isDaySelected = _schedulesMap.containsKey(apiDow);
 
               return Expanded(
                 child: InkWell(
-                  onTap: () => _toggleDay(apiDow),
+                  onTap: () => _toggleAllDatesOfWeekdayInFocusedMonth(apiDow),
                   borderRadius: BorderRadius.circular(6),
                   child: Container(
                     padding: const EdgeInsets.symmetric(vertical: 4),
-                    decoration: BoxDecoration(
-                      color: isDaySelected
-                          ? AppColor.cMain.withValues(alpha: 0.12)
-                          : Colors.transparent,
-                      borderRadius: BorderRadius.circular(6),
-                    ),
                     child: Center(
                       child: Text(
                         _weekdayLabels[idx],
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
-                          color: isDaySelected
-                              ? AppColor.cMain
-                              : isSunday
-                                  ? const Color(0xFFE11D48)
-                                  : AppColor.cMuted,
+                          color: isSunday
+                              ? const Color(0xFFE11D48)
+                              : AppColor.cMuted,
                         ),
                       ),
                     ),
@@ -473,18 +542,18 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
             }),
           ),
 
-          const Divider(height: 14, color: Color(0xFFE2E8F0)),
+          const Divider(height: 12, color: Color(0xFFE2E8F0)),
 
-          // Calendar Grid (Dates)
+          // Calendar Grid (Dates: 1..30/31)
           GridView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: leadingBlanks + totalDaysInMonth,
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 7,
-              crossAxisSpacing: 4,
-              mainAxisSpacing: 4,
-              childAspectRatio: 0.95,
+              crossAxisSpacing: 5,
+              mainAxisSpacing: 5,
+              childAspectRatio: 0.88,
             ),
             itemBuilder: (context, index) {
               if (index < leadingBlanks) {
@@ -497,21 +566,24 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
                 _focusedMonth.month,
                 dayNumber,
               );
-              final apiDow = date.weekday == 7 ? 0 : date.weekday;
-              final isSelected = _schedulesMap.containsKey(apiDow);
-              final scheduleEntry = _schedulesMap[apiDow];
+              final normDate = _normalizeDate(date);
+              final isSelected = _selectedDatesMap.containsKey(normDate);
+              final scheduleEntry = _selectedDatesMap[normDate];
 
               final isToday = now.year == date.year &&
                   now.month == date.month &&
                   now.day == date.day;
 
               return InkWell(
-                onTap: () => _toggleDay(apiDow),
+                onTap: () => _toggleSpecificDate(date),
                 borderRadius: BorderRadius.circular(8),
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 150),
+                  padding: const EdgeInsets.all(2),
                   decoration: BoxDecoration(
-                    color: isSelected ? AppColor.cMain : Colors.white,
+                    color: isSelected
+                        ? AppColor.cMain.withValues(alpha: 0.12)
+                        : Colors.white,
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(
                       color: isSelected
@@ -519,55 +591,72 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
                           : isToday
                               ? AppColor.cMain
                               : const Color(0xFFE2E8F0),
-                      width: isToday ? 1.5 : 1,
+                      width: isSelected ? 1.8 : (isToday ? 1.5 : 1),
                     ),
                     boxShadow: isSelected
                         ? [
                             BoxShadow(
-                              color: AppColor.cMain.withValues(alpha: 0.25),
-                              blurRadius: 4,
-                              offset: const Offset(0, 2),
+                              color: AppColor.cMain.withValues(alpha: 0.18),
+                              blurRadius: 3,
+                              offset: const Offset(0, 1),
                             ),
                           ]
                         : null,
                   ),
                   child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        '$dayNumber',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight:
-                              isSelected || isToday ? FontWeight.bold : FontWeight.w500,
-                          color: isSelected
-                              ? Colors.white
-                              : isToday
-                                  ? AppColor.cMain
-                                  : const Color(0xFF1E293B),
-                        ),
-                      ),
-                      if (isSelected && scheduleEntry != null) ...[
-                        const SizedBox(height: 2),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 3,
-                            vertical: 1,
+                      // Header o lich: Check icon & Date number
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Icon(
+                            isSelected
+                                ? Icons.check_circle_rounded
+                                : Icons.radio_button_unchecked,
+                            size: 13,
+                            color: isSelected
+                                ? AppColor.cMain
+                                : const Color(0xFFCBD5E1),
                           ),
+                          Text(
+                            '$dayNumber',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: isSelected || isToday
+                                  ? FontWeight.bold
+                                  : FontWeight.w600,
+                              color: isSelected
+                                  ? AppColor.cMain
+                                  : isToday
+                                      ? AppColor.cMain
+                                      : const Color(0xFF1E293B),
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      // Footer o lich: Gio bat dau neu duoc chon
+                      if (isSelected && scheduleEntry != null)
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(vertical: 1.5),
                           decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.25),
+                            color: AppColor.cMain,
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Text(
                             _formatTime(scheduleEntry.startTime),
+                            textAlign: TextAlign.center,
                             style: const TextStyle(
-                              fontSize: 9,
-                              fontWeight: FontWeight.w600,
+                              fontSize: 9.5,
+                              fontWeight: FontWeight.bold,
                               color: Colors.white,
                             ),
                           ),
-                        ),
-                      ],
+                        )
+                      else
+                        const SizedBox(height: 12),
                     ],
                   ),
                 ),
@@ -578,20 +667,13 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
           const SizedBox(height: 8),
 
           // Chu thich duoi lich
-          Row(
+          const Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Container(
-                width: 10,
-                height: 10,
-                decoration: BoxDecoration(
-                  color: AppColor.cMain,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              const SizedBox(width: 6),
-              const Text(
-                'Ngày có buổi sinh hoạt (Chạm để bật/tắt)',
+              Icon(Icons.touch_app_outlined, size: 14, color: AppColor.cMuted),
+              SizedBox(width: 4),
+              Text(
+                'Tích vào từng ngày bạn muốn đi chơi để chọn ngày đó',
                 style: TextStyle(fontSize: 11, color: AppColor.cMuted),
               ),
             ],
@@ -601,51 +683,60 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
     );
   }
 
-  /// 2. Chon nhanh cac ngay trong tuan & Presets
+  /// 2. Chon nhanh theo thu trong thang hien tai & Presets
   Widget _buildQuickWeekdaySelector() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Chọn nhanh các ngày sinh hoạt trong tuần:',
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-            color: AppColor.cTitle,
-          ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              'Chọn nhanh theo thứ trong tháng:',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: AppColor.cTitle,
+              ),
+            ),
+            if (_selectedDatesMap.isNotEmpty)
+              InkWell(
+                onTap: _clearAllSelectedDates,
+                child: const Text(
+                  'Bỏ chọn tất cả',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: AppColor.cRed,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+          ],
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 6),
 
         // Cac nut thu T2 -> CN
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: _weekdayOrder.map((dow) {
-            final isSelected = _schedulesMap.containsKey(dow);
             final dayName = _getDayName(dow);
 
             return InkWell(
-              onTap: () => _toggleDay(dow),
+              onTap: () => _toggleAllDatesOfWeekdayInFocusedMonth(dow),
               borderRadius: BorderRadius.circular(8),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 150),
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
                 decoration: BoxDecoration(
-                  color: isSelected
-                      ? AppColor.cMain
-                      : const Color(0xFFF1F5F9),
+                  color: const Color(0xFFF1F5F9),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: isSelected
-                        ? AppColor.cMain
-                        : const Color(0xFFCBD5E1),
-                  ),
+                  border: Border.all(color: const Color(0xFFCBD5E1)),
                 ),
                 child: Text(
                   dayName,
-                  style: TextStyle(
-                    fontSize: 11.5,
-                    fontWeight: FontWeight.bold,
-                    color: isSelected ? Colors.white : AppColor.cTitle,
+                  style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: AppColor.cTitle,
                   ),
                 ),
               ),
@@ -655,44 +746,21 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
 
         const SizedBox(height: 8),
 
-        // Preset buttons: 2-4-6, 3-5-7, Cuoi tuan, Xoa
+        // Presets: 2-4-6, 3-5-7, Cuoi tuan
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           child: Row(
             children: [
               const Text(
-                'Mẫu nhanh:',
+                'Mẫu nhanh cả tháng:',
                 style: TextStyle(fontSize: 11, color: AppColor.cMuted),
               ),
               const SizedBox(width: 8),
-              _buildPresetChip('2 - 4 - 6', [1, 3, 5]),
+              _buildPresetChip('Tất cả 2 - 4 - 6', [1, 3, 5]),
               const SizedBox(width: 6),
-              _buildPresetChip('3 - 5 - 7', [2, 4, 6]),
+              _buildPresetChip('Tất cả 3 - 5 - 7', [2, 4, 6]),
               const SizedBox(width: 6),
-              _buildPresetChip('Cuối tuần', [6, 0]),
-              const SizedBox(width: 6),
-              if (_schedulesMap.isNotEmpty)
-                InkWell(
-                  onTap: _clearAllDays,
-                  borderRadius: BorderRadius.circular(6),
-                  child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFFEE2E2),
-                      borderRadius: BorderRadius.circular(6),
-                      border: Border.all(color: const Color(0xFFFCA5A5)),
-                    ),
-                    child: const Text(
-                      'Xóa chọn',
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: AppColor.cRed,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ),
+              _buildPresetChip('Tất cả Cuối tuần', [6, 0]),
             ],
           ),
         ),
@@ -700,9 +768,9 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
     );
   }
 
-  Widget _buildPresetChip(String title, List<int> days) {
+  Widget _buildPresetChip(String title, List<int> weekdays) {
     return InkWell(
-      onTap: () => _setPreset(days),
+      onTap: () => _applyPresetToFocusedMonth(weekdays),
       borderRadius: BorderRadius.circular(6),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -724,7 +792,7 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
   }
 
   /// 3. Tab lua chon Che do Gio
-  Widget _buildTimeModeSelector() {
+  Widget _buildTimeModeSelector(int selectedCount) {
     return Container(
       decoration: BoxDecoration(
         color: const Color(0xFFF1F5F9),
@@ -738,9 +806,8 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
               onTap: () {
                 setState(() {
                   _timeMode = ScheduleTimeMode.fixed;
-                  // Dong bo gio co dinh cho tat ca ngay dang duoc chon
-                  for (final key in _schedulesMap.keys) {
-                    _schedulesMap[key] = _schedulesMap[key]!.copyWith(
+                  for (final key in _selectedDatesMap.keys) {
+                    _selectedDatesMap[key] = _selectedDatesMap[key]!.copyWith(
                       startTime: _commonStartTime,
                       endTime: _commonEndTime,
                     );
@@ -779,7 +846,7 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
                     ),
                     const SizedBox(width: 6),
                     Text(
-                      'Giờ cố định chung',
+                      'Giờ cố định ($selectedCount ngày)',
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
@@ -831,7 +898,7 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
                     ),
                     const SizedBox(width: 6),
                     Text(
-                      'Giờ tùy chỉnh theo ngày',
+                      'Giờ tùy chỉnh từng ngày',
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
@@ -850,14 +917,10 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
     );
   }
 
-  /// 4a. Che do Gio Co Dinh (Fixed Time)
-  Widget _buildFixedTimeCard() {
+  /// 4a. Che do Gio Co Dinh (Fixed Time cho tat ca cac ngay da tich)
+  Widget _buildFixedTimeCard(int selectedCount) {
     final isValid = _isValidTime(_commonStartTime, _commonEndTime);
     final durationText = _calculateDuration(_commonStartTime, _commonEndTime);
-    final selectedDayNames = _weekdayOrder
-        .where((d) => _schedulesMap.containsKey(d))
-        .map(_getDayName)
-        .toList();
 
     return Container(
       padding: const EdgeInsets.all(14),
@@ -874,17 +937,16 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
               const Icon(Icons.schedule_rounded, size: 16, color: AppColor.cMain),
               const SizedBox(width: 6),
               const Text(
-                'Khung giờ sinh hoạt cố định:',
+                'Khung giờ áp dụng chung:',
                 style: TextStyle(
-                  fontSize: 12,
+                  fontSize: 12.5,
                   fontWeight: FontWeight.bold,
                   color: AppColor.cTitle,
                 ),
               ),
               const Spacer(),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
                   color: isValid
                       ? const Color(0xFFDCFCE7)
@@ -961,9 +1023,9 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
                 const SizedBox(width: 6),
                 Expanded(
                   child: Text(
-                    selectedDayNames.isNotEmpty
-                        ? 'Khung giờ ${_formatTime(_commonStartTime)} - ${_formatTime(_commonEndTime)} áp dụng cho tất cả ${selectedDayNames.length} ngày đã chọn: ${selectedDayNames.join(", ")}.'
-                        : 'Chưa có ngày nào được chọn. Hãy chạm vào các ngày trên lịch hoặc thanh chọn nhanh ở trên.',
+                    selectedCount > 0
+                        ? 'Khung giờ ${_formatTime(_commonStartTime)} - ${_formatTime(_commonEndTime)} sẽ được áp dụng cho toàn bộ $selectedCount ngày bạn đã tích chọn trên lịch.'
+                        : 'Chưa có ngày nào được tích chọn. Hãy bấm vào các ô ngày trên lịch tháng ở trên để chọn ngày đi chơi.',
                     style: const TextStyle(
                       fontSize: 11,
                       color: AppColor.cMuted,
@@ -979,13 +1041,11 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
     );
   }
 
-  /// 4b. Che do Gio Tuy Chinh Theo Ngay (Custom Time per Day)
+  /// 4b. Che do Gio Tuy Chinh Theo Tung Ngay Da Tich
   Widget _buildCustomTimeList() {
-    final selectedDays = _weekdayOrder
-        .where((d) => _schedulesMap.containsKey(d))
-        .toList();
+    final sortedKeys = _selectedDatesMap.keys.toList()..sort();
 
-    if (selectedDays.isEmpty) {
+    if (sortedKeys.isEmpty) {
       return Container(
         width: double.infinity,
         padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
@@ -999,7 +1059,7 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
             Icon(Icons.event_busy_rounded, size: 28, color: AppColor.cMuted),
             SizedBox(height: 6),
             Text(
-              'Chưa có ngày nào được chọn',
+              'Chưa tích chọn ngày nào',
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
@@ -1008,7 +1068,7 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
             ),
             SizedBox(height: 2),
             Text(
-              'Chạm vào các ngày trên lịch hoặc các nút thứ để thiết lập giờ cho từng ngày.',
+              'Hãy chạm vào các ngày trên lịch tháng để tích chọn ngày đi chơi và cài đặt giờ.',
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 11, color: AppColor.cMuted),
             ),
@@ -1024,7 +1084,7 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              'Thiết lập giờ cho ${selectedDays.length} ngày đã chọn:',
+              'Cài đặt giờ riêng cho ${sortedKeys.length} ngày đã tích:',
               style: const TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.bold,
@@ -1039,10 +1099,9 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
         ),
         const SizedBox(height: 8),
 
-        ...selectedDays.map((dow) {
-          final entry = _schedulesMap[dow]!;
-          final dayName = _getDayFullName(dow);
-          final monthDates = _getDaysInMonthForWeekday(dow);
+        ...sortedKeys.map((dateKey) {
+          final entry = _selectedDatesMap[dateKey]!;
+          final dateTitle = _formatFullDate(dateKey);
           final isValid = _isValidTime(entry.startTime, entry.endTime);
           final durationText = _calculateDuration(entry.startTime, entry.endTime);
 
@@ -1073,37 +1132,35 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
                         color: AppColor.cMain,
                         borderRadius: BorderRadius.circular(6),
                       ),
-                      child: Text(
-                        dayName,
-                        style: const TextStyle(
-                          fontSize: 11.5,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.check_circle_rounded,
+                            size: 13,
+                            color: Colors.white,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            dateTitle,
+                            style: const TextStyle(
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        monthDates.isNotEmpty
-                            ? 'Ngày: ${monthDates.map((d) => "$d/${_focusedMonth.month}").join(", ")}'
-                            : '',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontSize: 11,
-                          color: AppColor.cMuted,
-                        ),
-                      ),
-                    ),
+                    const Spacer(),
                     InkWell(
-                      onTap: () => _toggleDay(dow),
+                      onTap: () => _toggleSpecificDate(dateKey),
                       borderRadius: BorderRadius.circular(12),
                       child: const Padding(
                         padding: EdgeInsets.all(2),
                         child: Icon(
                           Icons.close_rounded,
-                          size: 16,
+                          size: 18,
                           color: AppColor.cMuted,
                         ),
                       ),
@@ -1121,7 +1178,7 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
                         label: 'Giờ bắt đầu',
                         time: entry.startTime,
                         onTap: () =>
-                            _pickCustomTime(dayOfWeek: dow, isStart: true),
+                            _pickCustomTime(dateKey: dateKey, isStart: true),
                       ),
                     ),
                     const Padding(
@@ -1137,7 +1194,7 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
                         label: 'Giờ kết thúc',
                         time: entry.endTime,
                         onTap: () =>
-                            _pickCustomTime(dayOfWeek: dow, isStart: false),
+                            _pickCustomTime(dateKey: dateKey, isStart: false),
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -1176,7 +1233,7 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
 
                 const SizedBox(height: 6),
                 InkWell(
-                  onTap: () => _copyTimeToAll(dow),
+                  onTap: () => _copyTimeToAllDates(dateKey),
                   child: const Padding(
                     padding: EdgeInsets.symmetric(vertical: 2),
                     child: Row(

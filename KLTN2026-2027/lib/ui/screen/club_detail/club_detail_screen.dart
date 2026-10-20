@@ -348,17 +348,19 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> {
                       }
 
                       Navigator.of(ctx).pop();
-                      final inputList = currentSchedules.map((entry) {
+                      final Map<int, ClubScheduleInput> distinctMap = {};
+                      for (final entry in currentSchedules) {
                         final hStart = entry.startTime.hour.toString().padLeft(2, '0');
                         final mStart = entry.startTime.minute.toString().padLeft(2, '0');
                         final hEnd = entry.endTime.hour.toString().padLeft(2, '0');
                         final mEnd = entry.endTime.minute.toString().padLeft(2, '0');
-                        return ClubScheduleInput(
+                        distinctMap[entry.dayOfWeek] = ClubScheduleInput(
                           dayOfWeek: entry.dayOfWeek,
                           startTime: '$hStart:$mStart',
                           endTime: '$hEnd:$mEnd',
                         );
-                      }).toList();
+                      }
+                      final inputList = distinctMap.values.toList();
 
                       await ref
                           .read(clubDetailViewModelProvider(widget.clubId).notifier)

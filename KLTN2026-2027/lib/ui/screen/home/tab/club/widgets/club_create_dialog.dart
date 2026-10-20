@@ -124,12 +124,18 @@ class _ClubCreateDialogState extends ConsumerState<ClubCreateDialog> {
     setState(() => _isSubmitting = true);
     final vm = ref.read(clubContextViewModelProvider.notifier);
 
-    final schedulesList = _hasSchedule && _schedules.isNotEmpty
-        ? _schedules.map((s) => {
-            'dayOfWeek': s.dayOfWeek,
-            'startTime': _formatTime(s.startTime),
-            'endTime': _formatTime(s.endTime),
-          }).toList()
+    final Map<int, Map<String, dynamic>> distinctSchedules = {};
+    if (_hasSchedule && _schedules.isNotEmpty) {
+      for (final s in _schedules) {
+        distinctSchedules[s.dayOfWeek] = {
+          'dayOfWeek': s.dayOfWeek,
+          'startTime': _formatTime(s.startTime),
+          'endTime': _formatTime(s.endTime),
+        };
+      }
+    }
+    final schedulesList = distinctSchedules.isNotEmpty
+        ? distinctSchedules.values.toList()
         : null;
 
     final ok = await vm.createClub(

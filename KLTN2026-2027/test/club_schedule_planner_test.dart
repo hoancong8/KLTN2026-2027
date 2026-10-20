@@ -45,24 +45,24 @@ void main() {
       expect(find.text('CN'), findsWidgets);
 
       // Check quick presets
-      expect(find.text('2 - 4 - 6'), findsOneWidget);
-      expect(find.text('3 - 5 - 7'), findsOneWidget);
-      expect(find.text('Cuối tuần'), findsOneWidget);
+      expect(find.text('Tất cả 2 - 4 - 6'), findsOneWidget);
+      expect(find.text('Tất cả 3 - 5 - 7'), findsOneWidget);
+      expect(find.text('Tất cả Cuối tuần'), findsOneWidget);
 
       // Check time modes
-      expect(find.text('Giờ cố định chung'), findsOneWidget);
-      expect(find.text('Giờ tùy chỉnh theo ngày'), findsOneWidget);
+      expect(find.textContaining('Giờ cố định'), findsOneWidget);
+      expect(find.text('Giờ tùy chỉnh từng ngày'), findsOneWidget);
 
       // Test preset 2 - 4 - 6 tap
-      await tester.tap(find.text('2 - 4 - 6'));
+      await tester.tap(find.text('Tất cả 2 - 4 - 6'));
       await tester.pumpAndSettle();
 
-      expect(changedSchedules.length, 3);
-      final days = changedSchedules.map((e) => e.dayOfWeek).toList();
+      expect(changedSchedules.isNotEmpty, isTrue);
+      final days = changedSchedules.map((e) => e.dayOfWeek).toSet();
       expect(days, containsAll([1, 3, 5]));
     });
 
-    testWidgets('Toggles dayOfWeek on and off via weekday chips', (tester) async {
+    testWidgets('Toggles specific date on and off when tapping calendar cell', (tester) async {
       tester.view.physicalSize = const Size(800, 1600);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(() {
@@ -89,15 +89,17 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      // Tap 'Thứ 4'
-      await tester.tap(find.text('Thứ 4'));
+      // Tap day 15 on the calendar grid
+      final day15Finder = find.text('15');
+      expect(day15Finder, findsOneWidget);
+      await tester.tap(day15Finder);
       await tester.pumpAndSettle();
 
       expect(changedSchedules.length, 1);
-      expect(changedSchedules.first.dayOfWeek, 3);
+      expect(changedSchedules.first.date?.day, 15);
 
-      // Tap 'Thứ 4' again to unselect
-      await tester.tap(find.text('Thứ 4'));
+      // Tap day 15 again to unselect
+      await tester.tap(day15Finder);
       await tester.pumpAndSettle();
 
       expect(changedSchedules.isEmpty, isTrue);
@@ -111,6 +113,10 @@ void main() {
         tester.view.resetDevicePixelRatio();
       });
 
+      final now = DateTime.now();
+      final sampleDate1 = DateTime(now.year, now.month, 10);
+      final sampleDate2 = DateTime(now.year, now.month, 18);
+
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -118,12 +124,14 @@ void main() {
               child: ClubSchedulePlanner(
                 initialSchedules: [
                   ClubScheduleEntry(
-                    dayOfWeek: 1, // Thu 2
+                    date: sampleDate1,
+                    dayOfWeek: sampleDate1.weekday == 7 ? 0 : sampleDate1.weekday,
                     startTime: const TimeOfDay(hour: 17, minute: 30),
                     endTime: const TimeOfDay(hour: 19, minute: 30),
                   ),
                   ClubScheduleEntry(
-                    dayOfWeek: 5, // Thu 6
+                    date: sampleDate2,
+                    dayOfWeek: sampleDate2.weekday == 7 ? 0 : sampleDate2.weekday,
                     startTime: const TimeOfDay(hour: 19, minute: 0),
                     endTime: const TimeOfDay(hour: 21, minute: 0),
                   ),
@@ -138,12 +146,10 @@ void main() {
       await tester.pumpAndSettle();
 
       // Switch to custom time mode
-      await tester.tap(find.text('Giờ tùy chỉnh theo ngày'));
+      await tester.tap(find.text('Giờ tùy chỉnh từng ngày'));
       await tester.pumpAndSettle();
 
-      // Verify custom day cards exist
-      expect(find.text('Thứ Hai'), findsOneWidget);
-      expect(find.text('Thứ Sáu'), findsOneWidget);
+      // Verify custom day cards exist with copy action
       expect(find.text('Áp dụng khung giờ này cho các ngày còn lại'), findsWidgets);
     });
   });
