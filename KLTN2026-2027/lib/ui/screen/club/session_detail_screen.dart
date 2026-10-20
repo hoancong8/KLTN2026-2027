@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import '../../../app/consts/app_color.dart';
+import 'package:kltn2026_2027/app/theme/theme.dart';
 import '../../../app/provider.dart';
 import '../../../domain/entities/session/guest_recruitment.dart';
 import '../../../domain/entities/session/session.dart';
@@ -43,8 +43,8 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
       if (booking.isConfirmed) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Chúc mừng! Bạn đã giữ chỗ chính thức thành công 🎉'),
-            backgroundColor: AppColor.cMain,
+            content: Text('Chúc mừng! Bạn đã giữ chỗ chính thức thành công!'),
+            backgroundColor: AppColors.primary,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -55,7 +55,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
             title: const Row(
               children: [
-                Icon(Icons.hourglass_top_rounded, color: Colors.orange),
+                Icon(Icons.hourglass_top_rounded, color: AppColors.warning),
                 SizedBox(width: 8),
                 Text('Đã Vào Hàng Đợi', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17)),
               ],
@@ -65,7 +65,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
             ),
             actions: [
               ElevatedButton(
-                style: ElevatedButton.styleFrom(backgroundColor: AppColor.cMain, foregroundColor: AppColor.white),
+                style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, foregroundColor: AppColors.white),
                 onPressed: () => Navigator.of(ctx).pop(),
                 child: const Text('Đã hiểu'),
               ),
@@ -83,7 +83,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         title: const Row(
           children: [
-            Icon(Icons.warning_amber_rounded, color: AppColor.cRed),
+            Icon(Icons.warning_amber_rounded, color: AppColors.error),
             SizedBox(width: 8),
             Text('Xác Nhận Báo Vắng', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17)),
           ],
@@ -97,7 +97,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
             child: const Text('Quay lại'),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: AppColor.cRed, foregroundColor: AppColor.white),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.error, foregroundColor: AppColors.white),
             onPressed: () => Navigator.of(ctx).pop(true),
             child: const Text('Xác nhận báo vắng'),
           ),
@@ -112,7 +112,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Đã báo vắng thành công. Vị trí đã được nhường cho hàng đợi!'),
-            backgroundColor: AppColor.cRed,
+            backgroundColor: AppColors.error,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -151,7 +151,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                     width: 40,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: AppColor.cDivider,
+                      color: AppColors.divider,
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
@@ -159,11 +159,11 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                 const SizedBox(height: 16),
                 const Row(
                   children: [
-                    Icon(Icons.radar_rounded, color: Color(0xFF7C3AED), size: 24),
+                    Icon(Icons.radar_rounded, color: AppColors.roleViolet, size: 24),
                     SizedBox(width: 8),
                     Text(
                       'Phát Tín Hiệu Tuyển Khách (FR11)',
-                      style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: AppColor.cTitle),
+                      style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
                     ),
                   ],
                 ),
@@ -220,7 +220,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                   keyboardType: TextInputType.number,
                   decoration: InputDecoration(
                     hintText: '50,000',
-                    prefixIcon: const Icon(Icons.attach_money_rounded, size: 20, color: AppColor.cMuted),
+                    prefixIcon: const Icon(Icons.attach_money_rounded, size: 20, color: AppColors.textMuted),
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                     contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                   ),
@@ -230,7 +230,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const Text('Bán kính phát tín hiệu:', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
-                    Text('${radiusKm.toStringAsFixed(1)} km', style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF7C3AED))),
+                    Text('${radiusKm.toStringAsFixed(1)} km', style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.roleViolet)),
                   ],
                 ),
                 Slider(
@@ -238,7 +238,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                   min: 1.0,
                   max: 20.0,
                   divisions: 19,
-                  activeColor: const Color(0xFF7C3AED),
+                  activeColor: AppColors.roleViolet,
                   onChanged: (val) => setModalState(() => radiusKm = val),
                 ),
                 const SizedBox(height: 16),
@@ -262,16 +262,16 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                     if (ok && context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                          content: Text('Đã phát tín hiệu tìm khách giao lưu thành công 📡'),
-                          backgroundColor: Color(0xFF7C3AED),
+                          content: Text('Đã phát tín hiệu tìm khách giao lưu thành công!'),
+                          backgroundColor: AppColors.roleViolet,
                           behavior: SnackBarBehavior.floating,
                         ),
                       );
                     }
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF7C3AED),
-                    foregroundColor: AppColor.white,
+                    backgroundColor: AppColors.roleViolet,
+                    foregroundColor: AppColors.white,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                   ),
@@ -292,8 +292,8 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
 
     if (state.isLoading) {
       return const Scaffold(
-        backgroundColor: Color(0xFFF8FAFC),
-        body: Center(child: CircularProgressIndicator(color: AppColor.cMain)),
+        backgroundColor: AppColors.neutral50,
+        body: Center(child: CircularProgressIndicator(color: AppColors.primary)),
       );
     }
 
@@ -304,7 +304,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.error_outline_rounded, color: AppColor.cRed, size: 48),
+              const Icon(Icons.error_outline_rounded, color: AppColors.error, size: 48),
               const SizedBox(height: 12),
               Text(state.errorMessage ?? 'Không tìm thấy thông tin buổi chơi'),
               const SizedBox(height: 16),
@@ -321,11 +321,11 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
     final waitingCount = detail.waitingQueue.length;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: AppColors.neutral50,
       appBar: AppBar(
         title: Text(session.title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17)),
-        backgroundColor: AppColor.white,
-        foregroundColor: AppColor.cTitle,
+        backgroundColor: AppColors.white,
+        foregroundColor: AppColors.textPrimary,
         elevation: 0.5,
         actions: [
           IconButton(
@@ -353,7 +353,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                     actions: [
                       TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Bỏ qua')),
                       ElevatedButton(
-                        style: ElevatedButton.styleFrom(backgroundColor: AppColor.cRed, foregroundColor: Colors.white),
+                        style: ElevatedButton.styleFrom(backgroundColor: AppColors.error, foregroundColor: Colors.white),
                         onPressed: () => Navigator.of(ctx).pop(true),
                         child: const Text('Hủy ngay'),
                       ),
@@ -371,7 +371,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                 value: 'recruit',
                 child: Row(
                   children: [
-                    Icon(Icons.radar_rounded, color: Color(0xFF7C3AED), size: 18),
+                    Icon(Icons.radar_rounded, color: AppColors.roleViolet, size: 18),
                     SizedBox(width: 8),
                     Text('Tuyển khách giao lưu (FR11)'),
                   ],
@@ -414,9 +414,9 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                 value: 'delete',
                 child: Row(
                   children: [
-                    Icon(Icons.delete_outline, color: AppColor.cRed, size: 18),
+                    Icon(Icons.delete_outline, color: AppColors.error, size: 18),
                     SizedBox(width: 8),
-                    Text('Hủy buổi chơi', style: TextStyle(color: AppColor.cRed)),
+                    Text('Hủy buổi chơi', style: TextStyle(color: AppColors.error)),
                   ],
                 ),
               ),
@@ -432,12 +432,12 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
 
           // 2. Tab Bar: Confirmed vs Waiting Queue
           Container(
-            color: AppColor.white,
+            color: AppColors.white,
             child: TabBar(
               controller: _tabController,
-              labelColor: AppColor.cMain,
-              unselectedLabelColor: AppColor.cMuted,
-              indicatorColor: AppColor.cMain,
+              labelColor: AppColors.primary,
+              unselectedLabelColor: AppColors.textMuted,
+              indicatorColor: AppColors.primary,
               indicatorWeight: 3,
               tabs: [
                 Tab(
@@ -490,7 +490,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
 
     return Container(
       width: double.infinity,
-      color: AppColor.white,
+      color: AppColors.white,
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -500,12 +500,12 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: AppColor.cMain.withValues(alpha: 0.12),
+                  color: AppColors.primary.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
                   session.clubName,
-                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColor.cMain),
+                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.primary),
                 ),
               ),
               const Spacer(),
@@ -517,12 +517,12 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
           // Court address & Time
           Row(
             children: [
-              const Icon(Icons.location_on_rounded, size: 16, color: AppColor.cMuted),
+              const Icon(Icons.location_on_rounded, size: 16, color: AppColors.textMuted),
               const SizedBox(width: 6),
               Expanded(
                 child: Text(
                   session.courtLocation,
-                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColor.cTitle),
+                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
                 ),
               ),
             ],
@@ -530,16 +530,16 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
           const SizedBox(height: 6),
           Row(
             children: [
-              const Icon(Icons.access_time_filled_rounded, size: 16, color: AppColor.cMuted),
+              const Icon(Icons.access_time_filled_rounded, size: 16, color: AppColors.textMuted),
               const SizedBox(width: 6),
               Text(
                 timeStr,
-                style: const TextStyle(fontSize: 13, color: AppColor.cTitle),
+                style: const TextStyle(fontSize: 13, color: AppColors.textPrimary),
               ),
               const Spacer(),
               Text(
                 '${session.courtCount} sân • ${session.targetPlayerPerCourt} người/sân',
-                style: const TextStyle(fontSize: 12, color: AppColor.cMuted),
+                style: const TextStyle(fontSize: 12, color: AppColors.textMuted),
               ),
             ],
           ),
@@ -554,9 +554,9 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                   child: LinearProgressIndicator(
                     value: progress,
                     minHeight: 8,
-                    backgroundColor: const Color(0xFFE2E8F0),
+                    backgroundColor: AppColors.border,
                     valueColor: AlwaysStoppedAnimation<Color>(
-                      isFull ? Colors.orange : AppColor.cMain,
+                      isFull ? AppColors.warning : AppColors.primary,
                     ),
                   ),
                 ),
@@ -567,7 +567,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.bold,
-                  color: isFull ? Colors.orange : AppColor.cMain,
+                  color: isFull ? AppColors.warning : AppColors.primary,
                 ),
               ),
             ],
@@ -579,18 +579,18 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
-                color: const Color(0xFFF3E8FF),
+                color: AppColors.violetLight,
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: const Color(0xFFD8B4FE)),
+                border: Border.all(color: AppColors.violetBorder),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.radar_rounded, size: 18, color: Color(0xFF7C3AED)),
+                  const Icon(Icons.radar_rounded, size: 18, color: AppColors.roleViolet),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       'Đang phát tin tìm ${activeRecruitment.slotsRemaining} khách giao lưu (${NumberFormat('#,###').format(activeRecruitment.sharedCost)} đ)',
-                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF6B21A8)),
+                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.roleHost),
                     ),
                   ),
                 ],
@@ -613,19 +613,19 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
               Icon(
                 isWaiting ? Icons.hourglass_disabled_rounded : Icons.person_off_outlined,
                 size: 46,
-                color: AppColor.cMuted,
+                color: AppColors.textMuted,
               ),
               const SizedBox(height: 12),
               Text(
                 isWaiting ? 'Hàng đợi đang trống' : 'Chưa có người chơi chính thức',
-                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppColor.cTitle),
+                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
               ),
               const SizedBox(height: 4),
               Text(
                 isWaiting
                     ? 'Khi slot chính thức đầy, các biểu quyết tiếp theo sẽ vào đây.'
                     : 'Hãy là người đầu tiên biểu quyết giữ chỗ cho buổi chơi này!',
-                style: const TextStyle(fontSize: 13, color: AppColor.cMuted),
+                style: const TextStyle(fontSize: 13, color: AppColors.textMuted),
                 textAlign: TextAlign.center,
               ),
             ],
@@ -645,7 +645,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
           margin: EdgeInsets.zero,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10),
-            side: const BorderSide(color: Color(0xFFE2E8F0)),
+            side: const BorderSide(color: AppColors.border),
           ),
           child: ListTile(
             contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
@@ -655,39 +655,39 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                     height: 36,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      color: Colors.amber.withValues(alpha: 0.15),
+                      color: AppColors.warning.withValues(alpha: 0.15),
                       shape: BoxShape.circle,
                     ),
                     child: Text(
                       '#${player.queueOrder}',
-                      style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.orange, fontSize: 13),
+                      style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.warning, fontSize: 13),
                     ),
                   )
                 : CircleAvatar(
                     radius: 18,
-                    backgroundColor: AppColor.cMain.withValues(alpha: 0.15),
+                    backgroundColor: AppColors.primary.withValues(alpha: 0.15),
                     child: Text(
                       player.fullName.isNotEmpty ? player.fullName[0].toUpperCase() : '?',
-                      style: const TextStyle(fontWeight: FontWeight.bold, color: AppColor.cMain),
+                      style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.primary),
                     ),
                   ),
             title: Text(
               player.fullName,
-              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: AppColor.cTitle),
+              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: AppColors.textPrimary),
             ),
             subtitle: Text(
               'Biểu quyết lúc: ${DateFormat('HH:mm, dd/MM').format(player.bookedAt)}',
-              style: const TextStyle(fontSize: 11, color: AppColor.cMuted),
+              style: const TextStyle(fontSize: 11, color: AppColors.textMuted),
             ),
             trailing: Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
               decoration: BoxDecoration(
-                color: const Color(0xFFF1F5F9),
+                color: AppColors.surfaceSubtle,
                 borderRadius: BorderRadius.circular(6),
               ),
               child: Text(
                 player.skillLevel,
-                style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColor.cTitle),
+                style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
               ),
             ),
           ),
@@ -715,7 +715,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColor.white,
+        color: AppColors.white,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.06),
@@ -734,15 +734,15 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          isConfirmed ? 'Bạn đã có slot chính thức 🎉' : 'Đang ở hàng đợi số #$waitingOrder ⏳',
+                          isConfirmed ? 'Bạn đã có slot chính thức' : 'Đang ở hàng đợi số #$waitingOrder',
                           style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.bold,
-                            color: isConfirmed ? AppColor.cMain : Colors.orange,
+                            color: isConfirmed ? AppColors.primary : AppColors.warning,
                           ),
                         ),
                         const SizedBox(height: 2),
-                        const Text('Báo vắng để tự động nhường slot', style: TextStyle(fontSize: 11, color: AppColor.cMuted)),
+                        const Text('Báo vắng để tự động nhường slot', style: TextStyle(fontSize: 11, color: AppColors.textMuted)),
                       ],
                     ),
                   ),
@@ -752,8 +752,8 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                     icon: const Icon(Icons.cancel_outlined, size: 18),
                     label: Text(isConfirmed ? 'Báo Vắng' : 'Rút Hàng Đợi'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColor.cRed,
-                      foregroundColor: AppColor.white,
+                      backgroundColor: AppColors.error,
+                      foregroundColor: AppColors.white,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                     ),
@@ -763,8 +763,8 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
             : ElevatedButton(
                 onPressed: (!isOpen || isSubmitting) ? null : _handleVote,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: session.isFull ? Colors.orange : AppColor.cMain,
-                  foregroundColor: AppColor.white,
+                  backgroundColor: session.isFull ? AppColors.warning : AppColors.primary,
+                  foregroundColor: AppColors.white,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   elevation: 2,
@@ -774,7 +774,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                     : Text(
                         !isOpen
                             ? 'Buổi chơi đã đóng biểu quyết'
-                            : (session.isFull ? 'Xếp Vào Hàng Đợi Chờ (Slot #${session.waitingCount + 1})' : 'Biểu Quyết Tham Gia (Vote YES) 🏸'),
+                            : (session.isFull ? 'Xếp Vào Hàng Đợi Chờ (Slot #${session.waitingCount + 1})' : 'Biểu Quyết Tham Gia (Vote YES)'),
                         style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                       ),
               ),
@@ -787,20 +787,20 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
     Color fg;
     switch (status) {
       case SessionStatus.open:
-        bg = const Color(0xFFDCFCE7);
-        fg = const Color(0xFF16A34A);
+        bg = AppColors.successLight;
+        fg = AppColors.roleMember;
         break;
       case SessionStatus.locked:
-        bg = const Color(0xFFFEF3C7);
-        fg = const Color(0xFFD97706);
+        bg = AppColors.warningLight;
+        fg = AppColors.roleTreasurer;
         break;
       case SessionStatus.playing:
-        bg = const Color(0xFFE0E7FF);
-        fg = const Color(0xFF4F46E5);
+        bg = AppColors.infoLight;
+        fg = AppColors.indigo;
         break;
       default:
-        bg = const Color(0xFFF1F5F9);
-        fg = const Color(0xFF64748B);
+        bg = AppColors.surfaceSubtle;
+        fg = AppColors.neutral500;
     }
 
     return Container(

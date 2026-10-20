@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../app/consts/app_color.dart';
+import 'package:kltn2026_2027/app/theme/theme.dart';
 import '../../../app/consts/app_config.dart';
 import '../../../domain/enums/session_enums.dart';
 import '../../../widget/loading_overlay.dart';
@@ -67,7 +67,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     if (success && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Đăng ký thành công! Chào mừng bạn gia nhập hệ thống 🎉'),
+          content: Text('Đăng ký thành công! Chào mừng bạn gia nhập hệ thống'),
           backgroundColor: AppColor.cMain,
           behavior: SnackBarBehavior.floating,
         ),
@@ -81,7 +81,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     final state = ref.watch(registerViewModelProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: AppColors.neutral50,
       appBar: AppBar(
         title: const Text('Đăng Ký Tài Khoản', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
         backgroundColor: AppColor.white,
@@ -115,7 +115,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                         padding: const EdgeInsets.all(20),
                         decoration: BoxDecoration(
                           gradient: const LinearGradient(
-                            colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
+                            colors: [AppColors.neutral900, AppColors.neutral800],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           ),
@@ -227,9 +227,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                   initialValue: _selectedGender,
                                   decoration: _inputDecoration(),
                                   items: const [
-                                    DropdownMenuItem(value: 1, child: Text('Nam 👨')),
-                                    DropdownMenuItem(value: 2, child: Text('Nữ 👩')),
-                                    DropdownMenuItem(value: 0, child: Text('Khác ✨')),
+                                    DropdownMenuItem(value: 1, child: Text('Nam')),
+                                    DropdownMenuItem(value: 2, child: Text('Nữ')),
+                                    DropdownMenuItem(value: 0, child: Text('Khác')),
                                   ],
                                   onChanged: (val) {
                                     if (val != null) setState(() => _selectedGender = val);
@@ -374,11 +374,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       fillColor: AppColor.white,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+        borderSide: const BorderSide(color: AppColors.border),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+        borderSide: const BorderSide(color: AppColors.border),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),

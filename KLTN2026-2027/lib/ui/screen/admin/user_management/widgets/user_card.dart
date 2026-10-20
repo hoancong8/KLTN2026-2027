@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kltn2026_2027/app/consts/app_color.dart';
+import 'package:kltn2026_2027/app/theme/theme.dart';
 import 'package:kltn2026_2027/app/consts/permissions.dart';
 import 'package:kltn2026_2027/app/provider.dart';
 import 'package:kltn2026_2027/domain/entities/user_profile.dart';
@@ -63,7 +63,7 @@ class UserCard extends ConsumerWidget {
             width: 48,
             height: 48,
             decoration: const BoxDecoration(
-              color: Color(0xFF0F1E36), // Dark Navy như ảnh mẫu
+              color: AppColors.navyDark, // Dark Navy như ảnh mẫu
               shape: BoxShape.circle,
             ),
             alignment: Alignment.center,
@@ -178,8 +178,8 @@ class UserCard extends ConsumerWidget {
                   child: OutlinedButton(
                     onPressed: onEdit,
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: const Color(0xFF1976D2),
-                      side: const BorderSide(color: Color(0xFF90CAF9)),
+                      foregroundColor: AppColors.info,
+                      side: BorderSide(color: AppColors.infoBorder),
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                       minimumSize: Size.zero,
                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -203,8 +203,8 @@ class UserCard extends ConsumerWidget {
                   child: OutlinedButton(
                     onPressed: onDelete,
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: const Color(0xFFE53935),
-                      side: const BorderSide(color: Color(0xFFEF9A9A)),
+                      foregroundColor: AppColors.error,
+                      side: BorderSide(color: AppColors.errorBorder),
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                       minimumSize: Size.zero,
                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,

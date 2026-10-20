@@ -1,7 +1,7 @@
 // lib/ui/screen/club/role_management/widgets/club_role_management_tablet.dart
 
 import 'package:flutter/material.dart';
-import '../../../../../app/consts/app_color.dart';
+import 'package:kltn2026_2027/app/theme/theme.dart';
 import '../../../../../domain/entities/club/club_member.dart';
 import '../../../../../domain/entities/club/club_role_item.dart';
 import '../../club_management_vm/club_members_vm.dart';
@@ -79,7 +79,7 @@ class _ClubRoleManagementTabletState extends State<ClubRoleManagementTablet> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF9FAFB),
+      backgroundColor: AppColors.neutral50,
       appBar: AppBar(
         title: const Text(
           'Quản lý Vai trò & Phân quyền',
@@ -110,7 +110,7 @@ class _ClubRoleManagementTabletState extends State<ClubRoleManagementTablet> {
             width: 320,
             decoration: const BoxDecoration(
               color: Colors.white,
-              border: Border(right: BorderSide(color: Color(0xFFE5E7EB))),
+              border: Border(right: BorderSide(color: AppColors.border)),
             ),
             child: ClubRoleListView(
               roles: widget.roles,

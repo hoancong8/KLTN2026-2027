@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../../app/consts/app_color.dart';
+import '../../../../app/theme/theme.dart';
 import '../../../../domain/entities/club/explore_club.dart';
 import '../../../../domain/enums/session_enums.dart';
 
@@ -14,22 +14,22 @@ class ClubExploreCard extends StatelessWidget {
   });
 
   Color _getSkillColor(SkillLevel? level) {
-    if (level == null) return const Color(0xFF64748B);
+    if (level == null) return AppColors.neutral500;
     switch (level) {
       case SkillLevel.nb:
-        return const Color(0xFF9E9E9E);
+        return AppColors.skillBeginner;
       case SkillLevel.y:
-        return const Color(0xFF8BC34A);
+        return AppColors.skillElementary;
       case SkillLevel.tby:
-        return const Color(0xFF4CAF50);
+        return AppColors.skillIntermediate;
       case SkillLevel.tb:
-        return const Color(0xFF0284C7);
+        return AppColors.skillUpperIntermediate;
       case SkillLevel.tbk:
-        return const Color(0xFF3F51B5);
+        return AppColors.skillAdvanced;
       case SkillLevel.k:
-        return const Color(0xFFF59E0B);
+        return AppColors.skillSemiPro;
       case SkillLevel.g:
-        return const Color(0xFFEF4444);
+        return AppColors.skillPro;
     }
   }
 
@@ -38,7 +38,7 @@ class ClubExploreCard extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
       decoration: BoxDecoration(
-        color: AppColor.white,
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -69,20 +69,20 @@ class ClubExploreCard extends StatelessWidget {
                       child: Container(
                         width: 52,
                         height: 52,
-                        color: AppColor.cMain.withValues(alpha: 0.1),
+                        color: AppColors.primary.withValues(alpha: 0.1),
                         child: club.avatarUrl != null && club.avatarUrl!.isNotEmpty
                             ? Image.network(
                                 club.avatarUrl!,
                                 fit: BoxFit.cover,
                                 errorBuilder: (_, _, _) => const Icon(
                                   Icons.sports_tennis_rounded,
-                                  color: AppColor.cMain,
+                                  color: AppColors.primary,
                                   size: 26,
                                 ),
                               )
                             : const Icon(
                                 Icons.sports_tennis_rounded,
-                                color: AppColor.cMain,
+                                color: AppColors.primary,
                                 size: 26,
                               ),
                       ),
@@ -99,7 +99,7 @@ class ClubExploreCard extends StatelessWidget {
                             style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w700,
-                              color: AppColor.cDark,
+                              color: AppColors.textPrimary,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -112,21 +112,21 @@ class ClubExploreCard extends StatelessWidget {
                                 style: const TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w600,
-                                  color: AppColor.cMuted,
+                                  color: AppColors.textMuted,
                                 ),
                               ),
                               const SizedBox(width: 8),
                               // Rating
                               Row(
                                 children: [
-                                  const Icon(Icons.star_rounded, size: 14, color: Color(0xFFF59E0B)),
+                                  const Icon(Icons.star_rounded, size: 14, color: AppColors.warning),
                                   const SizedBox(width: 2),
                                   Text(
                                     club.qualityScore.toStringAsFixed(1),
                                     style: const TextStyle(
                                       fontSize: 12,
                                       fontWeight: FontWeight.w700,
-                                      color: Color(0xFFD97706),
+                                      color: AppColors.roleTreasurer,
                                     ),
                                   ),
                                 ],
@@ -142,21 +142,21 @@ class ClubExploreCard extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFEFF6FF),
+                          color: AppColors.infoLight,
                           borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: const Color(0xFFBFDBFE)),
+                          border: Border.all(color: AppColors.infoBorder),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.near_me_rounded, size: 12, color: Color(0xFF2563EB)),
+                            const Icon(Icons.near_me_rounded, size: 12, color: AppColors.roleDeputy),
                             const SizedBox(width: 4),
                             Text(
                               '${club.distanceKm!.toStringAsFixed(1)} km',
                               style: const TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w700,
-                                color: Color(0xFF2563EB),
+                                color: AppColors.roleDeputy,
                               ),
                             ),
                           ],
@@ -173,7 +173,7 @@ class ClubExploreCard extends StatelessWidget {
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Icon(Icons.location_on_rounded, size: 15, color: Color(0xFFEF4444)),
+                        const Icon(Icons.location_on_rounded, size: 15, color: AppColors.error),
                         const SizedBox(width: 6),
                         Expanded(
                           child: Text(
@@ -182,7 +182,7 @@ class ClubExploreCard extends StatelessWidget {
                                 : club.fixedVenueName!,
                             style: const TextStyle(
                               fontSize: 13,
-                              color: Color(0xFF334155),
+                              color: AppColors.neutral700,
                               fontWeight: FontWeight.w500,
                             ),
                             maxLines: 1,
@@ -199,14 +199,14 @@ class ClubExploreCard extends StatelessWidget {
                     padding: const EdgeInsets.only(bottom: 8),
                     child: Row(
                       children: [
-                        const Icon(Icons.access_time_rounded, size: 15, color: Color(0xFF0284C7)),
+                        const Icon(Icons.access_time_rounded, size: 15, color: AppColors.roleSky),
                         const SizedBox(width: 6),
                         Expanded(
                           child: Text(
                             club.schedulesSummary!,
                             style: const TextStyle(
                               fontSize: 12,
-                              color: Color(0xFF0284C7),
+                              color: AppColors.roleSky,
                               fontWeight: FontWeight.w600,
                             ),
                             maxLines: 1,
@@ -246,8 +246,8 @@ class ClubExploreCard extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
                         color: club.isRecruiting
-                            ? const Color(0xFFDCFCE7)
-                            : const Color(0xFFF1F5F9),
+                            ? AppColors.successLight
+                            : AppColors.surfaceSubtle,
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
@@ -256,8 +256,8 @@ class ClubExploreCard extends StatelessWidget {
                           fontSize: 11,
                           fontWeight: FontWeight.w700,
                           color: club.isRecruiting
-                              ? const Color(0xFF16A34A)
-                              : const Color(0xFF94A3B8),
+                              ? AppColors.roleMember
+                              : AppColors.neutral400,
                         ),
                       ),
                     ),
@@ -266,14 +266,14 @@ class ClubExploreCard extends StatelessWidget {
                     // Member count
                     Row(
                       children: [
-                        const Icon(Icons.group_outlined, size: 14, color: AppColor.cMuted),
+                        const Icon(Icons.group_outlined, size: 14, color: AppColors.textMuted),
                         const SizedBox(width: 4),
                         Text(
                           '${club.memberCount} TV',
                           style: const TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
-                            color: AppColor.cMuted,
+                            color: AppColors.textMuted,
                           ),
                         ),
                       ],

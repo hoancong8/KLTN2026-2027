@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:kltn2026_2027/app/consts/app_color.dart';
 import 'package:kltn2026_2027/app/consts/app_config.dart';
-import 'package:flutter/services.dart';
-import 'dashboard_vm/dashboard_state.dart';
-import 'dashboard_vm/dashboard_vm.dart';
+import 'package:kltn2026_2027/app/theme/theme.dart';
 import 'package:kltn2026_2027/ui/screen/club/club_vm/club_context_vm.dart';
 import 'package:kltn2026_2027/widget/club_switcher_dialog.dart';
+import 'dashboard_vm/dashboard_state.dart';
+import 'dashboard_vm/dashboard_vm.dart';
 
 class DashboardPage extends ConsumerWidget {
   const DashboardPage({super.key});
@@ -22,46 +22,46 @@ class DashboardPage extends ConsumerWidget {
         statusBarColor: Colors.transparent,
       ),
       child: Scaffold(
-        backgroundColor: const Color(0xFFF8FAFC),
+        backgroundColor: AppColors.neutral50,
         body: SafeArea(
           top: false,
           child: RefreshIndicator(
-          color: const Color(0xFF007A55),
-          backgroundColor: AppColor.white,
-          onRefresh: () async {
-            await vm.loadData();
-          },
-          child: SingleChildScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildHeader(context, ref, state.userProfile),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(height: 16),
-                      _buildQuickActions(context, state.quickActions),
-                      const SizedBox(height: 20),
-                      _buildSportCategories(context, state.categories, vm),
-                      const SizedBox(height: 20),
-                      _buildPromoBanner(context, state.promoBanner),
-                      const SizedBox(height: 20),
-                      _buildNearbyVenues(context, state.venues, vm, state.isLoadingVenues),
-                      const SizedBox(height: 24),
-                    ],
+            color: AppColors.primaryHeader,
+            backgroundColor: AppColors.white,
+            onRefresh: () async {
+              await vm.loadData();
+            },
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildHeader(context, ref, state.userProfile),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 16),
+                        _buildQuickActions(context, state.quickActions),
+                        const SizedBox(height: 20),
+                        _buildSportCategories(context, state.categories, vm),
+                        const SizedBox(height: 20),
+                        _buildPromoBanner(context, state.promoBanner),
+                        const SizedBox(height: 20),
+                        _buildNearbyVenues(context, state.venues, vm, state.isLoadingVenues),
+                        const SizedBox(height: 24),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
       ),
-    ),
-  );
-}
+    );
+  }
 
   // ===========================================================================
   // 1. TOP HEADER WITH PROFILE & SEARCH BAR
@@ -75,7 +75,7 @@ class DashboardPage extends ConsumerWidget {
     return Container(
       width: double.infinity,
       decoration: const BoxDecoration(
-        color: Color(0xFF007A55),
+        color: AppColors.primaryHeader,
         borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(24),
           bottomRight: Radius.circular(24),
@@ -149,8 +149,6 @@ class DashboardPage extends ConsumerWidget {
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        const SizedBox(width: 4),
-                        const Text('👋', style: TextStyle(fontSize: 15)),
                       ],
                     ),
                   ],
@@ -239,7 +237,7 @@ class DashboardPage extends ConsumerWidget {
                   padding: const EdgeInsets.all(8),
                   child: const Icon(
                     Icons.tune,
-                    color: Color(0xFF007A55),
+                    color: AppColors.primaryHeader,
                     size: 20,
                   ),
                 ),
@@ -298,7 +296,7 @@ class DashboardPage extends ConsumerWidget {
                       offset: const Offset(0, 2),
                     ),
                   ],
-                  border: Border.all(color: const Color(0xFFF1F5F9)),
+                  border: Border.all(color: AppColors.surfaceSubtle),
                 ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -318,7 +316,7 @@ class DashboardPage extends ConsumerWidget {
                       style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF1E293B),
+                        color: AppColors.neutral800,
                       ),
                       textAlign: TextAlign.center,
                       maxLines: 1,
@@ -353,7 +351,7 @@ class DashboardPage extends ConsumerWidget {
               style: TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF1E293B),
+                color: AppColors.neutral800,
                 letterSpacing: 0.3,
               ),
             ),
@@ -366,11 +364,11 @@ class DashboardPage extends ConsumerWidget {
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
-                      color: Color(0xFF007A55),
+                      color: AppColors.primaryHeader,
                     ),
                   ),
                   SizedBox(width: 2),
-                  Icon(Icons.arrow_forward_ios, size: 12, color: Color(0xFF007A55)),
+                  Icon(Icons.arrow_forward_ios, size: 12, color: AppColors.primaryHeader),
                 ],
               ),
             ),
@@ -388,23 +386,23 @@ class DashboardPage extends ConsumerWidget {
                   margin: const EdgeInsets.only(right: 10),
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                   decoration: BoxDecoration(
-                    color: cat.isSelected ? const Color(0xFF007A55).withValues(alpha: 0.08) : Colors.white,
+                    color: cat.isSelected ? AppColors.primaryHeader.withValues(alpha: 0.08) : Colors.white,
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
-                      color: cat.isSelected ? const Color(0xFF007A55) : const Color(0xFFE2E8F0),
+                      color: cat.isSelected ? AppColors.primaryHeader : AppColors.border,
                       width: cat.isSelected ? 1.5 : 1.0,
                     ),
                   ),
                   child: Row(
                     children: [
-                      Text(cat.iconEmoji, style: const TextStyle(fontSize: 14)),
+                      Icon(cat.icon, size: 16, color: cat.isSelected ? AppColors.primaryHeader : AppColors.neutral600),
                       const SizedBox(width: 6),
                       Text(
                         cat.name,
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: cat.isSelected ? FontWeight.bold : FontWeight.w500,
-                          color: cat.isSelected ? const Color(0xFF007A55) : const Color(0xFF475569),
+                          color: cat.isSelected ? AppColors.primaryHeader : AppColors.neutral600,
                         ),
                       ),
                     ],
@@ -428,13 +426,13 @@ class DashboardPage extends ConsumerWidget {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(18),
         gradient: const LinearGradient(
-          colors: [Color(0xFFFF5722), Color(0xFFFF7043)],
+          colors: [AppColors.accentOrange, AppColors.accentOrangeLight],
           begin: Alignment.centerLeft,
           end: Alignment.centerRight,
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFFF5722).withValues(alpha: 0.3),
+            color: AppColors.accentOrange.withValues(alpha: 0.3),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -488,7 +486,7 @@ class DashboardPage extends ConsumerWidget {
             onPressed: () {},
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.white,
-              foregroundColor: const Color(0xFFFF5722),
+              foregroundColor: AppColors.accentOrange,
               elevation: 0,
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               shape: RoundedRectangleBorder(
@@ -525,14 +523,14 @@ class DashboardPage extends ConsumerWidget {
           children: [
             Row(
               children: const [
-                Icon(Icons.location_on_outlined, size: 18, color: Color(0xFF007A55)),
+                Icon(Icons.location_on_outlined, size: 18, color: AppColors.primaryHeader),
                 SizedBox(width: 4),
                 Text(
                   'Cơ sở gần bạn',
                   style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF1E293B),
+                    color: AppColors.neutral800,
                   ),
                 ),
               ],
@@ -544,7 +542,7 @@ class DashboardPage extends ConsumerWidget {
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
-                  color: Color(0xFF007A55),
+                  color: AppColors.primaryHeader,
                 ),
               ),
             ),
@@ -555,7 +553,7 @@ class DashboardPage extends ConsumerWidget {
           const Center(
             child: Padding(
               padding: EdgeInsets.symmetric(vertical: 28),
-              child: CircularProgressIndicator(color: Color(0xFF007A55)),
+              child: CircularProgressIndicator(color: AppColors.primaryHeader),
             ),
           )
         else if (venues.isEmpty)
@@ -565,7 +563,7 @@ class DashboardPage extends ConsumerWidget {
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xFFF1F5F9)),
+              border: Border.all(color: AppColors.surfaceSubtle),
             ),
             child: Center(
               child: Text(
@@ -602,7 +600,7 @@ class DashboardPage extends ConsumerWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFF1F5F9)),
+        border: Border.all(color: AppColors.surfaceSubtle),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.03),
@@ -669,7 +667,7 @@ class DashboardPage extends ConsumerWidget {
                 Text(
                   venue.categories,
                   style: const TextStyle(
-                    color: Color(0xFF007A55),
+                    color: AppColors.primaryHeader,
                     fontSize: 10.5,
                     fontWeight: FontWeight.w800,
                   ),
@@ -686,7 +684,7 @@ class DashboardPage extends ConsumerWidget {
                         style: const TextStyle(
                           fontSize: 14.5,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF1E293B),
+                          color: AppColors.neutral800,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -700,7 +698,7 @@ class DashboardPage extends ConsumerWidget {
                       style: const TextStyle(
                         fontSize: 12.5,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF1E293B),
+                        color: AppColors.neutral800,
                       ),
                     ),
                   ],
@@ -733,7 +731,7 @@ class DashboardPage extends ConsumerWidget {
                       style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w800,
-                        color: Color(0xFF007A55),
+                        color: AppColors.primaryHeader,
                       ),
                     ),
                   ],

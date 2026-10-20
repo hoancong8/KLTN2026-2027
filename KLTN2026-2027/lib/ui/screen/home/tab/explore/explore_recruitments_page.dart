@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import '../../../../../app/consts/app_color.dart';
+import 'package:kltn2026_2027/app/theme/theme.dart';
 import '../../../../../domain/entities/session/guest_recruitment.dart';
 import '../../../../../domain/enums/session_enums.dart';
 import '../../../club/session_vm/explore_recruitments_vm.dart';
@@ -17,17 +17,17 @@ class ExploreRecruitmentsPage extends ConsumerWidget {
     final vm = ref.read(exploreRecruitmentsViewModelProvider.notifier);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: AppColors.neutral50,
       appBar: AppBar(
         title: const Row(
           children: [
-            Icon(Icons.radar_rounded, color: Color(0xFF7C3AED), size: 24),
+            Icon(Icons.radar_rounded, color: AppColors.roleViolet, size: 24),
             SizedBox(width: 8),
             Text('Tìm Kèo Giao Lưu (FR12)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
           ],
         ),
-        backgroundColor: AppColor.white,
-        foregroundColor: AppColor.cTitle,
+        backgroundColor: AppColors.white,
+        foregroundColor: AppColors.textPrimary,
         elevation: 0.5,
         actions: [
           IconButton(
@@ -41,7 +41,7 @@ class ExploreRecruitmentsPage extends ConsumerWidget {
         children: [
           // Filter Card: Radius Slider & Skill Chips
           Container(
-            color: AppColor.white,
+            color: AppColors.white,
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -51,12 +51,12 @@ class ExploreRecruitmentsPage extends ConsumerWidget {
                   children: [
                     Row(
                       children: [
-                        const Text('Bán kính tìm kiếm:', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColor.cTitle)),
+                        const Text('Bán kính tìm kiếm:', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
                         const SizedBox(width: 6),
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF7C3AED).withValues(alpha: 0.1),
+                            color: AppColors.roleViolet.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Row(
@@ -65,7 +65,7 @@ class ExploreRecruitmentsPage extends ConsumerWidget {
                               Icon(
                                 state.isLocating ? Icons.sync_rounded : Icons.my_location_rounded,
                                 size: 11,
-                                color: const Color(0xFF7C3AED),
+                                color: AppColors.roleViolet,
                               ),
                               const SizedBox(width: 3),
                               Text(
@@ -73,7 +73,7 @@ class ExploreRecruitmentsPage extends ConsumerWidget {
                                 style: const TextStyle(
                                   fontSize: 10,
                                   fontWeight: FontWeight.bold,
-                                  color: Color(0xFF7C3AED),
+                                  color: AppColors.roleViolet,
                                 ),
                               ),
                             ],
@@ -83,7 +83,7 @@ class ExploreRecruitmentsPage extends ConsumerWidget {
                     ),
                     Text(
                       '${state.radiusKm.toStringAsFixed(0)} km quanh đây',
-                      style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF7C3AED), fontSize: 13),
+                      style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.roleViolet, fontSize: 13),
                     ),
                   ],
                 ),
@@ -92,7 +92,7 @@ class ExploreRecruitmentsPage extends ConsumerWidget {
                   min: 1.0,
                   max: 20.0,
                   divisions: 19,
-                  activeColor: const Color(0xFF7C3AED),
+                  activeColor: AppColors.roleViolet,
                   onChanged: (val) => vm.setRadius(val),
                 ),
                 SingleChildScrollView(
@@ -102,8 +102,8 @@ class ExploreRecruitmentsPage extends ConsumerWidget {
                       FilterChip(
                         label: const Text('Tất cả trình độ'),
                         selected: state.selectedSkillLevel == null,
-                        selectedColor: const Color(0xFF7C3AED).withValues(alpha: 0.2),
-                        checkmarkColor: const Color(0xFF7C3AED),
+                        selectedColor: AppColors.roleViolet.withValues(alpha: 0.2),
+                        checkmarkColor: AppColors.roleViolet,
                         onSelected: (_) => vm.setSkillLevel(null),
                       ),
                       const SizedBox(width: 6),
@@ -114,8 +114,8 @@ class ExploreRecruitmentsPage extends ConsumerWidget {
                           child: FilterChip(
                             label: Text(s.displayName),
                             selected: isSelected,
-                            selectedColor: const Color(0xFF7C3AED).withValues(alpha: 0.2),
-                            checkmarkColor: const Color(0xFF7C3AED),
+                            selectedColor: AppColors.roleViolet.withValues(alpha: 0.2),
+                            checkmarkColor: AppColors.roleViolet,
                             onSelected: (_) => vm.setSkillLevel(isSelected ? null : s.code),
                           ),
                         );
@@ -131,10 +131,10 @@ class ExploreRecruitmentsPage extends ConsumerWidget {
           // Matches List
           Expanded(
             child: state.isLoading
-                ? const Center(child: CircularProgressIndicator(color: Color(0xFF7C3AED)))
+                ? const Center(child: CircularProgressIndicator(color: AppColors.roleViolet))
                 : RefreshIndicator(
                     onRefresh: vm.explore,
-                    color: const Color(0xFF7C3AED),
+                    color: AppColors.roleViolet,
                     child: state.errorMessage != null && state.recruitments.isEmpty
                         ? Center(
                             child: Padding(
@@ -142,12 +142,12 @@ class ExploreRecruitmentsPage extends ConsumerWidget {
                               child: Column(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  const Icon(Icons.error_outline_rounded, size: 48, color: Colors.orange),
+                                  const Icon(Icons.error_outline_rounded, size: 48, color: AppColors.warning),
                                   const SizedBox(height: 12),
                                   Text(
                                     state.errorMessage!,
                                     textAlign: TextAlign.center,
-                                    style: const TextStyle(fontSize: 13, color: AppColor.cMuted),
+                                    style: const TextStyle(fontSize: 13, color: AppColors.textMuted),
                                   ),
                                   const SizedBox(height: 16),
                                   ElevatedButton.icon(
@@ -155,8 +155,8 @@ class ExploreRecruitmentsPage extends ConsumerWidget {
                                     icon: const Icon(Icons.refresh_rounded, size: 18),
                                     label: const Text('Thử lại'),
                                     style: ElevatedButton.styleFrom(
-                                      backgroundColor: const Color(0xFF7C3AED),
-                                      foregroundColor: Colors.white,
+                                      backgroundColor: AppColors.roleViolet,
+                                      foregroundColor: AppColors.white,
                                     ),
                                   ),
                                 ],
@@ -192,7 +192,7 @@ class ExploreRecruitmentsPage extends ConsumerWidget {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Row(
           children: [
-            Icon(Icons.sports_tennis_rounded, color: Color(0xFF7C3AED)),
+            Icon(Icons.sports_tennis_rounded, color: AppColors.roleViolet),
             SizedBox(width: 8),
             Text('Nhận Suất Giao Lưu', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17)),
           ],
@@ -203,13 +203,13 @@ class ExploreRecruitmentsPage extends ConsumerWidget {
           children: [
             Text('Bạn đang nhận suất chơi tại CLB: ${match.clubName}', style: const TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
-            Text('📍 Sân: ${match.courtLocation}'),
-            Text('⏰ Giờ: ${DateFormat('HH:mm').format(match.startTime)} - ${DateFormat('HH:mm, dd/MM').format(match.endTime)}'),
-            Text('💰 Tiền sân: ${NumberFormat('#,###').format(match.sharedCost)} đ / người'),
+            Text('Sân: ${match.courtLocation}'),
+            Text('Giờ: ${DateFormat('HH:mm').format(match.startTime)} - ${DateFormat('HH:mm, dd/MM').format(match.endTime)}'),
+            Text('Tiền sân: ${NumberFormat('#,###').format(match.sharedCost)} đ / người'),
             const SizedBox(height: 12),
             const Text(
               'Lưu ý: Sau khi nhận suất, hãy đến sân đúng giờ để giao lưu cùng các thành viên!',
-              style: TextStyle(fontSize: 12, color: AppColor.cMuted),
+              style: TextStyle(fontSize: 12, color: AppColors.textMuted),
             ),
           ],
         ),
@@ -220,8 +220,8 @@ class ExploreRecruitmentsPage extends ConsumerWidget {
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF7C3AED),
-              foregroundColor: AppColor.white,
+              backgroundColor: AppColors.roleViolet,
+              foregroundColor: AppColors.white,
             ),
             onPressed: () async {
               Navigator.of(ctx).pop();
@@ -229,8 +229,8 @@ class ExploreRecruitmentsPage extends ConsumerWidget {
               if (ok && context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text('Đã nhận suất giao lưu thành công! Hãy đến sân đúng giờ nhé 🎉'),
-                    backgroundColor: Color(0xFF7C3AED),
+                    content: Text('Đã nhận suất giao lưu thành công! Hãy đến sân đúng giờ nhé.'),
+                    backgroundColor: AppColors.roleViolet,
                     behavior: SnackBarBehavior.floating,
                   ),
                 );
@@ -254,20 +254,20 @@ class ExploreRecruitmentsPage extends ConsumerWidget {
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: const Color(0xFF7C3AED).withValues(alpha: 0.1),
+                color: AppColors.roleViolet.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.radar_outlined, size: 54, color: Color(0xFF7C3AED)),
+              child: const Icon(Icons.radar_outlined, size: 54, color: AppColors.roleViolet),
             ),
             const SizedBox(height: 16),
             const Text(
               'Chưa Tìm Thấy Kèo Giao Lưu Nào',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColor.cTitle),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
             ),
             const SizedBox(height: 8),
             const Text(
               'Hiện không có buổi chơi nào đang tuyển khách trong bán kính này. Hãy thử tăng bán kính quét hoặc quay lại sau.',
-              style: TextStyle(fontSize: 13, color: AppColor.cMuted),
+              style: TextStyle(fontSize: 13, color: AppColors.textMuted),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16),
@@ -297,13 +297,12 @@ class _RecruitmentCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final timeStr = '${DateFormat('HH:mm').format(match.startTime)} - ${DateFormat('HH:mm, dd/MM/yyyy').format(match.endTime)}';
-
     return Card(
       elevation: 1,
       margin: EdgeInsets.zero,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(14),
-        side: const BorderSide(color: Color(0xFFE2E8F0)),
+        side: const BorderSide(color: AppColors.border),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -315,7 +314,7 @@ class _RecruitmentCard extends StatelessWidget {
                 Expanded(
                   child: Text(
                     match.clubName,
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppColor.cTitle),
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.textPrimary),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -323,12 +322,12 @@ class _RecruitmentCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFFEF3C7),
+                    color: AppColors.warningLight,
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Text(
-                    '🔥 Còn ${match.slotsRemaining} suất',
-                    style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFFD97706)),
+                    'Còn ${match.slotsRemaining} suất',
+                    style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.roleTreasurer),
                   ),
                 ),
               ],
@@ -338,12 +337,12 @@ class _RecruitmentCard extends StatelessWidget {
             // Venue location
             Row(
               children: [
-                const Icon(Icons.location_on_outlined, size: 16, color: AppColor.cMuted),
+                const Icon(Icons.location_on_outlined, size: 16, color: AppColors.textMuted),
                 const SizedBox(width: 4),
                 Expanded(
                   child: Text(
                     match.courtLocation,
-                    style: const TextStyle(fontSize: 13, color: AppColor.cTitle),
+                    style: const TextStyle(fontSize: 13, color: AppColors.textPrimary),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -353,20 +352,20 @@ class _RecruitmentCard extends StatelessWidget {
                     margin: const EdgeInsets.only(left: 6),
                     padding: const EdgeInsets.symmetric(horizontal: 6.5, vertical: 2),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF7C3AED).withValues(alpha: 0.1),
+                      color: AppColors.roleViolet.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.near_me_rounded, size: 11, color: Color(0xFF7C3AED)),
+                        const Icon(Icons.near_me_rounded, size: 11, color: AppColors.roleViolet),
                         const SizedBox(width: 3),
                         Text(
                           'Cách ${match.distanceKm!.toStringAsFixed(1)} km',
                           style: const TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFF7C3AED),
+                            color: AppColors.roleViolet,
                           ),
                         ),
                       ],
@@ -379,9 +378,9 @@ class _RecruitmentCard extends StatelessWidget {
             // Time
             Row(
               children: [
-                const Icon(Icons.access_time_rounded, size: 16, color: AppColor.cMuted),
+                const Icon(Icons.access_time_rounded, size: 16, color: AppColors.textMuted),
                 const SizedBox(width: 4),
-                Text(timeStr, style: const TextStyle(fontSize: 13, color: AppColor.cTitle)),
+                Text(timeStr, style: const TextStyle(fontSize: 13, color: AppColors.textPrimary)),
               ],
             ),
             const Divider(height: 20),
@@ -394,11 +393,11 @@ class _RecruitmentCard extends StatelessWidget {
                   children: [
                     Text(
                       '${NumberFormat('#,###').format(match.sharedCost)} đ',
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColor.cMain),
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.primary),
                     ),
                     Text(
                       'Yêu cầu: ${match.minSkillLevel.displayName}',
-                      style: const TextStyle(fontSize: 11, color: AppColor.cMuted),
+                      style: const TextStyle(fontSize: 11, color: AppColors.textMuted),
                     ),
                   ],
                 ),
@@ -406,8 +405,8 @@ class _RecruitmentCard extends StatelessWidget {
                 ElevatedButton(
                   onPressed: isJoining ? null : onJoin,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF7C3AED),
-                    foregroundColor: AppColor.white,
+                    backgroundColor: AppColors.roleViolet,
+                    foregroundColor: AppColors.white,
                     padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                   ),

@@ -13,6 +13,7 @@ class AppColors {
   static const Color primary = Color(0xFF3CC18E);
   static const Color primaryDark = Color(0xFF2EA578);
   static const Color primaryLight = Color(0xFF55D4A2);
+  static const Color primaryHeader = Color(0xFF007A55);
   static const Color primaryContainer = Color(0xFFE8F9F3);
   static const Color primaryMuted = Color(0xFFD1FAE5);
   static const Color onPrimary = Color(0xFFFFFFFF);
@@ -40,24 +41,28 @@ class AppColors {
   // ---------------------------------------------------------------------------
   /// Success states, confirmed bookings, winning sets.
   static const Color success = Color(0xFF10B981);
+  static const Color successLight = Color(0xFFDCFCE7);
   static const Color successContainer = Color(0xFFECFDF5);
   static const Color successBorder = Color(0xFFA7F3D0);
   static const Color onSuccess = Color(0xFF065F46);
 
   /// Warning states, pending confirmations, caution alerts.
   static const Color warning = Color(0xFFF59E0B);
+  static const Color warningLight = Color(0xFFFEF3C7);
   static const Color warningContainer = Color(0xFFFFFBEB);
   static const Color warningBorder = Color(0xFFFDE68A);
   static const Color onWarning = Color(0xFF92400E);
 
   /// Error states, form validations, cancelled sessions, destructive actions.
   static const Color error = Color(0xFFEF4444);
+  static const Color errorLight = Color(0xFFFEE2E2);
   static const Color errorContainer = Color(0xFFFEF2F2);
   static const Color errorBorder = Color(0xFFFECACA);
   static const Color onError = Color(0xFF991B1B);
 
   /// Informational banners, tips, help notices.
   static const Color info = Color(0xFF3B82F6);
+  static const Color infoLight = Color(0xFFEFF6FF);
   static const Color infoContainer = Color(0xFFEFF6FF);
   static const Color infoBorder = Color(0xFFBFDBFE);
   static const Color onInfo = Color(0xFF1E40AF);
@@ -90,6 +95,7 @@ class AppColors {
   static const Color surfaceDark = Color(0xFF0B1220);
   static const Color surfaceDarkCard = Color(0xFF162032);
   static const Color surfaceDarkInput = Color(0xFF1E293B);
+  static const Color navyDark = Color(0xFF0F1E36);
 
   // ---------------------------------------------------------------------------
   // 6. BORDER & DIVIDER TOKENS
@@ -100,6 +106,7 @@ class AppColors {
   static const Color borderFocus = Color(0xFF3CC18E);
   static const Color divider = Color(0xFFEAEAEA);
   static const Color overlay = Color(0x66000000);
+  static const Color overlaySubtle = Color(0x1A000000);
 
   // ---------------------------------------------------------------------------
   // 7. TEXT SEMANTIC HIERARCHY
@@ -125,6 +132,45 @@ class AppColors {
   static const Color statusOngoing = Color(0xFF10B981);
   static const Color statusCompleted = Color(0xFF64748B);
   static const Color statusCancelled = Color(0xFFEF4444);
+
+  // ---------------------------------------------------------------------------
+  // 8.1 CLUB ROLE & BADGE PALETTE TOKENS
+  // ---------------------------------------------------------------------------
+  static const Color roleHost = Color(0xFF9333EA);
+  static const Color roleDeputy = Color(0xFF2563EB);
+  static const Color roleTreasurer = Color(0xFFD97706);
+  static const Color roleMember = Color(0xFF16A34A);
+  static const Color roleGuest = Color(0xFF6B7280);
+  static const Color roleViolet = Color(0xFF7C3AED);
+  static const Color roleTeal = Color(0xFF0D9488);
+  static const Color roleRose = Color(0xFFE11D48);
+  static const Color roleOrange = Color(0xFFEA580C);
+  static const Color roleSky = Color(0xFF0284C7);
+
+  // ---------------------------------------------------------------------------
+  // 8.2 SKILL LEVEL PALETTE TOKENS
+  // ---------------------------------------------------------------------------
+  static const Color skillBeginner = Color(0xFF9E9E9E);
+  static const Color skillElementary = Color(0xFF8BC34A);
+  static const Color skillIntermediate = Color(0xFF4CAF50);
+  static const Color skillUpperIntermediate = Color(0xFF0284C7);
+  static const Color skillAdvanced = Color(0xFF3F51B5);
+  static const Color skillSemiPro = Color(0xFFF59E0B);
+  static const Color skillPro = Color(0xFFEF4444);
+
+  // ---------------------------------------------------------------------------
+  // 8.3 ACCENT HIGHLIGHT & SHADE TOKENS
+  // ---------------------------------------------------------------------------
+  static const Color accentOrange = Color(0xFFFF5722);
+  static const Color accentOrangeLight = Color(0xFFFF7043);
+  static const Color violetLight = Color(0xFFF3E8FF);
+  static const Color violetBorder = Color(0xFFD8B4FE);
+  static const Color indigo = Color(0xFF4F46E5);
+  static const Color amberText = Color(0xFFB45309);
+  static const Color teal = Color(0xFF14B8A6);
+  static const Color tealLight = Color(0xFFE6F7F5);
+  static const Color pink = Color(0xFFEC4899);
+  static const Color pinkLight = Color(0xFFFDE8EC);
 
   // ---------------------------------------------------------------------------
   // 9. GRADIENTS

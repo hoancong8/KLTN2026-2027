@@ -1,7 +1,7 @@
 // lib/ui/screen/home/tab/club/widgets/discord_server_rail.dart
 
 import 'package:flutter/material.dart';
-import '../../../../../../app/consts/app_color.dart';
+import 'package:kltn2026_2027/app/theme/theme.dart';
 import '../../../../../../domain/entities/club/my_club.dart';
 
 class DiscordServerRail extends StatelessWidget {
@@ -25,7 +25,7 @@ class DiscordServerRail extends StatelessWidget {
     return Container(
       width: 76,
       height: double.infinity,
-      color: const Color(0xFF1E1F22), // Discord Server Rail Dark Background
+      color: AppColors.surfaceDark, // Discord Server Rail Dark Background
       child: Column(
         children: [
           const SizedBox(height: 12),
@@ -108,7 +108,7 @@ class DiscordServerRail extends StatelessWidget {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: const Color(0xFF2B2D31),
+              color: AppColors.surfaceDarkCard,
               shape: BoxShape.circle,
               border: Border.all(color: Colors.white.withValues(alpha: 0.1), width: 1),
             ),
@@ -176,7 +176,7 @@ class _ServerItem extends StatelessWidget {
                   width: 48,
                   height: 48,
                   decoration: BoxDecoration(
-                    color: isSelected ? AppColor.cMain : const Color(0xFF313338),
+                    color: isSelected ? AppColor.cMain : AppColors.surfaceDarkInput,
                     borderRadius: BorderRadius.circular(isSelected ? 16 : 24),
                     border: isActiveContext
                         ? Border.all(color: AppColor.cGreen_50, width: 2)
@@ -193,7 +193,7 @@ class _ServerItem extends StatelessWidget {
                           child: Text(
                             initials,
                             style: TextStyle(
-                              color: isSelected ? Colors.white : const Color(0xFFDBDEE1),
+                              color: isSelected ? Colors.white : AppColors.neutral300,
                               fontSize: 14,
                               fontWeight: FontWeight.bold,
                               letterSpacing: 0.5,
@@ -217,7 +217,7 @@ class _ServerItem extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: AppColor.cGreen_50,
                   shape: BoxShape.circle,
-                  border: Border.all(color: const Color(0xFF1E1F22), width: 2),
+                  border: Border.all(color: AppColors.surfaceDark, width: 2),
                 ),
               ),
             ),

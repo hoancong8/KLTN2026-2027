@@ -66,7 +66,7 @@ class ProfileViewModel extends StateNotifier<ProfileState> {
       state = state.copyWith(
         isSaving: false,
         playerProfile: playerProfile,
-        successMessage: 'Cập nhật hồ sơ và trình độ thành công! 🎉',
+        successMessage: 'Cập nhật hồ sơ và trình độ thành công!',
       );
       return true;
     } on AppException catch (e) {

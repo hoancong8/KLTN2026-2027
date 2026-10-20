@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import '../../../../../../app/consts/app_color.dart';
+import 'package:kltn2026_2027/app/theme/theme.dart';
 import '../../../../../../domain/entities/club/join_request.dart';
 import '../../../../club/club_management_vm/club_join_requests_vm.dart';
 
@@ -153,7 +153,7 @@ class _JoinRequestCard extends StatelessWidget {
       margin: EdgeInsets.zero,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: const BorderSide(color: Color(0xFFE2E8F0)),
+        side: const BorderSide(color: AppColors.border),
       ),
       child: Padding(
         padding: const EdgeInsets.all(14),
@@ -194,9 +194,9 @@ class _JoinRequestCard extends StatelessWidget {
                 width: double.infinity,
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF8FAFC),
+                  color: AppColors.neutral50,
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                  border: Border.all(color: AppColors.border),
                 ),
                 child: Text(
                   '“${request.introduction}”',

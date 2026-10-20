@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:kltn2026_2027/app/consts/app_color.dart';
+import 'package:kltn2026_2027/app/theme/theme.dart';
 import 'package:kltn2026_2027/domain/entities/permission_group.dart';
 
 class PermissionTreeView extends StatefulWidget {
@@ -138,7 +138,7 @@ class _PermissionTreeViewState extends State<PermissionTreeView> {
                   )
                 : null,
             filled: true,
-            fillColor: const Color(0xFFF9FAFB),
+            fillColor: AppColors.neutral50,
             contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
@@ -192,7 +192,7 @@ class _PermissionTreeViewState extends State<PermissionTreeView> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: const Color(0xFFF4F6F8),
+          color: AppColors.surfaceSubtle,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(color: AppColor.cDivider),
         ),
@@ -201,7 +201,7 @@ class _PermissionTreeViewState extends State<PermissionTreeView> {
           style: const TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w500,
-            color: Color(0xFF374151),
+            color: AppColors.neutral700,
           ),
         ),
       ),
@@ -237,7 +237,7 @@ class _PermissionTreeViewState extends State<PermissionTreeView> {
                     child: Icon(
                       isExpanded ? Icons.arrow_drop_down_rounded : Icons.arrow_right_rounded,
                       size: 20,
-                      color: const Color(0xFF6B7280),
+                      color: AppColors.neutral500,
                     ),
                   ),
                 )
@@ -254,7 +254,7 @@ class _PermissionTreeViewState extends State<PermissionTreeView> {
               const SizedBox(width: 6),
 
               // Icon & Tên nhóm
-              const Icon(Icons.folder_outlined, size: 16, color: Color(0xFF3B82F6)),
+              const Icon(Icons.folder_outlined, size: 16, color: AppColors.info),
               const SizedBox(width: 6),
               Expanded(
                 child: Text(
@@ -308,7 +308,7 @@ class _PermissionTreeViewState extends State<PermissionTreeView> {
               style: TextStyle(
                 fontSize: 12.5,
                 fontWeight: isChecked ? FontWeight.w500 : FontWeight.normal,
-                color: isChecked ? const Color(0xFF111827) : const Color(0xFF4B5563),
+                color: isChecked ? AppColors.neutral900 : AppColors.neutral600,
               ),
             ),
           ),
@@ -337,7 +337,7 @@ class _PermissionTreeViewState extends State<PermissionTreeView> {
           color: (value == true || value == null) ? AppColor.cMain : Colors.transparent,
           borderRadius: BorderRadius.circular(4),
           border: Border.all(
-            color: (value == true || value == null) ? AppColor.cMain : const Color(0xFFD1D5DB),
+            color: (value == true || value == null) ? AppColor.cMain : AppColors.neutral300,
             width: 1.5,
           ),
         ),

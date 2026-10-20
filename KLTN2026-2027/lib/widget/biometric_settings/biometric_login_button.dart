@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kltn2026_2027/app/theme/theme.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kltn2026_2027/domain/services/i_biometric_service.dart';
 import '../../app/provider.dart';
@@ -56,16 +57,16 @@ class _BiometricLoginButtonState extends ConsumerState<BiometricLoginButton> {
         onPressed: widget.onPressed,
         style: OutlinedButton.styleFrom(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          side: const BorderSide(color: Color(0xFF2563EB)),
+          side: const BorderSide(color: AppColors.roleDeputy),
         ),
         icon: Icon(
           icon,
-          color: const Color(0xFF2563EB),
+          color: AppColors.roleDeputy,
           size: 24,
         ),
         label: Text(
           text,
-          style: const TextStyle(color: Color(0xFF2563EB)),
+          style: const TextStyle(color: AppColors.roleDeputy),
         ),
       ),
     );

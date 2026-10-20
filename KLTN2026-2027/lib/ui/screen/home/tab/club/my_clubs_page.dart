@@ -59,7 +59,7 @@ class _MyClubsPageState extends ConsumerState<MyClubsPage> {
                 width: 44,
                 height: 5,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFE2E8F0),
+                  color: AppColors.border,
                   borderRadius: BorderRadius.circular(3),
                 ),
               ),
@@ -97,8 +97,8 @@ class _MyClubsPageState extends ConsumerState<MyClubsPage> {
               // Action 2: Join with Code
               _buildBottomSheetActionTile(
                 icon: Icons.tag_rounded,
-                iconColor: const Color(0xFF0284C7),
-                iconBgColor: const Color(0xFF0284C7).withValues(alpha: 0.12),
+                iconColor: AppColors.roleSky,
+                iconBgColor: AppColors.roleSky.withValues(alpha: 0.12),
                 title: 'Tham gia bằng mã Code',
                 subtitle: 'Nhập mã Code được Host chia sẻ để vào nhóm ngay',
                 onTap: () {
@@ -112,8 +112,8 @@ class _MyClubsPageState extends ConsumerState<MyClubsPage> {
               // Action 3: Radar GPS Explore
               _buildBottomSheetActionTile(
                 icon: Icons.radar_rounded,
-                iconColor: const Color(0xFF7C3AED),
-                iconBgColor: const Color(0xFF7C3AED).withValues(alpha: 0.12),
+                iconColor: AppColors.roleViolet,
+                iconBgColor: AppColors.roleViolet.withValues(alpha: 0.12),
                 title: 'Quét tìm CLB quanh đây (Radar GPS)',
                 subtitle: 'Tìm các câu lạc bộ cầu lông đang hoạt động trong khu vực của bạn',
                 onTap: () {
@@ -126,8 +126,8 @@ class _MyClubsPageState extends ConsumerState<MyClubsPage> {
               // Action 4: My Bookings
               _buildBottomSheetActionTile(
                 icon: Icons.event_available_rounded,
-                iconColor: const Color(0xFF059669),
-                iconBgColor: const Color(0xFF059669).withValues(alpha: 0.12),
+                iconColor: AppColors.primaryDark,
+                iconBgColor: AppColors.primaryDark.withValues(alpha: 0.12),
                 title: 'Lịch chơi tôi đã đăng ký',
                 subtitle: 'Xem toàn bộ vé tham gia, buổi tập và trạng thái điểm danh',
                 onTap: () {
@@ -152,7 +152,7 @@ class _MyClubsPageState extends ConsumerState<MyClubsPage> {
     required VoidCallback onTap,
   }) {
     return Material(
-      color: const Color(0xFFF8FAFC),
+      color: AppColors.background,
       borderRadius: BorderRadius.circular(16),
       child: InkWell(
         onTap: onTap,
@@ -226,7 +226,7 @@ class _MyClubsPageState extends ConsumerState<MyClubsPage> {
                   width: 44,
                   height: 5,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFE2E8F0),
+                    color: AppColors.border,
                     borderRadius: BorderRadius.circular(3),
                   ),
                 ),
@@ -250,7 +250,7 @@ class _MyClubsPageState extends ConsumerState<MyClubsPage> {
                     final isSelected = club.clubId == _selectedClubId;
                     final isActive = club.clubId == activeId;
                     return Material(
-                      color: isSelected ? AppColor.cMain.withValues(alpha: 0.08) : const Color(0xFFF8FAFC),
+                      color: isSelected ? AppColor.cMain.withValues(alpha: 0.08) : AppColors.background,
                       borderRadius: BorderRadius.circular(14),
                       child: InkWell(
                         onTap: () {
@@ -301,12 +301,12 @@ class _MyClubsPageState extends ConsumerState<MyClubsPage> {
                                           Container(
                                             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
                                             decoration: BoxDecoration(
-                                              color: const Color(0xFFDCFCE7),
+                                              color: AppColors.successContainer,
                                               borderRadius: BorderRadius.circular(4),
                                             ),
                                             child: const Text(
                                               'Kích hoạt',
-                                              style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF15803D)),
+                                              style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.onSuccess),
                                             ),
                                           ),
                                         ],
@@ -359,7 +359,7 @@ class _MyClubsPageState extends ConsumerState<MyClubsPage> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Row(
           children: [
-            Icon(Icons.tag_rounded, color: Color(0xFF0284C7)),
+            Icon(Icons.tag_rounded, color: AppColors.roleSky),
             SizedBox(width: 8),
             Text('Tham Gia Bằng Mã Code', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           ],
@@ -372,19 +372,19 @@ class _MyClubsPageState extends ConsumerState<MyClubsPage> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF0FDF4),
+                  color: AppColors.successContainer,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: const Color(0xFFBBF7D0)),
+                  border: Border.all(color: AppColors.successBorder),
                 ),
                 child: const Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(Icons.how_to_reg_rounded, color: Color(0xFF16A34A), size: 20),
+                    Icon(Icons.how_to_reg_rounded, color: AppColors.success, size: 20),
                     SizedBox(width: 10),
                     Expanded(
                       child: Text(
                         'Yêu cầu của bạn sẽ được gửi vào danh sách duyệt đơn của Host và Ban quản trị. Sau khi được duyệt, bạn sẽ là Thành viên chính thức của nhóm.',
-                        style: TextStyle(fontSize: 12, color: Color(0xFF15803D), height: 1.4),
+                        style: TextStyle(fontSize: 12, color: AppColors.onSuccess, height: 1.4),
                       ),
                     ),
                   ],
@@ -426,7 +426,7 @@ class _MyClubsPageState extends ConsumerState<MyClubsPage> {
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF0284C7),
+              backgroundColor: AppColors.roleSky,
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -497,7 +497,7 @@ class _MyClubsPageState extends ConsumerState<MyClubsPage> {
     MyClub? selectedClub,
   ) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
@@ -535,7 +535,7 @@ class _MyClubsPageState extends ConsumerState<MyClubsPage> {
             icon: Container(
               padding: const EdgeInsets.all(6),
               decoration: const BoxDecoration(
-                color: Color(0xFFF1F5F9),
+                color: AppColors.surfaceSubtle,
                 shape: BoxShape.circle,
               ),
               child: const Icon(Icons.event_available_rounded, color: AppColor.cMain, size: 20),
@@ -561,7 +561,7 @@ class _MyClubsPageState extends ConsumerState<MyClubsPage> {
           child: Column(
             children: [
               if (clubs.length > 1) _buildHorizontalClubStrip(clubs, activeId, vm),
-              Container(height: 1, color: const Color(0xFFE2E8F0)),
+              Container(height: 1, color: AppColors.border),
             ],
           ),
         ),
@@ -602,10 +602,10 @@ class _MyClubsPageState extends ConsumerState<MyClubsPage> {
               duration: const Duration(milliseconds: 200),
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
-                color: isSelected ? AppColor.cMain.withValues(alpha: 0.1) : const Color(0xFFF1F5F9),
+                color: isSelected ? AppColor.cMain.withValues(alpha: 0.1) : AppColors.surfaceSubtle,
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
-                  color: isSelected ? AppColor.cMain : const Color(0xFFE2E8F0),
+                  color: isSelected ? AppColor.cMain : AppColors.border,
                   width: isSelected ? 1.5 : 1,
                 ),
               ),
@@ -616,7 +616,7 @@ class _MyClubsPageState extends ConsumerState<MyClubsPage> {
                     width: 26,
                     height: 26,
                     decoration: BoxDecoration(
-                      color: isSelected ? AppColor.cMain : const Color(0xFF94A3B8),
+                      color: isSelected ? AppColor.cMain : AppColors.neutral400,
                       shape: BoxShape.circle,
                     ),
                     child: Center(
@@ -658,7 +658,7 @@ class _MyClubsPageState extends ConsumerState<MyClubsPage> {
     MyClub? selectedClub,
   ) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: AppColors.background,
       body: SafeArea(
         child: Row(
           children: [
@@ -701,7 +701,7 @@ class _MyClubsPageState extends ConsumerState<MyClubsPage> {
                 gradient: LinearGradient(
                   colors: [
                     AppColor.cMain.withValues(alpha: 0.15),
-                    const Color(0xFF0284C7).withValues(alpha: 0.08),
+                    AppColors.roleSky.withValues(alpha: 0.08),
                   ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
@@ -761,7 +761,7 @@ class _MyClubsPageState extends ConsumerState<MyClubsPage> {
               title: 'Tham Gia Bằng Mã Code',
               description: 'Nhập mã Code được Host chia sẻ để gia nhập nhóm bạn bè ngay lập tức',
               icon: Icons.tag_rounded,
-              accentColor: const Color(0xFF0284C7),
+              accentColor: AppColors.roleSky,
               onTap: () => _showJoinClubDialog(context, vm),
             ),
 
@@ -772,7 +772,7 @@ class _MyClubsPageState extends ConsumerState<MyClubsPage> {
               title: 'Tìm CLB Quanh Đây (Radar GPS)',
               description: 'Quét bán kính xung quanh tìm các CLB cầu lông đang hoạt động và tuyển quân',
               icon: Icons.radar_rounded,
-              accentColor: const Color(0xFF7C3AED),
+              accentColor: AppColors.roleViolet,
               onTap: () => context.push(AppConfig.exploreClubsScreenPath),
             ),
 
@@ -783,7 +783,7 @@ class _MyClubsPageState extends ConsumerState<MyClubsPage> {
               title: 'Tìm Kèo Giao Lưu Gần Bạn',
               description: 'Quét radar tìm kiếm các buổi tập đang tuyển người vãng lai trong khu vực',
               icon: Icons.sports_tennis_rounded,
-              accentColor: const Color(0xFFF59E0B),
+              accentColor: AppColors.warning,
               onTap: () => context.push(AppConfig.exploreRecruitmentsScreenPath),
             ),
           ],
@@ -803,7 +803,7 @@ class _MyClubsPageState extends ConsumerState<MyClubsPage> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        border: Border.all(color: AppColors.border),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.03),

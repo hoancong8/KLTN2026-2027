@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../app/consts/app_color.dart';
+import 'package:kltn2026_2027/app/theme/theme.dart';
 import '../../../../domain/enums/club_role.dart';
 import '../../../../widget/club_switcher_dialog.dart';
 import '../club_management_vm/club_members_vm.dart';
@@ -23,7 +23,7 @@ class ClubManagementTablet extends ConsumerWidget {
 
     if (activeContext == null) {
       return Scaffold(
-        backgroundColor: const Color(0xFFF9FAFB),
+        backgroundColor: AppColors.neutral50,
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -50,7 +50,7 @@ class ClubManagementTablet extends ConsumerWidget {
     final members = clubMembersState.filteredMembers;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF9FAFB),
+      backgroundColor: AppColors.neutral50,
       appBar: AppBar(
         title: const Text('Quản lý Câu lạc bộ & Thành viên', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
         backgroundColor: AppColor.white,
@@ -153,7 +153,7 @@ class ClubManagementTablet extends ConsumerWidget {
                                   icon: const Icon(Icons.shield_rounded, size: 18),
                                   label: const Text('Vai trò & Phân quyền', style: TextStyle(fontWeight: FontWeight.bold)),
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color(0xFF9333EA),
+                                    backgroundColor: AppColors.roleHost,
                                     foregroundColor: Colors.white,
                                     padding: const EdgeInsets.symmetric(vertical: 12),
                                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -230,7 +230,7 @@ class ClubManagementTablet extends ConsumerWidget {
                                       hintStyle: const TextStyle(fontSize: 12.5, color: AppColor.cMuted),
                                       prefixIcon: const Icon(Icons.search_rounded, size: 18, color: AppColor.cMuted),
                                       filled: true,
-                                      fillColor: const Color(0xFFF9FAFB),
+                                      fillColor: AppColors.neutral50,
                                       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppColor.cDivider)),
                                       enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppColor.cDivider)),

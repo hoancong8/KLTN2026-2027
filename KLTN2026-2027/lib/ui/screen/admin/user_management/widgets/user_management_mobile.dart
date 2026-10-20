@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kltn2026_2027/app/consts/app_color.dart';
+import 'package:kltn2026_2027/app/theme/theme.dart';
 import 'package:kltn2026_2027/app/consts/permissions.dart';
 import 'package:kltn2026_2027/domain/entities/user_profile.dart';
 import 'package:kltn2026_2027/widget/has_permission.dart';
@@ -174,7 +174,7 @@ class _UserManagementMobileState extends ConsumerState<UserManagementMobile> {
     final filteredUsers = state.filteredUsers;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF9FAFB),
+      backgroundColor: AppColors.neutral50,
       appBar: AppBar(
         backgroundColor: AppColor.white,
         elevation: 0,
@@ -243,7 +243,7 @@ class _UserManagementMobileState extends ConsumerState<UserManagementMobile> {
                           )
                         : null,
                     filled: true,
-                    fillColor: const Color(0xFFF3F4F6),
+                    fillColor: AppColors.surfaceSubtle,
                     contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(20),
@@ -266,11 +266,11 @@ class _UserManagementMobileState extends ConsumerState<UserManagementMobile> {
                           selected: isSelected,
                           onSelected: (_) => vm.setFilter(idx),
                           selectedColor: AppColor.cMain,
-                          backgroundColor: const Color(0xFFF3F4F6),
+                          backgroundColor: AppColors.surfaceSubtle,
                           labelStyle: TextStyle(
                             fontSize: 12,
                             fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                            color: isSelected ? AppColor.white : const Color(0xFF4B5563),
+                            color: isSelected ? AppColor.white : AppColors.neutral600,
                           ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16),

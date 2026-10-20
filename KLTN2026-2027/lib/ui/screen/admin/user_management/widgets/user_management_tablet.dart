@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kltn2026_2027/app/consts/app_color.dart';
+import 'package:kltn2026_2027/app/theme/theme.dart';
 import 'package:kltn2026_2027/app/consts/permissions.dart';
 import 'package:kltn2026_2027/domain/entities/user_profile.dart';
 import 'package:kltn2026_2027/widget/has_permission.dart';
@@ -174,7 +174,7 @@ class _UserManagementTabletState extends ConsumerState<UserManagementTablet> {
     final filteredUsers = state.filteredUsers;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF9FAFB),
+      backgroundColor: AppColors.neutral50,
       body: SafeArea(
         child: Column(
           children: [
@@ -245,7 +245,7 @@ class _UserManagementTabletState extends ConsumerState<UserManagementTablet> {
                         )
                       : null,
                   filled: true,
-                  fillColor: const Color(0xFFF3F4F6),
+                  fillColor: AppColors.surfaceSubtle,
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(24),
@@ -269,11 +269,11 @@ class _UserManagementTabletState extends ConsumerState<UserManagementTablet> {
                       selected: isSelected,
                       onSelected: (_) => vm.setFilter(idx),
                       selectedColor: AppColor.cMain,
-                      backgroundColor: const Color(0xFFF3F4F6),
+                      backgroundColor: AppColors.surfaceSubtle,
                       labelStyle: TextStyle(
                         fontSize: 13,
                         fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                        color: isSelected ? AppColor.white : const Color(0xFF4B5563),
+                        color: isSelected ? AppColor.white : AppColors.neutral600,
                       ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20),

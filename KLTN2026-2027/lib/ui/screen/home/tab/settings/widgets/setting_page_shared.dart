@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:kltn2026_2027/app/consts/app_color.dart';
+import 'package:kltn2026_2027/app/theme/theme.dart';
 import 'package:kltn2026_2027/app/consts/app_config.dart';
 import 'package:kltn2026_2027/app/consts/permissions.dart';
 import 'package:kltn2026_2027/app/provider.dart';
@@ -64,7 +64,7 @@ List<SettingsSection> buildSettingsSections(
       items: [
         SettingsItemData(
           icon: Icons.swap_horiz_rounded,
-          color: const Color(0xFF0284C7),
+          color: AppColors.roleSky,
           title: clubContext.currentClubName != null
               ? 'Đang chọn: ${clubContext.currentClubName}'
               : 'Chọn câu lạc bộ hoạt động',
@@ -75,14 +75,14 @@ List<SettingsSection> buildSettingsSections(
         ),
         SettingsItemData(
           icon: Icons.groups_outlined,
-          color: const Color(0xFF16A34A),
+          color: AppColors.roleMember,
           title: 'Quản lý thành viên & vai trò',
           subtitle: 'Xem danh sách thành viên và phân quyền trong nhóm',
           onTap: () => context.push(AppConfig.clubManagementPath),
         ),
         SettingsItemData(
           icon: Icons.event_available_rounded,
-          color: const Color(0xFF8B5CF6),
+          color: AppColors.roleViolet,
           title: 'Lịch chơi tôi đã đăng ký',
           subtitle: 'Xem toàn bộ vé tham gia, buổi tập và trạng thái điểm danh',
           onTap: () => context.push(AppConfig.myBookingsRoutePath),
@@ -111,7 +111,7 @@ List<SettingsSection> buildSettingsSections(
           if (canReadUsers)
             SettingsItemData(
               icon: Icons.people_outline,
-              color: const Color(0xFF0F1E36),
+              color: AppColors.navyDark,
               title: 'Quản lý nhân viên',
               subtitle: 'Xem, thêm, sửa, phân quyền tài khoản',
               onTap: () => context.push(AppConfig.adminUsersPath),
@@ -119,7 +119,7 @@ List<SettingsSection> buildSettingsSections(
           if (canReadRoles)
             SettingsItemData(
               icon: Icons.shield_outlined,
-              color: const Color(0xFF673AB7),
+              color: AppColors.roleViolet,
               title: 'Quản lý vai trò',
               subtitle: 'Xem và cấu hình nhóm quyền hạn',
               onTap: () => context.push(AppConfig.adminRolesPath),
@@ -439,14 +439,14 @@ void showLanguageBottomSheet(
                 const SizedBox(height: 24),
                 _buildLanguageOption(
                   label: context.l10n.set_vietnamese,
-                  flag: '🇻🇳',
+                  flag: 'VI',
                   isSelected: selectedLocale == 'vi',
                   onTap: () => setState(() => selectedLocale = 'vi'),
                 ),
                 const SizedBox(height: 12),
                 _buildLanguageOption(
                   label: context.l10n.set_english,
-                  flag: '🇺🇸',
+                  flag: 'EN',
                   isSelected: selectedLocale == 'en',
                   onTap: () => setState(() => selectedLocale = 'en'),
                 ),
@@ -533,7 +533,21 @@ Widget _buildLanguageOption({
       ),
       child: Row(
         children: [
-          Text(flag, style: const TextStyle(fontSize: 24)),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+            decoration: BoxDecoration(
+              color: isSelected ? AppColor.cMain.withValues(alpha: 0.1) : Colors.grey[200],
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Text(
+              flag,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+                color: isSelected ? AppColor.cMain : AppColor.cTitle,
+              ),
+            ),
+          ),
           const SizedBox(width: 16),
           Expanded(
             child: Text(

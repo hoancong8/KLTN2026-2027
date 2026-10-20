@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../../../app/consts/app_color.dart';
+import 'package:kltn2026_2027/app/theme/theme.dart';
 import '../../../../../../domain/entities/club/club_role_item.dart';
 import '../../../../club/club_management_vm/club_members_vm.dart';
 
@@ -36,10 +36,10 @@ class _ClubRolePermissionsSheetState extends ConsumerState<ClubRolePermissionsSh
 
   Color _getRoleColor(String roleName) {
     final rn = roleName.toLowerCase();
-    if (rn.contains('host') || rn.contains('chủ')) return const Color(0xFF9333EA);
-    if (rn.contains('phó') || rn.contains('deputy')) return const Color(0xFF2563EB);
-    if (rn.contains('quỹ') || rn.contains('treasurer')) return const Color(0xFFD97706);
-    if (rn.contains('khách') || rn.contains('guest')) return const Color(0xFF6B7280);
+    if (rn.contains('host') || rn.contains('chủ')) return AppColors.roleHost;
+    if (rn.contains('phó') || rn.contains('deputy')) return AppColors.roleDeputy;
+    if (rn.contains('quỹ') || rn.contains('treasurer')) return AppColors.roleTreasurer;
+    if (rn.contains('khách') || rn.contains('guest')) return AppColors.roleGuest;
     return AppColor.cMain;
   }
 
@@ -99,9 +99,9 @@ class _ClubRolePermissionsSheetState extends ConsumerState<ClubRolePermissionsSh
                       child: Padding(
                         padding: EdgeInsets.all(20),
                         child: Text(
-                          '👑 Vai trò Chủ câu lạc bộ (Host) có toàn quyền quản trị cao nhất, không thể thu hồi hoặc điều chỉnh.',
+                          'Vai trò Chủ câu lạc bộ (Host) có toàn quyền quản trị cao nhất, không thể thu hồi hoặc điều chỉnh.',
                           textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 14, color: Color(0xFF9333EA), fontWeight: FontWeight.w600),
+                          style: TextStyle(fontSize: 14, color: AppColors.roleHost, fontWeight: FontWeight.w600),
                         ),
                       ),
                     )
@@ -142,22 +142,22 @@ class _ClubRolePermissionsSheetState extends ConsumerState<ClubRolePermissionsSh
 
                           switch (entry.key.toUpperCase()) {
                             case 'OPERATIONS':
-                              moduleTitle = '🎾 VẬN HÀNH & BUỔI TẬP';
+                              moduleTitle = 'VẬN HÀNH & BUỔI TẬP';
                               moduleIcon = Icons.sports_tennis_rounded;
-                              moduleColor = const Color(0xFF0284C7);
+                              moduleColor = AppColors.roleSky;
                               break;
                             case 'FINANCE':
-                              moduleTitle = '💰 TÀI CHÍNH & SỔ QUỸ';
+                              moduleTitle = 'TÀI CHÍNH & SỔ QUỸ';
                               moduleIcon = Icons.account_balance_wallet_outlined;
-                              moduleColor = const Color(0xFFD97706);
+                              moduleColor = AppColors.roleTreasurer;
                               break;
                             case 'MEMBER':
-                              moduleTitle = '👥 THÀNH VIÊN & NHÓM';
+                              moduleTitle = 'THÀNH VIÊN & NHÓM';
                               moduleIcon = Icons.people_alt_outlined;
                               moduleColor = AppColor.cMain;
                               break;
                             default:
-                              moduleTitle = '⚙️ ${entry.key}';
+                              moduleTitle = entry.key;
                               moduleIcon = Icons.tune_rounded;
                               moduleColor = Colors.grey;
                           }
@@ -277,7 +277,7 @@ class _ClubRolePermissionsSheetState extends ConsumerState<ClubRolePermissionsSh
                 width: 44,
                 height: 5,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFE2E8F0),
+                  color: AppColors.border,
                   borderRadius: BorderRadius.circular(3),
                 ),
               ),
@@ -290,7 +290,7 @@ class _ClubRolePermissionsSheetState extends ConsumerState<ClubRolePermissionsSh
               children: [
                 const Row(
                   children: [
-                    Icon(Icons.admin_panel_settings_rounded, color: Color(0xFF6D28D9), size: 24),
+                    Icon(Icons.admin_panel_settings_rounded, color: AppColors.roleHost, size: 24),
                     SizedBox(width: 8),
                     Text(
                       'Vai Trò & Phân Quyền Nhóm',
@@ -362,9 +362,9 @@ class _ClubRolePermissionsSheetState extends ConsumerState<ClubRolePermissionsSh
                             return Container(
                               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFF8FAFC),
+                                color: AppColors.neutral50,
                                 borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: const Color(0xFFE2E8F0)),
+                                border: Border.all(color: AppColors.border),
                               ),
                               child: Row(
                                 children: [
@@ -397,13 +397,13 @@ class _ClubRolePermissionsSheetState extends ConsumerState<ClubRolePermissionsSh
                                               Container(
                                                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
                                                 decoration: BoxDecoration(
-                                                  color: const Color(0xFF9333EA).withValues(alpha: 0.1),
+                                                  color: AppColors.roleHost.withValues(alpha: 0.1),
                                                   borderRadius: BorderRadius.circular(4),
                                                 ),
                                                 child: const Text(
                                                   'Chủ nhóm',
                                                   style: TextStyle(
-                                                    color: Color(0xFF9333EA),
+                                                    color: AppColors.roleHost,
                                                     fontSize: 10,
                                                     fontWeight: FontWeight.bold,
                                                   ),
@@ -419,7 +419,7 @@ class _ClubRolePermissionsSheetState extends ConsumerState<ClubRolePermissionsSh
                                               : '${role.permissions.length}/${allPerms.isNotEmpty ? allPerms.length : 18} quyền được cấp',
                                           style: TextStyle(
                                             fontSize: 12,
-                                            color: isHost ? const Color(0xFF9333EA) : AppColor.cMuted,
+                                            color: isHost ? AppColors.roleHost : AppColor.cMuted,
                                             fontWeight: isHost ? FontWeight.w600 : FontWeight.normal,
                                           ),
                                         ),

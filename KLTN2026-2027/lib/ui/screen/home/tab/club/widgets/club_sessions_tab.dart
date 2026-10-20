@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import '../../../../../../app/consts/app_color.dart';
+import 'package:kltn2026_2027/app/theme/theme.dart';
 import '../../../../../../app/consts/app_config.dart';
 import '../../../../../../domain/entities/session/session.dart';
 import '../../../../../../domain/enums/session_enums.dart';
@@ -59,7 +59,7 @@ class ClubSessionsTab extends ConsumerWidget {
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: AppColors.neutral50,
       floatingActionButton: isHost
           ? FloatingActionButton.extended(
               onPressed: () async {
@@ -94,7 +94,7 @@ class ClubSessionsTab extends ConsumerWidget {
                       margin: const EdgeInsets.only(bottom: 14),
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF0FDF4),
+                        color: AppColors.primaryContainer,
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(color: AppColor.cMain.withValues(alpha: 0.35)),
                       ),
@@ -225,7 +225,7 @@ class _SessionCard extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(14),
         side: BorderSide(
-          color: session.isBookedByCurrentUser ? AppColor.cMain.withValues(alpha: 0.4) : const Color(0xFFE2E8F0),
+          color: session.isBookedByCurrentUser ? AppColor.cMain.withValues(alpha: 0.4) : AppColors.border,
           width: session.isBookedByCurrentUser ? 1.5 : 1,
         ),
       ),
@@ -296,7 +296,7 @@ class _SessionCard extends StatelessWidget {
                       child: LinearProgressIndicator(
                         value: progress,
                         minHeight: 6,
-                        backgroundColor: const Color(0xFFE2E8F0),
+                        backgroundColor: AppColors.border,
                         valueColor: AlwaysStoppedAnimation<Color>(
                           isFull ? Colors.orange : AppColor.cMain,
                         ),
@@ -340,20 +340,20 @@ class _SessionCard extends StatelessWidget {
     Color fg;
     switch (status) {
       case SessionStatus.open:
-        bg = const Color(0xFFDCFCE7);
-        fg = const Color(0xFF16A34A);
+        bg = AppColors.successLight;
+        fg = AppColors.roleMember;
         break;
       case SessionStatus.locked:
-        bg = const Color(0xFFFEF3C7);
-        fg = const Color(0xFFD97706);
+        bg = AppColors.warningLight;
+        fg = AppColors.roleTreasurer;
         break;
       case SessionStatus.playing:
-        bg = const Color(0xFFE0E7FF);
-        fg = const Color(0xFF4F46E5);
+        bg = AppColors.infoLight;
+        fg = AppColors.indigo;
         break;
       default:
-        bg = const Color(0xFFF1F5F9);
-        fg = const Color(0xFF64748B);
+        bg = AppColors.surfaceSubtle;
+        fg = AppColors.neutral500;
     }
 
     return Container(

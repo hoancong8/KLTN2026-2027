@@ -1,7 +1,7 @@
 // lib/ui/screen/club/role_management/widgets/club_role_detail_view.dart
 
 import 'package:flutter/material.dart';
-import '../../../../../app/consts/app_color.dart';
+import '../../../../../app/theme/theme.dart';
 import '../../../../../domain/entities/club/club_member.dart';
 import '../../../../../domain/entities/club/club_role_item.dart';
 import '../../../../../domain/enums/club_role.dart';
@@ -163,7 +163,7 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
     final isHostRole = widget.role.isHostRole;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF9FAFB),
+      backgroundColor: AppColors.neutral50,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0.5,
@@ -292,7 +292,7 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFFE5E7EB)),
+            border: Border.all(color: AppColors.border),
           ),
           child: Row(
             children: [
@@ -335,7 +335,7 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFFE5E7EB)),
+            border: Border.all(color: AppColors.border),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -398,7 +398,7 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFFE5E7EB)),
+            border: Border.all(color: AppColors.border),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -466,21 +466,21 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
             margin: const EdgeInsets.only(bottom: 14),
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: const Color(0xFFF3E8FF),
+              color: AppColors.violetLight,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: const Color(0xFFD8B4FE)),
+              border: Border.all(color: AppColors.violetBorder),
             ),
             child: const Row(
               children: [
-                Icon(Icons.workspace_premium_rounded, color: Color(0xFF9333EA), size: 24),
+                Icon(Icons.workspace_premium_rounded, color: AppColors.roleHost, size: 24),
                 SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    '👑 Vai trò Chủ câu lạc bộ sở hữu toàn bộ 18 quyền hạn tối cao của hệ thống. Các quyền này được kích hoạt vĩnh viễn và không thể tắt.',
+                    'Vai trò Chủ câu lạc bộ sở hữu toàn bộ 18 quyền hạn tối cao của hệ thống. Các quyền này được kích hoạt vĩnh viễn và không thể tắt.',
                     style: TextStyle(
                       fontSize: 12.5,
                       fontWeight: FontWeight.w600,
-                      color: Color(0xFF7E22CE),
+                      color: AppColors.roleHost,
                       height: 1.35,
                     ),
                   ),
@@ -511,11 +511,11 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
             contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+              borderSide: const BorderSide(color: AppColors.border),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+              borderSide: const BorderSide(color: AppColors.border),
             ),
           ),
         ),
@@ -579,12 +579,12 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
               case 'OPERATIONS':
                 title = 'VẬN HÀNH & BUỔI TẬP';
                 icon = Icons.sports_tennis_rounded;
-                color = const Color(0xFF0284C7);
+                color = AppColors.roleSky;
                 break;
               case 'FINANCE':
                 title = 'TÀI CHÍNH & SỔ QUỸ';
                 icon = Icons.account_balance_wallet_outlined;
-                color = const Color(0xFFD97706);
+                color = AppColors.roleTreasurer;
                 break;
               case 'MEMBER':
                 title = 'THÀNH VIÊN & NHÓM';
@@ -602,7 +602,7 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xFFE5E7EB)),
+                border: Border.all(color: AppColors.border),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -633,7 +633,7 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     itemCount: entry.value.length,
-                    separatorBuilder: (_, _) => const Divider(height: 1, indent: 16, endIndent: 16, color: Color(0xFFF3F4F6)),
+                    separatorBuilder: (_, _) => const Divider(height: 1, indent: 16, endIndent: 16, color: AppColors.borderSubtle),
                     itemBuilder: (ctx, idx) {
                       final perm = entry.value[idx];
                       final isChecked = isHostRole || _selectedPermissionIds.contains(perm.id);
@@ -645,7 +645,7 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
-                            color: isChecked ? AppColor.cTitle : const Color(0xFF6B7280),
+                            color: isChecked ? AppColor.cTitle : AppColors.roleGuest,
                           ),
                         ),
                         subtitle: Padding(
@@ -713,11 +713,11 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
                     contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
-                      borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+                      borderSide: const BorderSide(color: AppColors.border),
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
-                      borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+                      borderSide: const BorderSide(color: AppColors.border),
                     ),
                   ),
                 ),
@@ -773,7 +773,7 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: const Color(0xFFE5E7EB)),
+                        border: Border.all(color: AppColors.border),
                       ),
                       child: Row(
                         children: [

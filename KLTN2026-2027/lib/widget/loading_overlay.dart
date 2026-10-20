@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:kltn2026_2027/app/consts/app_color.dart';
+import 'package:kltn2026_2027/app/theme/theme.dart';
 import 'package:kltn2026_2027/app/provider/localization_provider.dart';
 
 /// A loading overlay widget that displays a centered loading indicator
@@ -19,7 +19,7 @@ class LoadingOverlay extends StatelessWidget {
   const LoadingOverlay({
     super.key,
     this.message,
-    this.barrierColor = const Color(0x1A000000), // 10% black
+    this.barrierColor = AppColors.overlaySubtle, // 10% black
     this.indicatorColor = AppColor.cMain,
     this.cardColor = AppColor.white,
     this.textColor = AppColor.cTitle,
@@ -33,7 +33,7 @@ class LoadingOverlay extends StatelessWidget {
   /// Default constructor with "Đang xử lý..." message
   const LoadingOverlay.processing({
     super.key,
-    this.barrierColor = const Color(0x1A000000),
+    this.barrierColor = AppColors.overlaySubtle,
     this.indicatorColor = AppColor.cMain,
     this.cardColor = AppColor.white,
     this.textColor = AppColor.cTitle,

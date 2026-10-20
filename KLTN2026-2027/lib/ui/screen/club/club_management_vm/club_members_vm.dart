@@ -186,7 +186,7 @@ class ClubMembersViewModel extends StateNotifier<ClubMembersState> {
         state = state.copyWith(
           isActionLoading: false,
           roles: updatedRoles,
-          successMessage: 'Cập nhật phân quyền thành công! 🎉',
+          successMessage: 'Cập nhật phân quyền thành công!',
         );
         return true;
       }
@@ -226,7 +226,7 @@ class ClubMembersViewModel extends StateNotifier<ClubMembersState> {
       state = state.copyWith(
         isActionLoading: false,
         roles: updatedRoles,
-        successMessage: 'Tạo vai trò mới thành công! 🎉',
+        successMessage: 'Tạo vai trò mới thành công!',
       );
       return true;
     } on AppException catch (e) {

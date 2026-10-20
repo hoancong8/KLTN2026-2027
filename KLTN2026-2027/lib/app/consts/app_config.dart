@@ -34,7 +34,7 @@ class AppConfig {
     }
   }
 
-  // ===== 🔐 1. Authentication APIs (/api/v1/auth) =====
+  // ===== [API] 1. Authentication APIs (/api/v1/auth) =====
   static const login = '/api/v1/auth/login';
   static const register = '/api/v1/auth/register';
   static const externalRegister = '/api/v1/auth/external-register';
@@ -42,7 +42,7 @@ class AppConfig {
   static const logOut = '/api/v1/auth/logout';
   static const changePassword = '/api/v1/user/reset-password';
 
-  // ===== 🏸 2. Clubs Management APIs (/api/v1/clubs) =====
+  // ===== [API] 2. Clubs Management APIs (/api/v1/clubs) =====
   static const clubsPath = '/api/v1/clubs';
   static const clubsExplorePath = '$clubsPath/explore';
   static String clubDetailPath(String id) => '$clubsPath/$id';
@@ -66,30 +66,30 @@ class AppConfig {
   static String clubRejectJoinRequestPath(String id, String requestId) =>
       '$clubsPath/$id/join-requests/$requestId/reject';
 
-  // ===== 🛡️ 3. Roles Management APIs (/api/v1/roles) =====
+  // ===== [API] 3. Roles Management APIs (/api/v1/roles) =====
   static const rolesPath = '/api/v1/roles';
 
-  // ===== 👥 4. User Management APIs (/api/v1/user) =====
+  // ===== [API] 4. User Management APIs (/api/v1/user) =====
   static const usersPath = '/api/v1/user';
   static const userMePath = '/api/v1/user/me';
   static const userProfilePath = '/api/v1/user/profile';
   static const userPermissionsPath = '/api/v1/user/permissions';
   static const userAllPermissionsPath = '/api/v1/user/all-permissions';
 
-  // ===== 🏢 5. Venues Management APIs (/api/v1/venues) =====
+  // ===== [API] 5. Venues Management APIs (/api/v1/venues) =====
   static const venuesPath = '/api/v1/venues';
   static const venueRecommendationsPath = '/api/v1/venues/recommendations';
 
-  // ===== 📅 6. Venue Schedules Management APIs (/api/v1/venue-schedules) =====
+  // ===== [API] 6. Venue Schedules Management APIs (/api/v1/venue-schedules) =====
   static const venueSchedulesPath = '/api/v1/venue-schedules';
 
-  // ===== 🏸 7. Courts Management APIs (/api/v1/courts) =====
+  // ===== [API] 7. Courts Management APIs (/api/v1/courts) =====
   static const courtsPath = '/api/v1/courts';
 
-  // ===== 💰 8. Court Pricings Management APIs (/api/v1/court-pricings) =====
+  // ===== [API] 8. Court Pricings Management APIs (/api/v1/court-pricings) =====
   static const courtPricingsPath = '/api/v1/court-pricings';
 
-  // ===== 🏸 9. Sessions Management APIs (/api/v1/sessions) =====
+  // ===== [API] 9. Sessions Management APIs (/api/v1/sessions) =====
   static const sessionsPath = '/api/v1/sessions';
   static String sessionClubPath(String clubId) => '$sessionsPath/club/$clubId';
   static String sessionDetailPath(String sessionId) =>
@@ -109,7 +109,7 @@ class AppConfig {
   static String cancelRecruitmentPath(String recruitmentId) =>
       '$sessionsPath/recruitments/$recruitmentId/cancel';
 
-  // ===== 🚦 Routes App (GoRouter) =====
+  // ===== [ROUTER] Routes App (GoRouter) =====
   static const splashPath = '/';
   static const loginPath = '/login';
   static const registerPath = '/register';

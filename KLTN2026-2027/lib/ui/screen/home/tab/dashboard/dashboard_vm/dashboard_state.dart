@@ -33,13 +33,13 @@ class QuickActionItem {
 class SportCategoryItem {
   final String id;
   final String name;
-  final String iconEmoji;
+  final IconData icon;
   final bool isSelected;
 
   const SportCategoryItem({
     required this.id,
     required this.name,
-    required this.iconEmoji,
+    required this.icon,
     this.isSelected = false,
   });
 
@@ -47,7 +47,7 @@ class SportCategoryItem {
     return SportCategoryItem(
       id: id,
       name: name,
-      iconEmoji: iconEmoji,
+      icon: icon,
       isSelected: isSelected ?? this.isSelected,
     );
   }

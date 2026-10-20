@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:kltn2026_2027/app/consts/app_color.dart';
+import 'package:kltn2026_2027/app/theme/theme.dart';
 import 'package:kltn2026_2027/domain/entities/app_role.dart';
 import 'package:kltn2026_2027/domain/entities/permission_group.dart';
 import 'permission_tree_view.dart';
@@ -86,7 +86,7 @@ class _RoleFormDialogState extends State<RoleFormDialog> with SingleTickerProvid
                 children: [
                   IconButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    icon: const Icon(Icons.close_rounded, size: 22, color: Color(0xFF4B5563)),
+                    icon: const Icon(Icons.close_rounded, size: 22, color: AppColors.neutral600),
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
                   ),
@@ -105,7 +105,7 @@ class _RoleFormDialogState extends State<RoleFormDialog> with SingleTickerProvid
                   ElevatedButton(
                     onPressed: _handleSave,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF0F1E36), // Navy button như ảnh mẫu
+                      backgroundColor: AppColors.navyDark, // Navy button như ảnh mẫu
                       foregroundColor: AppColor.white,
                       elevation: 0,
                       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),

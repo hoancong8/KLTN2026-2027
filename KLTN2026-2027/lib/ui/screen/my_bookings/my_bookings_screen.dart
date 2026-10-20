@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import '../../../app/consts/app_color.dart';
+import 'package:kltn2026_2027/app/theme/theme.dart';
 import '../../../app/consts/app_config.dart';
 import '../../../app/provider/localization_provider.dart';
 import '../../../app/utils/exception_ext.dart';
@@ -22,7 +22,7 @@ class MyBookingsScreen extends ConsumerWidget {
     final vm = ref.read(myBookingsViewModelProvider.notifier);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: AppColors.neutral50,
       appBar: AppBar(
         backgroundColor: AppColor.white,
         elevation: 0,
@@ -64,7 +64,7 @@ class MyBookingsScreen extends ConsumerWidget {
                       label: Text(f.label),
                       selected: isSelected,
                       selectedColor: AppColor.cMain.withValues(alpha: 0.15),
-                      backgroundColor: const Color(0xFFF1F5F9),
+                      backgroundColor: AppColors.surfaceSubtle,
                       labelStyle: TextStyle(
                         fontSize: 12.5,
                         fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
@@ -83,7 +83,7 @@ class MyBookingsScreen extends ConsumerWidget {
               ),
             ),
           ),
-          const Divider(height: 1, color: Color(0xFFE2E8F0)),
+          const Divider(height: 1, color: AppColors.border),
 
           // Body Content
           Expanded(
@@ -195,22 +195,22 @@ class MyBookingsScreen extends ConsumerWidget {
 
     switch (b.bookingStatus) {
       case BookingStatus.confirmed:
-        statusColor = const Color(0xFF10B981);
+        statusColor = AppColors.success;
         statusText = 'Chính thức';
         statusIcon = Icons.check_circle_rounded;
         break;
       case BookingStatus.waiting:
-        statusColor = const Color(0xFFF59E0B);
+        statusColor = AppColors.warning;
         statusText = 'Hàng đợi #${b.queueOrder}';
         statusIcon = Icons.hourglass_top_rounded;
         break;
       case BookingStatus.checkedIn:
-        statusColor = const Color(0xFF0284C7);
+        statusColor = AppColors.roleSky;
         statusText = 'Đã điểm danh';
         statusIcon = Icons.verified_rounded;
         break;
       case BookingStatus.absent:
-        statusColor = const Color(0xFFEF4444);
+        statusColor = AppColors.error;
         statusText = 'Đã báo vắng';
         statusIcon = Icons.cancel_outlined;
         break;
@@ -230,7 +230,7 @@ class MyBookingsScreen extends ConsumerWidget {
               offset: const Offset(0, 4),
             ),
           ],
-          border: Border.all(color: const Color(0xFFE2E8F0)),
+          border: Border.all(color: AppColors.border),
         ),
         padding: const EdgeInsets.all(16),
         child: Column(

@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../../../app/consts/app_color.dart';
+import 'package:kltn2026_2027/app/theme/theme.dart';
 import '../../../../../../domain/enums/session_enums.dart';
 import '../../../../club/club_vm/club_context_vm.dart';
 import 'club_schedule_planner.dart';
@@ -229,7 +229,7 @@ class _ClubCreateDialogState extends ConsumerState<ClubCreateDialog> {
                 ],
               ),
             ),
-            const Divider(height: 1, color: Color(0xFFE2E8F0)),
+            const Divider(height: 1, color: AppColors.border),
 
             // Form Body
             Expanded(
@@ -244,9 +244,9 @@ class _ClubCreateDialogState extends ConsumerState<ClubCreateDialog> {
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFFEF2F2),
+                            color: AppColors.errorContainer,
                             borderRadius: BorderRadius.circular(10),
-                            border: Border.all(color: const Color(0xFFFCA5A5)),
+                            border: Border.all(color: AppColors.errorBorder),
                           ),
                           child: Row(
                             children: [
@@ -317,9 +317,9 @@ class _ClubCreateDialogState extends ConsumerState<ClubCreateDialog> {
                             width: 48,
                             height: 48,
                             decoration: BoxDecoration(
-                              color: const Color(0xFFF1F5F9),
+                              color: AppColors.surfaceSubtle,
                               borderRadius: BorderRadius.circular(10),
-                              border: Border.all(color: const Color(0xFFCBD5E1)),
+                              border: Border.all(color: AppColors.neutral300),
                               image: _avatarUrlController.text.trim().isNotEmpty
                                   ? DecorationImage(
                                       image: NetworkImage(_avatarUrlController.text.trim()),
@@ -477,12 +477,12 @@ class _ClubCreateDialogState extends ConsumerState<ClubCreateDialog> {
                         decoration: BoxDecoration(
                           color: _hasSchedule
                               ? AppColor.cMain.withValues(alpha: 0.05)
-                              : const Color(0xFFF8FAFC),
+                              : AppColors.neutral50,
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
                             color: _hasSchedule
                                 ? AppColor.cMain.withValues(alpha: 0.3)
-                                : const Color(0xFFE2E8F0),
+                                : AppColors.border,
                           ),
                         ),
                         child: SwitchListTile(
@@ -527,9 +527,9 @@ class _ClubCreateDialogState extends ConsumerState<ClubCreateDialog> {
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFF1F5F9),
+                          color: AppColors.surfaceSubtle,
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: const Color(0xFFE2E8F0)),
+                          border: Border.all(color: AppColors.border),
                         ),
                         child: const Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -555,7 +555,7 @@ class _ClubCreateDialogState extends ConsumerState<ClubCreateDialog> {
             ),
 
             // Footer Actions
-            const Divider(height: 1, color: Color(0xFFE2E8F0)),
+            const Divider(height: 1, color: AppColors.border),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               child: Row(

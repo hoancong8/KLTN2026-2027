@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:kltn2026_2027/app/provider.dart';
+import 'package:kltn2026_2027/app/theme/theme.dart';
 import 'package:kltn2026_2027/domain/usecases/venue/get_venue_recommendations_usecase.dart';
 import 'dashboard_state.dart';
 
@@ -33,37 +34,37 @@ class DashboardViewModel extends StateNotifier<DashboardState> {
           id: 'booking',
           title: 'Đặt sân',
           icon: Icons.calendar_today_outlined,
-          bgColor: Color(0xFFE8F8F2),
-          iconColor: Color(0xFF10B981),
+          bgColor: AppColors.primaryContainer,
+          iconColor: AppColors.success,
         ),
         QuickActionItem(
           id: 'matchmaking',
           title: 'Ghép trận',
           icon: Icons.people_outline,
-          bgColor: Color(0xFFE6F7F5),
-          iconColor: Color(0xFF14B8A6),
+          bgColor: AppColors.tealLight,
+          iconColor: AppColors.teal,
         ),
         QuickActionItem(
           id: 'schedule',
           title: 'Lịch của tôi',
           icon: Icons.emoji_events_outlined,
-          bgColor: Color(0xFFEBF3FE),
-          iconColor: Color(0xFF3B82F6),
+          bgColor: AppColors.infoLight,
+          iconColor: AppColors.info,
         ),
         QuickActionItem(
           id: 'favorite',
           title: 'Yêu thích',
           icon: Icons.favorite_border,
-          bgColor: Color(0xFFFDE8EC),
-          iconColor: Color(0xFFEC4899),
+          bgColor: AppColors.pinkLight,
+          iconColor: AppColors.pink,
         ),
       ],
       categories: const [
-        SportCategoryItem(id: 'badminton', name: 'Cầu lông', iconEmoji: '🏸', isSelected: true),
-        SportCategoryItem(id: 'pickleball', name: 'Pickleball', iconEmoji: '🏓'),
-        SportCategoryItem(id: 'tennis', name: 'Tennis', iconEmoji: '🎾'),
-        SportCategoryItem(id: 'football', name: 'Bóng đá', iconEmoji: '⚽'),
-        SportCategoryItem(id: 'basketball', name: 'Bóng rổ', iconEmoji: '🏀'),
+        SportCategoryItem(id: 'badminton', name: 'Cầu lông', icon: Icons.sports_tennis, isSelected: true),
+        SportCategoryItem(id: 'pickleball', name: 'Pickleball', icon: Icons.sports_baseball),
+        SportCategoryItem(id: 'tennis', name: 'Tennis', icon: Icons.sports_tennis),
+        SportCategoryItem(id: 'football', name: 'Bóng đá', icon: Icons.sports_soccer),
+        SportCategoryItem(id: 'basketball', name: 'Bóng rổ', icon: Icons.sports_basketball),
       ],
       venues: const [
         VenueItem(

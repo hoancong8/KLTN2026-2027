@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../app/consts/app_color.dart';
+import 'package:kltn2026_2027/app/theme/theme.dart';
 import '../../../../domain/enums/club_role.dart';
 import '../../../../widget/responsive_layout.dart';
 import '../club_management_vm/club_members_vm.dart';
@@ -59,7 +59,7 @@ class _ClubRoleManagementScreenState extends ConsumerState<ClubRoleManagementScr
 
     if (membersState.isLoadingRoles && membersState.roles.isEmpty) {
       return Scaffold(
-        backgroundColor: const Color(0xFFF9FAFB),
+        backgroundColor: AppColors.neutral50,
         appBar: AppBar(
           title: const Text('Vai trò & Phân quyền', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17)),
           backgroundColor: Colors.white,

@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../app/consts/app_color.dart';
+import 'package:kltn2026_2027/app/theme/theme.dart';
 import '../../../../domain/enums/club_role.dart';
 import '../../../../widget/club_switcher_dialog.dart';
 import '../club_management_vm/club_members_vm.dart';
@@ -23,7 +23,7 @@ class ClubManagementMobile extends ConsumerWidget {
 
     if (activeContext == null) {
       return Scaffold(
-        backgroundColor: const Color(0xFFF9FAFB),
+        backgroundColor: AppColors.neutral50,
         appBar: AppBar(
           title: const Text('Quản lý Câu lạc bộ', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17)),
           backgroundColor: AppColor.white,
@@ -59,7 +59,7 @@ class ClubManagementMobile extends ConsumerWidget {
     final members = clubMembersState.filteredMembers;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF9FAFB),
+      backgroundColor: AppColors.neutral50,
       appBar: AppBar(
         title: Text(activeContext.clubName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17)),
         backgroundColor: AppColor.white,
@@ -86,14 +86,14 @@ class ClubManagementMobile extends ConsumerWidget {
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
-                        colors: [Color(0xFF0F1E36), Color(0xFF1E3A5F)],
+                        colors: [AppColors.navyDark, AppColors.neutral800],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF0F1E36).withAlpha(40),
+                          color: AppColors.navyDark.withAlpha(40),
                           blurRadius: 10,
                           offset: const Offset(0, 4),
                         ),
@@ -195,7 +195,7 @@ class ClubManagementMobile extends ConsumerWidget {
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: const Color(0xFFE5E7EB)),
+                            border: Border.all(color: AppColors.border),
                             boxShadow: [
                               BoxShadow(
                                 color: Colors.black.withValues(alpha: 0.03),
@@ -208,8 +208,8 @@ class ClubManagementMobile extends ConsumerWidget {
                             children: [
                               CircleAvatar(
                                 radius: 18,
-                                backgroundColor: Color(0xFFF3E8FF),
-                                child: Icon(Icons.shield_rounded, color: Color(0xFF9333EA), size: 20),
+                                backgroundColor: AppColors.violetLight,
+                                child: Icon(Icons.shield_rounded, color: AppColors.roleHost, size: 20),
                               ),
                               SizedBox(width: 12),
                               Expanded(

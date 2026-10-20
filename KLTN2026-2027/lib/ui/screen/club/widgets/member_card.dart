@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../app/consts/app_color.dart';
+import 'package:kltn2026_2027/app/theme/theme.dart';
 import '../../../../domain/entities/club/club_member.dart';
 import '../../../../domain/enums/club_role.dart';
 import '../club_management_vm/club_members_vm.dart';
@@ -237,15 +237,15 @@ class MemberCard extends ConsumerWidget {
   Color _getRoleColor(ClubRole role) {
     switch (role) {
       case ClubRole.host:
-        return const Color(0xFF9333EA);
+        return AppColors.roleHost;
       case ClubRole.deputy:
-        return const Color(0xFF2563EB);
+        return AppColors.roleDeputy;
       case ClubRole.treasurer:
-        return const Color(0xFFD97706);
+        return AppColors.roleTreasurer;
       case ClubRole.member:
         return AppColor.cGreen;
       case ClubRole.guest:
-        return const Color(0xFF6B7280);
+        return AppColors.roleGuest;
     }
   }
 }

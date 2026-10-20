@@ -1,7 +1,7 @@
 // lib/ui/screen/club/role_management/widgets/club_create_role_dialog.dart
 
 import 'package:flutter/material.dart';
-import '../../../../../app/consts/app_color.dart';
+import 'package:kltn2026_2027/app/theme/theme.dart';
 import '../../../../../domain/entities/club/club_role_item.dart';
 import 'club_role_color_helper.dart';
 
@@ -213,7 +213,7 @@ class _ClubCreateRoleDialogState extends State<ClubCreateRoleDialog> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF9FAFB),
+                    color: AppColors.neutral50,
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(color: AppColor.cDivider),
                   ),

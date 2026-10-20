@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../../../app/consts/app_color.dart';
+import 'package:kltn2026_2027/app/theme/theme.dart';
 import '../../../../../../app/consts/app_config.dart';
 import '../../../../../../app/provider.dart';
 import '../../../../../../domain/entities/club/my_club.dart';
@@ -202,8 +202,8 @@ class _ClubDetailViewState extends ConsumerState<ClubDetailView> with SingleTick
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            const Color(0xFF1E293B),
-            const Color(0xFF0F172A),
+            AppColors.neutral800,
+            AppColors.neutral900,
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -351,7 +351,7 @@ class _ClubDetailViewState extends ConsumerState<ClubDetailView> with SingleTick
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: const Color(0xFFEFF8F4),
+            color: AppColors.primaryContainer,
             borderRadius: BorderRadius.circular(14),
             border: Border.all(color: AppColor.cMain.withValues(alpha: 0.3)),
           ),
@@ -432,8 +432,8 @@ class _ClubDetailViewState extends ConsumerState<ClubDetailView> with SingleTick
 
               const SizedBox(height: 10),
               const Text(
-                '💡 Hướng dẫn: Bạn bè chỉ cần mở ứng dụng -> vào "Nhóm của tôi" -> bấm biểu tượng (+) -> chọn "Tham gia bằng Code" và dán mã này vào là xong!',
-                style: TextStyle(fontSize: 12, color: Color(0xFF0F766E), height: 1.4),
+                'Hướng dẫn: Bạn bè chỉ cần mở ứng dụng -> vào "Nhóm của tôi" -> bấm biểu tượng (+) -> chọn "Tham gia bằng Code" và dán mã này vào là xong!',
+                style: TextStyle(fontSize: 12, color: AppColors.roleTeal, height: 1.4),
               ),
             ],
           ),
@@ -541,15 +541,15 @@ class _ClubDetailViewState extends ConsumerState<ClubDetailView> with SingleTick
   Color _getRoleColor(ClubRole role) {
     switch (role) {
       case ClubRole.host:
-        return const Color(0xFFC084FC); // Light Purple
+        return AppColors.roleHost; // Light Purple
       case ClubRole.deputy:
-        return const Color(0xFF60A5FA); // Light Blue
+        return AppColors.roleDeputy; // Light Blue
       case ClubRole.treasurer:
-        return const Color(0xFFFBBF24); // Light Amber
+        return AppColors.roleTreasurer; // Light Amber
       case ClubRole.member:
         return AppColor.cGreen_50; // Green
       case ClubRole.guest:
-        return const Color(0xFF9CA3AF); // Gray
+        return AppColors.roleGuest; // Gray
     }
   }
 }

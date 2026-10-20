@@ -170,7 +170,7 @@ class ClubSwitcherDialog extends ConsumerWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             decoration: const BoxDecoration(
-              color: Color(0xFFF9FAFB),
+              color: AppColors.neutral50,
               border: Border(top: BorderSide(color: AppColor.cDivider)),
             ),
             child: Row(
@@ -337,7 +337,7 @@ class _ClubItemCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: isActive ? AppColor.cMain.withAlpha(12) : const Color(0xFFF9FAFB),
+          color: isActive ? AppColor.cMain.withAlpha(12) : AppColors.neutral50,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
             color: isActive ? AppColor.cMain : AppColor.cDivider,
@@ -351,13 +351,13 @@ class _ClubItemCard extends StatelessWidget {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: isActive ? AppColor.cMain : const Color(0xFFE5E7EB),
+                color: isActive ? AppColor.cMain : AppColors.border,
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Center(
                 child: Icon(
                   Icons.sports_tennis_rounded,
-                  color: isActive ? Colors.white : const Color(0xFF4B5563),
+                  color: isActive ? Colors.white : AppColors.textSecondary,
                   size: 22,
                 ),
               ),
@@ -432,7 +432,7 @@ class _ClubItemCard extends StatelessWidget {
             if (isActive)
               const Icon(Icons.check_circle_rounded, color: AppColor.cMain, size: 22)
             else
-              const Icon(Icons.radio_button_unchecked_rounded, color: Color(0xFFD1D5DB), size: 20),
+              const Icon(Icons.radio_button_unchecked_rounded, color: AppColors.neutral300, size: 20),
           ],
         ),
       ),
@@ -442,15 +442,15 @@ class _ClubItemCard extends StatelessWidget {
   Color _getRoleColor(ClubRole role) {
     switch (role) {
       case ClubRole.host:
-        return const Color(0xFF9333EA); // Purple
+        return AppColors.roleHost;
       case ClubRole.deputy:
-        return const Color(0xFF2563EB); // Blue
+        return AppColors.roleDeputy;
       case ClubRole.treasurer:
-        return const Color(0xFFD97706); // Amber
+        return AppColors.roleTreasurer;
       case ClubRole.member:
-        return AppColor.cGreen; // Green
+        return AppColor.cGreen;
       case ClubRole.guest:
-        return const Color(0xFF6B7280); // Gray
+        return AppColors.roleGuest;
     }
   }
 }

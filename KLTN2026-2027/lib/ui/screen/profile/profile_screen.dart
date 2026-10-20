@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../app/consts/app_color.dart';
+import '../../../../app/theme/theme.dart';
 import '../../../../app/provider/localization_provider.dart';
 import '../../../../app/utils/exception_ext.dart';
 import '../../../../domain/entities/player_profile.dart';
@@ -36,19 +36,19 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   Color _getSkillColor(SkillLevel level) {
     switch (level) {
       case SkillLevel.nb:
-        return const Color(0xFF9E9E9E);
+        return AppColors.skillBeginner;
       case SkillLevel.y:
-        return const Color(0xFF8BC34A);
+        return AppColors.skillElementary;
       case SkillLevel.tby:
-        return const Color(0xFF4CAF50);
+        return AppColors.skillIntermediate;
       case SkillLevel.tb:
-        return const Color(0xFF0284C7);
+        return AppColors.skillUpperIntermediate;
       case SkillLevel.tbk:
-        return const Color(0xFF3F51B5);
+        return AppColors.skillAdvanced;
       case SkillLevel.k:
-        return const Color(0xFFF59E0B);
+        return AppColors.skillSemiPro;
       case SkillLevel.g:
-        return const Color(0xFFEF4444);
+        return AppColors.skillPro;
     }
   }
 
@@ -80,7 +80,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final profile = state.playerProfile;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: AppColors.neutral50,
       appBar: AppBar(
         backgroundColor: AppColor.white,
         elevation: 0,
@@ -358,26 +358,26 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFEF3C7),
+                  color: AppColors.warningLight,
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: const Color(0xFFFDE68A)),
+                  border: Border.all(color: AppColors.warningBorder),
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.star_rounded, size: 18, color: Color(0xFFD97706)),
+                    const Icon(Icons.star_rounded, size: 18, color: AppColors.roleTreasurer),
                     const SizedBox(width: 4),
                     Text(
                       profile.reputationScore.toStringAsFixed(1),
                       style: const TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w800,
-                        color: Color(0xFFB45309),
+                        color: AppColors.amberText,
                       ),
                     ),
                     const SizedBox(width: 4),
                     const Text(
                       'Uy tín',
-                      style: TextStyle(fontSize: 12, color: Color(0xFFB45309)),
+                      style: TextStyle(fontSize: 12, color: AppColors.amberText),
                     ),
                   ],
                 ),
@@ -487,7 +487,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               margin: const EdgeInsets.only(bottom: 8),
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               decoration: BoxDecoration(
-                color: isCurrent ? color.withValues(alpha: 0.08) : const Color(0xFFF8FAFC),
+                color: isCurrent ? color.withValues(alpha: 0.08) : AppColors.neutral50,
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(
                   color: isCurrent ? color : Colors.transparent,
@@ -713,7 +713,7 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
                 decoration: InputDecoration(
                   hintText: 'Nhập họ và tên...',
                   filled: true,
-                  fillColor: const Color(0xFFF8FAFC),
+                  fillColor: AppColors.neutral50,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                     borderSide: BorderSide.none,
@@ -759,7 +759,7 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
                     label: Text('${level.code} - ${level.displayName}'),
                     selected: isSelected,
                     selectedColor: AppColor.cMain.withValues(alpha: 0.15),
-                    backgroundColor: const Color(0xFFF1F5F9),
+                    backgroundColor: AppColors.surfaceSubtle,
                     labelStyle: TextStyle(
                       fontSize: 12,
                       fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
@@ -858,10 +858,10 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 10),
           decoration: BoxDecoration(
-            color: isSelected ? AppColor.cMain.withValues(alpha: 0.1) : const Color(0xFFF8FAFC),
+            color: isSelected ? AppColor.cMain.withValues(alpha: 0.1) : AppColors.neutral50,
             borderRadius: BorderRadius.circular(10),
             border: Border.all(
-              color: isSelected ? AppColor.cMain : const Color(0xFFE2E8F0),
+              color: isSelected ? AppColor.cMain : AppColors.border,
             ),
           ),
           child: Row(

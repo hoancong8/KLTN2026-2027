@@ -1,7 +1,7 @@
 // lib/ui/screen/club/role_management/widgets/club_role_list_view.dart
 
 import 'package:flutter/material.dart';
-import '../../../../../app/consts/app_color.dart';
+import 'package:kltn2026_2027/app/theme/theme.dart';
 import '../../../../../domain/entities/club/club_member.dart';
 import '../../../../../domain/entities/club/club_role_item.dart';
 import 'club_role_color_helper.dart';
@@ -120,7 +120,7 @@ class _ClubRoleListViewState extends State<ClubRoleListView> {
                     )
                   : null,
               filled: true,
-              fillColor: const Color(0xFFF3F4F6),
+              fillColor: AppColors.surfaceSubtle,
               contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
@@ -169,7 +169,7 @@ class _ClubRoleListViewState extends State<ClubRoleListView> {
                             border: Border.all(
                               color: isSelected
                                   ? AppColor.cMain
-                                  : const Color(0xFFE5E7EB),
+                                  : AppColors.border,
                               width: isSelected ? 1.5 : 1.0,
                             ),
                           ),
@@ -213,13 +213,13 @@ class _ClubRoleListViewState extends State<ClubRoleListView> {
                                           Container(
                                             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
                                             decoration: BoxDecoration(
-                                              color: const Color(0xFF9333EA).withValues(alpha: 0.12),
+                                              color: AppColors.roleHost.withValues(alpha: 0.12),
                                               borderRadius: BorderRadius.circular(4),
                                             ),
                                             child: const Text(
                                               'Chủ nhóm',
                                               style: TextStyle(
-                                                color: Color(0xFF9333EA),
+                                                color: AppColors.roleHost,
                                                 fontSize: 10,
                                                 fontWeight: FontWeight.bold,
                                               ),
@@ -230,13 +230,13 @@ class _ClubRoleListViewState extends State<ClubRoleListView> {
                                           Container(
                                             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
                                             decoration: BoxDecoration(
-                                              color: const Color(0xFF16A34A).withValues(alpha: 0.12),
+                                              color: AppColors.roleMember.withValues(alpha: 0.12),
                                               borderRadius: BorderRadius.circular(4),
                                             ),
                                             child: const Text(
                                               'Mặc định',
                                               style: TextStyle(
-                                                color: Color(0xFF16A34A),
+                                                color: AppColors.roleMember,
                                                 fontSize: 10,
                                                 fontWeight: FontWeight.bold,
                                               ),

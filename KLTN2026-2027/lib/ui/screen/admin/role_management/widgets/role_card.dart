@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:kltn2026_2027/app/consts/app_color.dart';
+import 'package:kltn2026_2027/app/theme/theme.dart';
 import 'package:kltn2026_2027/app/consts/permissions.dart';
 import 'package:kltn2026_2027/domain/entities/app_role.dart';
 import 'package:kltn2026_2027/widget/has_permission.dart';
@@ -24,17 +24,17 @@ class RoleCard extends StatelessWidget {
   Color _getIconColor() {
     final nameLower = role.name.toLowerCase();
     if (nameLower == 'admin' || nameLower == 'user') {
-      return const Color(0xFFE65100); // Orange
+      return AppColors.roleOrange; // Orange
     }
-    return const Color(0xFF673AB7); // Purple
+    return AppColors.roleViolet; // Purple
   }
 
   Color _getIconBackgroundColor() {
     final nameLower = role.name.toLowerCase();
     if (nameLower == 'admin' || nameLower == 'user') {
-      return const Color(0xFFFFF3E0); // Soft orange background
+      return AppColors.accentLight; // Soft orange background
     }
-    return const Color(0xFFEDE7F6); // Soft purple background
+    return AppColors.violetLight; // Soft purple background
   }
 
   @override
@@ -99,16 +99,16 @@ class RoleCard extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFE8F5E9),
+                          color: AppColors.successLight,
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: const Color(0xFFA5D6A7)),
+                          border: Border.all(color: AppColors.successBorder),
                         ),
                         child: const Text(
                           'Mặc định',
                           style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w600,
-                            color: Color(0xFF2E7D32),
+                            color: AppColors.roleMember,
                           ),
                         ),
                       ),
@@ -116,16 +116,16 @@ class RoleCard extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFFFF3E0),
+                          color: AppColors.accentLight,
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: const Color(0xFFFFCC80)),
+                          border: Border.all(color: AppColors.warningBorder),
                         ),
                         child: const Text(
                           'Hệ thống',
                           style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w600,
-                            color: Color(0xFFE65100),
+                            color: AppColors.roleOrange,
                           ),
                         ),
                       ),
@@ -144,7 +144,7 @@ class RoleCard extends StatelessWidget {
                 permission: Permissions.rolesUpdate,
                 child: IconButton(
                   onPressed: onEdit,
-                  icon: const Icon(Icons.edit_outlined, size: 20, color: Color(0xFF1976D2)),
+                  icon: const Icon(Icons.edit_outlined, size: 20, color: AppColors.info),
                   tooltip: 'Chỉnh sửa vai trò & quyền',
                   padding: const EdgeInsets.all(6),
                   constraints: const BoxConstraints(),
@@ -157,7 +157,7 @@ class RoleCard extends StatelessWidget {
                     padding: const EdgeInsets.only(left: 8),
                     child: IconButton(
                       onPressed: onDelete,
-                      icon: const Icon(Icons.delete_outline_rounded, size: 20, color: Color(0xFFE53935)),
+                      icon: const Icon(Icons.delete_outline_rounded, size: 20, color: AppColors.error),
                       tooltip: 'Xóa vai trò',
                       padding: const EdgeInsets.all(6),
                       constraints: const BoxConstraints(),

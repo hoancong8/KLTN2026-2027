@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kltn2026_2027/app/consts/app_color.dart';
+import 'package:kltn2026_2027/app/theme/theme.dart';
 import 'package:kltn2026_2027/app/consts/permissions.dart';
 import 'package:kltn2026_2027/domain/entities/app_role.dart';
 import 'package:kltn2026_2027/widget/has_permission.dart';
@@ -139,7 +139,7 @@ class _RoleManagementMobileState extends ConsumerState<RoleManagementMobile> {
     final filteredRoles = state.filteredRoles;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF9FAFB),
+      backgroundColor: AppColors.neutral50,
       appBar: AppBar(
         backgroundColor: AppColor.white,
         elevation: 0,
@@ -205,7 +205,7 @@ class _RoleManagementMobileState extends ConsumerState<RoleManagementMobile> {
                       )
                     : null,
                 filled: true,
-                fillColor: const Color(0xFFF3F4F6),
+                fillColor: AppColors.surfaceSubtle,
                 contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(20),

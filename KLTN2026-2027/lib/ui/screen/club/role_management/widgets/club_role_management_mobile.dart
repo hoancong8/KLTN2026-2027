@@ -1,7 +1,7 @@
 // lib/ui/screen/club/role_management/widgets/club_role_management_mobile.dart
 
 import 'package:flutter/material.dart';
-import '../../../../../app/consts/app_color.dart';
+import 'package:kltn2026_2027/app/theme/theme.dart';
 import '../../../../../domain/entities/club/club_member.dart';
 import '../../../../../domain/entities/club/club_role_item.dart';
 import '../../club_management_vm/club_members_vm.dart';
@@ -76,7 +76,7 @@ class _ClubRoleManagementMobileState extends State<ClubRoleManagementMobile> {
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF9FAFB),
+      backgroundColor: AppColors.neutral50,
       appBar: AppBar(
         title: const Text(
           'Vai trò & Phân quyền',

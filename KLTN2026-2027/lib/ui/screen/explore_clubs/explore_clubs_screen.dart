@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../app/consts/app_color.dart';
+import 'package:kltn2026_2027/app/theme/theme.dart';
 import '../../../app/consts/app_config.dart';
 import '../../../app/provider/localization_provider.dart';
 import '../../../app/utils/exception_ext.dart';
@@ -43,7 +43,7 @@ class _ExploreClubsScreenState extends ConsumerState<ExploreClubsScreen> {
     });
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: AppColors.neutral50,
       appBar: AppBar(
         backgroundColor: AppColor.white,
         elevation: 0,
@@ -84,7 +84,7 @@ class _ExploreClubsScreenState extends ConsumerState<ExploreClubsScreen> {
                       )
                     : null,
                 filled: true,
-                fillColor: const Color(0xFFF1F5F9),
+                fillColor: AppColors.surfaceSubtle,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide.none,
@@ -121,7 +121,7 @@ class _ExploreClubsScreenState extends ConsumerState<ExploreClubsScreen> {
                             label: Text('${r.toInt()} km'),
                             selected: state.radiusKm == r,
                             selectedColor: AppColor.cMain.withValues(alpha: 0.15),
-                            backgroundColor: const Color(0xFFF1F5F9),
+                            backgroundColor: AppColors.surfaceSubtle,
                             labelStyle: TextStyle(
                               fontSize: 11,
                               fontWeight: state.radiusKm == r ? FontWeight.w700 : FontWeight.w500,
@@ -143,17 +143,17 @@ class _ExploreClubsScreenState extends ConsumerState<ExploreClubsScreen> {
                       FilterChip(
                         label: const Text('Đang tuyển quân'),
                         selected: state.isRecruitingOnly == true,
-                        selectedColor: const Color(0xFFDCFCE7),
-                        backgroundColor: const Color(0xFFF1F5F9),
+                        selectedColor: AppColors.successLight,
+                        backgroundColor: AppColors.surfaceSubtle,
                         labelStyle: TextStyle(
                           fontSize: 11,
                           fontWeight: state.isRecruitingOnly == true ? FontWeight.w700 : FontWeight.w500,
-                          color: state.isRecruitingOnly == true ? const Color(0xFF16A34A) : AppColor.cDark,
+                          color: state.isRecruitingOnly == true ? AppColors.roleMember : AppColor.cDark,
                         ),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                           side: BorderSide(
-                            color: state.isRecruitingOnly == true ? const Color(0xFF16A34A) : Colors.transparent,
+                            color: state.isRecruitingOnly == true ? AppColors.roleMember : Colors.transparent,
                           ),
                         ),
                         onSelected: (selected) => vm.toggleRecruitingOnly(selected ? true : null),
@@ -181,7 +181,7 @@ class _ExploreClubsScreenState extends ConsumerState<ExploreClubsScreen> {
                           label: const Text('Tất cả'),
                           selected: state.selectedSkillLevel == null,
                           selectedColor: AppColor.cMain.withValues(alpha: 0.15),
-                          backgroundColor: const Color(0xFFF1F5F9),
+                          backgroundColor: AppColors.surfaceSubtle,
                           labelStyle: TextStyle(
                             fontSize: 11,
                             fontWeight: state.selectedSkillLevel == null ? FontWeight.w700 : FontWeight.w500,
@@ -203,7 +203,7 @@ class _ExploreClubsScreenState extends ConsumerState<ExploreClubsScreen> {
                             label: Text(skill.code),
                             selected: state.selectedSkillLevel == skill,
                             selectedColor: AppColor.cMain.withValues(alpha: 0.15),
-                            backgroundColor: const Color(0xFFF1F5F9),
+                            backgroundColor: AppColors.surfaceSubtle,
                             labelStyle: TextStyle(
                               fontSize: 11,
                               fontWeight: state.selectedSkillLevel == skill ? FontWeight.w700 : FontWeight.w500,

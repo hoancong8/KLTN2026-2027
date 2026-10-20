@@ -68,7 +68,7 @@ class ClubDetailViewModel extends StateNotifier<ClubDetailState> {
       await loadDetail();
       state = state.copyWith(
         isSubmitting: false,
-        successMessage: 'Đã gửi yêu cầu gia nhập CLB thành công! Chờ duyệt nhé! 🎉',
+        successMessage: 'Đã gửi yêu cầu gia nhập CLB thành công! Chờ duyệt nhé!',
       );
       return true;
     } on AppException catch (e) {
@@ -131,7 +131,7 @@ class ClubDetailViewModel extends StateNotifier<ClubDetailState> {
       await loadDetail();
       state = state.copyWith(
         isSubmitting: false,
-        successMessage: 'Cập nhật thông tin CLB thành công! 🎉',
+        successMessage: 'Cập nhật thông tin CLB thành công!',
       );
       return true;
     } on AppException catch (e) {
@@ -153,7 +153,7 @@ class ClubDetailViewModel extends StateNotifier<ClubDetailState> {
       await loadDetail();
       state = state.copyWith(
         isSubmitting: false,
-        successMessage: 'Cập nhật lịch tuần CLB thành công! 🎉',
+        successMessage: 'Cập nhật lịch tuần CLB thành công!',
       );
       return true;
     } on AppException catch (e) {

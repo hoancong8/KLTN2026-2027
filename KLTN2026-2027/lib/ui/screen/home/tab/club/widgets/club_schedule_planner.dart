@@ -450,9 +450,9 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
 
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFC),
+        color: AppColors.background,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        border: Border.all(color: AppColors.border),
       ),
       padding: const EdgeInsets.all(12),
       child: Column(
@@ -463,7 +463,7 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
             children: [
               IconButton(
                 icon: const Icon(Icons.chevron_left_rounded),
-                color: isAtCurrentMonth ? const Color(0xFFCBD5E1) : AppColor.cTitle,
+                color: isAtCurrentMonth ? AppColors.borderStrong : AppColor.cTitle,
                 onPressed: isAtCurrentMonth ? null : _goToPreviousMonth,
                 splashRadius: 20,
               ),
@@ -531,7 +531,7 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
                           color: isSunday
-                              ? const Color(0xFFE11D48)
+                              ? AppColors.roleRose
                               : AppColor.cMuted,
                         ),
                       ),
@@ -542,7 +542,7 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
             }),
           ),
 
-          const Divider(height: 12, color: Color(0xFFE2E8F0)),
+          const Divider(height: 12, color: AppColors.border),
 
           // Calendar Grid (Dates: 1..30/31)
           GridView.builder(
@@ -590,7 +590,7 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
                           ? AppColor.cMain
                           : isToday
                               ? AppColor.cMain
-                              : const Color(0xFFE2E8F0),
+                              : AppColors.border,
                       width: isSelected ? 1.8 : (isToday ? 1.5 : 1),
                     ),
                     boxShadow: isSelected
@@ -617,7 +617,7 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
                             size: 13,
                             color: isSelected
                                 ? AppColor.cMain
-                                : const Color(0xFFCBD5E1),
+                                : AppColors.borderStrong,
                           ),
                           Text(
                             '$dayNumber',
@@ -630,7 +630,7 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
                                   ? AppColor.cMain
                                   : isToday
                                       ? AppColor.cMain
-                                      : const Color(0xFF1E293B),
+                                      : AppColors.neutral800,
                             ),
                           ),
                         ],
@@ -727,9 +727,9 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF1F5F9),
+                  color: AppColors.surfaceSubtle,
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: const Color(0xFFCBD5E1)),
+                  border: Border.all(color: AppColors.borderStrong),
                 ),
                 child: Text(
                   dayName,
@@ -775,9 +775,9 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         decoration: BoxDecoration(
-          color: const Color(0xFFF1F5F9),
+          color: AppColors.surfaceSubtle,
           borderRadius: BorderRadius.circular(6),
-          border: Border.all(color: const Color(0xFFCBD5E1)),
+          border: Border.all(color: AppColors.borderStrong),
         ),
         child: Text(
           title,
@@ -795,7 +795,7 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
   Widget _buildTimeModeSelector(int selectedCount) {
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFFF1F5F9),
+        color: AppColors.surfaceSubtle,
         borderRadius: BorderRadius.circular(10),
       ),
       padding: const EdgeInsets.all(3),
@@ -826,10 +826,10 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
                   borderRadius: BorderRadius.circular(8),
                   boxShadow: _timeMode == ScheduleTimeMode.fixed
                       ? [
-                          const BoxShadow(
-                            color: Color(0x10000000),
+                          BoxShadow(
+                            color: AppColors.black.withValues(alpha: 0.06),
                             blurRadius: 4,
-                            offset: Offset(0, 1),
+                            offset: const Offset(0, 1),
                           )
                         ]
                       : null,
@@ -878,10 +878,10 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
                   borderRadius: BorderRadius.circular(8),
                   boxShadow: _timeMode == ScheduleTimeMode.custom
                       ? [
-                          const BoxShadow(
-                            color: Color(0x10000000),
+                          BoxShadow(
+                            color: AppColors.black.withValues(alpha: 0.06),
                             blurRadius: 4,
-                            offset: Offset(0, 1),
+                            offset: const Offset(0, 1),
                           )
                         ]
                       : null,
@@ -925,9 +925,9 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFC),
+        color: AppColors.background,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        border: Border.all(color: AppColors.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -949,8 +949,8 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
                   color: isValid
-                      ? const Color(0xFFDCFCE7)
-                      : const Color(0xFFFEE2E2),
+                      ? AppColors.successContainer
+                      : AppColors.errorContainer,
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
@@ -958,7 +958,7 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.bold,
-                    color: isValid ? const Color(0xFF16A34A) : AppColor.cRed,
+                    color: isValid ? AppColors.success : AppColor.cRed,
                   ),
                 ),
               ),
@@ -1010,7 +1010,7 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: const Color(0xFFE2E8F0)),
+              border: Border.all(color: AppColors.border),
             ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -1050,9 +1050,9 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
         width: double.infinity,
         padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
         decoration: BoxDecoration(
-          color: const Color(0xFFF8FAFC),
+          color: AppColors.background,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFFE2E8F0)),
+          border: Border.all(color: AppColors.border),
         ),
         child: const Column(
           children: [
@@ -1109,12 +1109,12 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
             margin: const EdgeInsets.only(bottom: 10),
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: const Color(0xFFF8FAFC),
+              color: AppColors.background,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
                 color: isValid
-                    ? const Color(0xFFE2E8F0)
-                    : const Color(0xFFFCA5A5),
+                    ? AppColors.border
+                    : AppColors.errorBorder,
               ),
             ),
             child: Column(
@@ -1205,8 +1205,8 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
                       ),
                       decoration: BoxDecoration(
                         color: isValid
-                            ? const Color(0xFFDCFCE7)
-                            : const Color(0xFFFEE2E2),
+                            ? AppColors.successContainer
+                            : AppColors.errorContainer,
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
@@ -1215,7 +1215,7 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
                           fontSize: 10,
                           fontWeight: FontWeight.bold,
                           color: isValid
-                              ? const Color(0xFF16A34A)
+                              ? AppColors.success
                               : AppColor.cRed,
                         ),
                       ),
@@ -1278,7 +1278,7 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: const Color(0xFFCBD5E1)),
+          border: Border.all(color: AppColors.borderStrong),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

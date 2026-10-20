@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../app/consts/app_color.dart';
+import 'package:kltn2026_2027/app/theme/theme.dart';
 import '../../../../domain/usecases/session/session_usecases.dart';
 import '../session_vm/club_sessions_vm.dart';
 
@@ -124,7 +124,7 @@ class _CreateSessionDialogState extends ConsumerState<CreateSessionDialog> {
         Navigator.of(context).pop(sessionId);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Tạo buổi chơi thành công 🎉'),
+            content: Text('Tạo buổi chơi thành công'),
             backgroundColor: AppColor.cMain,
           ),
         );
@@ -310,7 +310,7 @@ class _CreateSessionDialogState extends ConsumerState<CreateSessionDialog> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF1F5F9),
+                    color: AppColors.surfaceSubtle,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Row(

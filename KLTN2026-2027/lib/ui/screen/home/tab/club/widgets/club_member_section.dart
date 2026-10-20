@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../../../app/consts/app_color.dart';
+import 'package:kltn2026_2027/app/theme/theme.dart';
 import '../../../../../../app/provider.dart';
 import '../../../../../../domain/entities/club/club_member.dart';
 import '../../../../../../domain/entities/user_profile.dart';
@@ -121,7 +121,7 @@ class _ClubMemberSectionState extends ConsumerState<ClubMemberSection> {
               hintStyle: const TextStyle(fontSize: 13, color: AppColor.cMuted),
               prefixIcon: const Icon(Icons.search, size: 18, color: AppColor.cMuted),
               filled: true,
-              fillColor: const Color(0xFFF2F3F5),
+              fillColor: AppColors.surfaceSubtle,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
                 borderSide: BorderSide.none,
@@ -142,14 +142,14 @@ class _ClubMemberSectionState extends ConsumerState<ClubMemberSection> {
                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [Color(0xFF8B5CF6), Color(0xFF6D28D9)],
+                    colors: [AppColors.roleViolet, AppColors.roleHost],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFF6D28D9).withValues(alpha: 0.25),
+                      color: AppColors.roleHost.withValues(alpha: 0.25),
                       blurRadius: 8,
                       offset: const Offset(0, 3),
                     ),
@@ -197,14 +197,14 @@ class _ClubMemberSectionState extends ConsumerState<ClubMemberSection> {
               : ListView(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                   children: [
-                    if (hosts.isNotEmpty) _buildRoleGroup('👑 CHỦ CÂU LẠC BỘ', hosts, const Color(0xFF9333EA), currentProfile),
-                    if (deputies.isNotEmpty) _buildRoleGroup('⭐ PHÓ NHÓM', deputies, const Color(0xFF2563EB), currentProfile),
-                    if (treasurers.isNotEmpty) _buildRoleGroup('💰 THỦ QUỸ', treasurers, const Color(0xFFD97706), currentProfile),
+                    if (hosts.isNotEmpty) _buildRoleGroup('CHỦ CÂU LẠC BỘ', hosts, AppColors.roleHost, currentProfile),
+                    if (deputies.isNotEmpty) _buildRoleGroup('PHÓ NHÓM', deputies, AppColors.roleDeputy, currentProfile),
+                    if (treasurers.isNotEmpty) _buildRoleGroup('THỦ QUỸ', treasurers, AppColors.roleTreasurer, currentProfile),
                     ...customGroups.entries.map(
-                      (e) => _buildRoleGroup('🎖️ ${e.key.toUpperCase()}', e.value, const Color(0xFF0D9488), currentProfile),
+                      (e) => _buildRoleGroup(e.key.toUpperCase(), e.value, AppColors.roleTeal, currentProfile),
                     ),
-                    if (regularMembers.isNotEmpty) _buildRoleGroup('🏸 THÀNH VIÊN CHÍNH THỨC', regularMembers, AppColor.cMain, currentProfile),
-                    if (guests.isNotEmpty) _buildRoleGroup('👤 KHÁCH VÃNG LAI', guests, const Color(0xFF6B7280), currentProfile),
+                    if (regularMembers.isNotEmpty) _buildRoleGroup('THÀNH VIÊN CHÍNH THỨC', regularMembers, AppColor.cMain, currentProfile),
+                    if (guests.isNotEmpty) _buildRoleGroup('KHÁCH VÃNG LAI', guests, AppColors.roleGuest, currentProfile),
                     const SizedBox(height: 16),
                   ],
                 ),
@@ -245,7 +245,7 @@ class _ClubMemberSectionState extends ConsumerState<ClubMemberSection> {
       margin: const EdgeInsets.symmetric(vertical: 3.5),
       padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 8.5),
       decoration: BoxDecoration(
-        color: isMe ? const Color(0xFFF0FDF4) : AppColor.white,
+        color: isMe ? AppColors.primaryContainer : AppColor.white,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: isMe ? AppColor.cMain.withValues(alpha: 0.6) : AppColor.cDivider,
@@ -320,7 +320,7 @@ class _ClubMemberSectionState extends ConsumerState<ClubMemberSection> {
                         style: TextStyle(
                           fontSize: 13.5,
                           fontWeight: isMe ? FontWeight.w700 : FontWeight.w600,
-                          color: isMe ? const Color(0xFF0F172A) : AppColor.cTitle,
+                          color: isMe ? AppColors.neutral900 : AppColor.cTitle,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -332,14 +332,14 @@ class _ClubMemberSectionState extends ConsumerState<ClubMemberSection> {
                         padding: const EdgeInsets.symmetric(horizontal: 6.5, vertical: 2),
                         decoration: BoxDecoration(
                           gradient: const LinearGradient(
-                            colors: [Color(0xFF10B981), Color(0xFF059669)],
+                            colors: [AppColors.success, AppColors.primaryDark],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           ),
                           borderRadius: BorderRadius.circular(6),
                           boxShadow: [
                             BoxShadow(
-                              color: const Color(0xFF10B981).withValues(alpha: 0.35),
+                              color: AppColors.success.withValues(alpha: 0.35),
                               blurRadius: 4,
                               offset: const Offset(0, 1),
                             ),
@@ -365,7 +365,7 @@ class _ClubMemberSectionState extends ConsumerState<ClubMemberSection> {
                     ],
                     if (m.role == ClubRole.host) ...[
                       const SizedBox(width: 4),
-                      const Icon(Icons.star_rounded, size: 14, color: Color(0xFF9333EA)),
+                      const Icon(Icons.star_rounded, size: 14, color: AppColors.roleHost),
                     ],
                   ],
                 ),
