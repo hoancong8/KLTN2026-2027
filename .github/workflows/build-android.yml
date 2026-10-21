@@ -31,14 +31,15 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-          cache: 'gradle'
 
       - name: 🐦 Set up Flutter
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
-          cache: true
-          cache-key: 'flutter-:os:-:channel:-:version:-:arch:-:hash:'
+          cache: false
+
+      - name: 🧹 Dọn dẹp cache Flutter
+        run: flutter clean
 
       - name: 📦 Cài đặt dependencies
         run: flutter pub get
@@ -54,7 +55,10 @@ jobs:
           ENV: ${{ secrets.ENV || 'prod' }}
           BASE_URL: ${{ secrets.BASE_URL }}
         run: |
-          CMD="flutter build apk --release --dart-define=ENV=${ENV}"
+          BUILD_NUMBER="${{ github.run_number }}"
+          BUILD_NAME="1.1.${{ github.run_number }}"
+          
+          CMD="flutter build apk --release --build-name=${BUILD_NAME} --build-number=${BUILD_NUMBER} --dart-define=ENV=${ENV}"
           
           if [ -n "${BASE_URL}" ]; then
             CMD="$CMD --dart-define=BASE_URL=${BASE_URL}"
@@ -62,10 +66,17 @@ jobs:
           
           echo "Executing: $CMD"
           eval $CMD
+          
+          # Đổi tên file APK theo số build và commit SHA ngắn để tránh nhầm lẫn khi tải về
+          SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
+          APK_NAME="sipm-v${BUILD_NAME}-b${BUILD_NUMBER}-${SHORT_SHA}.apk"
+          cp build/app/outputs/flutter-apk/app-release.apk "build/app/outputs/flutter-apk/${APK_NAME}"
 
       - name: 📤 Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: flutter-android-apk
-          path: KLTN2026-2027/build/app/outputs/flutter-apk/*.apk
+          name: sipm-apk-r${{ github.run_number }}
+          path: |
+            KLTN2026-2027/build/app/outputs/flutter-apk/sipm-*.apk
+            KLTN2026-2027/build/app/outputs/flutter-apk/app-release.apk
           retention-days: 14

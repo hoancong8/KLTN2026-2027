@@ -42,8 +42,10 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
-          cache: true
-          cache-key: 'flutter-:os:-:channel:-:version:-:arch:-:hash:'
+          cache: false
+
+      - name: 🧹 Dọn dẹp cache Flutter
+        run: flutter clean
 
       - name: 📦 Cài đặt dependencies
         run: flutter pub get
