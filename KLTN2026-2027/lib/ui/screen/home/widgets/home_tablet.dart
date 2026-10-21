@@ -2,45 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kltn2026_2027/app/consts/app_config.dart';
-import 'package:kltn2026_2027/app/consts/app_color.dart';
 import 'package:kltn2026_2027/app/consts/permissions.dart';
 import 'package:kltn2026_2027/app/provider.dart';
-import 'package:kltn2026_2027/ui/screen/home/tab/club/my_clubs_page.dart';
-import 'package:kltn2026_2027/ui/screen/home/tab/dashboard/dashboard_page.dart';
-import 'package:kltn2026_2027/ui/screen/home/tab/report/report_page.dart';
-import 'package:kltn2026_2027/ui/screen/home/tab/settings/settings_page.dart';
-import 'package:kltn2026_2027/ui/screen/home/tab/explore/explore_recruitments_page.dart';
-import '../home_vm/home_vm.dart';
-import '../../admin/role_management/role_management_screen.dart';
-import '../../admin/user_management/user_management_screen.dart';
-import '../../club/club_management_screen.dart';
-import '../../club/club_vm/club_context_vm.dart';
-import '../../../../widget/club_switcher_dialog.dart';
-import '../../../../app/provider/localization_provider.dart';
-
-/// Model định nghĩa từng mục Menu Navigation kèm Quyền & Màn hình
-class NavigationItem {
-  final String title;
-  final IconData icon;
-  final String? permission; // null = public, hoặc chuỗi quyền cụ thể
-  final Widget page;
-  final String? badge;
-  final Color? badgeColor;
-
-  const NavigationItem({
-    required this.title,
-    required this.icon,
-    this.permission,
-    required this.page,
-    this.badge,
-    this.badgeColor,
-  });
-}
+import 'package:kltn2026_2027/app/provider/localization_provider.dart';
+import 'package:kltn2026_2027/app/theme/theme.dart';
+import 'package:kltn2026_2027/ui/screen/club/club_vm/club_context_vm.dart';
+import 'package:kltn2026_2027/widget/club_switcher_dialog.dart';
+import 'home_nav_destination.dart';
 
 class HomeTablet extends ConsumerStatefulWidget {
   final PageController pageController;
   final Function(int) onTabSelected;
   final List<Widget> pages;
+  final List<HomeNavDestination> destinations;
   final Key? pageViewKey;
 
   const HomeTablet({
@@ -48,6 +22,7 @@ class HomeTablet extends ConsumerStatefulWidget {
     required this.pageController,
     required this.onTabSelected,
     required this.pages,
+    required this.destinations,
     this.pageViewKey,
   });
 
@@ -57,69 +32,14 @@ class HomeTablet extends ConsumerStatefulWidget {
 
 class _HomeTabletState extends ConsumerState<HomeTablet> {
   bool _isCollapsed = false;
-  int _activeItemIndex = 0;
-
-  /// Toàn bộ danh mục Menu hệ thống
-  List<NavigationItem> _getAllNavItems() {
-    return [
-      const NavigationItem(
-        title: 'Dashboard',
-        icon: Icons.grid_view_rounded,
-        permission: null,
-        page: DashboardPage(),
-      ),
-      const NavigationItem(
-        title: 'Nhóm của tôi',
-        icon: Icons.groups_rounded,
-        permission: null,
-        page: MyClubsPage(),
-      ),
-      const NavigationItem(
-        title: 'Kèo giao lưu',
-        icon: Icons.radar_rounded,
-        permission: null,
-        page: ExploreRecruitmentsPage(),
-      ),
-      const NavigationItem(
-        title: 'Quản lý Câu lạc bộ',
-        icon: Icons.groups_outlined,
-        permission: Permissions.clubsRead,
-        page: ClubManagementScreen(),
-      ),
-      const NavigationItem(
-        title: 'Quản lý Người dùng',
-        icon: Icons.people_outline_rounded,
-        permission: Permissions.usersRead,
-        page: UserManagementScreen(),
-      ),
-      const NavigationItem(
-        title: 'Quản lý vai trò',
-        icon: Icons.shield_outlined,
-        permission: Permissions.rolesRead,
-        page: RoleManagementScreen(),
-      ),
-      const NavigationItem(
-        title: 'Thống kê Nền tảng',
-        icon: Icons.bar_chart_rounded,
-        permission: null,
-        page: ReportPage(),
-      ),
-      const NavigationItem(
-        title: 'Hồ sơ cá nhân',
-        icon: Icons.person_outline_rounded,
-        permission: null,
-        page: SettingsPage(),
-      ),
-    ];
-  }
 
   @override
   Widget build(BuildContext context) {
     final token = ref.watch(authTokenProvider);
     final userProfile = ref.watch(currentUserProfileProvider);
-    final unreadCount = 0; // Get unread count from providers
+    final tabIndex = ref.watch(homeTabProvider);
 
-    // 0. Nếu token không tồn tại (chưa đăng nhập hoặc session mất) -> chuyển về Login
+    // 0. Neu chua dang nhap -> chuyen huong ve Login
     if (token == null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
@@ -127,28 +47,30 @@ class _HomeTabletState extends ConsumerState<HomeTablet> {
         }
       });
       return const Scaffold(
-        backgroundColor: AppColor.white,
+        backgroundColor: AppColors.surface,
         body: Center(
-          child: CircularProgressIndicator(color: AppColor.cMain),
+          child: CircularProgressIndicator(color: AppColors.primary),
         ),
       );
     }
 
-    // 1. Nếu đang trong quá trình nạp thông tin User Profile ban đầu
+    // 1. Neu dang nap ho so nguoi dung
     if (userProfile == null) {
       return Scaffold(
-        backgroundColor: AppColor.white,
+        backgroundColor: AppColors.surface,
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const CircularProgressIndicator(color: AppColor.cMain),
-              const SizedBox(height: 16),
-              const Text(
+              const CircularProgressIndicator(color: AppColors.primary),
+              const SizedBox(height: AppSpacing.md),
+              Text(
                 'Đang đồng bộ phân quyền tài khoản...',
-                style: TextStyle(color: AppColor.cMuted, fontSize: 13),
+                style: AppTypography.bodySmall.copyWith(
+                  color: AppColors.textMuted,
+                ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppSpacing.sm),
               TextButton(
                 onPressed: () {
                   ref.read(currentUserProfileProvider.notifier).fetchProfile();
@@ -161,46 +83,19 @@ class _HomeTabletState extends ConsumerState<HomeTablet> {
       );
     }
 
-    // 2. Lọc danh sách item theo quyền của người dùng hiện tại
-    final allItems = _getAllNavItems();
-    final accessibleItems = allItems.where((item) {
-      if (item.permission == null || item.permission!.isEmpty) return true;
-      return ref.hasPermission(item.permission!);
-    }).toList();
-
-    // 3. Nếu User KHÔNG CÓ BẤT KỲ QUYỀN NÀO -> Hiển thị Màn hình 403 Access Denied
-    if (accessibleItems.isEmpty) {
-      return Scaffold(
-        backgroundColor: AppColor.white,
-        body: Row(
-          children: [
-            _buildSidebar(context, [], 0, unreadCount),
-            Expanded(
-              child: _buildAccessDeniedScreen(context),
-            ),
-          ],
-        ),
-      );
-    }
-
-    // 3. Đảm bảo index đang chọn không vượt quá số lượng item có quyền
-    final currentIndex = _activeItemIndex.clamp(0, accessibleItems.length - 1);
+    final currentIndex = tabIndex.clamp(0, widget.destinations.length - 1);
 
     return Scaffold(
-      backgroundColor: AppColor.white,
+      backgroundColor: AppColors.background,
       body: Row(
         children: [
-          _buildSidebar(context, accessibleItems, currentIndex, unreadCount),
+          _buildSidebar(context, currentIndex),
           Expanded(
             child: PageView(
               key: widget.pageViewKey,
               controller: widget.pageController,
-              onPageChanged: (index) {
-                if (_activeItemIndex != index) {
-                  setState(() => _activeItemIndex = index);
-                }
-              },
-              children: accessibleItems.map((item) => item.page).toList(),
+              physics: const NeverScrollableScrollPhysics(),
+              children: widget.pages,
             ),
           ),
         ],
@@ -208,14 +103,13 @@ class _HomeTabletState extends ConsumerState<HomeTablet> {
     );
   }
 
-  Widget _buildSidebar(
-    BuildContext context,
-    List<NavigationItem> items,
-    int selectedIndex,
-    int unreadCount,
-  ) {
+  Widget _buildSidebar(BuildContext context, int selectedIndex) {
     ref.watch(localizationProvider);
-    final sidebarWidth = _isCollapsed ? 76.0 : 240.0;
+    final sidebarWidth = _isCollapsed ? 76.0 : 250.0;
+    final canReadClubs = ref.hasPermission(Permissions.clubsRead);
+    final canReadUsers = ref.hasPermission(Permissions.usersRead);
+    final canReadRoles = ref.hasPermission(Permissions.rolesRead);
+    final hasAdminSection = canReadClubs || canReadUsers || canReadRoles;
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 220),
@@ -223,8 +117,10 @@ class _HomeTabletState extends ConsumerState<HomeTablet> {
       width: sidebarWidth,
       height: double.infinity,
       decoration: const BoxDecoration(
-        color: AppColor.white,
-        border: Border(right: BorderSide(color: AppColor.cDivider, width: 1)),
+        color: AppColors.surface,
+        border: Border(
+          right: BorderSide(color: AppColors.border, width: 1),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -235,59 +131,90 @@ class _HomeTabletState extends ConsumerState<HomeTablet> {
           // 2. ACTIVE CLUB SELECTOR (FR03 / FR04)
           _buildClubSelector(context),
 
-          const SizedBox(height: 8),
+          const SizedBox(height: AppSpacing.xs),
 
-          // 3. SECTION TITLE
-          if (!_isCollapsed)
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-              child: Text(
-                'HỆ THỐNG QUẢN TRỊ',
-                style: TextStyle(
-                  color: AppColor.cMuted,
-                  fontSize: 10.5,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 0.8,
-                ),
-              ),
-            ),
-
-          // 3. DYNAMIC MENU ITEMS
+          // 3. MENU ITEMS
           Expanded(
-            child: items.isEmpty
-                ? Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Text(
-                        _isCollapsed ? '' : 'Không có chức năng khả dụng',
-                        style: const TextStyle(
-                          color: AppColor.cMuted,
-                          fontSize: 12,
-                        ),
-                        textAlign: TextAlign.center,
+            child: ListView(
+              padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+              children: [
+                // SECTION: CHỨC NĂNG CHÍNH
+                if (!_isCollapsed)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.lg,
+                      vertical: AppSpacing.xs,
+                    ),
+                    child: Text(
+                      'ĐIỀU HƯỚNG CHÍNH',
+                      style: AppTypography.labelSmall.copyWith(
+                        color: AppColors.textMuted,
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.8,
                       ),
                     ),
-                  )
-                : ListView.builder(
-                    padding: const EdgeInsets.symmetric(vertical: 4),
-                    itemCount: items.length,
-                    itemBuilder: (context, index) {
-                      final item = items[index];
-                      return _buildMenuItem(
-                        icon: item.icon,
-                        title: item.title,
-                        badge: item.badge,
-                        badgeColor: item.badgeColor,
-                        isSelected: selectedIndex == index,
-                        onTap: () {
-                          setState(() => _activeItemIndex = index);
-                          if (widget.pageController.hasClients) {
-                            widget.pageController.jumpToPage(index);
-                          }
-                        },
-                      );
-                    },
                   ),
+
+                // 5 Core Destinations
+                for (int i = 0; i < widget.destinations.length; i++) ...[
+                  _buildNavItem(
+                    icon: _getIconDataForDestination(i),
+                    title: widget.destinations[i].title,
+                    isSelected: selectedIndex == i,
+                    onTap: () => widget.onTabSelected(i),
+                  ),
+                ],
+
+                // SECTION: HỆ THỐNG QUẢN TRỊ (Admin Only)
+                if (hasAdminSection) ...[
+                  const Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: AppSpacing.md,
+                      vertical: AppSpacing.xs,
+                    ),
+                    child: Divider(color: AppColors.border, height: 1),
+                  ),
+                  if (!_isCollapsed)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.lg,
+                        vertical: AppSpacing.xs,
+                      ),
+                      child: Text(
+                        'HỆ THỐNG QUẢN TRỊ',
+                        style: AppTypography.labelSmall.copyWith(
+                          color: AppColors.textMuted,
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.8,
+                        ),
+                      ),
+                    ),
+                  if (canReadClubs)
+                    _buildNavItem(
+                      icon: Icons.apartment_rounded,
+                      title: 'Quản lý Câu lạc bộ',
+                      isSelected: false,
+                      onTap: () => context.push(AppConfig.clubManagementPath),
+                    ),
+                  if (canReadUsers)
+                    _buildNavItem(
+                      icon: Icons.people_outline_rounded,
+                      title: 'Quản lý Người dùng',
+                      isSelected: false,
+                      onTap: () => context.push(AppConfig.adminUsersPath),
+                    ),
+                  if (canReadRoles)
+                    _buildNavItem(
+                      icon: Icons.shield_outlined,
+                      title: 'Quản lý Vai trò',
+                      isSelected: false,
+                      onTap: () => context.push(AppConfig.adminRolesPath),
+                    ),
+                ],
+              ],
+            ),
           ),
 
           // 4. FOOTER: VERSION & COLLAPSE TOGGLE
@@ -295,6 +222,23 @@ class _HomeTabletState extends ConsumerState<HomeTablet> {
         ],
       ),
     );
+  }
+
+  IconData _getIconDataForDestination(int index) {
+    switch (index) {
+      case 0:
+        return Icons.dashboard_rounded;
+      case 1:
+        return Icons.groups_rounded;
+      case 2:
+        return Icons.explore_rounded;
+      case 3:
+        return Icons.bar_chart_rounded;
+      case 4:
+        return Icons.settings_rounded;
+      default:
+        return Icons.circle_outlined;
+    }
   }
 
   Widget _buildClubSelector(BuildContext context) {
@@ -307,34 +251,46 @@ class _HomeTabletState extends ConsumerState<HomeTablet> {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         child: IconButton(
           tooltip: '$activeClubName ($roleName)',
-          icon: const Icon(Icons.sports_tennis_rounded, color: AppColor.cMain),
+          icon: const Icon(Icons.sports_tennis_rounded, color: AppColors.primary),
           onPressed: () => ClubSwitcherDialog.show(context),
         ),
       );
     }
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      margin: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.xs,
+      ),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: AppSpacing.xs,
+      ),
       decoration: BoxDecoration(
-        color: AppColor.cChip,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: AppColor.cMain.withValues(alpha: 0.2)),
+        color: AppColors.surfaceSubtle,
+        borderRadius: BorderRadius.circular(AppRadius.md),
+        border: Border.all(
+          color: AppColors.primary.withValues(alpha: 0.2),
+        ),
       ),
       child: InkWell(
         onTap: () => ClubSwitcherDialog.show(context),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(AppRadius.sm),
         child: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                color: AppColor.cMain.withValues(alpha: 0.15),
+              padding: const EdgeInsets.all(AppSpacing.xs),
+              decoration: const BoxDecoration(
+                color: AppColors.primaryContainer,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.sports_tennis_rounded, color: AppColor.cMain, size: 16),
+              child: const Icon(
+                Icons.sports_tennis_rounded,
+                color: AppColors.primary,
+                size: 16,
+              ),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: AppSpacing.sm),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -342,26 +298,29 @@ class _HomeTabletState extends ConsumerState<HomeTablet> {
                 children: [
                   Text(
                     activeClubName,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: AppColor.cTitle,
+                    style: AppTypography.labelMedium.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textPrimary,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                   Text(
                     roleName,
-                    style: const TextStyle(
-                      fontSize: 10,
+                    style: AppTypography.labelSmall.copyWith(
                       fontWeight: FontWeight.w600,
-                      color: AppColor.cMain,
+                      color: AppColors.primary,
+                      fontSize: 11,
                     ),
                   ),
                 ],
               ),
             ),
-            const Icon(Icons.swap_horiz_rounded, size: 16, color: AppColor.cMuted),
+            const Icon(
+              Icons.swap_horiz_rounded,
+              size: 16,
+              color: AppColors.textMuted,
+            ),
           ],
         ),
       ),
@@ -371,25 +330,24 @@ class _HomeTabletState extends ConsumerState<HomeTablet> {
   Widget _buildHeader() {
     return Container(
       padding: EdgeInsets.symmetric(
-        horizontal: _isCollapsed ? 16 : 18,
-        vertical: 18,
+        horizontal: _isCollapsed ? AppSpacing.md : AppSpacing.lg,
+        vertical: AppSpacing.lg,
       ),
       child: Row(
         children: [
-          // Green Brand Icon
           Container(
             width: 36,
             height: 36,
             decoration: BoxDecoration(
               gradient: const LinearGradient(
-                colors: [AppColor.cGreen_50, AppColor.cMain],
+                colors: [AppColors.success, AppColors.primary],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(AppRadius.md),
               boxShadow: [
                 BoxShadow(
-                  color: AppColor.cMain.withValues(alpha: 0.25),
+                  color: AppColors.primary.withValues(alpha: 0.25),
                   blurRadius: 8,
                   offset: const Offset(0, 2),
                 ),
@@ -399,7 +357,7 @@ class _HomeTabletState extends ConsumerState<HomeTablet> {
               child: Text(
                 'G',
                 style: TextStyle(
-                  color: AppColor.white,
+                  color: AppColors.white,
                   fontWeight: FontWeight.w900,
                   fontSize: 20,
                 ),
@@ -407,30 +365,28 @@ class _HomeTabletState extends ConsumerState<HomeTablet> {
             ),
           ),
           if (!_isCollapsed) ...[
-            const SizedBox(width: 12),
-            const Expanded(
+            const SizedBox(width: AppSpacing.md),
+            Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
                     'GIG PORTAL',
-                    style: TextStyle(
-                      color: AppColor.cTitle,
-                      fontSize: 14.5,
+                    style: AppTypography.titleSmall.copyWith(
+                      color: AppColors.textPrimary,
                       fontWeight: FontWeight.w800,
                       letterSpacing: 0.5,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  SizedBox(height: 2),
                   Text(
-                    'SPORTS MANAGEMENT',
-                    style: TextStyle(
-                      color: AppColor.cMuted,
-                      fontSize: 9.5,
+                    'QUẢN LÝ CẦU LÔNG',
+                    style: AppTypography.labelSmall.copyWith(
+                      color: AppColors.textMuted,
                       fontWeight: FontWeight.w600,
+                      fontSize: 9.5,
                       letterSpacing: 0.8,
                     ),
                     maxLines: 1,
@@ -445,85 +401,65 @@ class _HomeTabletState extends ConsumerState<HomeTablet> {
     );
   }
 
-  Widget _buildMenuItem({
+  Widget _buildNavItem({
     required IconData icon,
     required String title,
     required bool isSelected,
     required VoidCallback onTap,
-    String? badge,
-    Color? badgeColor,
   }) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 2.5),
+      margin: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: 2.5,
+      ),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(8),
-        splashColor: AppColor.cMain.withValues(alpha: 0.1),
-        highlightColor: AppColor.cMain.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(AppRadius.md),
+        splashColor: AppColors.primary.withValues(alpha: 0.1),
+        highlightColor: AppColors.primary.withValues(alpha: 0.05),
         child: Container(
           decoration: BoxDecoration(
-            color: isSelected ? AppColor.cChip : Colors.transparent,
-            borderRadius: BorderRadius.circular(8),
+            color: isSelected ? AppColors.primaryContainer : Colors.transparent,
+            borderRadius: BorderRadius.circular(AppRadius.md),
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: AppSpacing.sm + 2,
+          ),
           child: Row(
             children: [
-              // Left Active Indicator Bar
               if (isSelected)
                 Container(
                   width: 3.5,
                   height: 20,
-                  margin: const EdgeInsets.only(right: 10),
+                  margin: const EdgeInsets.only(right: AppSpacing.sm),
                   decoration: BoxDecoration(
-                    color: AppColor.cMain,
-                    borderRadius: BorderRadius.circular(3),
+                    color: AppColors.primary,
+                    borderRadius: BorderRadius.circular(AppRadius.sm),
                   ),
                 )
               else if (!_isCollapsed)
                 const SizedBox(width: 0),
 
-              // Icon
               Icon(
                 icon,
                 size: 20,
-                color: isSelected ? AppColor.cMain : AppColor.cMuted,
+                color: isSelected ? AppColors.primary : AppColors.textSecondary,
               ),
 
-              // Title Text
               if (!_isCollapsed) ...[
-                const SizedBox(width: 12),
+                const SizedBox(width: AppSpacing.md),
                 Expanded(
                   child: Text(
                     title,
-                    style: TextStyle(
-                      color: isSelected ? AppColor.cMain : AppColor.cTitle,
-                      fontSize: 13,
+                    style: AppTypography.bodySmall.copyWith(
+                      color: isSelected ? AppColors.primary : AppColors.textPrimary,
                       fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                // Badge
-                if (badge != null)
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 7,
-                      vertical: 2,
-                    ),
-                    decoration: BoxDecoration(
-                      color: badgeColor ?? AppColor.cMain,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Text(
-                      badge,
-                      style: const TextStyle(
-                        color: AppColor.white,
-                        fontSize: 10,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                  ),
               ],
             ],
           ),
@@ -532,75 +468,16 @@ class _HomeTabletState extends ConsumerState<HomeTablet> {
     );
   }
 
-  /// Màn hình thông báo 403 Forbidden khi không có bất kỳ quyền nào
-  Widget _buildAccessDeniedScreen(BuildContext context) {
-    return Center(
-      child: Container(
-        constraints: const BoxConstraints(maxWidth: 420),
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(
-                color: AppColor.cAlert.withValues(alpha: 0.1),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.lock_person_outlined,
-                size: 40,
-                color: AppColor.cAlert,
-              ),
-            ),
-            const SizedBox(height: 24),
-            const Text(
-              'Không có quyền truy cập',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: AppColor.cTitle,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 10),
-            const Text(
-              'Tài khoản của bạn chưa được cấp quyền truy cập vào bất kỳ chức năng nào trong hệ thống.\nVui lòng liên hệ Quản trị viên để được phân quyền.',
-              style: TextStyle(
-                fontSize: 13.5,
-                color: AppColor.cMuted,
-                height: 1.5,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 28),
-            ElevatedButton.icon(
-              onPressed: () {
-                ref.read(homeViewModelProvider.notifier).logout();
-              },
-              icon: const Icon(Icons.logout_rounded, size: 18),
-              label: const Text('Đăng xuất'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColor.cAlert,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _buildFooter() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.md,
+      ),
       decoration: const BoxDecoration(
-        border: Border(top: BorderSide(color: AppColor.cDivider, width: 1)),
+        border: Border(
+          top: BorderSide(color: AppColors.border, width: 1),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -612,16 +489,16 @@ class _HomeTabletState extends ConsumerState<HomeTablet> {
                   width: 6,
                   height: 6,
                   decoration: const BoxDecoration(
-                    color: AppColor.cMain,
+                    color: AppColors.success,
                     shape: BoxShape.circle,
                   ),
                 ),
-                const SizedBox(width: 8),
-                const Expanded(
+                const SizedBox(width: AppSpacing.xs),
+                Expanded(
                   child: Text(
-                    'GIG Platform v2.4',
-                    style: TextStyle(
-                      color: AppColor.cMuted,
+                    'KLTN Mobile v2.0',
+                    style: AppTypography.labelSmall.copyWith(
+                      color: AppColors.textMuted,
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
                     ),
@@ -631,7 +508,7 @@ class _HomeTabletState extends ConsumerState<HomeTablet> {
                 ),
               ],
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: AppSpacing.sm),
           ],
           InkWell(
             onTap: () {
@@ -639,7 +516,7 @@ class _HomeTabletState extends ConsumerState<HomeTablet> {
                 _isCollapsed = !_isCollapsed;
               });
             },
-            borderRadius: BorderRadius.circular(6),
+            borderRadius: BorderRadius.circular(AppRadius.sm),
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 4),
               child: Row(
@@ -651,15 +528,15 @@ class _HomeTabletState extends ConsumerState<HomeTablet> {
                     _isCollapsed
                         ? Icons.chevron_right_rounded
                         : Icons.chevron_left_rounded,
-                    color: AppColor.cMuted,
+                    color: AppColors.textMuted,
                     size: 18,
                   ),
                   if (!_isCollapsed) ...[
-                    const SizedBox(width: 8),
-                    const Text(
+                    const SizedBox(width: AppSpacing.sm),
+                    Text(
                       'Thu gọn Sidebar',
-                      style: TextStyle(
-                        color: AppColor.cMuted,
+                      style: AppTypography.labelSmall.copyWith(
+                        color: AppColors.textMuted,
                         fontSize: 11.5,
                         fontWeight: FontWeight.w500,
                       ),

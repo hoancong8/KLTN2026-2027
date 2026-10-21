@@ -1,15 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kltn2026_2027/app/consts/app_color.dart';
 import 'package:kltn2026_2027/app/provider.dart';
-import 'package:kltn2026_2027/ui/screen/home/tab/report/report_page.dart';
+import 'package:kltn2026_2027/app/theme/theme.dart';
 import 'package:kltn2026_2027/ui/screen/home/widgets/home_mobile.dart';
+import 'package:kltn2026_2027/ui/screen/home/widgets/home_nav_destination.dart';
 import 'package:kltn2026_2027/ui/screen/home/widgets/home_tablet.dart';
-
 import '../../../widget/responsive_layout.dart';
-import 'tab/club/my_clubs_page.dart';
-import 'tab/dashboard/dashboard_page.dart';
-import 'tab/settings/settings_page.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -30,7 +26,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) return;
 
-      // Tự động tải thông tin user & permissions nếu Riverpod chưa có (vd: sau khi reload trang)
+      // Tự động tải thông tin user & permissions nếu Riverpod chưa có
       if (ref.read(currentUserProfileProvider) == null) {
         await ref.read(currentUserProfileProvider.notifier).fetchProfile();
       }
@@ -47,6 +43,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final currentIndex = ref.read(homeTabProvider);
     ref.read(homeTabProvider.notifier).state = index;
 
+    if (!_pageController.hasClients) return;
+
     // Nếu khoảng cách > 1 tab, dùng jumpToPage để không chạy qua các tab ở giữa
     if ((index - currentIndex).abs() > 1) {
       _pageController.jumpToPage(index);
@@ -61,12 +59,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final pages = [
-      const DashboardPage(),
-      const MyClubsPage(),
-      const ReportPage(),
-      const SettingsPage(),
-    ];
+    final destinations = getHomeNavDestinations(context);
+    final pages = destinations.map((d) => d.page).toList();
 
     return Theme(
       data: _buildTheme(context),
@@ -76,12 +70,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           pageController: _pageController,
           onTabSelected: _onTabSelected,
           pages: pages,
+          destinations: destinations,
         ),
         tablet: HomeTablet(
           pageViewKey: _pageViewKey,
           pageController: _pageController,
           onTabSelected: _onTabSelected,
           pages: pages,
+          destinations: destinations,
         ),
       ),
     );
@@ -91,65 +87,61 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final baseTheme = Theme.of(context);
 
     return baseTheme.copyWith(
-      scaffoldBackgroundColor: AppColor.white,
+      scaffoldBackgroundColor: AppColors.background,
       colorScheme: baseTheme.colorScheme.copyWith(
-        primary: AppColor.cMain,
-        surface: AppColor.white,
+        primary: AppColors.primary,
+        surface: AppColors.surface,
       ),
       navigationBarTheme: NavigationBarThemeData(
-        backgroundColor: AppColor.white,
-        indicatorColor: AppColor.cMain.withAlpha(30),
+        backgroundColor: AppColors.surface,
+        indicatorColor: AppColors.primaryContainer,
+        elevation: 0,
+        height: 68,
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
-            return const TextStyle(
+            return AppTypography.labelSmall.copyWith(
               fontWeight: FontWeight.w700,
-              fontSize: 12,
-              color: AppColor.cMain,
+              color: AppColors.primary,
             );
           }
-          return const TextStyle(
+          return AppTypography.labelSmall.copyWith(
             fontWeight: FontWeight.w500,
-            fontSize: 12,
-            color: AppColor.cMuted,
+            color: AppColors.textSecondary,
           );
         }),
         iconTheme: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
-            return const IconThemeData(color: AppColor.cMain, size: 24);
+            return const IconThemeData(color: AppColors.primary, size: 24);
           }
-          return const IconThemeData(color: AppColor.cMuted, size: 24);
+          return const IconThemeData(color: AppColors.textSecondary, size: 24);
         }),
-        elevation: 0,
-        height: 65,
       ),
       navigationRailTheme: NavigationRailThemeData(
-        backgroundColor: AppColor.white,
-        indicatorColor: AppColor.cMain.withAlpha(38),
+        backgroundColor: AppColors.surface,
+        indicatorColor: AppColors.primaryContainer,
         groupAlignment: -1,
         labelType: NavigationRailLabelType.all,
-        selectedLabelTextStyle: const TextStyle(
+        selectedLabelTextStyle: AppTypography.labelSmall.copyWith(
           fontWeight: FontWeight.w700,
-          fontSize: 11,
-          color: AppColor.cMain,
+          color: AppColors.primary,
         ),
-        unselectedLabelTextStyle: const TextStyle(
+        unselectedLabelTextStyle: AppTypography.labelSmall.copyWith(
           fontWeight: FontWeight.w500,
-          fontSize: 11,
-          color: AppColor.cMuted,
+          color: AppColors.textSecondary,
         ),
-        selectedIconTheme: const IconThemeData(color: AppColor.cMain, size: 24),
+        selectedIconTheme: const IconThemeData(color: AppColors.primary, size: 24),
         unselectedIconTheme: const IconThemeData(
-          color: AppColor.cMuted,
+          color: AppColors.textSecondary,
           size: 24,
         ),
       ),
-      dividerColor: AppColor.cDivider,
+      dividerColor: AppColors.border,
       cardTheme: CardThemeData(
-        color: AppColor.white,
+        color: AppColors.surface,
         elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: const BorderRadius.all(Radius.circular(18)),
-          side: BorderSide(color: AppColor.cDivider.withAlpha(100)),
+          borderRadius: BorderRadius.all(Radius.circular(AppRadius.lg)),
+          side: const BorderSide(color: AppColors.border),
         ),
       ),
     );

@@ -1,7 +1,8 @@
 {
   "@@locale": "en",
-
-  "@_COMMON_": { "description": "===== GENERAL STRINGS =====" },
+  "@_COMMON_": {
+    "description": "===== GENERAL STRINGS ====="
+  },
   "com_success": "Success",
   "com_confirm": "Confirm",
   "com_cancel": "Cancel",
@@ -26,8 +27,9 @@
   "com_good_afternoon": "Good afternoon",
   "com_good_evening": "Good evening",
   "com_have_a_productive_day": "Have a productive day!",
-
-  "@_ERROR_": { "description": "===== SYSTEM & NETWORK ERRORS =====" },
+  "@_ERROR_": {
+    "description": "===== SYSTEM & NETWORK ERRORS ====="
+  },
   "error_unknown": "An unknown error occurred",
   "error_network": "Cannot connect to server",
   "error_connection_timeout": "Connection timeout",
@@ -42,15 +44,16 @@
   "error_forbidden_action": "You do not have permission to perform this action.",
   "error_not_found": "Requested resource not found.",
   "error_session_expired": "Session expired, please login again.",
-
-  "@_AUTH_": { "description": "===== AUTHENTICATION =====" },
+  "@_AUTH_": {
+    "description": "===== AUTHENTICATION ====="
+  },
   "auth_login": "Login",
   "auth_login_success": "Login successful",
   "auth_login_failed": "Login failed",
   "auth_logout": "Logout",
   "auth_logout_success": "Logout successful",
   "auth_account_security": "Account Security",
-  "auth_change_password" : "Change assword",
+  "auth_change_password": "Change assword",
   "auth_change_password_hint": "Change your login password",
   "auth_logging_in": "Logging in...",
   "auth_logging_out": "Logging out...",
@@ -103,7 +106,9 @@
   "auth_biometric_error_unknown": "Biometric authentication error: {error}",
   "@auth_biometric_error_unknown": {
     "placeholders": {
-      "error": { "type": "String" }
+      "error": {
+        "type": "String"
+      }
     }
   },
   "auth_biometric_title": "Biometrics",
@@ -126,8 +131,9 @@
   "auth_session_expired_title": "Session Expired",
   "auth_session_expired_message": "Your session has expired. Please log in again to continue.",
   "auth_login_again": "Log in again",
-
-  "@_PROFILE_": { "description": "===== USER PROFILE =====" },
+  "@_PROFILE_": {
+    "description": "===== USER PROFILE ====="
+  },
   "prof_title": "Profile",
   "prof_update": "Update Profile",
   "prof_basic_info": "Basic Information",
@@ -147,8 +153,9 @@
   "prof_position": "Position",
   "prof_saving": "Saving information...",
   "prof_not_updated": "Not updated",
-
-  "@_REPORT_": { "description": "===== REPORT & STATISTICS =====" },
+  "@_REPORT_": {
+    "description": "===== REPORT & STATISTICS ====="
+  },
   "rep_title": "Report",
   "rep_dashboard": "Dashboard",
   "rep_revenue_report": "Revenue report",
@@ -163,8 +170,9 @@
   "rep_revenue_over_time": "Revenue over time",
   "rep_operating_cost_analysis": "Operating cost analysis",
   "rep_performance_analysis": "Performance analysis",
-
-  "@_SETTING_": { "description": "===== SETTINGS & SYSTEM =====" },
+  "@_SETTING_": {
+    "description": "===== SETTINGS & SYSTEM ====="
+  },
   "set_title": "Setting",
   "set_account": "Account",
   "set_account_subtitle": "User info, permissions",
@@ -184,6 +192,20 @@
   "set_projects": "Projects",
   "set_results_for": "Results for: {query}",
   "@set_results_for": {
-    "placeholders": { "query": { "type": "String" } }
-  }
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "@_NAVIGATION_": {
+    "description": "===== NAVIGATION BAR ====="
+  },
+  "nav_home": "Home",
+  "nav_clubs": "Clubs",
+  "nav_explore": "Explore",
+  "nav_report": "Reports",
+  "nav_settings": "Settings",
+  "explore_tab_recruitments": "Matches",
+  "explore_tab_clubs": "Nearby Clubs"
 }

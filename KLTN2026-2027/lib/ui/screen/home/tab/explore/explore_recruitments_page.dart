@@ -9,7 +9,12 @@ import '../../../../../domain/enums/session_enums.dart';
 import '../../../club/session_vm/explore_recruitments_vm.dart';
 
 class ExploreRecruitmentsPage extends ConsumerWidget {
-  const ExploreRecruitmentsPage({super.key});
+  final bool isEmbedded;
+
+  const ExploreRecruitmentsPage({
+    super.key,
+    this.isEmbedded = false,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -18,7 +23,9 @@ class ExploreRecruitmentsPage extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: AppColors.neutral50,
-      appBar: AppBar(
+      appBar: isEmbedded
+          ? null
+          : AppBar(
         title: const Row(
           children: [
             Icon(Icons.radar_rounded, color: AppColors.roleViolet, size: 24),
