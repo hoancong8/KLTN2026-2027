@@ -1,195 +1,220 @@
-import 'package:flutter/material.dart';
+// lib/ui/screen/home/tab/dashboard/dashboard_vm/dashboard_vm.dart
+
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:kltn2026_2027/app/provider.dart';
-import 'package:kltn2026_2027/app/theme/theme.dart';
-import 'package:kltn2026_2027/domain/usecases/venue/get_venue_recommendations_usecase.dart';
+import 'package:kltn2026_2027/domain/entities/club/explore_club.dart';
+import 'package:kltn2026_2027/domain/entities/club/my_club.dart';
+import 'package:kltn2026_2027/domain/entities/player_profile.dart';
+import 'package:kltn2026_2027/domain/entities/session/guest_recruitment.dart';
+import 'package:kltn2026_2027/domain/entities/session/my_booking_item.dart';
+import 'package:kltn2026_2027/domain/services/i_location_service.dart';
+import 'package:kltn2026_2027/domain/usecases/club/explore_clubs_usecase.dart';
+import 'package:kltn2026_2027/domain/usecases/club/get_my_clubs_usecase.dart';
+import 'package:kltn2026_2027/domain/usecases/session/get_my_bookings_usecase.dart';
+import 'package:kltn2026_2027/domain/usecases/session/session_usecases.dart';
+import 'package:kltn2026_2027/domain/usecases/user/get_player_profile_usecase.dart';
 import 'dashboard_state.dart';
 
 final dashboardViewModelProvider =
-    StateNotifierProvider.autoDispose<DashboardViewModel, DashboardState>((
-      ref,
-    ) {
-      final getVenueRecommendationsUseCase =
-          ref.watch(getVenueRecommendationsUseCaseProvider);
-      return DashboardViewModel(
-        getVenueRecommendationsUseCase: getVenueRecommendationsUseCase,
-      );
-    });
+    StateNotifierProvider.autoDispose<DashboardViewModel, DashboardState>((ref) {
+  final getPlayerProfileUseCase = ref.watch(getPlayerProfileUseCaseProvider);
+  final getMyBookingsUseCase = ref.watch(getMyBookingsUseCaseProvider);
+  final exploreRecruitmentsUseCase = ref.watch(exploreRecruitmentsUseCaseProvider);
+  final exploreClubsUseCase = ref.watch(exploreClubsUseCaseProvider);
+  final getMyClubsUseCase = ref.watch(getMyClubsUseCaseProvider);
+  final joinRecruitmentUseCase = ref.watch(joinRecruitmentUseCaseProvider);
+  final locationService = ref.watch(locationServiceProvider);
+
+  return DashboardViewModel(
+    getPlayerProfileUseCase: getPlayerProfileUseCase,
+    getMyBookingsUseCase: getMyBookingsUseCase,
+    exploreRecruitmentsUseCase: exploreRecruitmentsUseCase,
+    exploreClubsUseCase: exploreClubsUseCase,
+    getMyClubsUseCase: getMyClubsUseCase,
+    joinRecruitmentUseCase: joinRecruitmentUseCase,
+    locationService: locationService,
+  );
+});
 
 class DashboardViewModel extends StateNotifier<DashboardState> {
-  final GetVenueRecommendationsUseCase _getVenueRecommendationsUseCase;
+  final GetPlayerProfileUseCase _getPlayerProfileUseCase;
+  final GetMyBookingsUseCase _getMyBookingsUseCase;
+  final ExploreRecruitmentsUseCase _exploreRecruitmentsUseCase;
+  final ExploreClubsUseCase _exploreClubsUseCase;
+  final GetMyClubsUseCase _getMyClubsUseCase;
+  final JoinRecruitmentUseCase _joinRecruitmentUseCase;
+  final ILocationService _locationService;
 
   DashboardViewModel({
-    required GetVenueRecommendationsUseCase getVenueRecommendationsUseCase,
-  })  : _getVenueRecommendationsUseCase = getVenueRecommendationsUseCase,
+    required GetPlayerProfileUseCase getPlayerProfileUseCase,
+    required GetMyBookingsUseCase getMyBookingsUseCase,
+    required ExploreRecruitmentsUseCase exploreRecruitmentsUseCase,
+    required ExploreClubsUseCase exploreClubsUseCase,
+    required GetMyClubsUseCase getMyClubsUseCase,
+    required JoinRecruitmentUseCase joinRecruitmentUseCase,
+    required ILocationService locationService,
+  })  : _getPlayerProfileUseCase = getPlayerProfileUseCase,
+        _getMyBookingsUseCase = getMyBookingsUseCase,
+        _exploreRecruitmentsUseCase = exploreRecruitmentsUseCase,
+        _exploreClubsUseCase = exploreClubsUseCase,
+        _getMyClubsUseCase = getMyClubsUseCase,
+        _joinRecruitmentUseCase = joinRecruitmentUseCase,
+        _locationService = locationService,
         super(const DashboardState()) {
-    _initMockData();
-    fetchRecommendedVenues();
-  }
-
-  void _initMockData() {
-    state = state.copyWith(
-      quickActions: const [
-        QuickActionItem(
-          id: 'booking',
-          title: 'Đặt sân',
-          icon: Icons.calendar_today_outlined,
-          bgColor: AppColors.primaryContainer,
-          iconColor: AppColors.success,
-        ),
-        QuickActionItem(
-          id: 'matchmaking',
-          title: 'Ghép trận',
-          icon: Icons.people_outline,
-          bgColor: AppColors.tealLight,
-          iconColor: AppColors.teal,
-        ),
-        QuickActionItem(
-          id: 'schedule',
-          title: 'Lịch của tôi',
-          icon: Icons.emoji_events_outlined,
-          bgColor: AppColors.infoLight,
-          iconColor: AppColors.info,
-        ),
-        QuickActionItem(
-          id: 'favorite',
-          title: 'Yêu thích',
-          icon: Icons.favorite_border,
-          bgColor: AppColors.pinkLight,
-          iconColor: AppColors.pink,
-        ),
-      ],
-      categories: const [
-        SportCategoryItem(id: 'badminton', name: 'Cầu lông', icon: Icons.sports_tennis, isSelected: true),
-        SportCategoryItem(id: 'pickleball', name: 'Pickleball', icon: Icons.sports_baseball),
-        SportCategoryItem(id: 'tennis', name: 'Tennis', icon: Icons.sports_tennis),
-        SportCategoryItem(id: 'football', name: 'Bóng đá', icon: Icons.sports_soccer),
-        SportCategoryItem(id: 'basketball', name: 'Bóng rổ', icon: Icons.sports_basketball),
-      ],
-      venues: const [
-        VenueItem(
-          id: 'v1',
-          name: 'ABC Sport Center',
-          categories: 'BADMINTON • PICKLEBALL • TENNIS',
-          address: '123 Nguyễn Thị Minh Khai, Q.3, TP. Hồ Chí Minh',
-          rating: 4.9,
-          distance: '1.2 km',
-          priceText: 'Từ 80k/h →',
-          imageUrl: 'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=400',
-          isFavorite: false,
-        ),
-        VenueItem(
-          id: 'v2',
-          name: 'Smash Badminton Club',
-          categories: 'BADMINTON',
-          address: '45 Lê Văn Sỹ, Q. Phú Nhuận, TP. Hồ Chí Minh',
-          rating: 4.8,
-          distance: '2.5 km',
-          priceText: 'Từ 70k/h →',
-          imageUrl: 'https://images.unsplash.com/photo-1521537634581-0dced2efa2a3?w=400',
-          isFavorite: true,
-        ),
-      ],
-    );
-  }
-
-  bool _isGuid(String? val) {
-    if (val == null) return false;
-    return RegExp(
-      r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$',
-    ).hasMatch(val);
-  }
-
-  Future<void> fetchRecommendedVenues({
-    String? sportTypeId,
-    double? latitude,
-    double? longitude,
-  }) async {
-    if (!mounted) return;
-    state = state.copyWith(isLoadingVenues: true);
-    try {
-      final effectiveSportTypeId = _isGuid(sportTypeId) ? sportTypeId : null;
-
-      final result = await _getVenueRecommendationsUseCase.execute(
-        latitude: latitude,
-        longitude: longitude,
-        sportTypeId: effectiveSportTypeId,
-        pageNumber: 1,
-        pageSize: 20,
-      );
-
-      final venueItems = result.items.map((entity) {
-        final sportNames = entity.sportTypes.isNotEmpty
-            ? entity.sportTypes.map((s) => s.name.toUpperCase()).join(' • ')
-            : 'THỂ THAO';
-
-        final distanceStr = entity.distanceKm != null
-            ? '${entity.distanceKm!.toStringAsFixed(1)} km'
-            : '';
-
-        final priceStr = entity.minPricePerHour != null
-            ? 'Từ ${(entity.minPricePerHour! / 1000).toInt()}k/h →'
-            : 'Xem chi tiết →';
-
-        return VenueItem(
-          id: entity.idVenue,
-          name: entity.nameVenue,
-          categories: sportNames,
-          address: entity.address,
-          rating: entity.averageRating,
-          distance: distanceStr,
-          priceText: priceStr,
-          imageUrl: entity.primaryImageUrl ?? '',
-          isFavorite: entity.isFavourite,
-        );
-      }).toList();
-
-      if (!mounted) return;
-      state = state.copyWith(
-        isLoadingVenues: false,
-        venues: venueItems.isNotEmpty ? venueItems : state.venues,
-      );
-    } catch (e) {
-      if (!mounted) return;
-      state = state.copyWith(
-        isLoadingVenues: false,
-        error: e.toString(),
-      );
-    }
+    loadData();
   }
 
   Future<void> loadData() async {
     if (!mounted) return;
-    state = state.copyWith(isLoading: true, error: null);
+    state = state.copyWith(isLoading: true, clearError: true);
+
     try {
-      await fetchRecommendedVenues(sportTypeId: state.selectedSportTypeId);
+      final loc = await _locationService.getCurrentLocation();
+
+      final results = await Future.wait([
+        _fetchProfile(),
+        _fetchUpcomingBookings(),
+        _fetchNearbyRecruitments(loc.latitude, loc.longitude),
+        _fetchNearbyClubs(loc.latitude, loc.longitude),
+        _fetchMyClubs(),
+      ]);
+
       if (!mounted) return;
-      state = state.copyWith(isLoading: false);
+      state = state.copyWith(
+        isLoading: false,
+        playerProfile: results[0] as PlayerProfile?,
+        upcomingBookings: results[1] as List<MyBookingItem>,
+        nearbyRecruitments: results[2] as List<GuestRecruitment>,
+        nearbyClubs: results[3] as List<ExploreClub>,
+        myClubs: results[4] as List<MyClub>,
+      );
     } catch (e) {
       if (!mounted) return;
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: e.toString(),
+      );
     }
   }
 
-  void toggleFavorite(String venueId) {
-    final updatedVenues = state.venues.map((v) {
-      if (v.id == venueId) {
-        return v.copyWith(isFavorite: !v.isFavorite);
-      }
-      return v;
-    }).toList();
-    state = state.copyWith(venues: updatedVenues);
+  Future<void> refreshData() async {
+    if (!mounted) return;
+    state = state.copyWith(isRefreshing: true, clearError: true);
+
+    try {
+      final loc = await _locationService.getCurrentLocation();
+
+      final results = await Future.wait([
+        _fetchProfile(),
+        _fetchUpcomingBookings(),
+        _fetchNearbyRecruitments(loc.latitude, loc.longitude),
+        _fetchNearbyClubs(loc.latitude, loc.longitude),
+        _fetchMyClubs(),
+      ]);
+
+      if (!mounted) return;
+      state = state.copyWith(
+        isRefreshing: false,
+        playerProfile: results[0] as PlayerProfile?,
+        upcomingBookings: results[1] as List<MyBookingItem>,
+        nearbyRecruitments: results[2] as List<GuestRecruitment>,
+        nearbyClubs: results[3] as List<ExploreClub>,
+        myClubs: results[4] as List<MyClub>,
+      );
+    } catch (e) {
+      if (!mounted) return;
+      state = state.copyWith(
+        isRefreshing: false,
+        errorMessage: e.toString(),
+      );
+    }
   }
 
-  void selectCategory(String categoryId) {
-    final updatedCategories = state.categories.map((c) {
-      return c.copyWith(isSelected: c.id == categoryId);
-    }).toList();
-    final newSelectedSportTypeId = categoryId == state.selectedSportTypeId ? null : categoryId;
+  Future<PlayerProfile?> _fetchProfile() async {
+    try {
+      return await _getPlayerProfileUseCase.execute();
+    } catch (_) {
+      return state.playerProfile;
+    }
+  }
+
+  Future<List<MyBookingItem>> _fetchUpcomingBookings() async {
+    try {
+      final list = await _getMyBookingsUseCase.execute();
+      return list.where((b) => b.isUpcoming).toList();
+    } catch (_) {
+      return state.upcomingBookings;
+    }
+  }
+
+  Future<List<GuestRecruitment>> _fetchNearbyRecruitments(
+    double lat,
+    double lng,
+  ) async {
+    try {
+      final list = await _exploreRecruitmentsUseCase.execute(
+        latitude: lat,
+        longitude: lng,
+        radiusKm: 15.0,
+      );
+      return list.where((r) => r.isActive).toList();
+    } catch (_) {
+      return state.nearbyRecruitments;
+    }
+  }
+
+  Future<List<ExploreClub>> _fetchNearbyClubs(
+    double lat,
+    double lng,
+  ) async {
+    try {
+      return await _exploreClubsUseCase.execute(
+        ExploreClubsParams(
+          latitude: lat,
+          longitude: lng,
+          radiusKm: 15.0,
+        ),
+      );
+    } catch (_) {
+      return state.nearbyClubs;
+    }
+  }
+
+  Future<List<MyClub>> _fetchMyClubs() async {
+    try {
+      return await _getMyClubsUseCase.execute();
+    } catch (_) {
+      return state.myClubs;
+    }
+  }
+
+  Future<bool> joinRecruitment(String recruitmentId) async {
+    if (!mounted) return false;
     state = state.copyWith(
-      categories: updatedCategories,
-      selectedSportTypeId: newSelectedSportTypeId,
+      joiningRecruitmentId: recruitmentId,
+      clearError: true,
     );
-    fetchRecommendedVenues(sportTypeId: newSelectedSportTypeId);
+
+    try {
+      await _joinRecruitmentUseCase.execute(recruitmentId);
+      final loc = await _locationService.getCurrentLocation();
+      final freshRecruitments = await _fetchNearbyRecruitments(loc.latitude, loc.longitude);
+      final freshBookings = await _fetchUpcomingBookings();
+
+      if (!mounted) return true;
+      state = state.copyWith(
+        clearJoiningId: true,
+        nearbyRecruitments: freshRecruitments,
+        upcomingBookings: freshBookings,
+      );
+      return true;
+    } catch (e) {
+      if (!mounted) return false;
+      state = state.copyWith(
+        clearJoiningId: true,
+        errorMessage: e.toString(),
+      );
+      return false;
+    }
   }
 }

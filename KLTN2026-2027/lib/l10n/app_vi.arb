@@ -368,5 +368,65 @@
   "club_max_skill_level": "Trình độ tối đa",
   "club_recruiting_status": "Trạng thái tuyển quân",
   "club_copy_code_success": "Đã sao chép mã nhóm!",
-  "club_no_description": "Chưa có mô tả cho nhóm này"
+  "club_no_description": "Chưa có mô tả cho nhóm này",
+  "home_my_schedule": "Lịch của tôi",
+  "home_find_match": "Kèo giao lưu",
+  "home_my_clubs": "CLB của tôi",
+  "home_explore_clubs": "Khám phá CLB",
+  "home_upcoming_sessions": "Buổi chơi sắp tới",
+  "home_no_upcoming_sessions": "Bạn chưa có lịch chơi sắp tới",
+  "home_find_matches_now": "Tìm kèo ngay",
+  "home_radar_recruitments": "Kèo giao lưu quanh bạn",
+  "home_nearby_clubs": "Câu lạc bộ gần bạn",
+  "home_slots_remaining": "Còn {count} slot",
+  "@home_slots_remaining": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "home_slots_needed": "Cần {count} người",
+  "@home_slots_needed": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "home_cost_per_person": "{cost} / người",
+  "@home_cost_per_person": {
+    "placeholders": {
+      "cost": {
+        "type": "String"
+      }
+    }
+  },
+  "home_stat_clubs": "CLB",
+  "home_stat_sessions": "Buổi sắp tới",
+  "home_stat_reputation": "Uy tín",
+  "home_open_guest": "Nhận kèo",
+  "home_queue_order": "Hàng đợi #{order}",
+  "@home_queue_order": {
+    "placeholders": {
+      "order": {
+        "type": "int"
+      }
+    }
+  },
+  "home_join_match": "Ghép kèo",
+  "home_joined_match_success": "Đăng ký slot giao lưu thành công!",
+  "home_syncing_permissions": "Đang đồng bộ phân quyền tài khoản...",
+  "home_retry": "Thử lại",
+  "home_skill_level_label": "Trình độ",
+  "home_distance_km": "{distance} km",
+  "@home_distance_km": {
+    "placeholders": {
+      "distance": {
+        "type": "String"
+      }
+    }
+  },
+  "home_recruiting_badge": "Tuyển quân",
+  "home_search_hint": "Tìm kiếm câu lạc bộ, sân đấu..."
 }

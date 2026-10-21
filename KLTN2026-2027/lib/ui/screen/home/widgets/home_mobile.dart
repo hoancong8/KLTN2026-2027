@@ -1,3 +1,5 @@
+// lib/ui/screen/home/widgets/home_mobile.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -28,17 +30,18 @@ class HomeMobile extends ConsumerWidget {
     final token = ref.watch(authTokenProvider);
     final userProfile = ref.watch(currentUserProfileProvider);
     final tabIndex = ref.watch(homeTabProvider);
-    ref.watch(localizationProvider);
+    final colors = context.colors;
+    final l10n = context.l10n;
 
     // 0. Neu chua co token -> dieu huong ve Login
     if (token == null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         context.go(AppConfig.loginPath);
       });
-      return const Scaffold(
-        backgroundColor: AppColors.surface,
+      return Scaffold(
+        backgroundColor: colors.surface,
         body: Center(
-          child: CircularProgressIndicator(color: AppColors.primary),
+          child: CircularProgressIndicator(color: colors.primary),
         ),
       );
     }
@@ -46,17 +49,17 @@ class HomeMobile extends ConsumerWidget {
     // 1. Neu dang nap thong tin nguoi dung ban dau
     if (userProfile == null) {
       return Scaffold(
-        backgroundColor: AppColors.surface,
+        backgroundColor: colors.surface,
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const CircularProgressIndicator(color: AppColors.primary),
+              CircularProgressIndicator(color: colors.primary),
               const SizedBox(height: AppSpacing.md),
               Text(
-                'Đang đồng bộ phân quyền tài khoản...',
+                l10n.home_syncing_permissions,
                 style: AppTypography.bodySmall.copyWith(
-                  color: AppColors.textMuted,
+                  color: colors.textMuted,
                 ),
               ),
               const SizedBox(height: AppSpacing.sm),
@@ -64,7 +67,10 @@ class HomeMobile extends ConsumerWidget {
                 onPressed: () {
                   ref.read(currentUserProfileProvider.notifier).fetchProfile();
                 },
-                child: const Text('Thử lại'),
+                child: Text(
+                  l10n.home_retry,
+                  style: TextStyle(color: colors.primary),
+                ),
               ),
             ],
           ),
@@ -76,7 +82,7 @@ class HomeMobile extends ConsumerWidget {
     final currentIndex = tabIndex.clamp(0, destinations.length - 1);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colors.background,
       body: PageView(
         key: pageViewKey,
         controller: pageController,
@@ -84,17 +90,17 @@ class HomeMobile extends ConsumerWidget {
         children: pages,
       ),
       bottomNavigationBar: Container(
-        decoration: const BoxDecoration(
-          color: AppColors.surface,
+        decoration: BoxDecoration(
+          color: colors.surface,
           border: Border(
-            top: BorderSide(color: AppColors.border, width: 1),
+            top: BorderSide(color: colors.divider, width: 1),
           ),
         ),
         child: NavigationBar(
           selectedIndex: currentIndex,
           onDestinationSelected: onTabSelected,
-          backgroundColor: AppColors.surface,
-          indicatorColor: AppColors.primaryContainer,
+          backgroundColor: colors.surface,
+          indicatorColor: colors.primaryContainer,
           elevation: 0,
           height: 68,
           destinations: destinations.map((item) {

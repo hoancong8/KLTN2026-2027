@@ -85,63 +85,64 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   ThemeData _buildTheme(BuildContext context) {
     final baseTheme = Theme.of(context);
+    final colors = context.colors;
 
     return baseTheme.copyWith(
-      scaffoldBackgroundColor: AppColors.background,
+      scaffoldBackgroundColor: colors.background,
       colorScheme: baseTheme.colorScheme.copyWith(
-        primary: AppColors.primary,
-        surface: AppColors.surface,
+        primary: colors.primary,
+        surface: colors.surface,
       ),
       navigationBarTheme: NavigationBarThemeData(
-        backgroundColor: AppColors.surface,
-        indicatorColor: AppColors.primaryContainer,
+        backgroundColor: colors.surface,
+        indicatorColor: colors.primaryContainer,
         elevation: 0,
         height: 68,
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
             return AppTypography.labelSmall.copyWith(
               fontWeight: FontWeight.w700,
-              color: AppColors.primary,
+              color: colors.primary,
             );
           }
           return AppTypography.labelSmall.copyWith(
             fontWeight: FontWeight.w500,
-            color: AppColors.textSecondary,
+            color: colors.textSecondary,
           );
         }),
         iconTheme: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
-            return const IconThemeData(color: AppColors.primary, size: 24);
+            return IconThemeData(color: colors.primary, size: 24);
           }
-          return const IconThemeData(color: AppColors.textSecondary, size: 24);
+          return IconThemeData(color: colors.textSecondary, size: 24);
         }),
       ),
       navigationRailTheme: NavigationRailThemeData(
-        backgroundColor: AppColors.surface,
-        indicatorColor: AppColors.primaryContainer,
+        backgroundColor: colors.surface,
+        indicatorColor: colors.primaryContainer,
         groupAlignment: -1,
         labelType: NavigationRailLabelType.all,
         selectedLabelTextStyle: AppTypography.labelSmall.copyWith(
           fontWeight: FontWeight.w700,
-          color: AppColors.primary,
+          color: colors.primary,
         ),
         unselectedLabelTextStyle: AppTypography.labelSmall.copyWith(
           fontWeight: FontWeight.w500,
-          color: AppColors.textSecondary,
+          color: colors.textSecondary,
         ),
-        selectedIconTheme: const IconThemeData(color: AppColors.primary, size: 24),
-        unselectedIconTheme: const IconThemeData(
-          color: AppColors.textSecondary,
+        selectedIconTheme: IconThemeData(color: colors.primary, size: 24),
+        unselectedIconTheme: IconThemeData(
+          color: colors.textSecondary,
           size: 24,
         ),
       ),
-      dividerColor: AppColors.border,
+      dividerColor: colors.divider,
       cardTheme: CardThemeData(
-        color: AppColors.surface,
+        color: colors.cardBackground,
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(AppRadius.lg)),
-          side: const BorderSide(color: AppColors.border),
+          side: BorderSide(color: colors.cardBorder),
         ),
       ),
     );

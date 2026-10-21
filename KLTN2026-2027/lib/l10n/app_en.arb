@@ -368,5 +368,65 @@
   "club_max_skill_level": "Maximum Skill Level",
   "club_recruiting_status": "Recruitment Status",
   "club_copy_code_success": "Club code copied!",
-  "club_no_description": "No description available for this club"
+  "club_no_description": "No description available for this club",
+  "home_my_schedule": "My Schedule",
+  "home_find_match": "Find Matches",
+  "home_my_clubs": "My Clubs",
+  "home_explore_clubs": "Explore Clubs",
+  "home_upcoming_sessions": "Upcoming Sessions",
+  "home_no_upcoming_sessions": "You have no upcoming sessions",
+  "home_find_matches_now": "Find Matches Now",
+  "home_radar_recruitments": "Matches Around You",
+  "home_nearby_clubs": "Clubs Near You",
+  "home_slots_remaining": "{count} slots left",
+  "@home_slots_remaining": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "home_slots_needed": "Need {count} players",
+  "@home_slots_needed": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "home_cost_per_person": "{cost} / player",
+  "@home_cost_per_person": {
+    "placeholders": {
+      "cost": {
+        "type": "String"
+      }
+    }
+  },
+  "home_stat_clubs": "Clubs",
+  "home_stat_sessions": "Upcoming",
+  "home_stat_reputation": "Reputation",
+  "home_open_guest": "Open for Guest",
+  "home_queue_order": "Queue #{order}",
+  "@home_queue_order": {
+    "placeholders": {
+      "order": {
+        "type": "int"
+      }
+    }
+  },
+  "home_join_match": "Join Match",
+  "home_joined_match_success": "Joined match successfully!",
+  "home_syncing_permissions": "Syncing account permissions...",
+  "home_retry": "Retry",
+  "home_skill_level_label": "Skill Level",
+  "home_distance_km": "{distance} km",
+  "@home_distance_km": {
+    "placeholders": {
+      "distance": {
+        "type": "String"
+      }
+    }
+  },
+  "home_recruiting_badge": "Recruiting",
+  "home_search_hint": "Search clubs, venues..."
 }

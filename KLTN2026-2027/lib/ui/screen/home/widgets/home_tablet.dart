@@ -1,3 +1,5 @@
+// lib/ui/screen/home/widgets/home_tablet.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -38,6 +40,8 @@ class _HomeTabletState extends ConsumerState<HomeTablet> {
     final token = ref.watch(authTokenProvider);
     final userProfile = ref.watch(currentUserProfileProvider);
     final tabIndex = ref.watch(homeTabProvider);
+    final colors = context.colors;
+    final l10n = context.l10n;
 
     // 0. Neu chua dang nhap -> chuyen huong ve Login
     if (token == null) {
@@ -46,10 +50,10 @@ class _HomeTabletState extends ConsumerState<HomeTablet> {
           context.go(AppConfig.loginPath);
         }
       });
-      return const Scaffold(
-        backgroundColor: AppColors.surface,
+      return Scaffold(
+        backgroundColor: colors.surface,
         body: Center(
-          child: CircularProgressIndicator(color: AppColors.primary),
+          child: CircularProgressIndicator(color: colors.primary),
         ),
       );
     }
@@ -57,17 +61,17 @@ class _HomeTabletState extends ConsumerState<HomeTablet> {
     // 1. Neu dang nap ho so nguoi dung
     if (userProfile == null) {
       return Scaffold(
-        backgroundColor: AppColors.surface,
+        backgroundColor: colors.surface,
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const CircularProgressIndicator(color: AppColors.primary),
+              CircularProgressIndicator(color: colors.primary),
               const SizedBox(height: AppSpacing.md),
               Text(
-                'Đang đồng bộ phân quyền tài khoản...',
+                l10n.home_syncing_permissions,
                 style: AppTypography.bodySmall.copyWith(
-                  color: AppColors.textMuted,
+                  color: colors.textMuted,
                 ),
               ),
               const SizedBox(height: AppSpacing.sm),
@@ -75,7 +79,10 @@ class _HomeTabletState extends ConsumerState<HomeTablet> {
                 onPressed: () {
                   ref.read(currentUserProfileProvider.notifier).fetchProfile();
                 },
-                child: const Text('Thử lại'),
+                child: Text(
+                  l10n.home_retry,
+                  style: TextStyle(color: colors.primary),
+                ),
               ),
             ],
           ),
@@ -86,7 +93,7 @@ class _HomeTabletState extends ConsumerState<HomeTablet> {
     final currentIndex = tabIndex.clamp(0, widget.destinations.length - 1);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colors.background,
       body: Row(
         children: [
           _buildSidebar(context, currentIndex),
@@ -105,6 +112,7 @@ class _HomeTabletState extends ConsumerState<HomeTablet> {
 
   Widget _buildSidebar(BuildContext context, int selectedIndex) {
     ref.watch(localizationProvider);
+    final colors = context.colors;
     final sidebarWidth = _isCollapsed ? 76.0 : 250.0;
     final canReadClubs = ref.hasPermission(Permissions.clubsRead);
     final canReadUsers = ref.hasPermission(Permissions.usersRead);
@@ -116,17 +124,17 @@ class _HomeTabletState extends ConsumerState<HomeTablet> {
       curve: Curves.easeInOut,
       width: sidebarWidth,
       height: double.infinity,
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
+      decoration: BoxDecoration(
+        color: colors.surface,
         border: Border(
-          right: BorderSide(color: AppColors.border, width: 1),
+          right: BorderSide(color: colors.divider, width: 1),
         ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // 1. BRAND / LOGO HEADER
-          _buildHeader(),
+          _buildHeader(context),
 
           // 2. ACTIVE CLUB SELECTOR (FR03 / FR04)
           _buildClubSelector(context),
@@ -148,7 +156,7 @@ class _HomeTabletState extends ConsumerState<HomeTablet> {
                     child: Text(
                       'ĐIỀU HƯỚNG CHÍNH',
                       style: AppTypography.labelSmall.copyWith(
-                        color: AppColors.textMuted,
+                        color: colors.textMuted,
                         fontSize: 10.5,
                         fontWeight: FontWeight.w700,
                         letterSpacing: 0.8,
@@ -159,6 +167,7 @@ class _HomeTabletState extends ConsumerState<HomeTablet> {
                 // 5 Core Destinations
                 for (int i = 0; i < widget.destinations.length; i++) ...[
                   _buildNavItem(
+                    context,
                     icon: _getIconDataForDestination(i),
                     title: widget.destinations[i].title,
                     isSelected: selectedIndex == i,
@@ -168,12 +177,12 @@ class _HomeTabletState extends ConsumerState<HomeTablet> {
 
                 // SECTION: HỆ THỐNG QUẢN TRỊ (Admin Only)
                 if (hasAdminSection) ...[
-                  const Padding(
-                    padding: EdgeInsets.symmetric(
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
                       horizontal: AppSpacing.md,
                       vertical: AppSpacing.xs,
                     ),
-                    child: Divider(color: AppColors.border, height: 1),
+                    child: Divider(color: colors.divider, height: 1),
                   ),
                   if (!_isCollapsed)
                     Padding(
@@ -184,7 +193,7 @@ class _HomeTabletState extends ConsumerState<HomeTablet> {
                       child: Text(
                         'HỆ THỐNG QUẢN TRỊ',
                         style: AppTypography.labelSmall.copyWith(
-                          color: AppColors.textMuted,
+                          color: colors.textMuted,
                           fontSize: 10.5,
                           fontWeight: FontWeight.w700,
                           letterSpacing: 0.8,
@@ -193,6 +202,7 @@ class _HomeTabletState extends ConsumerState<HomeTablet> {
                     ),
                   if (canReadClubs)
                     _buildNavItem(
+                      context,
                       icon: Icons.apartment_rounded,
                       title: 'Quản lý Câu lạc bộ',
                       isSelected: false,
@@ -200,6 +210,7 @@ class _HomeTabletState extends ConsumerState<HomeTablet> {
                     ),
                   if (canReadUsers)
                     _buildNavItem(
+                      context,
                       icon: Icons.people_outline_rounded,
                       title: 'Quản lý Người dùng',
                       isSelected: false,
@@ -207,6 +218,7 @@ class _HomeTabletState extends ConsumerState<HomeTablet> {
                     ),
                   if (canReadRoles)
                     _buildNavItem(
+                      context,
                       icon: Icons.shield_outlined,
                       title: 'Quản lý Vai trò',
                       isSelected: false,
@@ -218,7 +230,7 @@ class _HomeTabletState extends ConsumerState<HomeTablet> {
           ),
 
           // 4. FOOTER: VERSION & COLLAPSE TOGGLE
-          _buildFooter(),
+          _buildFooter(context),
         ],
       ),
     );
@@ -245,13 +257,14 @@ class _HomeTabletState extends ConsumerState<HomeTablet> {
     final clubContext = ref.watch(clubContextViewModelProvider);
     final activeClubName = clubContext.currentClubName ?? 'Chưa chọn CLB';
     final roleName = clubContext.currentRole?.displayName ?? 'Khách';
+    final colors = context.colors;
 
     if (_isCollapsed) {
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         child: IconButton(
           tooltip: '$activeClubName ($roleName)',
-          icon: const Icon(Icons.sports_tennis_rounded, color: AppColors.primary),
+          icon: Icon(Icons.sports_tennis_rounded, color: colors.primary),
           onPressed: () => ClubSwitcherDialog.show(context),
         ),
       );
@@ -267,10 +280,10 @@ class _HomeTabletState extends ConsumerState<HomeTablet> {
         vertical: AppSpacing.xs,
       ),
       decoration: BoxDecoration(
-        color: AppColors.surfaceSubtle,
+        color: colors.surfaceSubtle,
         borderRadius: BorderRadius.circular(AppRadius.md),
         border: Border.all(
-          color: AppColors.primary.withValues(alpha: 0.2),
+          color: colors.primary.withValues(alpha: 0.2),
         ),
       ),
       child: InkWell(
@@ -280,13 +293,13 @@ class _HomeTabletState extends ConsumerState<HomeTablet> {
           children: [
             Container(
               padding: const EdgeInsets.all(AppSpacing.xs),
-              decoration: const BoxDecoration(
-                color: AppColors.primaryContainer,
+              decoration: BoxDecoration(
+                color: colors.primaryContainer,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.sports_tennis_rounded,
-                color: AppColors.primary,
+                color: colors.primary,
                 size: 16,
               ),
             ),
@@ -300,7 +313,7 @@ class _HomeTabletState extends ConsumerState<HomeTablet> {
                     activeClubName,
                     style: AppTypography.labelMedium.copyWith(
                       fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
+                      color: colors.textPrimary,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -309,17 +322,17 @@ class _HomeTabletState extends ConsumerState<HomeTablet> {
                     roleName,
                     style: AppTypography.labelSmall.copyWith(
                       fontWeight: FontWeight.w600,
-                      color: AppColors.primary,
+                      color: colors.primary,
                       fontSize: 11,
                     ),
                   ),
                 ],
               ),
             ),
-            const Icon(
+            Icon(
               Icons.swap_horiz_rounded,
               size: 16,
-              color: AppColors.textMuted,
+              color: colors.textMuted,
             ),
           ],
         ),
@@ -327,7 +340,9 @@ class _HomeTabletState extends ConsumerState<HomeTablet> {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context) {
+    final colors = context.colors;
+
     return Container(
       padding: EdgeInsets.symmetric(
         horizontal: _isCollapsed ? AppSpacing.md : AppSpacing.lg,
@@ -339,15 +354,15 @@ class _HomeTabletState extends ConsumerState<HomeTablet> {
             width: 36,
             height: 36,
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [AppColors.success, AppColors.primary],
+              gradient: LinearGradient(
+                colors: [colors.success, colors.primary],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
               borderRadius: BorderRadius.circular(AppRadius.md),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.primary.withValues(alpha: 0.25),
+                  color: colors.primary.withValues(alpha: 0.25),
                   blurRadius: 8,
                   offset: const Offset(0, 2),
                 ),
@@ -355,7 +370,7 @@ class _HomeTabletState extends ConsumerState<HomeTablet> {
             ),
             child: const Center(
               child: Text(
-                'G',
+                'B',
                 style: TextStyle(
                   color: AppColors.white,
                   fontWeight: FontWeight.w900,
@@ -372,9 +387,9 @@ class _HomeTabletState extends ConsumerState<HomeTablet> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    'GIG PORTAL',
+                    'KLTN BADMINTON',
                     style: AppTypography.titleSmall.copyWith(
-                      color: AppColors.textPrimary,
+                      color: colors.textPrimary,
                       fontWeight: FontWeight.w800,
                       letterSpacing: 0.5,
                     ),
@@ -382,9 +397,9 @@ class _HomeTabletState extends ConsumerState<HomeTablet> {
                     overflow: TextOverflow.ellipsis,
                   ),
                   Text(
-                    'QUẢN LÝ CẦU LÔNG',
+                    'HỘI NHÓM CẦU LÔNG',
                     style: AppTypography.labelSmall.copyWith(
-                      color: AppColors.textMuted,
+                      color: colors.textMuted,
                       fontWeight: FontWeight.w600,
                       fontSize: 9.5,
                       letterSpacing: 0.8,
@@ -401,12 +416,15 @@ class _HomeTabletState extends ConsumerState<HomeTablet> {
     );
   }
 
-  Widget _buildNavItem({
+  Widget _buildNavItem(
+    BuildContext context, {
     required IconData icon,
     required String title,
     required bool isSelected,
     required VoidCallback onTap,
   }) {
+    final colors = context.colors;
+
     return Container(
       margin: const EdgeInsets.symmetric(
         horizontal: AppSpacing.sm,
@@ -415,11 +433,11 @@ class _HomeTabletState extends ConsumerState<HomeTablet> {
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(AppRadius.md),
-        splashColor: AppColors.primary.withValues(alpha: 0.1),
-        highlightColor: AppColors.primary.withValues(alpha: 0.05),
+        splashColor: colors.primary.withValues(alpha: 0.1),
+        highlightColor: colors.primary.withValues(alpha: 0.05),
         child: Container(
           decoration: BoxDecoration(
-            color: isSelected ? AppColors.primaryContainer : Colors.transparent,
+            color: isSelected ? colors.primaryContainer : AppColors.transparent,
             borderRadius: BorderRadius.circular(AppRadius.md),
           ),
           padding: const EdgeInsets.symmetric(
@@ -434,7 +452,7 @@ class _HomeTabletState extends ConsumerState<HomeTablet> {
                   height: 20,
                   margin: const EdgeInsets.only(right: AppSpacing.sm),
                   decoration: BoxDecoration(
-                    color: AppColors.primary,
+                    color: colors.primary,
                     borderRadius: BorderRadius.circular(AppRadius.sm),
                   ),
                 )
@@ -444,7 +462,7 @@ class _HomeTabletState extends ConsumerState<HomeTablet> {
               Icon(
                 icon,
                 size: 20,
-                color: isSelected ? AppColors.primary : AppColors.textSecondary,
+                color: isSelected ? colors.primary : colors.textSecondary,
               ),
 
               if (!_isCollapsed) ...[
@@ -453,7 +471,7 @@ class _HomeTabletState extends ConsumerState<HomeTablet> {
                   child: Text(
                     title,
                     style: AppTypography.bodySmall.copyWith(
-                      color: isSelected ? AppColors.primary : AppColors.textPrimary,
+                      color: isSelected ? colors.primary : colors.textPrimary,
                       fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                     ),
                     maxLines: 1,
@@ -468,15 +486,17 @@ class _HomeTabletState extends ConsumerState<HomeTablet> {
     );
   }
 
-  Widget _buildFooter() {
+  Widget _buildFooter(BuildContext context) {
+    final colors = context.colors;
+
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.md,
         vertical: AppSpacing.md,
       ),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         border: Border(
-          top: BorderSide(color: AppColors.border, width: 1),
+          top: BorderSide(color: colors.divider, width: 1),
         ),
       ),
       child: Column(
@@ -488,17 +508,17 @@ class _HomeTabletState extends ConsumerState<HomeTablet> {
                 Container(
                   width: 6,
                   height: 6,
-                  decoration: const BoxDecoration(
-                    color: AppColors.success,
+                  decoration: BoxDecoration(
+                    color: colors.success,
                     shape: BoxShape.circle,
                   ),
                 ),
                 const SizedBox(width: AppSpacing.xs),
                 Expanded(
                   child: Text(
-                    'KLTN Mobile v2.0',
+                    'KLTN Badminton v2.0',
                     style: AppTypography.labelSmall.copyWith(
-                      color: AppColors.textMuted,
+                      color: colors.textMuted,
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
                     ),
@@ -528,7 +548,7 @@ class _HomeTabletState extends ConsumerState<HomeTablet> {
                     _isCollapsed
                         ? Icons.chevron_right_rounded
                         : Icons.chevron_left_rounded,
-                    color: AppColors.textMuted,
+                    color: colors.textMuted,
                     size: 18,
                   ),
                   if (!_isCollapsed) ...[
@@ -536,7 +556,7 @@ class _HomeTabletState extends ConsumerState<HomeTablet> {
                     Text(
                       'Thu gọn Sidebar',
                       style: AppTypography.labelSmall.copyWith(
-                        color: AppColors.textMuted,
+                        color: colors.textMuted,
                         fontSize: 11.5,
                         fontWeight: FontWeight.w500,
                       ),
