@@ -7,6 +7,8 @@ import 'package:go_router/go_router.dart';
 import '../../../../../../app/consts/app_config.dart';
 import '../../../../../../app/provider.dart';
 import '../../../../../../app/theme/theme.dart';
+import '../../../../../../app/provider/localization_provider.dart';
+import '../../../../../../app/l10n_gen/app_localizations.dart';
 import '../../../../../../domain/entities/club/club_detail.dart';
 import '../../../../../../domain/enums/club_role.dart';
 import '../../../../../../domain/enums/session_enums.dart';
@@ -31,6 +33,10 @@ class ClubOverviewTab extends ConsumerStatefulWidget {
 }
 
 class _ClubOverviewTabState extends ConsumerState<ClubOverviewTab> {
+
+  AppThemeColors get colors => context.colors;
+  AppLocalizations get l10n => context.l10n;
+
   void _copyToClipboard(String text, String message) {
     if (text.isEmpty) return;
     Clipboard.setData(ClipboardData(text: text));
@@ -54,7 +60,7 @@ class _ClubOverviewTabState extends ConsumerState<ClubOverviewTab> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
+      backgroundColor: AppColors.transparent,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setSheetState) => Container(
           padding: EdgeInsets.only(
@@ -63,8 +69,8 @@ class _ClubOverviewTabState extends ConsumerState<ClubOverviewTab> {
             right: AppSpacing.lg,
             bottom: MediaQuery.of(ctx).viewInsets.bottom + AppSpacing.lg,
           ),
-          decoration: const BoxDecoration(
-            color: AppColors.surface,
+          decoration: BoxDecoration(
+            color: colors.cardBackground,
             borderRadius: AppRadius.bottomSheet,
           ),
           child: SingleChildScrollView(
@@ -75,63 +81,63 @@ class _ClubOverviewTabState extends ConsumerState<ClubOverviewTab> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Cấu hình sân & tuyển quân', style: AppTypography.titleMedium.bold),
+                    Text(l10n.club_config_venue_recruit, style: AppTypography.titleMedium.bold.colored(colors.textPrimary)),
                     IconButton(
-                      icon: const Icon(Icons.close_rounded, color: AppColors.textMuted),
+                      icon: Icon(Icons.close_rounded, color: colors.textMuted),
                       onPressed: () => Navigator.of(ctx).pop(),
                     ),
                   ],
                 ),
-                const Divider(color: AppColors.border),
+                Divider(color: colors.cardBorder),
                 AppSpacing.gapH8,
-                Text('Tên sân cố định', style: AppTypography.labelMedium.bold.colored(AppColors.textPrimary)),
+                Text(l10n.club_fixed_venue_name, style: AppTypography.labelMedium.bold.colored(colors.textPrimary)),
                 AppSpacing.gapH8,
                 TextField(
                   controller: venueController,
                   decoration: InputDecoration(
-                    hintText: 'Ví dụ: Sân Cầu Lông Kỳ Hòa',
-                    hintStyle: AppTypography.bodyMedium.colored(AppColors.textMuted),
+                    hintText: l10n.club_fixed_venue_hint,
+                    hintStyle: AppTypography.bodyMedium.colored(colors.textMuted),
                     filled: true,
-                    fillColor: AppColors.background,
-                    border: const OutlineInputBorder(borderRadius: AppRadius.borderMd, borderSide: BorderSide.none),
+                    fillColor: colors.inputFill,
+                    border: OutlineInputBorder(borderRadius: AppRadius.borderMd, borderSide: BorderSide(color: colors.inputBorder)),
                     contentPadding: AppSpacing.allMd,
                   ),
                 ),
                 AppSpacing.gapH12,
-                Text('Địa chỉ sân', style: AppTypography.labelMedium.bold.colored(AppColors.textPrimary)),
+                Text(l10n.club_fixed_address, style: AppTypography.labelMedium.bold.colored(colors.textPrimary)),
                 AppSpacing.gapH8,
                 TextField(
                   controller: addressController,
                   decoration: InputDecoration(
-                    hintText: 'Ví dụ: 238 Đường 3/2, Phường 12, Quận 10',
-                    hintStyle: AppTypography.bodyMedium.colored(AppColors.textMuted),
+                    hintText: l10n.club_fixed_address_hint,
+                    hintStyle: AppTypography.bodyMedium.colored(colors.textMuted),
                     filled: true,
-                    fillColor: AppColors.background,
-                    border: const OutlineInputBorder(borderRadius: AppRadius.borderMd, borderSide: BorderSide.none),
+                    fillColor: colors.inputFill,
+                    border: OutlineInputBorder(borderRadius: AppRadius.borderMd, borderSide: BorderSide(color: colors.inputBorder)),
                     contentPadding: AppSpacing.allMd,
                   ),
                 ),
                 AppSpacing.gapH12,
-                Text('Mô tả nhóm', style: AppTypography.labelMedium.bold.colored(AppColors.textPrimary)),
+                Text(l10n.role_description_label, style: AppTypography.labelMedium.bold.colored(colors.textPrimary)),
                 AppSpacing.gapH8,
                 TextField(
                   controller: descController,
                   maxLines: 2,
                   decoration: InputDecoration(
-                    hintText: 'Giới thiệu về không khí, chi phí hoặc yêu cầu...',
-                    hintStyle: AppTypography.bodyMedium.colored(AppColors.textMuted),
+                    hintText: l10n.role_description_hint,
+                    hintStyle: AppTypography.bodyMedium.colored(colors.textMuted),
                     filled: true,
-                    fillColor: AppColors.background,
-                    border: const OutlineInputBorder(borderRadius: AppRadius.borderMd, borderSide: BorderSide.none),
+                    fillColor: colors.inputFill,
+                    border: OutlineInputBorder(borderRadius: AppRadius.borderMd, borderSide: BorderSide(color: colors.inputBorder)),
                     contentPadding: AppSpacing.allMd,
                   ),
                 ),
                 AppSpacing.gapH12,
                 SwitchListTile(
                   contentPadding: EdgeInsets.zero,
-                  activeThumbColor: AppColors.primary,
-                  title: Text('Mở tuyển thành viên mới', style: AppTypography.titleSmall.bold),
-                  subtitle: Text('Cho phép người chơi khác tìm thấy và nộp đơn xin gia nhập', style: AppTypography.bodySmall.colored(AppColors.textMuted)),
+                  activeThumbColor: colors.primary,
+                  title: Text(l10n.club_recruiting_status, style: AppTypography.titleSmall.bold.colored(colors.textPrimary)),
+                  subtitle: Text('Cho phép người chơi khác tìm thấy và nộp đơn xin gia nhập', style: AppTypography.bodySmall.colored(colors.textMuted)),
                   value: isRecruiting,
                   onChanged: (val) => setSheetState(() => isRecruiting = val),
                 ),
@@ -140,8 +146,8 @@ class _ClubOverviewTabState extends ConsumerState<ClubOverviewTab> {
                   width: double.infinity,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      foregroundColor: AppColors.onPrimary,
+                      backgroundColor: colors.primary,
+                      foregroundColor: AppColors.white,
                       padding: AppSpacing.verticalMd,
                       shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
                     ),
@@ -195,7 +201,7 @@ class _ClubOverviewTabState extends ConsumerState<ClubOverviewTab> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
+      backgroundColor: AppColors.transparent,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setSheetState) => Container(
           padding: EdgeInsets.only(
@@ -204,8 +210,8 @@ class _ClubOverviewTabState extends ConsumerState<ClubOverviewTab> {
             right: AppSpacing.lg,
             bottom: MediaQuery.of(ctx).viewInsets.bottom + AppSpacing.lg,
           ),
-          decoration: const BoxDecoration(
-            color: AppColors.surface,
+          decoration: BoxDecoration(
+            color: colors.cardBackground,
             borderRadius: AppRadius.bottomSheet,
           ),
           child: SingleChildScrollView(
@@ -216,14 +222,14 @@ class _ClubOverviewTabState extends ConsumerState<ClubOverviewTab> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Thiết lập lịch tuần', style: AppTypography.titleMedium.bold),
+                    Text(l10n.club_schedule_setup_title, style: AppTypography.titleMedium.bold.colored(colors.textPrimary)),
                     IconButton(
-                      icon: const Icon(Icons.close_rounded, color: AppColors.textMuted),
+                      icon: Icon(Icons.close_rounded, color: colors.textMuted),
                       onPressed: () => Navigator.of(ctx).pop(),
                     ),
                   ],
                 ),
-                const Divider(color: AppColors.border),
+                Divider(color: colors.cardBorder),
                 AppSpacing.gapH8,
                 ClubSchedulePlanner(
                   initialSchedules: initialSchedules,
@@ -236,8 +242,8 @@ class _ClubOverviewTabState extends ConsumerState<ClubOverviewTab> {
                   width: double.infinity,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      foregroundColor: AppColors.onPrimary,
+                      backgroundColor: colors.primary,
+                      foregroundColor: AppColors.white,
                       padding: AppSpacing.verticalMd,
                       shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
                     ),
@@ -256,7 +262,7 @@ class _ClubOverviewTabState extends ConsumerState<ClubOverviewTab> {
 
                       await vm.updateSchedules(inputs);
                     },
-                    child: Text('Lưu lịch tuần', style: AppTypography.labelLarge.bold.colored(AppColors.white)),
+                    child: Text(l10n.club_schedule_save, style: AppTypography.labelLarge.bold.colored(AppColors.white)),
                   ),
                 ),
               ],
@@ -319,11 +325,11 @@ class _ClubOverviewTabState extends ConsumerState<ClubOverviewTab> {
                         children: [
                           Text(
                             'Mời bạn bè vào nhóm',
-                            style: AppTypography.titleSmall.bold.colored(AppColors.textPrimary),
+                            style: AppTypography.titleSmall.bold.colored(colors.textPrimary),
                           ),
                           Text(
                             'Chia sẻ mã này để bạn bè tham gia ngay không cần duyệt',
-                            style: AppTypography.bodySmall.colored(AppColors.textMuted),
+                            style: AppTypography.bodySmall.colored(colors.textMuted),
                           ),
                         ],
                       ),
@@ -334,9 +340,9 @@ class _ClubOverviewTabState extends ConsumerState<ClubOverviewTab> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
                   decoration: BoxDecoration(
-                    color: AppColors.surface,
+                    color: colors.cardBackground,
                     borderRadius: AppRadius.borderSm,
-                    border: Border.all(color: AppColors.border),
+                    border: Border.all(color: colors.cardBorder),
                   ),
                   child: Row(
                     children: [
@@ -345,7 +351,7 @@ class _ClubOverviewTabState extends ConsumerState<ClubOverviewTab> {
                       Expanded(
                         child: Text(
                           code,
-                          style: AppTypography.headlineMedium.bold.colored(AppColors.textPrimary).copyWith(letterSpacing: 2),
+                          style: AppTypography.headlineMedium.bold.colored(colors.textPrimary).copyWith(letterSpacing: 2),
                         ),
                       ),
                       ElevatedButton.icon(
@@ -372,9 +378,9 @@ class _ClubOverviewTabState extends ConsumerState<ClubOverviewTab> {
           Container(
             padding: AppSpacing.allBase,
             decoration: BoxDecoration(
-              color: AppColors.surface,
+              color: colors.cardBackground,
               borderRadius: AppRadius.card,
-              border: Border.all(color: AppColors.border),
+              border: Border.all(color: colors.cardBorder),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -388,7 +394,7 @@ class _ClubOverviewTabState extends ConsumerState<ClubOverviewTab> {
                         AppSpacing.gapW8,
                         Text(
                           'Sân sinh hoạt cố định',
-                          style: AppTypography.titleSmall.bold.colored(AppColors.textPrimary),
+                          style: AppTypography.titleSmall.bold.colored(colors.textPrimary),
                         ),
                       ],
                     ),
@@ -405,19 +411,19 @@ class _ClubOverviewTabState extends ConsumerState<ClubOverviewTab> {
                   club?.fixedVenueName != null && club!.fixedVenueName!.isNotEmpty
                       ? club.fixedVenueName!
                       : 'Chưa thiết lập sân cố định',
-                  style: AppTypography.titleMedium.bold.colored(AppColors.textPrimary),
+                  style: AppTypography.titleMedium.bold.colored(colors.textPrimary),
                 ),
                 AppSpacing.gapH4,
                 Row(
                   children: [
-                    const Icon(Icons.location_on_outlined, size: AppSpacing.iconXs, color: AppColors.textMuted),
+                    Icon(Icons.location_on_outlined, size: AppSpacing.iconXs, color: colors.textMuted),
                     AppSpacing.gapW4,
                     Expanded(
                       child: Text(
                         club?.fixedAddress != null && club!.fixedAddress!.isNotEmpty
                             ? club.fixedAddress!
                             : 'Chưa cập nhật địa chỉ sân',
-                        style: AppTypography.bodySmall.colored(AppColors.textMuted),
+                        style: AppTypography.bodySmall.colored(colors.textMuted),
                       ),
                     ),
                   ],
@@ -432,9 +438,9 @@ class _ClubOverviewTabState extends ConsumerState<ClubOverviewTab> {
           Container(
             padding: AppSpacing.allBase,
             decoration: BoxDecoration(
-              color: AppColors.surface,
+              color: colors.cardBackground,
               borderRadius: AppRadius.card,
-              border: Border.all(color: AppColors.border),
+              border: Border.all(color: colors.cardBorder),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -448,7 +454,7 @@ class _ClubOverviewTabState extends ConsumerState<ClubOverviewTab> {
                         AppSpacing.gapW8,
                         Text(
                           'Lịch sinh hoạt định kỳ tuần',
-                          style: AppTypography.titleSmall.bold.colored(AppColors.textPrimary),
+                          style: AppTypography.titleSmall.bold.colored(colors.textPrimary),
                         ),
                       ],
                     ),
@@ -464,7 +470,7 @@ class _ClubOverviewTabState extends ConsumerState<ClubOverviewTab> {
                 if (club?.schedules == null || club!.schedules.isEmpty)
                   Text(
                     'Chưa thiết lập lịch định kỳ tuần',
-                    style: AppTypography.bodySmall.colored(AppColors.textMuted),
+                    style: AppTypography.bodySmall.colored(colors.textMuted),
                   )
                 else
                   Wrap(
@@ -476,9 +482,9 @@ class _ClubOverviewTabState extends ConsumerState<ClubOverviewTab> {
                           (s) => Container(
                             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: 6),
                             decoration: BoxDecoration(
-                              color: AppColors.primaryContainer,
+                              color: colors.primary.withValues(alpha: 0.12),
                               borderRadius: AppRadius.borderMd,
-                              border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
+                              border: Border.all(color: colors.primary.withValues(alpha: 0.25)),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
@@ -487,7 +493,7 @@ class _ClubOverviewTabState extends ConsumerState<ClubOverviewTab> {
                                 AppSpacing.gapW8,
                                 Text(
                                   '${s.dayName}: ${s.startTime} - ${s.endTime}',
-                                  style: AppTypography.labelMedium.bold.colored(AppColors.primary),
+                                  style: AppTypography.labelMedium.bold.colored(colors.primary),
                                 ),
                               ],
                             ),
@@ -505,16 +511,16 @@ class _ClubOverviewTabState extends ConsumerState<ClubOverviewTab> {
           Container(
             padding: AppSpacing.allBase,
             decoration: BoxDecoration(
-              color: AppColors.surface,
+              color: colors.cardBackground,
               borderRadius: AppRadius.card,
-              border: Border.all(color: AppColors.border),
+              border: Border.all(color: colors.cardBorder),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   'Hồ sơ & Đánh giá câu lạc bộ',
-                  style: AppTypography.titleSmall.bold.colored(AppColors.textPrimary),
+                  style: AppTypography.titleSmall.bold.colored(colors.textPrimary),
                 ),
                 AppSpacing.gapH12,
                 _buildInfoRow(
@@ -523,13 +529,13 @@ class _ClubOverviewTabState extends ConsumerState<ClubOverviewTab> {
                   icon: Icons.star_rounded,
                   iconColor: AppColors.warning,
                 ),
-                const Divider(height: AppSpacing.base, color: AppColors.border),
+                Divider(height: AppSpacing.base, color: colors.cardBorder),
                 _buildInfoRow(
                   'Sĩ số thành viên',
                   club != null ? '${club.memberCount} thành viên' : 'Đang tải...',
                   icon: Icons.people_outline_rounded,
                 ),
-                const Divider(height: AppSpacing.base, color: AppColors.border),
+                Divider(height: AppSpacing.base, color: colors.cardBorder),
                 _buildInfoRow(
                   'Trình độ tiếp nhận',
                   (club?.minSkillLevel != null && club?.maxSkillLevel != null)
@@ -537,7 +543,7 @@ class _ClubOverviewTabState extends ConsumerState<ClubOverviewTab> {
                       : 'Mọi trình độ',
                   icon: Icons.speed_rounded,
                 ),
-                const Divider(height: AppSpacing.base, color: AppColors.border),
+                Divider(height: AppSpacing.base, color: colors.cardBorder),
                 _buildInfoRow(
                   'Tuyển thành viên mới',
                   (club?.isRecruiting ?? false) ? 'Đang mở tuyển' : 'Tạm đóng',
@@ -545,7 +551,7 @@ class _ClubOverviewTabState extends ConsumerState<ClubOverviewTab> {
                   valueColor: (club?.isRecruiting ?? false) ? AppColors.success : AppColors.textMuted,
                 ),
                 if (club?.host != null) ...[
-                  const Divider(height: AppSpacing.base, color: AppColors.border),
+                  Divider(height: AppSpacing.base, color: colors.cardBorder),
                   _buildInfoRow(
                     'Chủ nhiệm (Host)',
                     club!.host.fullName,
@@ -553,7 +559,7 @@ class _ClubOverviewTabState extends ConsumerState<ClubOverviewTab> {
                   ),
                 ],
                 if (club?.description != null && club!.description!.isNotEmpty) ...[
-                  const Divider(height: AppSpacing.base, color: AppColors.border),
+                  Divider(height: AppSpacing.base, color: colors.cardBorder),
                   _buildInfoRow(
                     'Mô tả nhóm',
                     club.description!,
@@ -580,7 +586,7 @@ class _ClubOverviewTabState extends ConsumerState<ClubOverviewTab> {
                 children: [
                   Text(
                     'Quản trị ban điều hành',
-                    style: AppTypography.titleSmall.bold.colored(AppColors.textPrimary),
+                    style: AppTypography.titleSmall.bold.colored(colors.textPrimary),
                   ),
                   AppSpacing.gapH12,
                   ElevatedButton.icon(
@@ -642,7 +648,7 @@ class _ClubOverviewTabState extends ConsumerState<ClubOverviewTab> {
         ],
         SizedBox(
           width: 140,
-          child: Text(label, style: AppTypography.bodySmall.colored(AppColors.textMuted)),
+          child: Text(label, style: AppTypography.bodySmall.colored(colors.textMuted)),
         ),
         Expanded(
           child: Text(

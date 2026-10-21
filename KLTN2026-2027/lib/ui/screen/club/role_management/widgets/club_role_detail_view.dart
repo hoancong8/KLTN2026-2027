@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import '../../../../../app/theme/theme.dart';
+import '../../../../../app/provider/localization_provider.dart';
 import '../../../../../domain/entities/club/club_member.dart';
 import '../../../../../domain/entities/club/club_role_item.dart';
 import '../../../../../domain/enums/club_role.dart';
@@ -95,7 +96,7 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Đã lưu phân quyền cho "${widget.role.roleName}"!'),
-            backgroundColor: AppColors.primary,
+            backgroundColor: context.colors.primary,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -107,9 +108,9 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
     final canDelete = !widget.role.isHostRole && !widget.role.isDefault;
     if (!canDelete) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Không thể xóa vai trò mặc định hoặc Chủ nhóm!'),
-          backgroundColor: Colors.red,
+        SnackBar(
+          content: Text(context.l10n.role_delete_prevent_default),
+          backgroundColor: context.colors.error,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -120,21 +121,21 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Xác nhận xóa vai trò', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-        content: Text('Bạn có chắc chắn muốn xóa vai trò "${widget.role.roleName}"? Hành động này không thể hoàn tác.'),
+        title: Text(context.l10n.role_delete_confirm_title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: context.colors.textPrimary)),
+        content: Text(context.l10n.role_delete_confirm_content, style: TextStyle(color: context.colors.textSecondary)),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Hủy'),
+            child: Text(context.l10n.com_cancel),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
+              backgroundColor: context.colors.error,
+              foregroundColor: AppColors.white,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             ),
             onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('Xóa vai trò'),
+            child: Text(context.l10n.role_delete_button),
           ),
         ],
       ),
@@ -161,15 +162,17 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
   Widget build(BuildContext context) {
     final roleColor = ClubRoleColorHelper.getRoleColor(widget.role.roleName, isHost: widget.role.isHostRole);
     final isHostRole = widget.role.isHostRole;
+    final colors = context.colors;
+    final l10n = context.l10n;
 
     return Scaffold(
-      backgroundColor: AppColors.neutral50,
+      backgroundColor: colors.background,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: colors.cardBackground,
         elevation: 0.5,
         leading: widget.onBack != null
             ? IconButton(
-                icon: const Icon(Icons.arrow_back_rounded, color: AppColors.textPrimary),
+                icon: Icon(Icons.arrow_back_rounded, color: colors.textPrimary),
                 onPressed: widget.onBack,
               )
             : null,
@@ -186,11 +189,11 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
             const SizedBox(width: 8),
             Expanded(
               child: Text(
-                'CHỈNH SỬA VAI TRÒ - ${widget.role.roleName.toUpperCase()}',
-                style: const TextStyle(
+                '${l10n.role_edit_title.toUpperCase()} - ${widget.role.roleName.toUpperCase()}',
+                style: TextStyle(
                   fontSize: 14.5,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
+                  color: colors.textPrimary,
                   letterSpacing: 0.5,
                 ),
                 maxLines: 1,
@@ -202,8 +205,8 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
         actions: [
           if (widget.isHost && !isHostRole && !widget.role.isDefault)
             IconButton(
-              icon: const Icon(Icons.delete_outline_rounded, color: Colors.red),
-              tooltip: 'Xóa vai trò',
+              icon: Icon(Icons.delete_outline_rounded, color: colors.error),
+              tooltip: l10n.role_delete_button,
               onPressed: _showDeleteConfirmDialog,
             ),
           if (!isHostRole && widget.isHost)
@@ -211,8 +214,8 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.white,
+                  backgroundColor: colors.primary,
+                  foregroundColor: AppColors.white,
                   elevation: 0,
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -222,26 +225,26 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
                     ? const SizedBox(
                         width: 16,
                         height: 16,
-                        child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                        child: CircularProgressIndicator(color: AppColors.white, strokeWidth: 2),
                       )
-                    : const Text('Lưu thay đổi', style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold)),
+                    : Text(l10n.role_save_changes, style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold)),
               ),
             ),
         ],
         bottom: TabBar(
           controller: _tabController,
-          labelColor: AppColors.primary,
-          unselectedLabelColor: AppColors.textMuted,
-          indicatorColor: AppColors.primary,
+          labelColor: colors.primary,
+          unselectedLabelColor: colors.textMuted,
+          indicatorColor: colors.primary,
           indicatorWeight: 2.5,
           tabs: [
-            const Tab(
+            Tab(
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.palette_outlined, size: 16),
-                  SizedBox(width: 6),
-                  Text('Hiển thị'),
+                  const Icon(Icons.palette_outlined, size: 16),
+                  const SizedBox(width: 6),
+                  Text(l10n.role_tab_display),
                 ],
               ),
             ),
@@ -251,7 +254,7 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
                 children: [
                   const Icon(Icons.shield_outlined, size: 16),
                   const SizedBox(width: 6),
-                  Text('Phân quyền (${_selectedPermissionIds.length})'),
+                  Text('${l10n.role_tab_permissions} (${_selectedPermissionIds.length})'),
                 ],
               ),
             ),
@@ -261,7 +264,7 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
                 children: [
                   const Icon(Icons.people_alt_outlined, size: 16),
                   const SizedBox(width: 6),
-                  Text('Thành viên (${_membersWithRole.length})'),
+                  Text('${l10n.role_tab_members} (${_membersWithRole.length})'),
                 ],
               ),
             ),
@@ -283,6 +286,8 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
   // TAB 1: HIỂN THỊ (DISPLAY / INFO)
   // ==========================================
   Widget _buildDisplayTab(Color roleColor) {
+    final colors = context.colors;
+    final l10n = context.l10n;
     return ListView(
       padding: const EdgeInsets.all(20),
       children: [
@@ -290,9 +295,9 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppColors.border),
+            color: colors.cardBackground,
+            borderRadius: AppRadius.card,
+            border: Border.all(color: colors.cardBorder),
           ),
           child: Row(
             children: [
@@ -312,14 +317,14 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
                   children: [
                     Text(
                       widget.role.roleName,
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: colors.textPrimary),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       widget.role.description?.isNotEmpty == true
                           ? widget.role.description!
                           : 'Chưa có mô tả cho vai trò này',
-                      style: const TextStyle(fontSize: 12.5, color: AppColors.textMuted),
+                      style: TextStyle(fontSize: 12.5, color: colors.textMuted),
                     ),
                   ],
                 ),
@@ -333,34 +338,42 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppColors.border),
+            color: colors.cardBackground,
+            borderRadius: AppRadius.card,
+            border: Border.all(color: colors.cardBorder),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Tên vai trò', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5)),
+              Text(l10n.role_name_label, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5, color: colors.textPrimary)),
               const SizedBox(height: 6),
               TextFormField(
                 controller: _nameController,
                 enabled: !widget.role.isHostRole && widget.isHost,
                 decoration: InputDecoration(
-                  hintText: 'Nhập tên vai trò',
+                  hintText: l10n.role_name_hint,
+                  hintStyle: TextStyle(color: colors.textMuted),
+                  filled: true,
+                  fillColor: colors.inputFill,
+                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: colors.inputBorder)),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                 ),
               ),
               const SizedBox(height: 16),
 
-              const Text('Mô tả', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5)),
+              Text(l10n.role_description_label, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5, color: colors.textPrimary)),
               const SizedBox(height: 6),
               TextFormField(
                 controller: _descController,
                 enabled: !widget.role.isHostRole && widget.isHost,
                 maxLines: 2,
                 decoration: InputDecoration(
-                  hintText: 'Mô tả vai trò trong câu lạc bộ',
+                  hintText: l10n.role_description_hint,
+                  hintStyle: TextStyle(color: colors.textMuted),
+                  filled: true,
+                  fillColor: colors.inputFill,
+                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: colors.inputBorder)),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                 ),
@@ -371,18 +384,18 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Column(
+                  Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Vai trò mặc định', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5)),
-                      SizedBox(height: 2),
-                      Text('Tự động cấp vai trò này khi có thành viên mới', style: TextStyle(color: AppColors.textMuted, fontSize: 11.5)),
+                      Text(l10n.role_default_label, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5, color: colors.textPrimary)),
+                      const SizedBox(height: 2),
+                      Text(l10n.role_default_sub, style: TextStyle(color: colors.textMuted, fontSize: 11.5)),
                     ],
                   ),
                   Switch(
                     value: widget.role.isDefault,
-                    activeThumbColor: AppColors.primary,
-                    activeTrackColor: AppColors.primary.withValues(alpha: 0.3),
+                    activeThumbColor: colors.primary,
+                    activeTrackColor: colors.primary.withValues(alpha: 0.3),
                     onChanged: null, // Default is managed at creation
                   ),
                 ],
@@ -396,16 +409,16 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppColors.border),
+            color: colors.cardBackground,
+            borderRadius: AppRadius.card,
+            border: Border.all(color: colors.cardBorder),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Màu sắc nhận diện vai trò', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5)),
+              Text(l10n.role_color_palette, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5, color: colors.textPrimary)),
               const SizedBox(height: 4),
-              const Text('Màu hiển thị của chấm đại diện và huy hiệu thành viên', style: TextStyle(color: AppColors.textMuted, fontSize: 11.5)),
+              Text(l10n.role_color_sub, style: TextStyle(color: colors.textMuted, fontSize: 11.5)),
               const SizedBox(height: 14),
               Wrap(
                 spacing: 12,
@@ -418,7 +431,7 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
                     decoration: BoxDecoration(
                       color: color,
                       shape: BoxShape.circle,
-                      border: isCurrent ? Border.all(color: AppColors.textPrimary, width: 3) : null,
+                      border: isCurrent ? Border.all(color: colors.textPrimary, width: 3) : null,
                       boxShadow: [
                         BoxShadow(
                           color: color.withValues(alpha: 0.3),
@@ -427,7 +440,7 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
                         ),
                       ],
                     ),
-                    child: isCurrent ? const Icon(Icons.check, color: Colors.white, size: 20) : null,
+                    child: isCurrent ? const Icon(Icons.check, color: AppColors.white, size: 20) : null,
                   );
                 }).toList(),
               ),
@@ -442,6 +455,8 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
   // TAB 2: PHÂN QUYỀN (DISCORD TOGGLES)
   // ==========================================
   Widget _buildPermissionsTab(bool isHostRole) {
+    final colors = context.colors;
+    final l10n = context.l10n;
     // Group permissions by module
     final Map<String, List<ClubRolePermission>> moduleMap = {};
     for (final p in widget.allPermissions) {
@@ -466,18 +481,18 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
             margin: const EdgeInsets.only(bottom: 14),
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: AppColors.violetLight,
+              color: colors.primary.withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.violetBorder),
+              border: Border.all(color: colors.primary.withValues(alpha: 0.25)),
             ),
-            child: const Row(
+            child: Row(
               children: [
-                Icon(Icons.workspace_premium_rounded, color: AppColors.roleHost, size: 24),
-                SizedBox(width: 12),
+                const Icon(Icons.workspace_premium_rounded, color: AppColors.roleHost, size: 24),
+                const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    'Vai trò Chủ câu lạc bộ sở hữu toàn bộ 18 quyền hạn tối cao của hệ thống. Các quyền này được kích hoạt vĩnh viễn và không thể tắt.',
-                    style: TextStyle(
+                    l10n.role_host_notice,
+                    style: const TextStyle(
                       fontSize: 12.5,
                       fontWeight: FontWeight.w600,
                       color: AppColors.roleHost,
@@ -494,12 +509,12 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
           controller: _permSearchController,
           onChanged: (val) => setState(() => _permSearchQuery = val.trim()),
           decoration: InputDecoration(
-            hintText: 'Tìm kiếm quyền hạn...',
-            hintStyle: const TextStyle(fontSize: 13, color: AppColors.textMuted),
-            prefixIcon: const Icon(Icons.search_rounded, size: 20, color: AppColors.textMuted),
+            hintText: l10n.role_search_permissions,
+            hintStyle: TextStyle(fontSize: 13, color: colors.textMuted),
+            prefixIcon: Icon(Icons.search_rounded, size: 20, color: colors.textMuted),
             suffixIcon: _permSearchQuery.isNotEmpty
                 ? IconButton(
-                    icon: const Icon(Icons.clear_rounded, size: 16, color: AppColors.textMuted),
+                    icon: Icon(Icons.clear_rounded, size: 16, color: colors.textMuted),
                     onPressed: () {
                       _permSearchController.clear();
                       setState(() => _permSearchQuery = '');
@@ -507,15 +522,15 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
                   )
                 : null,
             filled: true,
-            fillColor: Colors.white,
+            fillColor: colors.inputFill,
             contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AppColors.border),
+              borderSide: BorderSide(color: colors.inputBorder),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AppColors.border),
+              borderSide: BorderSide(color: colors.inputBorder),
             ),
           ),
         ),
@@ -528,7 +543,7 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
             children: [
               Text(
                 '${_selectedPermissionIds.length}/${widget.allPermissions.length} quyền đã bật',
-                style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold, color: colors.textPrimary),
               ),
               Row(
                 children: [
@@ -540,7 +555,7 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
                       });
                     },
                     icon: const Icon(Icons.done_all_rounded, size: 16),
-                    label: const Text('Chọn tất cả', style: TextStyle(fontSize: 12)),
+                    label: Text(l10n.role_select_all, style: TextStyle(fontSize: 12, color: colors.primary)),
                   ),
                   TextButton.icon(
                     onPressed: () {
@@ -549,8 +564,8 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
                         _markChanged();
                       });
                     },
-                    icon: const Icon(Icons.remove_done_rounded, size: 16, color: Colors.red),
-                    label: const Text('Bỏ tất cả', style: TextStyle(fontSize: 12, color: Colors.red)),
+                    icon: Icon(Icons.remove_done_rounded, size: 16, color: colors.error),
+                    label: Text(l10n.role_clear_all, style: TextStyle(fontSize: 12, color: colors.error)),
                   ),
                 ],
               ),
@@ -560,12 +575,12 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
 
         // Permission Groups (Discord Style Category Sections)
         if (moduleMap.isEmpty)
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 40),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 40),
             child: Center(
               child: Text(
-                'Không tìm thấy quyền hạn phù hợp',
-                style: TextStyle(color: AppColors.textMuted, fontSize: 13),
+                l10n.role_no_permissions_found,
+                style: TextStyle(color: colors.textMuted, fontSize: 13),
               ),
             ),
           )
@@ -577,32 +592,32 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
 
             switch (entry.key) {
               case 'OPERATIONS':
-                title = 'VẬN HÀNH & BUỔI TẬP';
+                title = l10n.role_module_operations;
                 icon = Icons.sports_tennis_rounded;
-                color = AppColors.roleSky;
+                color = colors.primary;
                 break;
               case 'FINANCE':
-                title = 'TÀI CHÍNH & SỔ QUỸ';
+                title = l10n.role_module_finance;
                 icon = Icons.account_balance_wallet_outlined;
                 color = AppColors.roleTreasurer;
                 break;
               case 'MEMBER':
-                title = 'THÀNH VIÊN & NHÓM';
+                title = l10n.role_module_member;
                 icon = Icons.people_alt_outlined;
-                color = AppColors.primary;
+                color = colors.primary;
                 break;
               default:
                 title = entry.key;
                 icon = Icons.tune_rounded;
-                color = Colors.grey;
+                color = colors.textMuted;
             }
 
             return Container(
               margin: const EdgeInsets.only(bottom: 16),
               decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppColors.border),
+                color: colors.cardBackground,
+                borderRadius: AppRadius.card,
+                border: Border.all(color: colors.cardBorder),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -626,14 +641,14 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
                       ],
                     ),
                   ),
-                  const Divider(height: 1, color: AppColors.border),
+                  Divider(height: 1, color: colors.cardBorder),
 
                   // Permission Rows with SwitchListTile
                   ListView.separated(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     itemCount: entry.value.length,
-                    separatorBuilder: (_, _) => const Divider(height: 1, indent: 16, endIndent: 16, color: AppColors.borderSubtle),
+                    separatorBuilder: (_, _) => Divider(height: 1, indent: 16, endIndent: 16, color: colors.cardBorder),
                     itemBuilder: (ctx, idx) {
                       final perm = entry.value[idx];
                       final isChecked = isHostRole || _selectedPermissionIds.contains(perm.id);
@@ -645,19 +660,19 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
-                            color: isChecked ? AppColors.textPrimary : AppColors.roleGuest,
+                            color: isChecked ? colors.textPrimary : colors.textMuted,
                           ),
                         ),
                         subtitle: Padding(
                           padding: const EdgeInsets.only(top: 3),
                           child: Text(
                             perm.displayDescription,
-                            style: const TextStyle(fontSize: 12, color: AppColors.textMuted, height: 1.3),
+                            style: TextStyle(fontSize: 12, color: colors.textMuted, height: 1.3),
                           ),
                         ),
                         value: isChecked,
-                        activeThumbColor: AppColors.primary,
-                        activeTrackColor: AppColors.primary.withValues(alpha: 0.35),
+                        activeThumbColor: colors.primary,
+                        activeTrackColor: colors.primary.withValues(alpha: 0.35),
                         onChanged: isHostRole || !widget.isHost
                             ? null
                             : (val) {
@@ -685,6 +700,8 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
   // TAB 3: THÀNH VIÊN (MANAGE MEMBERS)
   // ==========================================
   Widget _buildMembersTab(Color roleColor) {
+    final colors = context.colors;
+    final l10n = context.l10n;
     final members = _membersWithRole.where((m) {
       if (_memberSearchQuery.isEmpty) return true;
       final q = _memberSearchQuery.toLowerCase();
@@ -705,19 +722,19 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
                   controller: _memberSearchController,
                   onChanged: (val) => setState(() => _memberSearchQuery = val.trim()),
                   decoration: InputDecoration(
-                    hintText: 'Tìm thành viên trong vai trò này...',
-                    hintStyle: const TextStyle(fontSize: 13, color: AppColors.textMuted),
-                    prefixIcon: const Icon(Icons.search_rounded, size: 20, color: AppColors.textMuted),
+                    hintText: l10n.role_search_members,
+                    hintStyle: TextStyle(fontSize: 13, color: colors.textMuted),
+                    prefixIcon: Icon(Icons.search_rounded, size: 20, color: colors.textMuted),
                     filled: true,
-                    fillColor: Colors.white,
+                    fillColor: colors.inputFill,
                     contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
-                      borderSide: const BorderSide(color: AppColors.border),
+                      borderSide: BorderSide(color: colors.inputBorder),
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
-                      borderSide: const BorderSide(color: AppColors.border),
+                      borderSide: BorderSide(color: colors.inputBorder),
                     ),
                   ),
                 ),
@@ -727,10 +744,10 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
                 ElevatedButton.icon(
                   onPressed: _showAddMemberToRoleDialog,
                   icon: const Icon(Icons.person_add_rounded, size: 16),
-                  label: const Text('Gán vai trò', style: TextStyle(fontSize: 12)),
+                  label: Text(l10n.role_assign_button, style: const TextStyle(fontSize: 12)),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
+                    backgroundColor: colors.primary,
+                    foregroundColor: AppColors.white,
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                   ),
@@ -740,7 +757,7 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
           ),
         ),
 
-        const Divider(height: 12, color: AppColors.border),
+        Divider(height: 12, color: colors.cardBorder),
 
         // Member List
         Expanded(
@@ -751,11 +768,11 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.people_outline_rounded, size: 48, color: Colors.grey.shade400),
+                        Icon(Icons.people_outline_rounded, size: 48, color: colors.textMuted),
                         const SizedBox(height: 12),
                         Text(
-                          'Chưa có thành viên nào nắm giữ vai trò "${widget.role.roleName}"',
-                          style: const TextStyle(color: AppColors.textMuted, fontSize: 13),
+                          l10n.role_no_members,
+                          style: TextStyle(color: colors.textMuted, fontSize: 13),
                           textAlign: TextAlign.center,
                         ),
                       ],
@@ -771,9 +788,9 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
                     return Container(
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: colors.cardBackground,
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: AppColors.border),
+                        border: Border.all(color: colors.cardBorder),
                       ),
                       child: Row(
                         children: [
@@ -800,7 +817,7 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
                                       const SizedBox(width: 6),
                                       Text(
                                         '(@${member.userName})',
-                                        style: const TextStyle(fontSize: 11.5, color: AppColors.textMuted),
+                                        style: TextStyle(fontSize: 11.5, color: colors.textMuted),
                                       ),
                                     ],
                                   ],
@@ -809,7 +826,7 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
                                   const SizedBox(height: 2),
                                   Text(
                                     member.email!,
-                                    style: const TextStyle(fontSize: 11.5, color: AppColors.textMuted),
+                                    style: TextStyle(fontSize: 11.5, color: colors.textMuted),
                                   ),
                                 ],
                               ],
@@ -826,19 +843,21 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
   }
 
   void _showAddMemberToRoleDialog() {
-    // Pick from club members who don't already have this role
+    final colors = context.colors;
+    final l10n = context.l10n;
     final available = widget.allMembers.where((m) => m.roleId != widget.role.id).toList();
 
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
+        backgroundColor: colors.cardBackground,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text('Gán vai trò: ${widget.role.roleName}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+        title: Text('${l10n.role_assign_dialog_title}: ${widget.role.roleName}', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: colors.textPrimary)),
         content: SizedBox(
           width: double.maxFinite,
           height: 360,
           child: available.isEmpty
-              ? const Center(child: Text('Tất cả thành viên đã nắm giữ vai trò này'))
+              ? Center(child: Text(l10n.role_all_members_assigned, style: TextStyle(color: colors.textMuted)))
               : ListView.builder(
                   itemCount: available.length,
                   itemBuilder: (ctx, idx) {
@@ -851,8 +870,8 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
                       subtitle: Text(m.roleName ?? m.role.displayName, style: const TextStyle(fontSize: 11.5)),
                       trailing: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          foregroundColor: Colors.white,
+                          backgroundColor: colors.primary,
+                          foregroundColor: AppColors.white,
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                         ),
                         onPressed: () async {
@@ -862,7 +881,7 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text('Đã cập nhật vai trò cho ${m.userName}!'),
-                                backgroundColor: AppColors.primary,
+                                backgroundColor: colors.primary,
                               ),
                             );
                           }
@@ -876,7 +895,7 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Đóng'),
+            child: Text(l10n.com_close),
           ),
         ],
       ),

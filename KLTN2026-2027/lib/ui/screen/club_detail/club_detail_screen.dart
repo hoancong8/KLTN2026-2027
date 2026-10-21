@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../app/theme/theme.dart';
 import '../../../app/provider/localization_provider.dart';
+import '../../../app/l10n_gen/app_localizations.dart';
 import '../../../app/utils/exception_ext.dart';
 import '../../../domain/entities/club/club_detail.dart';
 import '../../../domain/enums/session_enums.dart';
@@ -21,6 +22,10 @@ class ClubDetailScreen extends ConsumerStatefulWidget {
 
 class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
+
+  AppThemeColors get colors => context.colors;
+  AppLocalizations get l10n => context.l10n;
+
 
   @override
   void initState() {
@@ -49,34 +54,35 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
+        backgroundColor: colors.cardBackground,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Row(
+        title: Row(
           children: [
-            Icon(Icons.edit_note_rounded, color: AppColors.primary, size: 26),
-            SizedBox(width: 8),
-            Text('Xin gia nhập nhóm', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
+            Icon(Icons.edit_note_rounded, color: colors.primary, size: 26),
+            const SizedBox(width: 8),
+            Text(l10n.club_join_request_title, style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: colors.textPrimary)),
           ],
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Gửi đôi lời giới thiệu về bạn và trình độ để Trưởng nhóm dễ duyệt đơn nhé:',
-              style: TextStyle(fontSize: 13, color: AppColors.textMuted),
+            Text(
+              l10n.club_join_request_intro_hint,
+              style: TextStyle(fontSize: 13, color: colors.textMuted),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: introController,
               maxLines: 3,
               decoration: InputDecoration(
-                hintText: 'Ví dụ: Mình đánh cầu được 2 năm, trình độ TB, muốn tìm nhóm sinh hoạt cố định...',
-                hintStyle: const TextStyle(fontSize: 12, color: AppColors.textMuted),
+                hintText: l10n.club_join_request_example,
+                hintStyle: TextStyle(fontSize: 12, color: colors.textMuted),
                 filled: true,
-                fillColor: AppColors.background,
+                fillColor: colors.inputFill,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
-                  borderSide: const BorderSide(color: AppColors.border),
+                  borderSide: BorderSide(color: colors.inputBorder),
                 ),
                 contentPadding: const EdgeInsets.all(12),
               ),
@@ -86,11 +92,11 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Hủy', style: TextStyle(color: AppColors.textMuted)),
+            child: Text(l10n.com_cancel, style: TextStyle(color: colors.textMuted)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
+              backgroundColor: colors.primary,
               foregroundColor: AppColors.white,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             ),
@@ -100,7 +106,7 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
                   .read(clubDetailViewModelProvider(widget.clubId).notifier)
                   .sendJoinRequest(introController.text.trim());
             },
-            child: const Text('Gửi đơn'),
+            child: Text(l10n.club_join_request_send),
           ),
         ],
       ),
@@ -118,7 +124,7 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
+      backgroundColor: AppColors.transparent,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setSheetState) => Container(
           padding: EdgeInsets.only(
@@ -127,9 +133,9 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
             right: 20,
             bottom: MediaQuery.of(ctx).viewInsets.bottom + 20,
           ),
-          decoration: const BoxDecoration(
-            color: AppColors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          decoration: BoxDecoration(
+            color: colors.cardBackground,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
           ),
           child: SingleChildScrollView(
             child: Column(
@@ -139,9 +145,9 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
-                      'Cấu hình sân & tuyển quân',
-                      style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: AppColors.neutral900),
+                    Text(
+                      l10n.club_config_venue_recruit,
+                      style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: colors.textPrimary),
                     ),
                     IconButton(
                       icon: const Icon(Icons.close_rounded),
@@ -150,50 +156,53 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
                   ],
                 ),
                 const Divider(),
-                const Text('Tên sân cố định', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                Text(l10n.club_fixed_venue_name, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: colors.textPrimary)),
                 const SizedBox(height: 6),
                 TextField(
                   controller: venueController,
                   decoration: InputDecoration(
-                    hintText: 'Ví dụ: Sân Cầu Lông Kỳ Hòa',
+                    hintText: l10n.club_fixed_venue_hint,
+                    hintStyle: TextStyle(color: colors.textMuted),
                     filled: true,
-                    fillColor: AppColors.background,
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+                    fillColor: colors.inputFill,
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: colors.inputBorder)),
                     contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                   ),
                 ),
                 const SizedBox(height: 12),
-                const Text('Địa chỉ sân', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                Text(l10n.club_fixed_address, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: colors.textPrimary)),
                 const SizedBox(height: 6),
                 TextField(
                   controller: addressController,
                   decoration: InputDecoration(
-                    hintText: 'Ví dụ: 238 Đường 3/2, Phường 12, Quận 10',
+                    hintText: l10n.club_fixed_address_hint,
+                    hintStyle: TextStyle(color: colors.textMuted),
                     filled: true,
-                    fillColor: AppColors.background,
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+                    fillColor: colors.inputFill,
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: colors.inputBorder)),
                     contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                   ),
                 ),
                 const SizedBox(height: 12),
-                const Text('Mô tả nhóm', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                Text(l10n.role_description_label, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: colors.textPrimary)),
                 const SizedBox(height: 6),
                 TextField(
                   controller: descController,
                   maxLines: 2,
                   decoration: InputDecoration(
-                    hintText: 'Giới thiệu về không khí, chi phí hoặc yêu cầu...',
+                    hintText: l10n.role_description_hint,
+                    hintStyle: TextStyle(color: colors.textMuted),
                     filled: true,
-                    fillColor: AppColors.background,
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+                    fillColor: colors.inputFill,
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: colors.inputBorder)),
                     contentPadding: const EdgeInsets.all(12),
                   ),
                 ),
                 const SizedBox(height: 12),
                 SwitchListTile(
                   contentPadding: EdgeInsets.zero,
-                  activeThumbColor: AppColors.primary,
-                  title: const Text('Mở tuyển thành viên mới', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                  activeThumbColor: colors.primary,
+                  title: Text(l10n.club_recruiting_status, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: colors.textPrimary)),
                   value: isRecruiting,
                   onChanged: (val) => setSheetState(() => isRecruiting = val),
                 ),
@@ -203,7 +212,7 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
                   height: 46,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
+                      backgroundColor: colors.primary,
                       foregroundColor: AppColors.white,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                     ),
@@ -257,15 +266,15 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
+      backgroundColor: AppColors.transparent,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setSheetState) => Container(
           constraints: BoxConstraints(
             maxHeight: MediaQuery.of(ctx).size.height * 0.90,
           ),
-          decoration: const BoxDecoration(
-            color: AppColors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          decoration: BoxDecoration(
+            color: colors.cardBackground,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -278,10 +287,10 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: AppColors.primary.withValues(alpha: 0.12),
+                        color: colors.primary.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: const Icon(Icons.event_repeat_rounded, color: AppColors.primary, size: 20),
+                      child: Icon(Icons.event_repeat_rounded, color: colors.primary, size: 20),
                     ),
                     const SizedBox(width: 12),
                     const Expanded(
@@ -301,13 +310,13 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.close_rounded, color: AppColors.textMuted),
+                      icon: Icon(Icons.close_rounded, color: colors.textMuted),
                       onPressed: () => Navigator.of(ctx).pop(),
                     ),
                   ],
                 ),
               ),
-              const Divider(height: 1, color: AppColors.border),
+              Divider(height: 1, color: colors.cardBorder),
 
               // Planner Body
               Expanded(
@@ -323,7 +332,7 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
               ),
 
               // Footer Action
-              const Divider(height: 1, color: AppColors.border),
+              Divider(height: 1, color: colors.cardBorder),
               Padding(
                 padding: EdgeInsets.fromLTRB(16, 12, 16, MediaQuery.of(ctx).viewInsets.bottom + 16),
                 child: SizedBox(
@@ -423,42 +432,42 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
     final club = state.club;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colors.background,
       appBar: AppBar(
-        backgroundColor: AppColors.white,
+        backgroundColor: colors.cardBackground,
         elevation: 0,
         title: Text(
           club?.groupName ?? 'Chi tiết Câu lạc bộ',
-          style: const TextStyle(
-            color: AppColors.neutral900,
+          style: TextStyle(
+            color: colors.textPrimary,
             fontSize: 17,
             fontWeight: FontWeight.w700,
           ),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: AppColors.neutral900),
+          icon: Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: colors.textPrimary),
           onPressed: () => context.pop(),
         ),
         actions: [
           if (club != null && club.currentUserStatus.isHost) ...[
             IconButton(
-              icon: const Icon(Icons.settings_outlined, color: AppColors.neutral900, size: 22),
+              icon: Icon(Icons.settings_outlined, color: colors.textPrimary, size: 22),
               tooltip: 'Cài đặt CLB',
               onPressed: () => _showEditInfoDialog(club),
             ),
             IconButton(
-              icon: const Icon(Icons.calendar_month_outlined, color: AppColors.neutral900, size: 22),
+              icon: Icon(Icons.calendar_month_outlined, color: colors.textPrimary, size: 22),
               tooltip: 'Sửa lịch tuần',
               onPressed: () => _showEditSchedulesDialog(club),
             ),
             IconButton(
-              icon: const Icon(Icons.people_outline_rounded, color: AppColors.neutral900, size: 22),
+              icon: Icon(Icons.people_outline_rounded, color: colors.textPrimary, size: 22),
               tooltip: 'Quản lý thành viên',
               onPressed: () => context.push('/club/${widget.clubId}/roles'),
             ),
           ] else if (club != null && club.currentUserStatus.isMember)
             PopupMenuButton<String>(
-              icon: const Icon(Icons.more_vert_rounded, color: AppColors.neutral900),
+              icon: Icon(Icons.more_vert_rounded, color: colors.textPrimary),
               onSelected: (val) {
                 if (val == 'info') {
                   _showEditInfoDialog(club);
@@ -587,15 +596,10 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: colors.cardBackground,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
-          ),
-        ],
+        border: Border.all(color: colors.cardBorder),
+        boxShadow: AppShadows.sm,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -632,10 +636,10 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
                   children: [
                     Text(
                       club.groupName,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.neutral900,
+                        color: colors.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -646,7 +650,7 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                         decoration: BoxDecoration(
-                          color: AppColors.surfaceSubtle,
+                          color: colors.surfaceSubtle,
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Row(
@@ -654,10 +658,10 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
                           children: [
                             Text(
                               'Mã: ${club.code}',
-                              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textMuted),
+                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: colors.textMuted),
                             ),
                             const SizedBox(width: 4),
-                            const Icon(Icons.copy_rounded, size: 12, color: AppColors.textMuted),
+                            Icon(Icons.copy_rounded, size: 12, color: colors.textMuted),
                           ],
                         ),
                       ),
@@ -724,10 +728,10 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
                   Expanded(
                     child: Text(
                       'Lịch sinh hoạt: ${club.schedulesSummary!}',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12.5,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.textPrimary,
+                        color: colors.textPrimary,
                       ),
                     ),
                   ),
@@ -757,7 +761,7 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
         const SizedBox(height: 2),
         Text(
           label,
-          style: const TextStyle(fontSize: 11, color: AppColors.textMuted),
+          style: TextStyle(fontSize: 11, color: colors.textMuted),
         ),
       ],
     );
@@ -769,15 +773,10 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: colors.cardBackground,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
-          ),
-        ],
+        border: Border.all(color: colors.cardBorder),
+        boxShadow: AppShadows.sm,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -796,7 +795,7 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
           if (hasVenue) ...[
             Text(
               club.fixedVenueName!,
-              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.neutral800),
+              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: colors.textPrimary),
             ),
             if (club.fixedAddress != null && club.fixedAddress!.isNotEmpty) ...[
               const SizedBox(height: 4),
@@ -808,7 +807,7 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
                   Expanded(
                     child: Text(
                       club.fixedAddress!,
-                      style: const TextStyle(fontSize: 13, color: AppColors.textMuted),
+                      style: TextStyle(fontSize: 13, color: colors.textMuted),
                     ),
                   ),
                 ],
@@ -861,15 +860,10 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: colors.cardBackground,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
-          ),
-        ],
+        border: Border.all(color: colors.cardBorder),
+        boxShadow: AppShadows.sm,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -921,9 +915,9 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
                 margin: const EdgeInsets.only(bottom: 8),
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                 decoration: BoxDecoration(
-                  color: AppColors.background,
+                  color: colors.inputFill,
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: AppColors.border),
+                  border: Border.all(color: colors.cardBorder),
                 ),
                 child: Row(
                   children: [
@@ -938,10 +932,10 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
                     const SizedBox(width: 10),
                     Text(
                       s.dayName,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.neutral900,
+                        color: colors.textPrimary,
                       ),
                     ),
                     const Spacer(),
@@ -973,15 +967,10 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: colors.cardBackground,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
-          ),
-        ],
+        border: Border.all(color: colors.cardBorder),
+        boxShadow: AppShadows.sm,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1026,7 +1015,7 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
                       club.host.phoneNumber != null && club.host.phoneNumber!.isNotEmpty
                           ? club.host.phoneNumber!
                           : 'Chưa cập nhật số điện thoại',
-                      style: const TextStyle(fontSize: 12, color: AppColors.textMuted),
+                      style: TextStyle(fontSize: 12, color: colors.textMuted),
                     ),
                   ],
                 ),
@@ -1051,15 +1040,10 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: colors.cardBackground,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
-          ),
-        ],
+        border: Border.all(color: colors.cardBorder),
+        boxShadow: AppShadows.sm,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1079,7 +1063,7 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
             club.description != null && club.description!.isNotEmpty
                 ? club.description!
                 : 'Nhóm sinh hoạt phong trào cầu lông lành mạnh, đoàn kết, vui khỏe.',
-            style: const TextStyle(fontSize: 13, height: 1.4, color: AppColors.neutral700),
+            style: TextStyle(fontSize: 13, height: 1.4, color: colors.textSecondary),
           ),
           const SizedBox(height: 12),
           Row(
@@ -1102,14 +1086,9 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 10,
-            offset: const Offset(0, -3),
-          ),
-        ],
+        color: colors.cardBackground,
+        border: Border(top: BorderSide(color: colors.cardBorder)),
+        boxShadow: AppShadows.bottomBar,
       ),
       child: SafeArea(
         child: SizedBox(
@@ -1138,7 +1117,7 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
                         },
                   icon: const Icon(Icons.login_rounded),
                   label: isSubmitting
-                      ? const CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
+                      ? const CircularProgressIndicator(color: AppColors.white, strokeWidth: 2)
                       : const Text(
                           'Vào sinh hoạt CLB',
                           style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
@@ -1168,7 +1147,7 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
                       onPressed: isSubmitting ? null : _showJoinRequestDialog,
                       icon: const Icon(Icons.person_add_alt_1_rounded),
                       label: isSubmitting
-                          ? const CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
+                          ? const CircularProgressIndicator(color: AppColors.white, strokeWidth: 2)
                           : const Text(
                               'Gửi đơn xin gia nhập CLB',
                               style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),

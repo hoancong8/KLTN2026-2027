@@ -6,6 +6,8 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:kltn2026_2027/app/provider.dart';
 import 'package:kltn2026_2027/app/theme/theme.dart';
+import 'package:kltn2026_2027/app/provider/localization_provider.dart';
+import 'package:kltn2026_2027/app/l10n_gen/app_localizations.dart';
 import '../../../../../../app/consts/app_config.dart';
 import '../../../../../../domain/entities/session/session.dart';
 import '../../../../../../domain/enums/session_enums.dart';
@@ -30,6 +32,10 @@ class ClubSessionsTab extends ConsumerStatefulWidget {
 
 class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
   late DateTime _focusedMonth;
+
+  AppThemeColors get colors => context.colors;
+  AppLocalizations get l10n => context.l10n;
+
   DateTime? _selectedDate;
 
   @override
@@ -144,10 +150,10 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
     final canCreateSession = widget.isHost || ref.hasClubPermission('OPERATIONS.SESSION.CREATE');
 
     return Scaffold(
-      backgroundColor: AppColors.neutral50,
+      backgroundColor: colors.background,
       floatingActionButton: canCreateSession
           ? FloatingActionButton.extended(
-              backgroundColor: AppColors.primary,
+              backgroundColor: colors.primary,
               foregroundColor: AppColors.white,
               icon: const Icon(Icons.add_rounded),
               label: const Text('Tạo buổi chơi', style: TextStyle(fontWeight: FontWeight.bold)),
@@ -198,17 +204,17 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
                             child: const Icon(Icons.event_available_rounded, color: AppColors.primary, size: 20),
                           ),
                           const SizedBox(width: 10),
-                          const Expanded(
+                          Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
                                   'Lịch tập tôi đã đăng ký',
-                                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.textPrimary),
+                                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: colors.textPrimary),
                                 ),
                                 Text(
                                   'Xem danh sách vé, check-in và trạng thái giữ chỗ',
-                                  style: TextStyle(fontSize: 11, color: AppColors.textMuted),
+                                  style: TextStyle(fontSize: 11, color: colors.textMuted),
                                 ),
                               ],
                             ),
@@ -239,7 +245,7 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
                           Expanded(
                             child: Text(
                               'Lịch ngày ${DateFormat('dd/MM/yyyy').format(_selectedDate!)} (${displaySessions.length} buổi)',
-                              style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                              style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold, color: colors.textPrimary),
                             ),
                           ),
                           InkWell(
@@ -268,18 +274,18 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
                       padding: const EdgeInsets.all(24),
                       margin: const EdgeInsets.only(bottom: 16),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: colors.cardBackground,
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: AppColors.border),
+                        border: Border.all(color: colors.cardBorder),
                       ),
                       child: Center(
                         child: Column(
                           children: [
-                            const Icon(Icons.event_busy_rounded, color: AppColors.textMuted, size: 36),
+                            Icon(Icons.event_busy_rounded, color: colors.textMuted, size: 36),
                             const SizedBox(height: 8),
                             Text(
                               'Không có buổi tập nào vào ngày ${DateFormat('dd/MM/yyyy').format(_selectedDate!)}',
-                              style: const TextStyle(fontSize: 13, color: AppColors.textMuted),
+                              style: TextStyle(fontSize: 13, color: colors.textMuted),
                             ),
                             const SizedBox(height: 8),
                             TextButton(
@@ -356,7 +362,7 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
                     child: const Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.bolt_rounded, size: 14, color: Colors.white),
+                        Icon(Icons.bolt_rounded, size: 14, color: AppColors.white),
                         SizedBox(width: 4),
                         Text(
                           'BUỔI TẬP GẦN NHẤT',
@@ -403,10 +409,10 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
               // Title
               Text(
                 session.title,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 17,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
+                  color: colors.textPrimary,
                 ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
@@ -420,23 +426,23 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
                   const SizedBox(width: 6),
                   Text(
                     dateStr,
-                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: colors.textPrimary),
                   ),
                   const SizedBox(width: 8),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: colors.cardBackground,
                       borderRadius: BorderRadius.circular(6),
-                      border: Border.all(color: AppColors.border),
+                      border: Border.all(color: colors.cardBorder),
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.access_time_rounded, size: 12, color: AppColors.textMuted),
+                        Icon(Icons.access_time_rounded, size: 12, color: colors.textMuted),
                         const SizedBox(width: 4),
                         Text(
                           timeRange,
-                          style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                          style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold, color: colors.textPrimary),
                         ),
                       ],
                     ),
@@ -448,12 +454,12 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
               // Court location
               Row(
                 children: [
-                  const Icon(Icons.place_outlined, size: 15, color: AppColors.textMuted),
+                  Icon(Icons.place_outlined, size: 15, color: colors.textMuted),
                   const SizedBox(width: 6),
                   Expanded(
                     child: Text(
                       session.courtLocation,
-                      style: const TextStyle(fontSize: 13, color: AppColors.textMuted),
+                      style: TextStyle(fontSize: 13, color: colors.textMuted),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -471,9 +477,9 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
                       child: LinearProgressIndicator(
                         value: progress,
                         minHeight: 6,
-                        backgroundColor: AppColors.border,
+                        backgroundColor: colors.cardBorder,
                         valueColor: AlwaysStoppedAnimation<Color>(
-                          isFull ? AppColors.accentOrange : AppColors.primary,
+                          isFull ? colors.warning : colors.primary,
                         ),
                       ),
                     ),
@@ -484,7 +490,7 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
-                      color: isFull ? AppColors.accentOrange : AppColors.primary,
+                      color: isFull ? colors.warning : colors.primary,
                     ),
                   ),
                   if (session.waitingCount > 0) ...[
@@ -510,8 +516,8 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
                 width: double.infinity,
                 child: ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
+                    backgroundColor: colors.primary,
+                    foregroundColor: AppColors.white,
                     elevation: 0,
                     padding: const EdgeInsets.symmetric(vertical: 11),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -555,16 +561,10 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colors.cardBackground,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        border: Border.all(color: colors.cardBorder),
+        boxShadow: AppShadows.sm,
       ),
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -587,22 +587,22 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
                 children: [
                   Text(
                     'Lịch Tập Tháng ${DateFormat('MM/yyyy').format(_focusedMonth)}',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary,
+                      color: colors.textPrimary,
                     ),
                   ),
                   Text(
                     '${sessionsInMonth.length} buổi tập dự kiến',
-                    style: const TextStyle(fontSize: 11, color: AppColors.textMuted),
+                    style: TextStyle(fontSize: 11, color: colors.textMuted),
                   ),
                 ],
               ),
               const Spacer(),
               // Month Navigation Buttons
               IconButton(
-                icon: const Icon(Icons.chevron_left_rounded, size: 22, color: AppColors.textPrimary),
+                icon: Icon(Icons.chevron_left_rounded, size: 22, color: colors.textPrimary),
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
                 onPressed: () {
@@ -612,7 +612,7 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
                 },
               ),
               IconButton(
-                icon: const Icon(Icons.chevron_right_rounded, size: 22, color: AppColors.textPrimary),
+                icon: Icon(Icons.chevron_right_rounded, size: 22, color: colors.textPrimary),
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
                 onPressed: () {
@@ -683,7 +683,7 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
 
               if (isSelected) {
                 bgColor = AppColors.primary;
-                textColor = Colors.white;
+                textColor = AppColors.white;
               } else if (hasSessions) {
                 if (isNearest) {
                   bgColor = AppColors.primary.withValues(alpha: 0.18);
@@ -736,7 +736,7 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
                               height: 5,
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
-                                color: isSelected ? Colors.white : AppColors.primary,
+                                color: isSelected ? AppColors.white : colors.primary,
                               ),
                             ),
                             if (daySessions.length > 1) ...[
@@ -746,7 +746,7 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
                                 height: 3,
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
-                                  color: isSelected ? Colors.white.withValues(alpha: 0.7) : AppColors.accentOrange,
+                                  color: isSelected ? AppColors.white.withValues(alpha: 0.7) : AppColors.accentOrange,
                                 ),
                               ),
                             ],
@@ -774,7 +774,7 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
                 ),
               ),
               const SizedBox(width: 5),
-              const Text('Ngày có buổi tập', style: TextStyle(fontSize: 11, color: AppColors.textMuted)),
+              Text('Ngày có buổi tập', style: TextStyle(fontSize: 11, color: colors.textMuted)),
               const SizedBox(width: 14),
               Container(
                 width: 12,
@@ -786,7 +786,7 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
                 ),
               ),
               const SizedBox(width: 5),
-              const Text('Buổi gần nhất', style: TextStyle(fontSize: 11, color: AppColors.textMuted)),
+              Text('Buổi gần nhất', style: TextStyle(fontSize: 11, color: colors.textMuted)),
             ],
           ),
         ],
@@ -811,14 +811,14 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
               child: const Icon(Icons.calendar_month_rounded, size: 54, color: AppColors.primary),
             ),
             const SizedBox(height: 16),
-            const Text(
+            Text(
               'Chưa Có Buổi Sinh Hoạt Mới',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: colors.textPrimary),
             ),
             const SizedBox(height: 8),
-            const Text(
+            Text(
               'Các buổi giao lưu sắp tới của câu lạc bộ sẽ hiển thị ở đây để bạn biểu quyết giữ chỗ.',
-              style: TextStyle(fontSize: 13, color: AppColors.textMuted),
+              style: TextStyle(fontSize: 13, color: colors.textMuted),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 18),
@@ -904,6 +904,7 @@ class _SessionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     final dateFormat = DateFormat('HH:mm, dd/MM/yyyy');
     final timeStr = '${DateFormat('HH:mm').format(session.startTime)} - ${dateFormat.format(session.endTime)}';
     final progress = session.maxPlayers > 0 ? (session.confirmedCount / session.maxPlayers).clamp(0.0, 1.0) : 0.0;
@@ -915,7 +916,7 @@ class _SessionCard extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(14),
         side: BorderSide(
-          color: session.isBookedByCurrentUser ? AppColors.primary.withValues(alpha: 0.4) : AppColors.border,
+          color: session.isBookedByCurrentUser ? colors.primary : colors.cardBorder,
           width: session.isBookedByCurrentUser ? 1.5 : 1,
         ),
       ),
@@ -941,7 +942,7 @@ class _SessionCard extends StatelessWidget {
               // Title
               Text(
                 session.title,
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: colors.textPrimary),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -950,12 +951,12 @@ class _SessionCard extends StatelessWidget {
               // Court Location
               Row(
                 children: [
-                  const Icon(Icons.location_on_outlined, size: 16, color: AppColors.textMuted),
+                  Icon(Icons.location_on_outlined, size: 16, color: colors.textMuted),
                   const SizedBox(width: 4),
                   Expanded(
                     child: Text(
                       session.courtLocation,
-                      style: const TextStyle(fontSize: 13, color: AppColors.textPrimary),
+                      style: TextStyle(fontSize: 13, color: colors.textSecondary),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -967,11 +968,11 @@ class _SessionCard extends StatelessWidget {
               // Time
               Row(
                 children: [
-                  const Icon(Icons.access_time_rounded, size: 16, color: AppColors.textMuted),
+                  Icon(Icons.access_time_rounded, size: 16, color: colors.textMuted),
                   const SizedBox(width: 4),
                   Text(
                     timeStr,
-                    style: const TextStyle(fontSize: 13, color: AppColors.textPrimary, fontWeight: FontWeight.w500),
+                    style: TextStyle(fontSize: 13, color: colors.textPrimary, fontWeight: FontWeight.w500),
                   ),
                 ],
               ),
@@ -986,9 +987,9 @@ class _SessionCard extends StatelessWidget {
                       child: LinearProgressIndicator(
                         value: progress,
                         minHeight: 6,
-                        backgroundColor: AppColors.border,
+                        backgroundColor: colors.cardBorder,
                         valueColor: AlwaysStoppedAnimation<Color>(
-                          isFull ? AppColors.warning : AppColors.primary,
+                          isFull ? colors.warning : colors.primary,
                         ),
                       ),
                     ),
@@ -999,7 +1000,7 @@ class _SessionCard extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
-                      color: isFull ? AppColors.warning : AppColors.primary,
+                      color: isFull ? colors.warning : colors.primary,
                     ),
                   ),
                   if (session.waitingCount > 0) ...[
