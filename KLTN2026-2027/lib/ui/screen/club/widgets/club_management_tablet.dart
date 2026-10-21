@@ -28,16 +28,16 @@ class ClubManagementTablet extends ConsumerWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.sports_tennis_rounded, size: 72, color: AppColor.cMuted.withAlpha(120)),
+              Icon(Icons.sports_tennis_rounded, size: 72, color: AppColors.textMuted.withAlpha(120)),
               const SizedBox(height: 16),
               const Text('Chưa chọn Câu lạc bộ hoạt động', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
-              const Text('Vui lòng chọn hoặc tham gia một câu lạc bộ.', style: TextStyle(color: AppColor.cMuted)),
+              const Text('Vui lòng chọn hoặc tham gia một câu lạc bộ.', style: TextStyle(color: AppColors.textMuted)),
               const SizedBox(height: 20),
               ElevatedButton.icon(
                 icon: const Icon(Icons.swap_horiz_rounded),
                 label: const Text('Chọn Câu lạc bộ'),
-                style: ElevatedButton.styleFrom(backgroundColor: AppColor.cMain, foregroundColor: Colors.white),
+                style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, foregroundColor: Colors.white),
                 onPressed: () => ClubSwitcherDialog.show(context),
               ),
             ],
@@ -53,16 +53,16 @@ class ClubManagementTablet extends ConsumerWidget {
       backgroundColor: AppColors.neutral50,
       appBar: AppBar(
         title: const Text('Quản lý Câu lạc bộ & Thành viên', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-        backgroundColor: AppColor.white,
-        foregroundColor: AppColor.cTitle,
+        backgroundColor: AppColors.white,
+        foregroundColor: AppColors.textPrimary,
         elevation: 0.5,
         actions: [
           OutlinedButton.icon(
             icon: const Icon(Icons.swap_horiz_rounded, size: 18),
             label: const Text('Đổi CLB'),
             style: OutlinedButton.styleFrom(
-              foregroundColor: AppColor.cMain,
-              side: const BorderSide(color: AppColor.cMain),
+              foregroundColor: AppColors.primary,
+              side: const BorderSide(color: AppColors.primary),
             ),
             onPressed: () => ClubSwitcherDialog.show(context),
           ),
@@ -70,7 +70,7 @@ class ClubManagementTablet extends ConsumerWidget {
         ],
       ),
       body: clubMembersState.isLoading && club == null
-          ? const Center(child: CircularProgressIndicator(color: AppColor.cMain))
+          ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
           : Padding(
               padding: const EdgeInsets.all(24),
               child: Row(
@@ -82,7 +82,7 @@ class ClubManagementTablet extends ConsumerWidget {
                     child: Card(
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                       elevation: 0,
-                      color: AppColor.white,
+                      color: AppColors.white,
                       child: Padding(
                         padding: const EdgeInsets.all(20),
                         child: Column(
@@ -92,20 +92,20 @@ class ClubManagementTablet extends ConsumerWidget {
                               width: 56,
                               height: 56,
                               decoration: BoxDecoration(
-                                color: AppColor.cMain.withAlpha(20),
+                                color: AppColors.primary.withAlpha(20),
                                 borderRadius: BorderRadius.circular(14),
                               ),
-                              child: const Icon(Icons.sports_tennis_rounded, color: AppColor.cMain, size: 30),
+                              child: const Icon(Icons.sports_tennis_rounded, color: AppColors.primary, size: 30),
                             ),
                             const SizedBox(height: 14),
                             Text(
                               activeContext.clubName,
-                              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColor.cTitle),
+                              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
                             ),
                             const SizedBox(height: 4),
                             Row(
                               children: [
-                                Text('Mã nhóm: ${club?.code ?? ""}', style: const TextStyle(fontSize: 13, color: AppColor.cMuted)),
+                                Text('Mã nhóm: ${club?.code ?? ""}', style: const TextStyle(fontSize: 13, color: AppColors.textMuted)),
                                 const SizedBox(width: 6),
                                 InkWell(
                                   onTap: () {
@@ -116,32 +116,32 @@ class ClubManagementTablet extends ConsumerWidget {
                                       );
                                     }
                                   },
-                                  child: const Icon(Icons.copy_rounded, size: 14, color: AppColor.cMuted),
+                                  child: const Icon(Icons.copy_rounded, size: 14, color: AppColors.textMuted),
                                 ),
                               ],
                             ),
                             const SizedBox(height: 16),
-                            const Divider(color: AppColor.cDivider),
+                            const Divider(color: AppColors.border),
                             const SizedBox(height: 12),
-                            const Text('Vai trò của bạn trong nhóm:', style: TextStyle(fontSize: 12, color: AppColor.cMuted)),
+                            const Text('Vai trò của bạn trong nhóm:', style: TextStyle(fontSize: 12, color: AppColors.textMuted)),
                             const SizedBox(height: 6),
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                               decoration: BoxDecoration(
-                                color: AppColor.cMain.withAlpha(20),
+                                color: AppColors.primary.withAlpha(20),
                                 borderRadius: BorderRadius.circular(8),
-                                border: Border.all(color: AppColor.cMain.withAlpha(60)),
+                                border: Border.all(color: AppColors.primary.withAlpha(60)),
                               ),
                               child: Text(
                                 activeContext.role.displayName,
-                                style: const TextStyle(fontWeight: FontWeight.bold, color: AppColor.cMain, fontSize: 13),
+                                style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.primary, fontSize: 13),
                               ),
                             ),
                             const SizedBox(height: 16),
                             if (club?.description != null && club!.description!.isNotEmpty) ...[
-                              const Text('Mô tả nhóm:', style: TextStyle(fontSize: 12, color: AppColor.cMuted)),
+                              const Text('Mô tả nhóm:', style: TextStyle(fontSize: 12, color: AppColors.textMuted)),
                               const SizedBox(height: 4),
-                              Text(club.description!, style: const TextStyle(fontSize: 13, color: AppColor.cTitle)),
+                              Text(club.description!, style: const TextStyle(fontSize: 13, color: AppColors.textPrimary)),
                               const SizedBox(height: 16),
                             ],
                             const Spacer(),
@@ -166,10 +166,10 @@ class ClubManagementTablet extends ConsumerWidget {
                             SizedBox(
                               width: double.infinity,
                               child: OutlinedButton.icon(
-                                icon: const Icon(Icons.logout_rounded, size: 18, color: AppColor.cAlert),
-                                label: const Text('Rời khỏi câu lạc bộ', style: TextStyle(color: AppColor.cAlert)),
+                                icon: const Icon(Icons.logout_rounded, size: 18, color: AppColors.error),
+                                label: const Text('Rời khỏi câu lạc bộ', style: TextStyle(color: AppColors.error)),
                                 style: OutlinedButton.styleFrom(
-                                  side: BorderSide(color: AppColor.cAlert.withAlpha(100)),
+                                  side: BorderSide(color: AppColors.error.withAlpha(100)),
                                   padding: const EdgeInsets.symmetric(vertical: 12),
                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                                 ),
@@ -182,7 +182,7 @@ class ClubManagementTablet extends ConsumerWidget {
                                       actions: [
                                         TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Hủy')),
                                         ElevatedButton(
-                                          style: ElevatedButton.styleFrom(backgroundColor: AppColor.cAlert),
+                                          style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
                                           onPressed: () => Navigator.of(ctx).pop(true),
                                           child: const Text('Rời nhóm'),
                                         ),
@@ -207,7 +207,7 @@ class ClubManagementTablet extends ConsumerWidget {
                     child: Card(
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                       elevation: 0,
-                      color: AppColor.white,
+                      color: AppColors.white,
                       child: Padding(
                         padding: const EdgeInsets.all(20),
                         child: Column(
@@ -218,7 +218,7 @@ class ClubManagementTablet extends ConsumerWidget {
                                 Expanded(
                                   child: Text(
                                     'Danh sách Thành viên (${clubMembersState.members.length})',
-                                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColor.cTitle),
+                                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
                                   ),
                                 ),
                                 SizedBox(
@@ -227,24 +227,24 @@ class ClubManagementTablet extends ConsumerWidget {
                                     onChanged: (val) => vm.setSearchQuery(val),
                                     decoration: InputDecoration(
                                       hintText: 'Tìm theo tên, email, vai trò...',
-                                      hintStyle: const TextStyle(fontSize: 12.5, color: AppColor.cMuted),
-                                      prefixIcon: const Icon(Icons.search_rounded, size: 18, color: AppColor.cMuted),
+                                      hintStyle: const TextStyle(fontSize: 12.5, color: AppColors.textMuted),
+                                      prefixIcon: const Icon(Icons.search_rounded, size: 18, color: AppColors.textMuted),
                                       filled: true,
                                       fillColor: AppColors.neutral50,
                                       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppColor.cDivider)),
-                                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppColor.cDivider)),
+                                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppColors.border)),
+                                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppColors.border)),
                                     ),
                                   ),
                                 ),
                               ],
                             ),
                             const SizedBox(height: 16),
-                            const Divider(color: AppColor.cDivider),
+                            const Divider(color: AppColors.border),
                             const SizedBox(height: 8),
                             Expanded(
                               child: members.isEmpty
-                                  ? const Center(child: Text('Không tìm thấy thành viên nào', style: TextStyle(color: AppColor.cMuted)))
+                                  ? const Center(child: Text('Không tìm thấy thành viên nào', style: TextStyle(color: AppColors.textMuted)))
                                   : ListView.separated(
                                       itemCount: members.length,
                                       separatorBuilder: (_, _) => const SizedBox(height: 10),

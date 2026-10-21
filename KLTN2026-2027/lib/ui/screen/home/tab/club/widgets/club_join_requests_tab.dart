@@ -18,38 +18,38 @@ class ClubJoinRequestsTab extends ConsumerWidget {
     final vm = ref.read(clubJoinRequestsViewModelProvider(clubId).notifier);
 
     if (state.isLoading) {
-      return const Center(child: CircularProgressIndicator(color: AppColor.cMain));
+      return const Center(child: CircularProgressIndicator(color: AppColors.primary));
     }
 
     if (state.requests.isEmpty) {
       return RefreshIndicator(
         onRefresh: vm.loadRequests,
-        color: AppColor.cMain,
+        color: AppColors.primary,
         child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.all(32),
+          padding: AppSpacing.allXl,
           children: [
-            const SizedBox(height: 60),
+            AppSpacing.gapH64,
             Center(
               child: Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: AppColor.cMain.withValues(alpha: 0.08),
+                padding: AppSpacing.allLg,
+                decoration: const BoxDecoration(
+                  color: AppColors.primaryContainer,
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.mark_email_read_outlined, size: 50, color: AppColor.cMain),
+                child: const Icon(Icons.mark_email_read_outlined, size: 50, color: AppColors.primary),
               ),
             ),
-            const SizedBox(height: 16),
-            const Text(
+            AppSpacing.gapH16,
+            Text(
               'Không Có Yêu Cầu Chờ Duyệt',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColor.cTitle),
+              style: AppTypography.titleMedium.bold.colored(AppColors.textPrimary),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 6),
-            const Text(
+            AppSpacing.gapH8,
+            Text(
               'Tất cả các đơn xin gia nhập câu lạc bộ đã được xử lý xong.',
-              style: TextStyle(fontSize: 13, color: AppColor.cMuted),
+              style: AppTypography.bodySmall.colored(AppColors.textMuted),
               textAlign: TextAlign.center,
             ),
           ],
@@ -59,11 +59,11 @@ class ClubJoinRequestsTab extends ConsumerWidget {
 
     return RefreshIndicator(
       onRefresh: vm.loadRequests,
-      color: AppColor.cMain,
+      color: AppColors.primary,
       child: ListView.separated(
-        padding: const EdgeInsets.all(16),
+        padding: AppSpacing.allBase,
         itemCount: state.requests.length,
-        separatorBuilder: (_, _) => const SizedBox(height: 10),
+        separatorBuilder: (_, _) => AppSpacing.gapH12,
         itemBuilder: (ctx, index) {
           final req = state.requests[index];
           return _JoinRequestCard(
@@ -80,24 +80,29 @@ class ClubJoinRequestsTab extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-        title: const Text('Phê Duyệt Thành Viên', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17)),
-        content: Text('Bạn có chắc muốn duyệt thành viên "${req.fullName}" vào câu lạc bộ?'),
+        backgroundColor: AppColors.surface,
+        shape: const RoundedRectangleBorder(borderRadius: AppRadius.dialog),
+        title: Text('Phê Duyệt Thành Viên', style: AppTypography.titleMedium.bold),
+        content: Text(
+          'Bạn có chắc muốn duyệt thành viên "${req.fullName}" vào câu lạc bộ?',
+          style: AppTypography.bodyMedium,
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Hủy'),
+            child: Text('Hủy', style: AppTypography.labelLarge.colored(AppColors.textMuted)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColor.cMain,
-              foregroundColor: AppColor.white,
+              backgroundColor: AppColors.primary,
+              foregroundColor: AppColors.onPrimary,
+              shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
             ),
             onPressed: () {
               Navigator.of(ctx).pop();
               vm.approve(req.id);
             },
-            child: const Text('Duyệt ngay'),
+            child: Text('Duyệt ngay', style: AppTypography.labelLarge.bold.colored(AppColors.onPrimary)),
           ),
         ],
       ),
@@ -108,24 +113,29 @@ class ClubJoinRequestsTab extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-        title: const Text('Từ Chối Yêu Cầu', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17)),
-        content: Text('Bạn có chắc muốn từ chối đơn gia nhập của "${req.fullName}"?'),
+        backgroundColor: AppColors.surface,
+        shape: const RoundedRectangleBorder(borderRadius: AppRadius.dialog),
+        title: Text('Từ Chối Yêu Cầu', style: AppTypography.titleMedium.bold),
+        content: Text(
+          'Bạn có chắc muốn từ chối đơn gia nhập của "${req.fullName}"?',
+          style: AppTypography.bodyMedium,
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Hủy'),
+            child: Text('Hủy', style: AppTypography.labelLarge.colored(AppColors.textMuted)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColor.cRed,
-              foregroundColor: AppColor.white,
+              backgroundColor: AppColors.error,
+              foregroundColor: AppColors.onError,
+              shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
             ),
             onPressed: () {
               Navigator.of(ctx).pop();
               vm.reject(req.id);
             },
-            child: const Text('Từ chối'),
+            child: Text('Từ chối', style: AppTypography.labelLarge.bold.colored(AppColors.onError)),
           ),
         ],
       ),
@@ -149,14 +159,15 @@ class _JoinRequestCard extends StatelessWidget {
     final dateStr = DateFormat('dd/MM/yyyy HH:mm').format(request.createdAt);
 
     return Card(
-      elevation: 0.8,
+      elevation: 0,
       margin: EdgeInsets.zero,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: const BorderSide(color: AppColors.border),
+      color: AppColors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: AppRadius.card,
+        side: BorderSide(color: AppColors.border),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(14),
+        padding: AppSpacing.allBase,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -164,24 +175,24 @@ class _JoinRequestCard extends StatelessWidget {
               children: [
                 CircleAvatar(
                   radius: 20,
-                  backgroundColor: AppColor.cMain.withValues(alpha: 0.15),
+                  backgroundColor: AppColors.primaryContainer,
                   child: Text(
                     request.fullName.isNotEmpty ? request.fullName[0].toUpperCase() : '?',
-                    style: const TextStyle(fontWeight: FontWeight.bold, color: AppColor.cMain),
+                    style: AppTypography.labelLarge.bold.colored(AppColors.primary),
                   ),
                 ),
-                const SizedBox(width: 12),
+                AppSpacing.gapW12,
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         request.fullName,
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: AppColor.cTitle),
+                        style: AppTypography.titleSmall.bold.colored(AppColors.textPrimary),
                       ),
                       Text(
                         dateStr,
-                        style: const TextStyle(fontSize: 12, color: AppColor.cMuted),
+                        style: AppTypography.labelSmall.colored(AppColors.textMuted),
                       ),
                     ],
                   ),
@@ -189,45 +200,45 @@ class _JoinRequestCard extends StatelessWidget {
               ],
             ),
             if (request.introduction != null && request.introduction!.isNotEmpty) ...[
-              const SizedBox(height: 10),
+              AppSpacing.gapH12,
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.all(10),
+                padding: AppSpacing.allSm,
                 decoration: BoxDecoration(
-                  color: AppColors.neutral50,
-                  borderRadius: BorderRadius.circular(8),
+                  color: AppColors.surfaceSubtle,
+                  borderRadius: AppRadius.borderSm,
                   border: Border.all(color: AppColors.border),
                 ),
                 child: Text(
                   '“${request.introduction}”',
-                  style: const TextStyle(fontSize: 13, fontStyle: FontStyle.italic, color: AppColor.cTitle),
+                  style: AppTypography.bodySmall.colored(AppColors.textPrimary).copyWith(fontStyle: FontStyle.italic),
                 ),
               ),
             ],
-            const SizedBox(height: 12),
+            AppSpacing.gapH12,
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 OutlinedButton(
                   onPressed: onReject,
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: AppColor.cRed,
-                    side: const BorderSide(color: AppColor.cRed),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    foregroundColor: AppColors.error,
+                    side: const BorderSide(color: AppColors.error),
+                    shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
                   ),
-                  child: const Text('Từ chối', style: TextStyle(fontSize: 13)),
+                  child: Text('Từ chối', style: AppTypography.labelMedium.colored(AppColors.error)),
                 ),
-                const SizedBox(width: 8),
+                AppSpacing.gapW8,
                 ElevatedButton(
                   onPressed: onApprove,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColor.cMain,
-                    foregroundColor: AppColor.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: AppColors.onPrimary,
+                    shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.base, vertical: AppSpacing.sm),
                   ),
-                  child: const Text('Duyệt vào CLB', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+                  child: Text('Duyệt vào CLB', style: AppTypography.labelMedium.bold.colored(AppColors.onPrimary)),
                 ),
               ],
             ),

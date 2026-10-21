@@ -70,7 +70,7 @@ class _ClubDetailViewState extends ConsumerState<ClubDetailView> with SingleTick
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Đã sao chép mã nhóm: ${widget.club.clubCode}'),
-          backgroundColor: AppColor.cMain,
+          backgroundColor: AppColors.primary,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -105,22 +105,22 @@ class _ClubDetailViewState extends ConsumerState<ClubDetailView> with SingleTick
 
         // 2. Tab Bar
         Container(
-          color: AppColor.white,
+          color: AppColors.surface,
           child: TabBar(
             controller: _tabController!,
             isScrollable: true,
             tabAlignment: TabAlignment.start,
-            labelColor: AppColor.cMain,
-            unselectedLabelColor: AppColor.cMuted,
-            indicatorColor: AppColor.cMain,
+            labelColor: AppColors.primary,
+            unselectedLabelColor: AppColors.textMuted,
+            indicatorColor: AppColors.primary,
             indicatorWeight: 3,
             tabs: [
               const Tab(
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.calendar_month_rounded, size: 18),
-                    SizedBox(width: 6),
+                    Icon(Icons.calendar_month_rounded, size: AppSpacing.iconSm),
+                    AppSpacing.gapW8,
                     Text('Buổi tập'),
                   ],
                 ),
@@ -129,8 +129,8 @@ class _ClubDetailViewState extends ConsumerState<ClubDetailView> with SingleTick
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.people_alt_outlined, size: 18),
-                    const SizedBox(width: 6),
+                    const Icon(Icons.people_alt_outlined, size: AppSpacing.iconSm),
+                    AppSpacing.gapW8,
                     Text('Thành viên (${membersState.members.length})'),
                   ],
                 ),
@@ -140,8 +140,8 @@ class _ClubDetailViewState extends ConsumerState<ClubDetailView> with SingleTick
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.how_to_reg_outlined, size: 18),
-                      SizedBox(width: 6),
+                      Icon(Icons.how_to_reg_outlined, size: AppSpacing.iconSm),
+                      AppSpacing.gapW8,
                       Text('Duyệt đơn'),
                     ],
                   ),
@@ -150,8 +150,8 @@ class _ClubDetailViewState extends ConsumerState<ClubDetailView> with SingleTick
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.share_outlined, size: 18),
-                    SizedBox(width: 6),
+                    Icon(Icons.share_outlined, size: AppSpacing.iconSm),
+                    AppSpacing.gapW8,
                     Text('Thông tin & Mời'),
                   ],
                 ),
@@ -174,7 +174,7 @@ class _ClubDetailViewState extends ConsumerState<ClubDetailView> with SingleTick
 
               // Tab 2: Member List (Discord Roles)
               membersState.isLoading
-                  ? const Center(child: CircularProgressIndicator(color: AppColor.cMain))
+                  ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
                   : ClubMemberSection(
                       members: membersState.members,
                       isHost: isHost,
@@ -199,7 +199,7 @@ class _ClubDetailViewState extends ConsumerState<ClubDetailView> with SingleTick
 
     return Container(
       width: double.infinity,
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         gradient: LinearGradient(
           colors: [
             AppColors.neutral800,
@@ -208,15 +208,9 @@ class _ClubDetailViewState extends ConsumerState<ClubDetailView> with SingleTick
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: const Offset(0, 3),
-          ),
-        ],
+        boxShadow: AppShadows.sm,
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.base, vertical: AppSpacing.md),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -228,9 +222,9 @@ class _ClubDetailViewState extends ConsumerState<ClubDetailView> with SingleTick
                 width: 52,
                 height: 52,
                 decoration: BoxDecoration(
-                  color: AppColor.cMain.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: Colors.white.withValues(alpha: 0.2), width: 1.5),
+                  color: AppColors.primary.withValues(alpha: 0.2),
+                  borderRadius: AppRadius.borderMd,
+                  border: Border.all(color: AppColors.white.withValues(alpha: 0.2), width: 1.5),
                   image: widget.club.avatarUrl != null && widget.club.avatarUrl!.isNotEmpty
                       ? DecorationImage(
                           image: NetworkImage(widget.club.avatarUrl!),
@@ -240,11 +234,11 @@ class _ClubDetailViewState extends ConsumerState<ClubDetailView> with SingleTick
                 ),
                 child: widget.club.avatarUrl == null || widget.club.avatarUrl!.isEmpty
                     ? const Center(
-                        child: Icon(Icons.sports_tennis_rounded, color: AppColor.cGreen_50, size: 28),
+                        child: Icon(Icons.sports_tennis_rounded, color: AppColors.primaryLight, size: 28),
                       )
                     : null,
               ),
-              const SizedBox(width: 12),
+              AppSpacing.gapW12,
 
               // Name + Role Badge
               Expanded(
@@ -253,58 +247,46 @@ class _ClubDetailViewState extends ConsumerState<ClubDetailView> with SingleTick
                   children: [
                     Text(
                       widget.club.clubName,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 17,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: AppTypography.titleMedium.bold.colored(AppColors.white),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 4),
+                    AppSpacing.gapH4,
                     Row(
                       children: [
                         // Role Badge
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: 2),
                           decoration: BoxDecoration(
                             color: roleColor.withValues(alpha: 0.25),
-                            borderRadius: BorderRadius.circular(6),
+                            borderRadius: AppRadius.tag,
                             border: Border.all(color: roleColor.withValues(alpha: 0.5), width: 1),
                           ),
                           child: Text(
                             (widget.club.roleName != null && widget.club.roleName!.isNotEmpty)
                                 ? widget.club.roleName!
                                 : widget.club.role.displayName,
-                            style: TextStyle(
-                              color: roleColor,
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: AppTypography.labelSmall.bold.colored(roleColor),
                           ),
                         ),
-                        const SizedBox(width: 8),
+                        AppSpacing.gapW8,
 
                         // Active Context Pill
                         if (widget.isActiveContext)
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                             decoration: BoxDecoration(
-                              color: AppColor.cGreen_50.withValues(alpha: 0.2),
-                              borderRadius: BorderRadius.circular(6),
+                              color: AppColors.primary.withValues(alpha: 0.2),
+                              borderRadius: AppRadius.tag,
                             ),
-                            child: const Row(
+                            child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(Icons.check_circle_rounded, color: AppColor.cGreen_50, size: 12),
-                                SizedBox(width: 3),
+                                const Icon(Icons.check_circle_rounded, color: AppColors.primaryLight, size: 12),
+                                AppSpacing.gapW4,
                                 Text(
                                   'Đang kích hoạt',
-                                  style: TextStyle(
-                                    color: AppColor.cGreen_50,
-                                    fontSize: 10.5,
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                                  style: AppTypography.labelSmall.bold.colored(AppColors.primaryLight),
                                 ),
                               ],
                             ),
@@ -318,24 +300,26 @@ class _ClubDetailViewState extends ConsumerState<ClubDetailView> with SingleTick
           ),
 
           // Action Row: Copy Club Code
-          if (widget.club.clubCode.isNotEmpty)
+          if (widget.club.clubCode.isNotEmpty) ...[
+            AppSpacing.gapH12,
             Row(
               children: [
                 Expanded(
                   child: OutlinedButton.icon(
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.white,
-                      side: BorderSide(color: Colors.white.withValues(alpha: 0.3)),
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      foregroundColor: AppColors.white,
+                      side: BorderSide(color: AppColors.white.withValues(alpha: 0.3)),
+                      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+                      shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
                     ),
-                    icon: const Icon(Icons.copy_rounded, size: 14),
-                    label: Text('Mã nhóm: ${widget.club.clubCode}', style: const TextStyle(fontSize: 12)),
+                    icon: const Icon(Icons.copy_rounded, size: AppSpacing.iconXs),
+                    label: Text('Mã nhóm: ${widget.club.clubCode}', style: AppTypography.bodySmall.colored(AppColors.white)),
                     onPressed: () => _copyClubCode(context),
                   ),
                 ),
               ],
             ),
+          ],
         ],
       ),
     );
@@ -345,15 +329,15 @@ class _ClubDetailViewState extends ConsumerState<ClubDetailView> with SingleTick
     final code = widget.club.clubCode.isNotEmpty ? widget.club.clubCode : 'CHƯA CÓ';
 
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: AppSpacing.allBase,
       children: [
         // 1. Invite Friends Card (Discord Style)
         Container(
-          padding: const EdgeInsets.all(16),
+          padding: AppSpacing.allBase,
           decoration: BoxDecoration(
             color: AppColors.primaryContainer,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: AppColor.cMain.withValues(alpha: 0.3)),
+            borderRadius: AppRadius.card,
+            border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -361,108 +345,99 @@ class _ClubDetailViewState extends ConsumerState<ClubDetailView> with SingleTick
               Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: AppColor.cMain,
-                      borderRadius: BorderRadius.circular(10),
+                    padding: AppSpacing.allSm,
+                    decoration: const BoxDecoration(
+                      color: AppColors.primary,
+                      borderRadius: AppRadius.borderSm,
                     ),
-                    child: const Icon(Icons.group_add_rounded, color: Colors.white, size: 20),
+                    child: const Icon(Icons.group_add_rounded, color: AppColors.white, size: 20),
                   ),
-                  const SizedBox(width: 12),
-                  const Expanded(
+                  AppSpacing.gapW12,
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           'Mời bạn bè vào nhóm',
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                            color: AppColor.cTitle,
-                          ),
+                          style: AppTypography.titleSmall.bold.colored(AppColors.textPrimary),
                         ),
                         Text(
                           'Chia sẻ mã này để bạn bè tham gia ngay',
-                          style: TextStyle(fontSize: 12, color: AppColor.cMuted),
+                          style: AppTypography.bodySmall.colored(AppColors.textMuted),
                         ),
                       ],
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 14),
+              AppSpacing.gapH12,
 
               // Big Code Box
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
                 decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: AppColor.cDivider),
+                  color: AppColors.surface,
+                  borderRadius: AppRadius.borderSm,
+                  border: Border.all(color: AppColors.border),
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.tag_rounded, color: AppColor.cMain, size: 20),
-                    const SizedBox(width: 8),
+                    const Icon(Icons.tag_rounded, color: AppColors.primary, size: 20),
+                    AppSpacing.gapW8,
                     Expanded(
                       child: Text(
                         code,
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 2,
-                          color: AppColor.cTitle,
-                        ),
+                        style: AppTypography.headlineMedium.bold.colored(AppColors.textPrimary).copyWith(letterSpacing: 2),
                       ),
                     ),
                     ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColor.cMain,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: AppColors.onPrimary,
+                        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+                        shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
                       ),
-                      icon: const Icon(Icons.copy, size: 14),
-                      label: const Text('Sao chép', style: TextStyle(fontSize: 12)),
+                      icon: const Icon(Icons.copy, size: AppSpacing.iconXs),
+                      label: Text('Sao chép', style: AppTypography.labelMedium.colored(AppColors.onPrimary)),
                       onPressed: () => _copyClubCode(context),
                     ),
                   ],
                 ),
               ),
 
-              const SizedBox(height: 10),
-              const Text(
+              AppSpacing.gapH12,
+              Text(
                 'Hướng dẫn: Bạn bè chỉ cần mở ứng dụng -> vào "Nhóm của tôi" -> bấm biểu tượng (+) -> chọn "Tham gia bằng Code" và dán mã này vào là xong!',
-                style: TextStyle(fontSize: 12, color: AppColors.roleTeal, height: 1.4),
+                style: AppTypography.bodySmall.colored(AppColors.roleTeal),
               ),
             ],
           ),
         ),
 
-        const SizedBox(height: 16),
+        AppSpacing.gapH16,
 
         // 2. Club Info Card
         Container(
-          padding: const EdgeInsets.all(16),
+          padding: AppSpacing.allBase,
           decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: AppColor.cDivider),
+            color: AppColors.surface,
+            borderRadius: AppRadius.card,
+            border: Border.all(color: AppColors.border),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 'Thông tin câu lạc bộ',
-                style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.bold, color: AppColor.cTitle),
+                style: AppTypography.titleSmall.bold.colored(AppColors.textPrimary),
               ),
-              const SizedBox(height: 10),
+              AppSpacing.gapH12,
               _buildInfoRow('Tên nhóm', widget.club.clubName),
-              const Divider(height: 16),
+              const Divider(height: AppSpacing.base),
               _buildInfoRow('Mã mời tham gia', code),
-              const Divider(height: 16),
+              const Divider(height: AppSpacing.base),
               _buildInfoRow('Vai trò của bạn', widget.club.role.displayName),
-              const Divider(height: 16),
+              const Divider(height: AppSpacing.base),
               _buildInfoRow(
                 'Ngày tham gia',
                 widget.club.joinedAt != null
@@ -470,43 +445,43 @@ class _ClubDetailViewState extends ConsumerState<ClubDetailView> with SingleTick
                     : 'Chưa xác định',
               ),
               if (widget.club.description != null && widget.club.description!.isNotEmpty) ...[
-                const Divider(height: 16),
+                const Divider(height: AppSpacing.base),
                 _buildInfoRow('Mô tả', widget.club.description!),
               ],
-              const SizedBox(height: 18),
+              AppSpacing.gapH20,
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColor.cMain,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: AppColors.onPrimary,
+                    padding: AppSpacing.verticalMd,
+                    shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
                   ),
-                  icon: const Icon(Icons.info_outline_rounded, size: 18),
-                  label: const Text(
+                  icon: const Icon(Icons.info_outline_rounded, size: AppSpacing.iconSm),
+                  label: Text(
                     'Hồ Sơ Chi Tiết & Lịch Tuần CLB',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5),
+                    style: AppTypography.labelLarge.bold.colored(AppColors.onPrimary),
                   ),
                   onPressed: () {
                     context.push(AppConfig.clubDetailRoutePath(widget.club.clubId));
                   },
                 ),
               ),
-              const SizedBox(height: 10),
+              AppSpacing.gapH12,
               SizedBox(
                 width: double.infinity,
                 child: OutlinedButton.icon(
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: AppColor.cMain,
-                    side: const BorderSide(color: AppColor.cMain, width: 1.3),
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    foregroundColor: AppColors.primary,
+                    side: const BorderSide(color: AppColors.primary, width: 1.3),
+                    padding: AppSpacing.verticalMd,
+                    shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
                   ),
-                  icon: const Icon(Icons.event_available_rounded, size: 18),
-                  label: const Text(
+                  icon: const Icon(Icons.event_available_rounded, size: AppSpacing.iconSm),
+                  label: Text(
                     'Lịch Tôi Đã Đăng Ký (Vé & Điểm Danh)',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5),
+                    style: AppTypography.labelLarge.bold.colored(AppColors.primary),
                   ),
                   onPressed: () {
                     context.push(AppConfig.myBookingsRoutePath);
@@ -526,12 +501,12 @@ class _ClubDetailViewState extends ConsumerState<ClubDetailView> with SingleTick
       children: [
         SizedBox(
           width: 120,
-          child: Text(label, style: const TextStyle(fontSize: 13, color: AppColor.cMuted)),
+          child: Text(label, style: AppTypography.bodySmall.colored(AppColors.textMuted)),
         ),
         Expanded(
           child: Text(
             value,
-            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColor.cTitle),
+            style: AppTypography.bodySmall.semiBold.colored(AppColors.textPrimary),
           ),
         ),
       ],
@@ -541,15 +516,15 @@ class _ClubDetailViewState extends ConsumerState<ClubDetailView> with SingleTick
   Color _getRoleColor(ClubRole role) {
     switch (role) {
       case ClubRole.host:
-        return AppColors.roleHost; // Light Purple
+        return AppColors.roleHost;
       case ClubRole.deputy:
-        return AppColors.roleDeputy; // Light Blue
+        return AppColors.roleDeputy;
       case ClubRole.treasurer:
-        return AppColors.roleTreasurer; // Light Amber
+        return AppColors.roleTreasurer;
       case ClubRole.member:
-        return AppColor.cGreen_50; // Green
+        return AppColors.roleMember;
       case ClubRole.guest:
-        return AppColors.roleGuest; // Gray
+        return AppColors.roleGuest;
     }
   }
 }

@@ -1,7 +1,7 @@
 // lib/ui/screen/home/tab/club/widgets/club_schedule_planner.dart
 
 import 'package:flutter/material.dart';
-import '../../../../../../app/consts/app_color.dart';
+import 'package:kltn2026_2027/app/theme/theme.dart';
 
 /// Che do cai dat gio cho lich dinh ky
 enum ScheduleTimeMode {
@@ -463,7 +463,7 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
             children: [
               IconButton(
                 icon: const Icon(Icons.chevron_left_rounded),
-                color: isAtCurrentMonth ? AppColors.borderStrong : AppColor.cTitle,
+                color: isAtCurrentMonth ? AppColors.borderStrong : AppColors.textPrimary,
                 onPressed: isAtCurrentMonth ? null : _goToPreviousMonth,
                 splashRadius: 20,
               ),
@@ -472,7 +472,7 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
                   const Icon(
                     Icons.calendar_month_rounded,
                     size: 18,
-                    color: AppColor.cMain,
+                    color: AppColors.primary,
                   ),
                   const SizedBox(width: 8),
                   Text(
@@ -480,14 +480,14 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
                     style: const TextStyle(
                       fontSize: 14.5,
                       fontWeight: FontWeight.bold,
-                      color: AppColor.cTitle,
+                      color: AppColors.textPrimary,
                     ),
                   ),
                   const SizedBox(width: 8),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                     decoration: BoxDecoration(
-                      color: AppColor.cMain.withValues(alpha: 0.12),
+                      color: AppColors.primary.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Text(
@@ -495,7 +495,7 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
                       style: const TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.bold,
-                        color: AppColor.cMain,
+                        color: AppColors.primary,
                       ),
                     ),
                   ),
@@ -503,7 +503,7 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
               ),
               IconButton(
                 icon: const Icon(Icons.chevron_right_rounded),
-                color: AppColor.cTitle,
+                color: AppColors.textPrimary,
                 onPressed: _goToNextMonth,
                 splashRadius: 20,
               ),
@@ -532,7 +532,7 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
                           fontWeight: FontWeight.bold,
                           color: isSunday
                               ? AppColors.roleRose
-                              : AppColor.cMuted,
+                              : AppColors.textMuted,
                         ),
                       ),
                     ),
@@ -582,21 +582,21 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
                   padding: const EdgeInsets.all(2),
                   decoration: BoxDecoration(
                     color: isSelected
-                        ? AppColor.cMain.withValues(alpha: 0.12)
+                        ? AppColors.primary.withValues(alpha: 0.12)
                         : Colors.white,
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(
                       color: isSelected
-                          ? AppColor.cMain
+                          ? AppColors.primary
                           : isToday
-                              ? AppColor.cMain
+                              ? AppColors.primary
                               : AppColors.border,
                       width: isSelected ? 1.8 : (isToday ? 1.5 : 1),
                     ),
                     boxShadow: isSelected
                         ? [
                             BoxShadow(
-                              color: AppColor.cMain.withValues(alpha: 0.18),
+                              color: AppColors.primary.withValues(alpha: 0.18),
                               blurRadius: 3,
                               offset: const Offset(0, 1),
                             ),
@@ -616,7 +616,7 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
                                 : Icons.radio_button_unchecked,
                             size: 13,
                             color: isSelected
-                                ? AppColor.cMain
+                                ? AppColors.primary
                                 : AppColors.borderStrong,
                           ),
                           Text(
@@ -627,9 +627,9 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
                                   ? FontWeight.bold
                                   : FontWeight.w600,
                               color: isSelected
-                                  ? AppColor.cMain
+                                  ? AppColors.primary
                                   : isToday
-                                      ? AppColor.cMain
+                                      ? AppColors.primary
                                       : AppColors.neutral800,
                             ),
                           ),
@@ -642,7 +642,7 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
                           width: double.infinity,
                           padding: const EdgeInsets.symmetric(vertical: 1.5),
                           decoration: BoxDecoration(
-                            color: AppColor.cMain,
+                            color: AppColors.primary,
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Text(
@@ -670,11 +670,11 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
           const Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.touch_app_outlined, size: 14, color: AppColor.cMuted),
+              Icon(Icons.touch_app_outlined, size: 14, color: AppColors.textMuted),
               SizedBox(width: 4),
               Text(
                 'Tích vào từng ngày bạn muốn đi chơi để chọn ngày đó',
-                style: TextStyle(fontSize: 11, color: AppColor.cMuted),
+                style: TextStyle(fontSize: 11, color: AppColors.textMuted),
               ),
             ],
           ),
@@ -696,7 +696,7 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
-                color: AppColor.cTitle,
+                color: AppColors.textPrimary,
               ),
             ),
             if (_selectedDatesMap.isNotEmpty)
@@ -706,7 +706,7 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
                   'Bỏ chọn tất cả',
                   style: TextStyle(
                     fontSize: 11,
-                    color: AppColor.cRed,
+                    color: AppColors.error,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -736,7 +736,7 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
                   style: const TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
-                    color: AppColor.cTitle,
+                    color: AppColors.textPrimary,
                   ),
                 ),
               ),
@@ -753,7 +753,7 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
             children: [
               const Text(
                 'Mẫu nhanh cả tháng:',
-                style: TextStyle(fontSize: 11, color: AppColor.cMuted),
+                style: TextStyle(fontSize: 11, color: AppColors.textMuted),
               ),
               const SizedBox(width: 8),
               _buildPresetChip('Tất cả 2 - 4 - 6', [1, 3, 5]),
@@ -783,7 +783,7 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
           title,
           style: const TextStyle(
             fontSize: 11,
-            color: AppColor.cMain,
+            color: AppColors.primary,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -841,8 +841,8 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
                       Icons.lock_clock_rounded,
                       size: 15,
                       color: _timeMode == ScheduleTimeMode.fixed
-                          ? AppColor.cMain
-                          : AppColor.cMuted,
+                          ? AppColors.primary
+                          : AppColors.textMuted,
                     ),
                     const SizedBox(width: 6),
                     Text(
@@ -851,8 +851,8 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
                         color: _timeMode == ScheduleTimeMode.fixed
-                            ? AppColor.cMain
-                            : AppColor.cMuted,
+                            ? AppColors.primary
+                            : AppColors.textMuted,
                       ),
                     ),
                   ],
@@ -893,8 +893,8 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
                       Icons.tune_rounded,
                       size: 15,
                       color: _timeMode == ScheduleTimeMode.custom
-                          ? AppColor.cMain
-                          : AppColor.cMuted,
+                          ? AppColors.primary
+                          : AppColors.textMuted,
                     ),
                     const SizedBox(width: 6),
                     Text(
@@ -903,8 +903,8 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
                         color: _timeMode == ScheduleTimeMode.custom
-                            ? AppColor.cMain
-                            : AppColor.cMuted,
+                            ? AppColors.primary
+                            : AppColors.textMuted,
                       ),
                     ),
                   ],
@@ -934,14 +934,14 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
         children: [
           Row(
             children: [
-              const Icon(Icons.schedule_rounded, size: 16, color: AppColor.cMain),
+              const Icon(Icons.schedule_rounded, size: 16, color: AppColors.primary),
               const SizedBox(width: 6),
               const Text(
                 'Khung giờ áp dụng chung:',
                 style: TextStyle(
                   fontSize: 12.5,
                   fontWeight: FontWeight.bold,
-                  color: AppColor.cTitle,
+                  color: AppColors.textPrimary,
                 ),
               ),
               const Spacer(),
@@ -958,7 +958,7 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.bold,
-                    color: isValid ? AppColors.success : AppColor.cRed,
+                    color: isValid ? AppColors.success : AppColors.error,
                   ),
                 ),
               ),
@@ -981,7 +981,7 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
                 child: Icon(
                   Icons.arrow_forward_rounded,
                   size: 16,
-                  color: AppColor.cMuted,
+                  color: AppColors.textMuted,
                 ),
               ),
               Expanded(
@@ -998,7 +998,7 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
             const SizedBox(height: 8),
             const Text(
               'Lưu ý: Giờ bắt đầu phải trước giờ kết thúc.',
-              style: TextStyle(fontSize: 11, color: AppColor.cRed),
+              style: TextStyle(fontSize: 11, color: AppColors.error),
             ),
           ],
 
@@ -1018,7 +1018,7 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
                 const Icon(
                   Icons.info_outline_rounded,
                   size: 15,
-                  color: AppColor.cMain,
+                  color: AppColors.primary,
                 ),
                 const SizedBox(width: 6),
                 Expanded(
@@ -1028,7 +1028,7 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
                         : 'Chưa có ngày nào được tích chọn. Hãy bấm vào các ô ngày trên lịch tháng ở trên để chọn ngày đi chơi.',
                     style: const TextStyle(
                       fontSize: 11,
-                      color: AppColor.cMuted,
+                      color: AppColors.textMuted,
                       height: 1.3,
                     ),
                   ),
@@ -1056,21 +1056,21 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
         ),
         child: const Column(
           children: [
-            Icon(Icons.event_busy_rounded, size: 28, color: AppColor.cMuted),
+            Icon(Icons.event_busy_rounded, size: 28, color: AppColors.textMuted),
             SizedBox(height: 6),
             Text(
               'Chưa tích chọn ngày nào',
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
-                color: AppColor.cTitle,
+                color: AppColors.textPrimary,
               ),
             ),
             SizedBox(height: 2),
             Text(
               'Hãy chạm vào các ngày trên lịch tháng để tích chọn ngày đi chơi và cài đặt giờ.',
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 11, color: AppColor.cMuted),
+              style: TextStyle(fontSize: 11, color: AppColors.textMuted),
             ),
           ],
         ),
@@ -1088,12 +1088,12 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
               style: const TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.bold,
-                color: AppColor.cTitle,
+                color: AppColors.textPrimary,
               ),
             ),
             Text(
               'Tháng ${_focusedMonth.month}/${_focusedMonth.year}',
-              style: const TextStyle(fontSize: 11, color: AppColor.cMuted),
+              style: const TextStyle(fontSize: 11, color: AppColors.textMuted),
             ),
           ],
         ),
@@ -1129,7 +1129,7 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
                         vertical: 3,
                       ),
                       decoration: BoxDecoration(
-                        color: AppColor.cMain,
+                        color: AppColors.primary,
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Row(
@@ -1161,7 +1161,7 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
                         child: Icon(
                           Icons.close_rounded,
                           size: 18,
-                          color: AppColor.cMuted,
+                          color: AppColors.textMuted,
                         ),
                       ),
                     ),
@@ -1186,7 +1186,7 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
                       child: Icon(
                         Icons.arrow_forward_rounded,
                         size: 14,
-                        color: AppColor.cMuted,
+                        color: AppColors.textMuted,
                       ),
                     ),
                     Expanded(
@@ -1216,7 +1216,7 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
                           fontWeight: FontWeight.bold,
                           color: isValid
                               ? AppColors.success
-                              : AppColor.cRed,
+                              : AppColors.error,
                         ),
                       ),
                     ),
@@ -1227,7 +1227,7 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
                   const SizedBox(height: 6),
                   const Text(
                     'Giờ bắt đầu phải trước giờ kết thúc.',
-                    style: TextStyle(fontSize: 10.5, color: AppColor.cRed),
+                    style: TextStyle(fontSize: 10.5, color: AppColors.error),
                   ),
                 ],
 
@@ -1242,14 +1242,14 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
                         Icon(
                           Icons.copy_rounded,
                           size: 12,
-                          color: AppColor.cMain,
+                          color: AppColors.primary,
                         ),
                         SizedBox(width: 4),
                         Text(
                           'Áp dụng khung giờ này cho các ngày còn lại',
                           style: TextStyle(
                             fontSize: 11,
-                            color: AppColor.cMain,
+                            color: AppColors.primary,
                             decoration: TextDecoration.underline,
                           ),
                         ),
@@ -1285,7 +1285,7 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
           children: [
             Text(
               label,
-              style: const TextStyle(fontSize: 10, color: AppColor.cMuted),
+              style: const TextStyle(fontSize: 10, color: AppColors.textMuted),
             ),
             const SizedBox(height: 2),
             Row(
@@ -1296,13 +1296,13 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
                   style: const TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.bold,
-                    color: AppColor.cTitle,
+                    color: AppColors.textPrimary,
                   ),
                 ),
                 const Icon(
                   Icons.access_time_rounded,
                   size: 14,
-                  color: AppColor.cMain,
+                  color: AppColors.primary,
                 ),
               ],
             ),

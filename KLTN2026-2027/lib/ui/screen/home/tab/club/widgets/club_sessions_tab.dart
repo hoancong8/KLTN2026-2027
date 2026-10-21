@@ -87,7 +87,7 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
     final vm = ref.read(clubSessionsViewModelProvider(widget.clubId).notifier);
 
     if (state.isLoading) {
-      return const Center(child: CircularProgressIndicator(color: AppColor.cMain));
+      return const Center(child: CircularProgressIndicator(color: AppColors.primary));
     }
 
     if (state.errorMessage != null) {
@@ -97,11 +97,11 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.error_outline_rounded, color: AppColor.cRed, size: 48),
+              const Icon(Icons.error_outline_rounded, color: AppColors.error, size: 48),
               const SizedBox(height: 12),
               Text(
                 state.errorMessage!,
-                style: const TextStyle(color: AppColor.cRed, fontSize: 13),
+                style: const TextStyle(color: AppColors.error, fontSize: 13),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 16),
@@ -144,7 +144,7 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
       floatingActionButton: null,
       body: RefreshIndicator(
         onRefresh: vm.loadSessions,
-        color: AppColor.cMain,
+        color: AppColors.primary,
         child: state.sessions.isEmpty
             ? _buildEmptyState(context)
             : ListView(
@@ -164,17 +164,17 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
                       decoration: BoxDecoration(
                         color: AppColors.primaryContainer,
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: AppColor.cMain.withValues(alpha: 0.35)),
+                        border: Border.all(color: AppColors.primary.withValues(alpha: 0.35)),
                       ),
                       child: Row(
                         children: [
                           Container(
                             padding: const EdgeInsets.all(7),
                             decoration: BoxDecoration(
-                              color: AppColor.cMain.withValues(alpha: 0.12),
+                              color: AppColors.primary.withValues(alpha: 0.12),
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            child: const Icon(Icons.event_available_rounded, color: AppColor.cMain, size: 20),
+                            child: const Icon(Icons.event_available_rounded, color: AppColors.primary, size: 20),
                           ),
                           const SizedBox(width: 10),
                           const Expanded(
@@ -183,16 +183,16 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
                               children: [
                                 Text(
                                   'Lịch tập tôi đã đăng ký',
-                                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppColor.cTitle),
+                                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.textPrimary),
                                 ),
                                 Text(
                                   'Xem danh sách vé, check-in và trạng thái giữ chỗ',
-                                  style: TextStyle(fontSize: 11, color: AppColor.cMuted),
+                                  style: TextStyle(fontSize: 11, color: AppColors.textMuted),
                                 ),
                               ],
                             ),
                           ),
-                          const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: AppColor.cMain),
+                          const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: AppColors.primary),
                         ],
                       ),
                     ),
@@ -209,16 +209,16 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
                       decoration: BoxDecoration(
                         color: AppColors.primaryContainer,
                         borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: AppColor.cMain.withValues(alpha: 0.25)),
+                        border: Border.all(color: AppColors.primary.withValues(alpha: 0.25)),
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.filter_alt_rounded, size: 16, color: AppColor.cMain),
+                          const Icon(Icons.filter_alt_rounded, size: 16, color: AppColors.primary),
                           const SizedBox(width: 6),
                           Expanded(
                             child: Text(
                               'Lịch ngày ${DateFormat('dd/MM/yyyy').format(_selectedDate!)} (${displaySessions.length} buổi)',
-                              style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold, color: AppColor.cTitle),
+                              style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
                             ),
                           ),
                           InkWell(
@@ -230,7 +230,7 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
                                 style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.bold,
-                                  color: AppColor.cMain,
+                                  color: AppColors.primary,
                                   decoration: TextDecoration.underline,
                                 ),
                               ),
@@ -254,11 +254,11 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
                       child: Center(
                         child: Column(
                           children: [
-                            const Icon(Icons.event_busy_rounded, color: AppColor.cMuted, size: 36),
+                            const Icon(Icons.event_busy_rounded, color: AppColors.textMuted, size: 36),
                             const SizedBox(height: 8),
                             Text(
                               'Không có buổi tập nào vào ngày ${DateFormat('dd/MM/yyyy').format(_selectedDate!)}',
-                              style: const TextStyle(fontSize: 13, color: AppColor.cMuted),
+                              style: const TextStyle(fontSize: 13, color: AppColors.textMuted),
                             ),
                             const SizedBox(height: 8),
                             TextButton(
@@ -299,17 +299,17 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            AppColor.cMain.withValues(alpha: 0.08),
+            AppColors.primary.withValues(alpha: 0.08),
             AppColors.primaryContainer.withValues(alpha: 0.5),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColor.cMain.withValues(alpha: 0.35), width: 1.5),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.35), width: 1.5),
         boxShadow: [
           BoxShadow(
-            color: AppColor.cMain.withValues(alpha: 0.05),
+            color: AppColors.primary.withValues(alpha: 0.05),
             blurRadius: 8,
             offset: const Offset(0, 3),
           ),
@@ -329,7 +329,7 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
                     decoration: BoxDecoration(
-                      color: AppColor.cMain,
+                      color: AppColors.primary,
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: const Row(
@@ -385,7 +385,7 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
                 style: const TextStyle(
                   fontSize: 17,
                   fontWeight: FontWeight.bold,
-                  color: AppColor.cTitle,
+                  color: AppColors.textPrimary,
                 ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
@@ -395,11 +395,11 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
               // Date & Time Row
               Row(
                 children: [
-                  const Icon(Icons.calendar_today_rounded, size: 14, color: AppColor.cMain),
+                  const Icon(Icons.calendar_today_rounded, size: 14, color: AppColors.primary),
                   const SizedBox(width: 6),
                   Text(
                     dateStr,
-                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColor.cTitle),
+                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
                   ),
                   const SizedBox(width: 8),
                   Container(
@@ -411,11 +411,11 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.access_time_rounded, size: 12, color: AppColor.cMuted),
+                        const Icon(Icons.access_time_rounded, size: 12, color: AppColors.textMuted),
                         const SizedBox(width: 4),
                         Text(
                           timeRange,
-                          style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold, color: AppColor.cTitle),
+                          style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
                         ),
                       ],
                     ),
@@ -427,12 +427,12 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
               // Court location
               Row(
                 children: [
-                  const Icon(Icons.place_outlined, size: 15, color: AppColor.cMuted),
+                  const Icon(Icons.place_outlined, size: 15, color: AppColors.textMuted),
                   const SizedBox(width: 6),
                   Expanded(
                     child: Text(
                       session.courtLocation,
-                      style: const TextStyle(fontSize: 13, color: AppColor.cMuted),
+                      style: const TextStyle(fontSize: 13, color: AppColors.textMuted),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -452,7 +452,7 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
                         minHeight: 6,
                         backgroundColor: AppColors.border,
                         valueColor: AlwaysStoppedAnimation<Color>(
-                          isFull ? AppColors.accentOrange : AppColor.cMain,
+                          isFull ? AppColors.accentOrange : AppColors.primary,
                         ),
                       ),
                     ),
@@ -463,7 +463,7 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
-                      color: isFull ? AppColors.accentOrange : AppColor.cMain,
+                      color: isFull ? AppColors.accentOrange : AppColors.primary,
                     ),
                   ),
                   if (session.waitingCount > 0) ...[
@@ -489,7 +489,7 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
                 width: double.infinity,
                 child: ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColor.cMain,
+                    backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,
                     elevation: 0,
                     padding: const EdgeInsets.symmetric(vertical: 11),
@@ -555,10 +555,10 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
               Container(
                 padding: const EdgeInsets.all(6),
                 decoration: BoxDecoration(
-                  color: AppColor.cMain.withValues(alpha: 0.12),
+                  color: AppColors.primary.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(Icons.calendar_month_rounded, size: 18, color: AppColor.cMain),
+                child: const Icon(Icons.calendar_month_rounded, size: 18, color: AppColors.primary),
               ),
               const SizedBox(width: 10),
               Column(
@@ -569,19 +569,19 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
                     style: const TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.bold,
-                      color: AppColor.cTitle,
+                      color: AppColors.textPrimary,
                     ),
                   ),
                   Text(
                     '${sessionsInMonth.length} buổi tập dự kiến',
-                    style: const TextStyle(fontSize: 11, color: AppColor.cMuted),
+                    style: const TextStyle(fontSize: 11, color: AppColors.textMuted),
                   ),
                 ],
               ),
               const Spacer(),
               // Month Navigation Buttons
               IconButton(
-                icon: const Icon(Icons.chevron_left_rounded, size: 22, color: AppColor.cTitle),
+                icon: const Icon(Icons.chevron_left_rounded, size: 22, color: AppColors.textPrimary),
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
                 onPressed: () {
@@ -591,7 +591,7 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
                 },
               ),
               IconButton(
-                icon: const Icon(Icons.chevron_right_rounded, size: 22, color: AppColor.cTitle),
+                icon: const Icon(Icons.chevron_right_rounded, size: 22, color: AppColors.textPrimary),
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
                 onPressed: () {
@@ -657,20 +657,20 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
 
               // Visual styling
               Color bgColor = Colors.transparent;
-              Color textColor = AppColor.cTitle;
+              Color textColor = AppColors.textPrimary;
               Border? border;
 
               if (isSelected) {
-                bgColor = AppColor.cMain;
+                bgColor = AppColors.primary;
                 textColor = Colors.white;
               } else if (hasSessions) {
                 if (isNearest) {
-                  bgColor = AppColor.cMain.withValues(alpha: 0.18);
-                  border = Border.all(color: AppColor.cMain, width: 1.5);
-                  textColor = AppColor.cMain;
+                  bgColor = AppColors.primary.withValues(alpha: 0.18);
+                  border = Border.all(color: AppColors.primary, width: 1.5);
+                  textColor = AppColors.primary;
                 } else {
-                  bgColor = AppColor.cMain.withValues(alpha: 0.08);
-                  textColor = AppColor.cMain;
+                  bgColor = AppColors.primary.withValues(alpha: 0.08);
+                  textColor = AppColors.primary;
                 }
               } else if (isToday) {
                 border = Border.all(color: AppColors.neutral400, width: 1);
@@ -715,7 +715,7 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
                               height: 5,
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
-                                color: isSelected ? Colors.white : AppColor.cMain,
+                                color: isSelected ? Colors.white : AppColors.primary,
                               ),
                             ),
                             if (daySessions.length > 1) ...[
@@ -749,23 +749,23 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
                 height: 8,
                 decoration: const BoxDecoration(
                   shape: BoxShape.circle,
-                  color: AppColor.cMain,
+                  color: AppColors.primary,
                 ),
               ),
               const SizedBox(width: 5),
-              const Text('Ngày có buổi tập', style: TextStyle(fontSize: 11, color: AppColor.cMuted)),
+              const Text('Ngày có buổi tập', style: TextStyle(fontSize: 11, color: AppColors.textMuted)),
               const SizedBox(width: 14),
               Container(
                 width: 12,
                 height: 12,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(3),
-                  color: AppColor.cMain.withValues(alpha: 0.18),
-                  border: Border.all(color: AppColor.cMain, width: 1),
+                  color: AppColors.primary.withValues(alpha: 0.18),
+                  border: Border.all(color: AppColors.primary, width: 1),
                 ),
               ),
               const SizedBox(width: 5),
-              const Text('Buổi gần nhất', style: TextStyle(fontSize: 11, color: AppColor.cMuted)),
+              const Text('Buổi gần nhất', style: TextStyle(fontSize: 11, color: AppColors.textMuted)),
             ],
           ),
         ],
@@ -784,20 +784,20 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: AppColor.cMain.withValues(alpha: 0.08),
+                color: AppColors.primary.withValues(alpha: 0.08),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.calendar_month_rounded, size: 54, color: AppColor.cMain),
+              child: const Icon(Icons.calendar_month_rounded, size: 54, color: AppColors.primary),
             ),
             const SizedBox(height: 16),
             const Text(
               'Chưa Có Buổi Sinh Hoạt Mới',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColor.cTitle),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
             ),
             const SizedBox(height: 8),
             const Text(
               'Các buổi giao lưu sắp tới của câu lạc bộ sẽ hiển thị ở đây để bạn biểu quyết giữ chỗ.',
-              style: TextStyle(fontSize: 13, color: AppColor.cMuted),
+              style: TextStyle(fontSize: 13, color: AppColors.textMuted),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 18),
@@ -806,8 +806,8 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
               icon: const Icon(Icons.event_available_rounded, size: 18),
               label: const Text('Xem Lịch Tôi Đã Đăng Ký'),
               style: OutlinedButton.styleFrom(
-                foregroundColor: AppColor.cMain,
-                side: const BorderSide(color: AppColor.cMain, width: 1.2),
+                foregroundColor: AppColors.primary,
+                side: const BorderSide(color: AppColors.primary, width: 1.2),
                 padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 11),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               ),
@@ -819,8 +819,8 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
                 icon: const Icon(Icons.refresh_rounded, size: 18),
                 label: const Text('Tải lại lịch tập tự động'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColor.cMain,
-                  foregroundColor: AppColor.white,
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: AppColors.white,
                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 ),
@@ -837,17 +837,17 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
         decoration: BoxDecoration(
-          color: Colors.orange.withValues(alpha: 0.12),
-          borderRadius: BorderRadius.circular(6),
+          color: AppColors.warning.withValues(alpha: 0.12),
+          borderRadius: AppRadius.tag,
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.schedule_rounded, size: 12, color: Colors.orange),
+            const Icon(Icons.schedule_rounded, size: 12, color: AppColors.warning),
             const SizedBox(width: 4),
             Text(
               'Hàng đợi #$queueOrder',
-              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.orange),
+              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.warning),
             ),
           ],
         ),
@@ -857,17 +857,17 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
-        color: AppColor.cMain.withValues(alpha: 0.12),
+        color: AppColors.primary.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(6),
       ),
       child: const Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.check_circle_rounded, size: 12, color: AppColor.cMain),
+          Icon(Icons.check_circle_rounded, size: 12, color: AppColors.primary),
           SizedBox(width: 4),
           Text(
             'Đã giữ chỗ',
-            style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColor.cMain),
+            style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.primary),
           ),
         ],
       ),
@@ -894,7 +894,7 @@ class _SessionCard extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(14),
         side: BorderSide(
-          color: session.isBookedByCurrentUser ? AppColor.cMain.withValues(alpha: 0.4) : AppColors.border,
+          color: session.isBookedByCurrentUser ? AppColors.primary.withValues(alpha: 0.4) : AppColors.border,
           width: session.isBookedByCurrentUser ? 1.5 : 1,
         ),
       ),
@@ -920,7 +920,7 @@ class _SessionCard extends StatelessWidget {
               // Title
               Text(
                 session.title,
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColor.cTitle),
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -929,12 +929,12 @@ class _SessionCard extends StatelessWidget {
               // Court Location
               Row(
                 children: [
-                  const Icon(Icons.location_on_outlined, size: 16, color: AppColor.cMuted),
+                  const Icon(Icons.location_on_outlined, size: 16, color: AppColors.textMuted),
                   const SizedBox(width: 4),
                   Expanded(
                     child: Text(
                       session.courtLocation,
-                      style: const TextStyle(fontSize: 13, color: AppColor.cTitle),
+                      style: const TextStyle(fontSize: 13, color: AppColors.textPrimary),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -946,11 +946,11 @@ class _SessionCard extends StatelessWidget {
               // Time
               Row(
                 children: [
-                  const Icon(Icons.access_time_rounded, size: 16, color: AppColor.cMuted),
+                  const Icon(Icons.access_time_rounded, size: 16, color: AppColors.textMuted),
                   const SizedBox(width: 4),
                   Text(
                     timeStr,
-                    style: const TextStyle(fontSize: 13, color: AppColor.cTitle, fontWeight: FontWeight.w500),
+                    style: const TextStyle(fontSize: 13, color: AppColors.textPrimary, fontWeight: FontWeight.w500),
                   ),
                 ],
               ),
@@ -967,7 +967,7 @@ class _SessionCard extends StatelessWidget {
                         minHeight: 6,
                         backgroundColor: AppColors.border,
                         valueColor: AlwaysStoppedAnimation<Color>(
-                          isFull ? Colors.orange : AppColor.cMain,
+                          isFull ? AppColors.warning : AppColors.primary,
                         ),
                       ),
                     ),
@@ -978,20 +978,20 @@ class _SessionCard extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
-                      color: isFull ? Colors.orange : AppColor.cMain,
+                      color: isFull ? AppColors.warning : AppColors.primary,
                     ),
                   ),
                   if (session.waitingCount > 0) ...[
                     const SizedBox(width: 6),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: Colors.amber.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(4),
+                      decoration: const BoxDecoration(
+                        color: AppColors.accentLight,
+                        borderRadius: AppRadius.borderXs,
                       ),
                       child: Text(
                         '${session.waitingCount} chờ',
-                        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.amber),
+                        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.accentDark),
                       ),
                     ),
                   ],
@@ -1040,17 +1040,17 @@ class _SessionCard extends StatelessWidget {
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
         decoration: BoxDecoration(
-          color: Colors.orange.withValues(alpha: 0.12),
-          borderRadius: BorderRadius.circular(6),
+          color: AppColors.warning.withValues(alpha: 0.12),
+          borderRadius: AppRadius.tag,
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.schedule_rounded, size: 12, color: Colors.orange),
+            const Icon(Icons.schedule_rounded, size: 12, color: AppColors.warning),
             const SizedBox(width: 4),
             Text(
               'Hàng đợi #$queueOrder',
-              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.orange),
+              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.warning),
             ),
           ],
         ),
@@ -1060,17 +1060,17 @@ class _SessionCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
-        color: AppColor.cMain.withValues(alpha: 0.12),
+        color: AppColors.primary.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(6),
       ),
       child: const Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.check_circle_rounded, size: 12, color: AppColor.cMain),
+          Icon(Icons.check_circle_rounded, size: 12, color: AppColors.primary),
           SizedBox(width: 4),
           Text(
             'Đã giữ chỗ',
-            style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColor.cMain),
+            style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.primary),
           ),
         ],
       ),

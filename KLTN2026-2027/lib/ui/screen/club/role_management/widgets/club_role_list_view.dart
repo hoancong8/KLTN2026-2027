@@ -74,12 +74,12 @@ class _ClubRoleListViewState extends State<ClubRoleListView> {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: AppColor.cTitle,
+                      color: AppColors.textPrimary,
                     ),
                   ),
                   Text(
                     '${widget.roles.length} vai trò trong câu lạc bộ',
-                    style: const TextStyle(fontSize: 12, color: AppColor.cMuted),
+                    style: const TextStyle(fontSize: 12, color: AppColors.textMuted),
                   ),
                 ],
               ),
@@ -89,7 +89,7 @@ class _ClubRoleListViewState extends State<ClubRoleListView> {
                   icon: const Icon(Icons.add_rounded, size: 16),
                   label: const Text('Thêm vai trò', style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold)),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColor.cMain,
+                    backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,
                     elevation: 0,
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
@@ -108,11 +108,11 @@ class _ClubRoleListViewState extends State<ClubRoleListView> {
             onChanged: (val) => setState(() => _searchQuery = val.trim()),
             decoration: InputDecoration(
               hintText: 'Tìm kiếm vai trò...',
-              hintStyle: const TextStyle(fontSize: 13, color: AppColor.cMuted),
-              prefixIcon: const Icon(Icons.search_rounded, size: 20, color: AppColor.cMuted),
+              hintStyle: const TextStyle(fontSize: 13, color: AppColors.textMuted),
+              prefixIcon: const Icon(Icons.search_rounded, size: 20, color: AppColors.textMuted),
               suffixIcon: _searchQuery.isNotEmpty
                   ? IconButton(
-                      icon: const Icon(Icons.clear_rounded, size: 16, color: AppColor.cMuted),
+                      icon: const Icon(Icons.clear_rounded, size: 16, color: AppColors.textMuted),
                       onPressed: () {
                         _searchController.clear();
                         setState(() => _searchQuery = '');
@@ -130,7 +130,7 @@ class _ClubRoleListViewState extends State<ClubRoleListView> {
           ),
         ),
 
-        const Divider(height: 12, color: AppColor.cDivider),
+        const Divider(height: 12, color: AppColors.border),
 
         // Role List
         Expanded(
@@ -140,7 +140,7 @@ class _ClubRoleListViewState extends State<ClubRoleListView> {
                     padding: EdgeInsets.all(24),
                     child: Text(
                       'Không tìm thấy vai trò phù hợp',
-                      style: TextStyle(color: AppColor.cMuted, fontSize: 13),
+                      style: TextStyle(color: AppColors.textMuted, fontSize: 13),
                     ),
                   ),
                 )
@@ -156,7 +156,7 @@ class _ClubRoleListViewState extends State<ClubRoleListView> {
 
                     return Material(
                       color: isSelected
-                          ? AppColor.cMain.withValues(alpha: 0.10)
+                          ? AppColors.primary.withValues(alpha: 0.10)
                           : Colors.white,
                       borderRadius: BorderRadius.circular(12),
                       child: InkWell(
@@ -168,7 +168,7 @@ class _ClubRoleListViewState extends State<ClubRoleListView> {
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
                               color: isSelected
-                                  ? AppColor.cMain
+                                  ? AppColors.primary
                                   : AppColors.border,
                               width: isSelected ? 1.5 : 1.0,
                             ),
@@ -205,7 +205,7 @@ class _ClubRoleListViewState extends State<ClubRoleListView> {
                                           style: TextStyle(
                                             fontSize: 14.5,
                                             fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
-                                            color: AppColor.cTitle,
+                                            color: AppColors.textPrimary,
                                           ),
                                         ),
                                         if (role.isHostRole) ...[
@@ -250,7 +250,7 @@ class _ClubRoleListViewState extends State<ClubRoleListView> {
                                       '${role.permissions.length} quyền • $memberCount thành viên',
                                       style: TextStyle(
                                         fontSize: 11.5,
-                                        color: isSelected ? AppColor.cTitle : AppColor.cMuted,
+                                        color: isSelected ? AppColors.textPrimary : AppColors.textMuted,
                                       ),
                                     ),
                                   ],
@@ -260,7 +260,7 @@ class _ClubRoleListViewState extends State<ClubRoleListView> {
                               Icon(
                                 Icons.chevron_right_rounded,
                                 size: 20,
-                                color: isSelected ? AppColor.cMain : AppColor.cMuted,
+                                color: isSelected ? AppColors.primary : AppColors.textMuted,
                               ),
                             ],
                           ),

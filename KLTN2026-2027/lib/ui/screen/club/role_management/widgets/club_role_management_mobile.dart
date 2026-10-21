@@ -83,17 +83,17 @@ class _ClubRoleManagementMobileState extends State<ClubRoleManagementMobile> {
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
         ),
         backgroundColor: Colors.white,
-        foregroundColor: AppColor.cTitle,
+        foregroundColor: AppColors.textPrimary,
         elevation: 0.5,
         leading: Navigator.of(context).canPop()
             ? IconButton(
-                icon: const Icon(Icons.arrow_back_rounded, color: AppColor.cTitle),
+                icon: const Icon(Icons.arrow_back_rounded, color: AppColors.textPrimary),
                 onPressed: () => Navigator.of(context).pop(),
               )
             : null,
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh_rounded, color: AppColor.cMain),
+            icon: const Icon(Icons.refresh_rounded, color: AppColors.primary),
             tooltip: 'Tải lại',
             onPressed: widget.onRefresh,
           ),

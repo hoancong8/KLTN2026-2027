@@ -113,20 +113,20 @@ class _ClubMemberSectionState extends ConsumerState<ClubMemberSection> {
       children: [
         // Search bar
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.base, vertical: AppSpacing.sm),
           child: TextField(
             onChanged: (val) => setState(() => _searchQuery = val.trim()),
             decoration: InputDecoration(
               hintText: 'Tìm kiếm thành viên...',
-              hintStyle: const TextStyle(fontSize: 13, color: AppColor.cMuted),
-              prefixIcon: const Icon(Icons.search, size: 18, color: AppColor.cMuted),
+              hintStyle: AppTypography.bodyMedium.colored(AppColors.textMuted),
+              prefixIcon: const Icon(Icons.search, size: AppSpacing.iconSm, color: AppColors.textMuted),
               filled: true,
               fillColor: AppColors.surfaceSubtle,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
+              border: const OutlineInputBorder(
+                borderRadius: AppRadius.borderMd,
                 borderSide: BorderSide.none,
               ),
-              contentPadding: const EdgeInsets.symmetric(vertical: 8),
+              contentPadding: AppSpacing.verticalSm,
             ),
           ),
         ),
@@ -134,51 +134,41 @@ class _ClubMemberSectionState extends ConsumerState<ClubMemberSection> {
         // Host Only: Role & Permissions Management Card
         if (widget.isHost)
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.base, vertical: AppSpacing.xs),
             child: InkWell(
               onTap: () => ClubRoleManagementScreen.show(context, clubId: widget.vm.clubId),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: AppRadius.card,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: 10),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
                     colors: [AppColors.roleViolet, AppColors.roleHost],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.roleHost.withValues(alpha: 0.25),
-                      blurRadius: 8,
-                      offset: const Offset(0, 3),
-                    ),
-                  ],
+                  borderRadius: AppRadius.card,
+                  boxShadow: AppShadows.md,
                 ),
-                child: const Row(
+                child: Row(
                   children: [
-                    Icon(Icons.admin_panel_settings_rounded, color: Colors.white, size: 22),
-                    SizedBox(width: 10),
+                    const Icon(Icons.admin_panel_settings_rounded, color: AppColors.white, size: 22),
+                    AppSpacing.gapW12,
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             'Vai trò & Phân quyền nhóm (FR03)',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 13,
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: AppTypography.titleSmall.bold.colored(AppColors.white),
                           ),
                           Text(
                             'Cấu hình quyền hạn (Vận hành, Thu chi, Thành viên) cho từng vai trò',
-                            style: TextStyle(color: Colors.white70, fontSize: 10.5),
+                            style: AppTypography.bodySmall.colored(AppColors.white.withValues(alpha: 0.7)),
                           ),
                         ],
                       ),
                     ),
-                    Icon(Icons.arrow_forward_ios_rounded, color: Colors.white, size: 14),
+                    const Icon(Icons.arrow_forward_ios_rounded, color: AppColors.white, size: AppSpacing.iconXs),
                   ],
                 ),
               ),
@@ -188,14 +178,14 @@ class _ClubMemberSectionState extends ConsumerState<ClubMemberSection> {
         // Discord Roles List
         Expanded(
           child: filtered.isEmpty
-              ? const Center(
+              ? Center(
                   child: Text(
                     'Không tìm thấy thành viên phù hợp',
-                    style: TextStyle(color: AppColor.cMuted, fontSize: 13),
+                    style: AppTypography.bodyMedium.colored(AppColors.textMuted),
                   ),
                 )
               : ListView(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.base, vertical: AppSpacing.xs),
                   children: [
                     if (hosts.isNotEmpty) _buildRoleGroup('CHỦ CÂU LẠC BỘ', hosts, AppColors.roleHost, currentProfile),
                     if (deputies.isNotEmpty) _buildRoleGroup('PHÓ NHÓM', deputies, AppColors.roleDeputy, currentProfile),
@@ -203,9 +193,9 @@ class _ClubMemberSectionState extends ConsumerState<ClubMemberSection> {
                     ...customGroups.entries.map(
                       (e) => _buildRoleGroup(e.key.toUpperCase(), e.value, AppColors.roleTeal, currentProfile),
                     ),
-                    if (regularMembers.isNotEmpty) _buildRoleGroup('THÀNH VIÊN CHÍNH THỨC', regularMembers, AppColor.cMain, currentProfile),
+                    if (regularMembers.isNotEmpty) _buildRoleGroup('THÀNH VIÊN CHÍNH THỨC', regularMembers, AppColors.primary, currentProfile),
                     if (guests.isNotEmpty) _buildRoleGroup('KHÁCH VÃNG LAI', guests, AppColors.roleGuest, currentProfile),
-                    const SizedBox(height: 16),
+                    AppSpacing.gapH16,
                   ],
                 ),
         ),
@@ -221,12 +211,7 @@ class _ClubMemberSectionState extends ConsumerState<ClubMemberSection> {
           padding: const EdgeInsets.only(top: 14, bottom: 6),
           child: Text(
             '$title — ${groupMembers.length}',
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w800,
-              color: roleColor,
-              letterSpacing: 0.6,
-            ),
+            style: AppTypography.labelSmall.bold.colored(roleColor).copyWith(letterSpacing: 0.6),
           ),
         ),
         ...groupMembers.map((m) => _buildMemberTile(m, roleColor, currentProfile)),
@@ -245,21 +230,13 @@ class _ClubMemberSectionState extends ConsumerState<ClubMemberSection> {
       margin: const EdgeInsets.symmetric(vertical: 3.5),
       padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 8.5),
       decoration: BoxDecoration(
-        color: isMe ? AppColors.primaryContainer : AppColor.white,
-        borderRadius: BorderRadius.circular(12),
+        color: isMe ? AppColors.primaryContainer : AppColors.surface,
+        borderRadius: AppRadius.borderMd,
         border: Border.all(
-          color: isMe ? AppColor.cMain.withValues(alpha: 0.6) : AppColor.cDivider,
+          color: isMe ? AppColors.primary.withValues(alpha: 0.6) : AppColors.border,
           width: isMe ? 1.5 : 1.0,
         ),
-        boxShadow: isMe
-            ? [
-                BoxShadow(
-                  color: AppColor.cMain.withValues(alpha: 0.09),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ]
-            : null,
+        boxShadow: isMe ? AppShadows.sm : null,
       ),
       child: Row(
         children: [
@@ -270,22 +247,18 @@ class _ClubMemberSectionState extends ConsumerState<ClubMemberSection> {
               Container(
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  border: isMe ? Border.all(color: AppColor.cMain, width: 2) : null,
+                  border: isMe ? Border.all(color: AppColors.primary, width: 2) : null,
                 ),
                 child: CircleAvatar(
                   radius: 18,
                   backgroundColor: isMe
-                      ? AppColor.cMain.withValues(alpha: 0.15)
+                      ? AppColors.primary.withValues(alpha: 0.15)
                       : roleColor.withValues(alpha: 0.15),
                   child: Text(
                     m.userName != null && m.userName!.isNotEmpty
                         ? m.userName![0].toUpperCase()
                         : 'U',
-                    style: TextStyle(
-                      color: isMe ? AppColor.cMain : roleColor,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                    ),
+                    style: AppTypography.titleSmall.bold.colored(isMe ? AppColors.primary : roleColor),
                   ),
                 ),
               ),
@@ -297,15 +270,15 @@ class _ClubMemberSectionState extends ConsumerState<ClubMemberSection> {
                     width: 12,
                     height: 12,
                     decoration: BoxDecoration(
-                      color: AppColor.cMain,
+                      color: AppColors.primary,
                       shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 2),
+                      border: Border.all(color: AppColors.surface, width: 2),
                     ),
                   ),
                 ),
             ],
           ),
-          const SizedBox(width: 11),
+          AppSpacing.gapW12,
 
           // User Info
           Expanded(
@@ -317,17 +290,15 @@ class _ClubMemberSectionState extends ConsumerState<ClubMemberSection> {
                     Flexible(
                       child: Text(
                         displayName,
-                        style: TextStyle(
-                          fontSize: 13.5,
-                          fontWeight: isMe ? FontWeight.w700 : FontWeight.w600,
-                          color: isMe ? AppColors.neutral900 : AppColor.cTitle,
-                        ),
+                        style: AppTypography.bodyMedium.colored(
+                          isMe ? AppColors.neutral900 : AppColors.textPrimary,
+                        ).copyWith(fontWeight: isMe ? FontWeight.w700 : FontWeight.w600),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     if (isMe) ...[
-                      const SizedBox(width: 6),
+                      AppSpacing.gapW8,
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 6.5, vertical: 2),
                         decoration: BoxDecoration(
@@ -336,35 +307,24 @@ class _ClubMemberSectionState extends ConsumerState<ClubMemberSection> {
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           ),
-                          borderRadius: BorderRadius.circular(6),
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppColors.success.withValues(alpha: 0.35),
-                              blurRadius: 4,
-                              offset: const Offset(0, 1),
-                            ),
-                          ],
+                          borderRadius: AppRadius.tag,
+                          boxShadow: AppShadows.sm,
                         ),
-                        child: const Row(
+                        child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.person_rounded, size: 10, color: Colors.white),
-                            SizedBox(width: 2.5),
+                            const Icon(Icons.person_rounded, size: 10, color: AppColors.white),
+                            AppSpacing.gapW4,
                             Text(
                               'Bạn',
-                              style: TextStyle(
-                                fontSize: 9.5,
-                                fontWeight: FontWeight.w800,
-                                color: Colors.white,
-                                letterSpacing: 0.3,
-                              ),
+                              style: AppTypography.labelSmall.bold.colored(AppColors.white).copyWith(fontSize: 9.5, letterSpacing: 0.3),
                             ),
                           ],
                         ),
                       ),
                     ],
                     if (m.role == ClubRole.host) ...[
-                      const SizedBox(width: 4),
+                      AppSpacing.gapW4,
                       const Icon(Icons.star_rounded, size: 14, color: AppColors.roleHost),
                     ],
                   ],
@@ -372,11 +332,9 @@ class _ClubMemberSectionState extends ConsumerState<ClubMemberSection> {
                 const SizedBox(height: 1.5),
                 Text(
                   isMe ? '${m.email ?? "Thành viên"} • (Tài khoản của bạn)' : (m.email ?? 'Thành viên nhóm'),
-                  style: TextStyle(
-                    fontSize: 11.5,
-                    color: isMe ? AppColor.cMain : AppColor.cMuted,
-                    fontWeight: isMe ? FontWeight.w500 : FontWeight.normal,
-                  ),
+                  style: AppTypography.bodySmall.colored(
+                    isMe ? AppColors.primary : AppColors.textMuted,
+                  ).copyWith(fontWeight: isMe ? FontWeight.w500 : FontWeight.normal),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -389,25 +347,21 @@ class _ClubMemberSectionState extends ConsumerState<ClubMemberSection> {
             padding: const EdgeInsets.symmetric(horizontal: 7.5, vertical: 3.5),
             decoration: BoxDecoration(
               color: roleColor.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(6),
+              borderRadius: AppRadius.tag,
               border: Border.all(color: roleColor.withValues(alpha: 0.25), width: 0.8),
             ),
             child: Text(
               (m.roleName != null && m.roleName!.isNotEmpty)
                   ? m.roleName!
                   : m.role.displayName,
-              style: TextStyle(
-                fontSize: 10.5,
-                fontWeight: FontWeight.w700,
-                color: roleColor,
-              ),
+              style: AppTypography.labelSmall.bold.colored(roleColor),
             ),
           ),
 
           // Actions for Host (chỉ hiện cho thành viên khác, không hiện cho chính mình)
           if (widget.isHost && m.role != ClubRole.host && !isMe)
             PopupMenuButton<String>(
-              icon: const Icon(Icons.more_vert, size: 18, color: AppColor.cMuted),
+              icon: const Icon(Icons.more_vert, size: AppSpacing.iconSm, color: AppColors.textMuted),
               onSelected: (val) {
                 if (val == 'role') {
                   _showUpdateRoleDialog(m);
@@ -416,23 +370,23 @@ class _ClubMemberSectionState extends ConsumerState<ClubMemberSection> {
                 }
               },
               itemBuilder: (context) => [
-                const PopupMenuItem(
+                PopupMenuItem(
                   value: 'role',
                   child: Row(
                     children: [
-                      Icon(Icons.edit_outlined, size: 16, color: AppColor.cMain),
-                      SizedBox(width: 8),
-                      Text('Đổi vai trò', style: TextStyle(fontSize: 13)),
+                      const Icon(Icons.edit_outlined, size: 16, color: AppColors.primary),
+                      AppSpacing.gapW8,
+                      Text('Đổi vai trò', style: AppTypography.bodyMedium),
                     ],
                   ),
                 ),
-                const PopupMenuItem(
+                PopupMenuItem(
                   value: 'remove',
                   child: Row(
                     children: [
-                      Icon(Icons.person_remove_outlined, size: 16, color: AppColor.cAlert),
-                      SizedBox(width: 8),
-                      Text('Xóa khỏi nhóm', style: TextStyle(fontSize: 13, color: AppColor.cAlert)),
+                      const Icon(Icons.person_remove_outlined, size: 16, color: AppColors.error),
+                      AppSpacing.gapW8,
+                      Text('Xóa khỏi nhóm', style: AppTypography.bodyMedium.colored(AppColors.error)),
                     ],
                   ),
                 ),
@@ -449,10 +403,11 @@ class _ClubMemberSectionState extends ConsumerState<ClubMemberSection> {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDialogState) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          backgroundColor: AppColors.surface,
+          shape: const RoundedRectangleBorder(borderRadius: AppRadius.dialog),
           title: Text(
             'Phân quyền: ${m.userName ?? "Thành viên"}',
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            style: AppTypography.titleMedium.bold,
           ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
@@ -460,10 +415,10 @@ class _ClubMemberSectionState extends ConsumerState<ClubMemberSection> {
               final isChecked = selected == role;
               return ListTile(
                 dense: true,
-                title: Text(role.displayName, style: const TextStyle(fontSize: 13.5)),
+                title: Text(role.displayName, style: AppTypography.bodyMedium),
                 leading: Icon(
                   isChecked ? Icons.radio_button_checked : Icons.radio_button_off,
-                  color: isChecked ? AppColor.cMain : AppColor.cMuted,
+                  color: isChecked ? AppColors.primary : AppColors.textMuted,
                   size: 20,
                 ),
                 onTap: () {
@@ -475,19 +430,19 @@ class _ClubMemberSectionState extends ConsumerState<ClubMemberSection> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(ctx).pop(),
-              child: const Text('Hủy'),
+              child: Text('Hủy', style: AppTypography.labelLarge.colored(AppColors.textMuted)),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColor.cMain,
-                foregroundColor: AppColor.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                backgroundColor: AppColors.primary,
+                foregroundColor: AppColors.onPrimary,
+                shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
               ),
               onPressed: () async {
                 Navigator.of(ctx).pop();
                 await widget.vm.updateRole(m.userId, selected);
               },
-              child: const Text('Lưu thay đổi'),
+              child: Text('Lưu thay đổi', style: AppTypography.labelLarge.bold.colored(AppColors.onPrimary)),
             ),
           ],
         ),
@@ -499,25 +454,29 @@ class _ClubMemberSectionState extends ConsumerState<ClubMemberSection> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Xác nhận xóa thành viên', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-        content: Text('Bạn có chắc chắn muốn xóa "${m.userName ?? "thành viên"}" ra khỏi câu lạc bộ?'),
+        backgroundColor: AppColors.surface,
+        shape: const RoundedRectangleBorder(borderRadius: AppRadius.dialog),
+        title: Text('Xác nhận xóa thành viên', style: AppTypography.titleMedium.bold),
+        content: Text(
+          'Bạn có chắc chắn muốn xóa "${m.userName ?? "thành viên"}" ra khỏi câu lạc bộ?',
+          style: AppTypography.bodyMedium,
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Hủy'),
+            child: Text('Hủy', style: AppTypography.labelLarge.colored(AppColors.textMuted)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColor.cAlert,
-              foregroundColor: AppColor.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              backgroundColor: AppColors.error,
+              foregroundColor: AppColors.onError,
+              shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
             ),
             onPressed: () async {
               Navigator.of(ctx).pop();
               await widget.vm.removeMember(m.userId);
             },
-            child: const Text('Xóa'),
+            child: Text('Xóa', style: AppTypography.labelLarge.bold.colored(AppColors.onError)),
           ),
         ],
       ),

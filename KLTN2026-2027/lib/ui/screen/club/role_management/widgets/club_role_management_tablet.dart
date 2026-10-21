@@ -86,17 +86,17 @@ class _ClubRoleManagementTabletState extends State<ClubRoleManagementTablet> {
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
         ),
         backgroundColor: Colors.white,
-        foregroundColor: AppColor.cTitle,
+        foregroundColor: AppColors.textPrimary,
         elevation: 0.5,
         leading: Navigator.of(context).canPop()
             ? IconButton(
-                icon: const Icon(Icons.arrow_back_rounded, color: AppColor.cTitle),
+                icon: const Icon(Icons.arrow_back_rounded, color: AppColors.textPrimary),
                 onPressed: () => Navigator.of(context).pop(),
               )
             : null,
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh_rounded, color: AppColor.cMain),
+            icon: const Icon(Icons.refresh_rounded, color: AppColors.primary),
             tooltip: 'Tải lại',
             onPressed: widget.onRefresh,
           ),
@@ -144,7 +144,7 @@ class _ClubRoleManagementTabletState extends State<ClubRoleManagementTablet> {
                 : const Center(
                     child: Text(
                       'Chọn một vai trò từ danh sách bên trái để chỉnh sửa',
-                      style: TextStyle(color: AppColor.cMuted, fontSize: 14),
+                      style: TextStyle(color: AppColors.textMuted, fontSize: 14),
                     ),
                   ),
           ),

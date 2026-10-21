@@ -95,7 +95,7 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Đã lưu phân quyền cho "${widget.role.roleName}"!'),
-            backgroundColor: AppColor.cMain,
+            backgroundColor: AppColors.primary,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -169,7 +169,7 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
         elevation: 0.5,
         leading: widget.onBack != null
             ? IconButton(
-                icon: const Icon(Icons.arrow_back_rounded, color: AppColor.cTitle),
+                icon: const Icon(Icons.arrow_back_rounded, color: AppColors.textPrimary),
                 onPressed: widget.onBack,
               )
             : null,
@@ -190,7 +190,7 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
                 style: const TextStyle(
                   fontSize: 14.5,
                   fontWeight: FontWeight.bold,
-                  color: AppColor.cTitle,
+                  color: AppColors.textPrimary,
                   letterSpacing: 0.5,
                 ),
                 maxLines: 1,
@@ -211,7 +211,7 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColor.cMain,
+                  backgroundColor: AppColors.primary,
                   foregroundColor: Colors.white,
                   elevation: 0,
                   padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -230,9 +230,9 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
         ],
         bottom: TabBar(
           controller: _tabController,
-          labelColor: AppColor.cMain,
-          unselectedLabelColor: AppColor.cMuted,
-          indicatorColor: AppColor.cMain,
+          labelColor: AppColors.primary,
+          unselectedLabelColor: AppColors.textMuted,
+          indicatorColor: AppColors.primary,
           indicatorWeight: 2.5,
           tabs: [
             const Tab(
@@ -312,14 +312,14 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
                   children: [
                     Text(
                       widget.role.roleName,
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColor.cTitle),
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       widget.role.description?.isNotEmpty == true
                           ? widget.role.description!
                           : 'Chưa có mô tả cho vai trò này',
-                      style: const TextStyle(fontSize: 12.5, color: AppColor.cMuted),
+                      style: const TextStyle(fontSize: 12.5, color: AppColors.textMuted),
                     ),
                   ],
                 ),
@@ -376,13 +376,13 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
                     children: [
                       Text('Vai trò mặc định', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5)),
                       SizedBox(height: 2),
-                      Text('Tự động cấp vai trò này khi có thành viên mới', style: TextStyle(color: AppColor.cMuted, fontSize: 11.5)),
+                      Text('Tự động cấp vai trò này khi có thành viên mới', style: TextStyle(color: AppColors.textMuted, fontSize: 11.5)),
                     ],
                   ),
                   Switch(
                     value: widget.role.isDefault,
-                    activeThumbColor: AppColor.cMain,
-                    activeTrackColor: AppColor.cMain.withValues(alpha: 0.3),
+                    activeThumbColor: AppColors.primary,
+                    activeTrackColor: AppColors.primary.withValues(alpha: 0.3),
                     onChanged: null, // Default is managed at creation
                   ),
                 ],
@@ -405,7 +405,7 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
             children: [
               const Text('Màu sắc nhận diện vai trò', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5)),
               const SizedBox(height: 4),
-              const Text('Màu hiển thị của chấm đại diện và huy hiệu thành viên', style: TextStyle(color: AppColor.cMuted, fontSize: 11.5)),
+              const Text('Màu hiển thị của chấm đại diện và huy hiệu thành viên', style: TextStyle(color: AppColors.textMuted, fontSize: 11.5)),
               const SizedBox(height: 14),
               Wrap(
                 spacing: 12,
@@ -418,7 +418,7 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
                     decoration: BoxDecoration(
                       color: color,
                       shape: BoxShape.circle,
-                      border: isCurrent ? Border.all(color: AppColor.cTitle, width: 3) : null,
+                      border: isCurrent ? Border.all(color: AppColors.textPrimary, width: 3) : null,
                       boxShadow: [
                         BoxShadow(
                           color: color.withValues(alpha: 0.3),
@@ -495,11 +495,11 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
           onChanged: (val) => setState(() => _permSearchQuery = val.trim()),
           decoration: InputDecoration(
             hintText: 'Tìm kiếm quyền hạn...',
-            hintStyle: const TextStyle(fontSize: 13, color: AppColor.cMuted),
-            prefixIcon: const Icon(Icons.search_rounded, size: 20, color: AppColor.cMuted),
+            hintStyle: const TextStyle(fontSize: 13, color: AppColors.textMuted),
+            prefixIcon: const Icon(Icons.search_rounded, size: 20, color: AppColors.textMuted),
             suffixIcon: _permSearchQuery.isNotEmpty
                 ? IconButton(
-                    icon: const Icon(Icons.clear_rounded, size: 16, color: AppColor.cMuted),
+                    icon: const Icon(Icons.clear_rounded, size: 16, color: AppColors.textMuted),
                     onPressed: () {
                       _permSearchController.clear();
                       setState(() => _permSearchQuery = '');
@@ -528,7 +528,7 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
             children: [
               Text(
                 '${_selectedPermissionIds.length}/${widget.allPermissions.length} quyền đã bật',
-                style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold, color: AppColor.cTitle),
+                style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
               ),
               Row(
                 children: [
@@ -565,7 +565,7 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
             child: Center(
               child: Text(
                 'Không tìm thấy quyền hạn phù hợp',
-                style: TextStyle(color: AppColor.cMuted, fontSize: 13),
+                style: TextStyle(color: AppColors.textMuted, fontSize: 13),
               ),
             ),
           )
@@ -589,7 +589,7 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
               case 'MEMBER':
                 title = 'THÀNH VIÊN & NHÓM';
                 icon = Icons.people_alt_outlined;
-                color = AppColor.cMain;
+                color = AppColors.primary;
                 break;
               default:
                 title = entry.key;
@@ -626,7 +626,7 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
                       ],
                     ),
                   ),
-                  const Divider(height: 1, color: AppColor.cDivider),
+                  const Divider(height: 1, color: AppColors.border),
 
                   // Permission Rows with SwitchListTile
                   ListView.separated(
@@ -645,19 +645,19 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
-                            color: isChecked ? AppColor.cTitle : AppColors.roleGuest,
+                            color: isChecked ? AppColors.textPrimary : AppColors.roleGuest,
                           ),
                         ),
                         subtitle: Padding(
                           padding: const EdgeInsets.only(top: 3),
                           child: Text(
                             perm.displayDescription,
-                            style: const TextStyle(fontSize: 12, color: AppColor.cMuted, height: 1.3),
+                            style: const TextStyle(fontSize: 12, color: AppColors.textMuted, height: 1.3),
                           ),
                         ),
                         value: isChecked,
-                        activeThumbColor: AppColor.cMain,
-                        activeTrackColor: AppColor.cMain.withValues(alpha: 0.35),
+                        activeThumbColor: AppColors.primary,
+                        activeTrackColor: AppColors.primary.withValues(alpha: 0.35),
                         onChanged: isHostRole || !widget.isHost
                             ? null
                             : (val) {
@@ -706,8 +706,8 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
                   onChanged: (val) => setState(() => _memberSearchQuery = val.trim()),
                   decoration: InputDecoration(
                     hintText: 'Tìm thành viên trong vai trò này...',
-                    hintStyle: const TextStyle(fontSize: 13, color: AppColor.cMuted),
-                    prefixIcon: const Icon(Icons.search_rounded, size: 20, color: AppColor.cMuted),
+                    hintStyle: const TextStyle(fontSize: 13, color: AppColors.textMuted),
+                    prefixIcon: const Icon(Icons.search_rounded, size: 20, color: AppColors.textMuted),
                     filled: true,
                     fillColor: Colors.white,
                     contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
@@ -729,7 +729,7 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
                   icon: const Icon(Icons.person_add_rounded, size: 16),
                   label: const Text('Gán vai trò', style: TextStyle(fontSize: 12)),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColor.cMain,
+                    backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -740,7 +740,7 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
           ),
         ),
 
-        const Divider(height: 12, color: AppColor.cDivider),
+        const Divider(height: 12, color: AppColors.border),
 
         // Member List
         Expanded(
@@ -755,7 +755,7 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
                         const SizedBox(height: 12),
                         Text(
                           'Chưa có thành viên nào nắm giữ vai trò "${widget.role.roleName}"',
-                          style: const TextStyle(color: AppColor.cMuted, fontSize: 13),
+                          style: const TextStyle(color: AppColors.textMuted, fontSize: 13),
                           textAlign: TextAlign.center,
                         ),
                       ],
@@ -800,7 +800,7 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
                                       const SizedBox(width: 6),
                                       Text(
                                         '(@${member.userName})',
-                                        style: const TextStyle(fontSize: 11.5, color: AppColor.cMuted),
+                                        style: const TextStyle(fontSize: 11.5, color: AppColors.textMuted),
                                       ),
                                     ],
                                   ],
@@ -809,7 +809,7 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
                                   const SizedBox(height: 2),
                                   Text(
                                     member.email!,
-                                    style: const TextStyle(fontSize: 11.5, color: AppColor.cMuted),
+                                    style: const TextStyle(fontSize: 11.5, color: AppColors.textMuted),
                                   ),
                                 ],
                               ],
@@ -851,7 +851,7 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
                       subtitle: Text(m.roleName ?? m.role.displayName, style: const TextStyle(fontSize: 11.5)),
                       trailing: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColor.cMain,
+                          backgroundColor: AppColors.primary,
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                         ),
@@ -862,7 +862,7 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text('Đã cập nhật vai trò cho ${m.userName}!'),
-                                backgroundColor: AppColor.cMain,
+                                backgroundColor: AppColors.primary,
                               ),
                             );
                           }

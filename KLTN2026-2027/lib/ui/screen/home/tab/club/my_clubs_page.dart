@@ -3,8 +3,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../../app/consts/app_color.dart';
 import '../../../../../app/consts/app_config.dart';
+import '../../../../../app/theme/theme.dart';
 import '../../../../../domain/entities/club/my_club.dart';
 import '../../../../../domain/enums/club_role.dart';
 import '../../../club/club_management_vm/club_members_vm.dart';
@@ -47,10 +47,10 @@ class _MyClubsPageState extends ConsumerState<MyClubsPage> {
       isScrollControlled: true,
       builder: (ctx) => Container(
         decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          color: AppColors.surface,
+          borderRadius: AppRadius.bottomSheet,
         ),
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.base),
         child: SafeArea(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -58,72 +58,69 @@ class _MyClubsPageState extends ConsumerState<MyClubsPage> {
               Container(
                 width: 44,
                 height: 5,
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   color: AppColors.border,
-                  borderRadius: BorderRadius.circular(3),
+                  borderRadius: AppRadius.borderXs,
                 ),
               ),
-              const SizedBox(height: 18),
-              const Text(
+              AppSpacing.gapH16,
+              Text(
                 'Tham Gia Hoặc Tạo Câu Lạc Bộ',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: AppColor.cTitle,
-                ),
+                style: AppTypography.titleLarge.bold.colored(AppColors.textPrimary),
               ),
-              const SizedBox(height: 6),
-              const Text(
+              AppSpacing.gapH8,
+              Text(
                 'Kết nối cùng đồng đội và tham gia các buổi tập sôi động',
-                style: TextStyle(fontSize: 13, color: AppColor.cMuted),
+                textAlign: TextAlign.center,
+                style: AppTypography.bodySmall.colored(AppColors.textMuted),
               ),
-              const SizedBox(height: 20),
+              AppSpacing.gapH20,
 
               // Action 1: Create Club
               _buildBottomSheetActionTile(
                 icon: Icons.add_business_rounded,
-                iconColor: AppColor.cMain,
-                iconBgColor: AppColor.cMain.withValues(alpha: 0.12),
+                iconColor: AppColors.primary,
+                iconBgColor: AppColors.primaryContainer,
                 title: 'Tạo câu lạc bộ mới',
                 subtitle: 'Bạn sẽ là Chủ nhóm (Host) quản lý lịch chơi, thu quỹ và duyệt đơn',
                 onTap: () => Navigator.of(ctx).pop('create'),
               ),
 
-              const SizedBox(height: 12),
+              AppSpacing.gapH12,
 
               // Action 2: Join with Code
               _buildBottomSheetActionTile(
                 icon: Icons.tag_rounded,
                 iconColor: AppColors.roleSky,
-                iconBgColor: AppColors.roleSky.withValues(alpha: 0.12),
+                iconBgColor: AppColors.secondaryContainer,
                 title: 'Tham gia bằng mã Code',
                 subtitle: 'Nhập mã Code được Host chia sẻ để vào nhóm ngay',
                 onTap: () => Navigator.of(ctx).pop('join'),
               ),
 
-              const SizedBox(height: 12),
+              AppSpacing.gapH12,
 
               // Action 3: Radar GPS Explore
               _buildBottomSheetActionTile(
                 icon: Icons.radar_rounded,
                 iconColor: AppColors.roleViolet,
-                iconBgColor: AppColors.roleViolet.withValues(alpha: 0.12),
+                iconBgColor: AppColors.violetLight,
                 title: 'Quét tìm CLB quanh đây (Radar GPS)',
                 subtitle: 'Tìm các câu lạc bộ cầu lông đang hoạt động trong khu vực của bạn',
                 onTap: () => Navigator.of(ctx).pop('explore'),
               ),
-              const SizedBox(height: 12),
+              AppSpacing.gapH12,
 
               // Action 4: My Bookings
               _buildBottomSheetActionTile(
                 icon: Icons.event_available_rounded,
                 iconColor: AppColors.primaryDark,
-                iconBgColor: AppColors.primaryDark.withValues(alpha: 0.12),
+                iconBgColor: AppColors.primaryContainer,
                 title: 'Lịch chơi tôi đã đăng ký',
                 subtitle: 'Xem toàn bộ vé tham gia, buổi tập và trạng thái điểm danh',
                 onTap: () => Navigator.of(ctx).pop('bookings'),
               ),
-              const SizedBox(height: 8),
+              AppSpacing.gapH8,
             ],
           ),
         ),
@@ -155,12 +152,12 @@ class _MyClubsPageState extends ConsumerState<MyClubsPage> {
   }) {
     return Material(
       color: AppColors.background,
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: AppRadius.card,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: AppRadius.card,
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: AppSpacing.card,
           child: Row(
             children: [
               Container(
@@ -170,31 +167,27 @@ class _MyClubsPageState extends ConsumerState<MyClubsPage> {
                   color: iconBgColor,
                   shape: BoxShape.circle,
                 ),
-                child: Icon(icon, color: iconColor, size: 24),
+                child: Icon(icon, color: iconColor, size: AppSpacing.iconMd),
               ),
-              const SizedBox(width: 14),
+              AppSpacing.gapW12,
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       title,
-                      style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
-                        color: AppColor.cTitle,
-                      ),
+                      style: AppTypography.titleSmall.bold.colored(AppColors.textPrimary),
                     ),
-                    const SizedBox(height: 3),
+                    AppSpacing.gapH4,
                     Text(
                       subtitle,
-                      style: const TextStyle(fontSize: 12, color: AppColor.cMuted, height: 1.3),
+                      style: AppTypography.bodySmall.colored(AppColors.textMuted),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(width: 8),
-              const Icon(Icons.arrow_forward_ios_rounded, color: AppColor.cMuted, size: 16),
+              AppSpacing.gapW8,
+              const Icon(Icons.arrow_forward_ios_rounded, color: AppColors.textMuted, size: AppSpacing.iconSm),
             ],
           ),
         ),
@@ -214,10 +207,10 @@ class _MyClubsPageState extends ConsumerState<MyClubsPage> {
       isScrollControlled: true,
       builder: (ctx) => Container(
         decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          color: AppColors.surface,
+          borderRadius: AppRadius.bottomSheet,
         ),
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.base),
         child: SafeArea(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -227,88 +220,89 @@ class _MyClubsPageState extends ConsumerState<MyClubsPage> {
                 child: Container(
                   width: 44,
                   height: 5,
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     color: AppColors.border,
-                    borderRadius: BorderRadius.circular(3),
+                    borderRadius: AppRadius.borderXs,
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
-              const Text(
+              AppSpacing.gapH16,
+              Text(
                 'Danh sách Câu lạc bộ của bạn',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColor.cTitle),
+                style: AppTypography.titleLarge.bold.colored(AppColors.textPrimary),
               ),
-              const SizedBox(height: 4),
-              const Text('Chọn nhóm để xem buổi tập và quản lý', style: TextStyle(fontSize: 13, color: AppColor.cMuted)),
-              const SizedBox(height: 16),
+              AppSpacing.gapH4,
+              Text(
+                'Chọn nhóm để xem buổi tập và quản lý',
+                style: AppTypography.bodySmall.colored(AppColors.textMuted),
+              ),
+              AppSpacing.gapH16,
               ConstrainedBox(
                 constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.45),
                 child: ListView.separated(
                   shrinkWrap: true,
                   itemCount: clubs.length,
-                  separatorBuilder: (_, _) => const SizedBox(height: 8),
+                  separatorBuilder: (_, _) => AppSpacing.gapH8,
                   itemBuilder: (ctx, i) {
                     final club = clubs[i];
                     final isSelected = club.clubId == _selectedClubId;
                     final isActive = club.clubId == activeId;
                     return Material(
-                      color: isSelected ? AppColor.cMain.withValues(alpha: 0.08) : AppColors.background,
-                      borderRadius: BorderRadius.circular(14),
+                      color: isSelected ? AppColors.primaryContainer : AppColors.background,
+                      borderRadius: AppRadius.borderMd,
                       child: InkWell(
                         onTap: () {
                           Navigator.of(ctx).pop();
                           _switchSelectedClub(club.clubId, vm);
                         },
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: AppRadius.borderMd,
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
                           child: Row(
                             children: [
                               Container(
                                 width: 44,
                                 height: 44,
                                 decoration: BoxDecoration(
-                                  color: AppColor.cMain.withValues(alpha: 0.15),
-                                  borderRadius: BorderRadius.circular(12),
+                                  color: AppColors.primaryContainer,
+                                  borderRadius: AppRadius.borderMd,
                                   image: club.avatarUrl != null && club.avatarUrl!.isNotEmpty
                                       ? DecorationImage(image: NetworkImage(club.avatarUrl!), fit: BoxFit.cover)
                                       : null,
                                 ),
                                 child: club.avatarUrl == null || club.avatarUrl!.isEmpty
-                                    ? const Center(child: Icon(Icons.sports_tennis_rounded, color: AppColor.cMain, size: 22))
+                                    ? const Center(child: Icon(Icons.sports_tennis_rounded, color: AppColors.primary, size: 22))
                                     : null,
                               ),
-                              const SizedBox(width: 12),
+                              AppSpacing.gapW12,
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
                                       club.clubName,
-                                      style: TextStyle(
-                                        fontSize: 15,
-                                        fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
-                                        color: isSelected ? AppColor.cMain : AppColor.cTitle,
-                                      ),
+                                      style: AppTypography.titleSmall.colored(
+                                        isSelected ? AppColors.primary : AppColors.textPrimary,
+                                      ).copyWith(fontWeight: isSelected ? FontWeight.bold : FontWeight.w600),
                                     ),
-                                    const SizedBox(height: 3),
+                                    AppSpacing.gapH4,
                                     Row(
                                       children: [
                                         Text(
                                           club.role.displayName,
-                                          style: const TextStyle(fontSize: 12, color: AppColor.cMuted),
+                                          style: AppTypography.labelSmall.colored(AppColors.textMuted),
                                         ),
                                         if (isActive) ...[
-                                          const SizedBox(width: 8),
+                                          AppSpacing.gapW8,
                                           Container(
                                             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-                                            decoration: BoxDecoration(
+                                            decoration: const BoxDecoration(
                                               color: AppColors.successContainer,
-                                              borderRadius: BorderRadius.circular(4),
+                                              borderRadius: AppRadius.borderXs,
                                             ),
-                                            child: const Text(
+                                            child: Text(
                                               'Kích hoạt',
-                                              style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.onSuccess),
+                                              style: AppTypography.labelSmall.bold.colored(AppColors.onSuccess),
                                             ),
                                           ),
                                         ],
@@ -318,7 +312,7 @@ class _MyClubsPageState extends ConsumerState<MyClubsPage> {
                                 ),
                               ),
                               if (isSelected)
-                                const Icon(Icons.check_circle_rounded, color: AppColor.cMain, size: 22),
+                                const Icon(Icons.check_circle_rounded, color: AppColors.primary, size: 22),
                             ],
                           ),
                         ),
@@ -327,33 +321,33 @@ class _MyClubsPageState extends ConsumerState<MyClubsPage> {
                   },
                 ),
               ),
-              const SizedBox(height: 14),
+              AppSpacing.gapH16,
               Row(
                 children: [
                   Expanded(
                     child: OutlinedButton.icon(
                       style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        side: const BorderSide(color: AppColor.cMain),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        padding: AppSpacing.verticalMd,
+                        side: const BorderSide(color: AppColors.primary),
+                        shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
                       ),
-                      icon: const Icon(Icons.tag_rounded, color: AppColor.cMain, size: 18),
-                      label: const Text('Nhập mã Code', style: TextStyle(fontWeight: FontWeight.bold, color: AppColor.cMain, fontSize: 13)),
+                      icon: const Icon(Icons.tag_rounded, color: AppColors.primary, size: AppSpacing.iconSm),
+                      label: Text('Nhập mã Code', style: AppTypography.labelLarge.bold.colored(AppColors.primary)),
                       onPressed: () => Navigator.of(ctx).pop('join'),
                     ),
                   ),
-                  const SizedBox(width: 10),
+                  AppSpacing.gapW12,
                   Expanded(
                     child: ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColor.cMain,
-                        foregroundColor: Colors.white,
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: AppColors.onPrimary,
                         elevation: 0,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        padding: AppSpacing.verticalMd,
+                        shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
                       ),
-                      icon: const Icon(Icons.add_rounded, size: 18),
-                      label: const Text('Tạo CLB mới', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                      icon: const Icon(Icons.add_rounded, size: AppSpacing.iconSm),
+                      label: Text('Tạo CLB mới', style: AppTypography.labelLarge.bold.colored(AppColors.onPrimary)),
                       onPressed: () => Navigator.of(ctx).pop('create'),
                     ),
                   ),
@@ -383,12 +377,13 @@ class _MyClubsPageState extends ConsumerState<MyClubsPage> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Row(
+        backgroundColor: AppColors.surface,
+        shape: const RoundedRectangleBorder(borderRadius: AppRadius.dialog),
+        title: Row(
           children: [
-            Icon(Icons.tag_rounded, color: AppColors.roleSky),
-            SizedBox(width: 8),
-            Text('Tham Gia Bằng Mã Code', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const Icon(Icons.tag_rounded, color: AppColors.roleSky),
+            AppSpacing.gapW8,
+            Text('Tham Gia Bằng Mã Code', style: AppTypography.titleLarge.bold),
           ],
         ),
         content: SingleChildScrollView(
@@ -397,66 +392,66 @@ class _MyClubsPageState extends ConsumerState<MyClubsPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                padding: const EdgeInsets.all(12),
+                padding: AppSpacing.allMd,
                 decoration: BoxDecoration(
                   color: AppColors.successContainer,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: AppRadius.borderMd,
                   border: Border.all(color: AppColors.successBorder),
                 ),
-                child: const Row(
+                child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(Icons.how_to_reg_rounded, color: AppColors.success, size: 20),
-                    SizedBox(width: 10),
+                    const Icon(Icons.how_to_reg_rounded, color: AppColors.success, size: 20),
+                    AppSpacing.gapW12,
                     Expanded(
                       child: Text(
                         'Yêu cầu của bạn sẽ được gửi vào danh sách duyệt đơn của Host và Ban quản trị. Sau khi được duyệt, bạn sẽ là Thành viên chính thức của nhóm.',
-                        style: TextStyle(fontSize: 12, color: AppColors.onSuccess, height: 1.4),
+                        style: AppTypography.bodySmall.colored(AppColors.onSuccess),
                       ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 16),
-              const Text('Mã câu lạc bộ (Code) *', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
-              const SizedBox(height: 6),
+              AppSpacing.gapH16,
+              Text('Mã câu lạc bộ (Code) *', style: AppTypography.labelMedium.semiBold.colored(AppColors.textPrimary)),
+              AppSpacing.gapH8,
               TextField(
                 controller: codeController,
                 textCapitalization: TextCapitalization.characters,
-                decoration: InputDecoration(
-                  prefixIcon: const Icon(Icons.tag_rounded, color: AppColor.cMuted),
+                decoration: const InputDecoration(
+                  prefixIcon: Icon(Icons.tag_rounded, color: AppColors.textMuted),
                   hintText: 'Ví dụ: CLB-E22A0E',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  border: OutlineInputBorder(borderRadius: AppRadius.input),
+                  contentPadding: EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
                 ),
               ),
-              const SizedBox(height: 14),
-              const Text('Biệt danh thi đấu (Nickname)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
-              const SizedBox(height: 6),
+              AppSpacing.gapH16,
+              Text('Biệt danh thi đấu (Nickname)', style: AppTypography.labelMedium.semiBold.colored(AppColors.textPrimary)),
+              AppSpacing.gapH8,
               TextField(
                 controller: nicknameController,
-                decoration: InputDecoration(
-                  prefixIcon: const Icon(Icons.person_outline_rounded, color: AppColor.cMuted),
+                decoration: const InputDecoration(
+                  prefixIcon: Icon(Icons.person_outline_rounded, color: AppColors.textMuted),
                   hintText: 'Tùy chọn (ví dụ: Hoàng Smash)',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  border: OutlineInputBorder(borderRadius: AppRadius.input),
+                  contentPadding: EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
                 ),
               ),
             ],
           ),
         ),
-        actionsPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        actionsPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.base, vertical: AppSpacing.md),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Hủy', style: TextStyle(color: AppColor.cMuted)),
+            child: Text('Hủy', style: AppTypography.labelLarge.colored(AppColors.textMuted)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.roleSky,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              foregroundColor: AppColors.white,
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.sm),
+              shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
             ),
             onPressed: () async {
               final code = codeController.text.trim();
@@ -471,12 +466,12 @@ class _MyClubsPageState extends ConsumerState<MyClubsPage> {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                     content: Text('Đã gửi yêu cầu tham gia thành công! Vui lòng chờ Ban quản trị duyệt đơn.'),
-                    backgroundColor: AppColor.cGreen,
+                    backgroundColor: AppColors.success,
                   ),
                 );
               }
             },
-            child: const Text('Gửi đơn xin gia nhập', style: TextStyle(fontWeight: FontWeight.bold)),
+            child: Text('Gửi đơn xin gia nhập', style: AppTypography.labelLarge.bold.colored(AppColors.white)),
           ),
         ],
       ),
@@ -526,32 +521,32 @@ class _MyClubsPageState extends ConsumerState<MyClubsPage> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.surface,
         elevation: 0,
         scrolledUnderElevation: 0.5,
         title: clubs.isEmpty
-            ? const Text(
+            ? Text(
                 'Câu Lạc Bộ Của Tôi',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColor.cTitle),
+                style: AppTypography.titleLarge.bold.colored(AppColors.textPrimary),
               )
             : InkWell(
                 onTap: () => _showClubSwitcherSheet(context, clubs, activeId, vm),
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: AppRadius.borderSm,
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs, vertical: AppSpacing.xs),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Flexible(
                         child: Text(
                           selectedClub?.clubName ?? 'Câu Lạc Bộ',
-                          style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: AppColor.cTitle),
+                          style: AppTypography.titleMedium.bold.colored(AppColors.textPrimary),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      const SizedBox(width: 4),
-                      const Icon(Icons.expand_more_rounded, color: AppColor.cMuted, size: 20),
+                      AppSpacing.gapW4,
+                      const Icon(Icons.expand_more_rounded, color: AppColors.textMuted, size: AppSpacing.iconSm),
                     ],
                   ),
                 ),
@@ -565,7 +560,7 @@ class _MyClubsPageState extends ConsumerState<MyClubsPage> {
                 color: AppColors.surfaceSubtle,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.event_available_rounded, color: AppColor.cMain, size: 20),
+              child: const Icon(Icons.event_available_rounded, color: AppColors.primary, size: 20),
             ),
             onPressed: () => context.push(AppConfig.myBookingsRoutePath),
           ),
@@ -573,15 +568,15 @@ class _MyClubsPageState extends ConsumerState<MyClubsPage> {
             tooltip: 'Thêm / Tham gia nhóm',
             icon: Container(
               padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                color: AppColor.cMain.withValues(alpha: 0.12),
+              decoration: const BoxDecoration(
+                color: AppColors.primaryContainer,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.add_rounded, color: AppColor.cMain, size: 22),
+              child: const Icon(Icons.add_rounded, color: AppColors.primary, size: 22),
             ),
             onPressed: () => _showAddOrJoinSheet(context, vm),
           ),
-          const SizedBox(width: 8),
+          AppSpacing.gapW8,
         ],
         bottom: PreferredSize(
           preferredSize: Size.fromHeight(clubs.length > 1 ? 64 : 1),
@@ -594,7 +589,7 @@ class _MyClubsPageState extends ConsumerState<MyClubsPage> {
         ),
       ),
       body: state.isLoading && clubs.isEmpty
-          ? const Center(child: CircularProgressIndicator(color: AppColor.cMain))
+          ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
           : selectedClub != null
               ? ClubDetailView(
                   key: ValueKey(selectedClub.clubId),
@@ -609,12 +604,12 @@ class _MyClubsPageState extends ConsumerState<MyClubsPage> {
   Widget _buildHorizontalClubStrip(List<MyClub> clubs, String? activeId, ClubContextViewModel vm) {
     return Container(
       height: 60,
-      color: Colors.white,
+      color: AppColors.surface,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.base, vertical: 6),
         itemCount: clubs.length + 1,
-        separatorBuilder: (_, _) => const SizedBox(width: 10),
+        separatorBuilder: (_, _) => AppSpacing.gapW8,
         itemBuilder: (context, index) {
           if (index == clubs.length) {
             return InkWell(
@@ -624,29 +619,25 @@ class _MyClubsPageState extends ConsumerState<MyClubsPage> {
                   context.push('/club/$newClubId');
                 }
               },
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: AppRadius.borderFull,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.xs),
                 decoration: BoxDecoration(
-                  color: AppColor.cMain.withValues(alpha: 0.08),
-                  borderRadius: BorderRadius.circular(20),
+                  color: AppColors.primaryContainer,
+                  borderRadius: AppRadius.borderFull,
                   border: Border.all(
-                    color: AppColor.cMain.withValues(alpha: 0.4),
+                    color: AppColors.primary.withValues(alpha: 0.4),
                     width: 1,
                   ),
                 ),
-                child: const Row(
+                child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.add_rounded, size: 18, color: AppColor.cMain),
-                    SizedBox(width: 4),
+                    const Icon(Icons.add_rounded, size: AppSpacing.iconSm, color: AppColors.primary),
+                    AppSpacing.gapW4,
                     Text(
                       'Tạo CLB mới',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: AppColor.cMain,
-                      ),
+                      style: AppTypography.labelSmall.bold.colored(AppColors.primary),
                     ),
                   ],
                 ),
@@ -664,12 +655,12 @@ class _MyClubsPageState extends ConsumerState<MyClubsPage> {
             onTap: () => _switchSelectedClub(club.clubId, vm),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.xs),
               decoration: BoxDecoration(
-                color: isSelected ? AppColor.cMain.withValues(alpha: 0.1) : AppColors.surfaceSubtle,
-                borderRadius: BorderRadius.circular(20),
+                color: isSelected ? AppColors.primaryContainer : AppColors.surfaceSubtle,
+                borderRadius: AppRadius.borderFull,
                 border: Border.all(
-                  color: isSelected ? AppColor.cMain : AppColors.border,
+                  color: isSelected ? AppColors.primary : AppColors.border,
                   width: isSelected ? 1.5 : 1,
                 ),
               ),
@@ -680,28 +671,26 @@ class _MyClubsPageState extends ConsumerState<MyClubsPage> {
                     width: 26,
                     height: 26,
                     decoration: BoxDecoration(
-                      color: isSelected ? AppColor.cMain : AppColors.neutral400,
+                      color: isSelected ? AppColors.primary : AppColors.neutral400,
                       shape: BoxShape.circle,
                     ),
                     child: Center(
                       child: Text(
                         initials,
-                        style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white),
+                        style: AppTypography.labelSmall.bold.colored(AppColors.white),
                       ),
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  AppSpacing.gapW8,
                   Text(
                     club.clubName,
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                      color: isSelected ? AppColor.cMain : AppColor.cTitle,
-                    ),
+                    style: AppTypography.bodySmall.colored(
+                      isSelected ? AppColors.primary : AppColors.textPrimary,
+                    ).copyWith(fontWeight: isSelected ? FontWeight.bold : FontWeight.w500),
                   ),
                   if (isActive) ...[
-                    const SizedBox(width: 4),
-                    const Icon(Icons.check_circle_rounded, color: AppColor.cGreen, size: 14),
+                    AppSpacing.gapW4,
+                    const Icon(Icons.check_circle_rounded, color: AppColors.success, size: 14),
                   ],
                 ],
               ),
@@ -735,7 +724,7 @@ class _MyClubsPageState extends ConsumerState<MyClubsPage> {
             ),
             Expanded(
               child: state.isLoading && clubs.isEmpty
-                  ? const Center(child: CircularProgressIndicator(color: AppColor.cMain))
+                  ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
                   : selectedClub != null
                       ? ClubDetailView(
                           key: ValueKey(selectedClub.clubId),
@@ -754,18 +743,18 @@ class _MyClubsPageState extends ConsumerState<MyClubsPage> {
   Widget _buildEmptyClubsState(BuildContext context, ClubContextViewModel vm) {
     return Center(
       child: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.xl),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             // Hero Visual Card
             Container(
-              padding: const EdgeInsets.all(24),
+              padding: AppSpacing.allXl,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    AppColor.cMain.withValues(alpha: 0.15),
-                    AppColors.roleSky.withValues(alpha: 0.08),
+                    AppColors.primary.withValues(alpha: 0.15),
+                    AppColors.secondary.withValues(alpha: 0.08),
                   ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
@@ -775,46 +764,37 @@ class _MyClubsPageState extends ConsumerState<MyClubsPage> {
               child: const Icon(
                 Icons.sports_tennis_rounded,
                 size: 64,
-                color: AppColor.cMain,
+                color: AppColors.primary,
               ),
             ),
 
-            const SizedBox(height: 24),
+            AppSpacing.gapH24,
 
-            const Text(
+            Text(
               'Chưa tham gia Câu lạc bộ nào',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: AppColor.cTitle,
-                letterSpacing: -0.3,
-              ),
+              style: AppTypography.headlineMedium.bold.colored(AppColors.textPrimary),
             ),
 
-            const SizedBox(height: 8),
+            AppSpacing.gapH8,
 
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16),
+            Padding(
+              padding: AppSpacing.horizontalBase,
               child: Text(
                 'Tham gia hoặc tạo câu lạc bộ để lên lịch thi đấu, bình chọn slot buổi tập, theo dõi hàng chờ và giao lưu cùng đồng đội.',
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 13.5,
-                  color: AppColor.cMuted,
-                  height: 1.5,
-                ),
+                style: AppTypography.bodyMedium.colored(AppColors.textMuted),
               ),
             ),
 
-            const SizedBox(height: 32),
+            AppSpacing.gapH32,
 
             // Card 1: Tạo CLB Mới (Primary Action)
             _buildActionCard(
               title: 'Tạo Câu Lạc Bộ Mới',
               description: 'Bạn là Chủ nhóm (Host) lên lịch buổi chơi, quản lý quỹ và duyệt thành viên',
               icon: Icons.add_business_rounded,
-              accentColor: AppColor.cMain,
+              accentColor: AppColors.primary,
               onTap: () async {
                 final newClubId = await ClubCreateDialog.show(context);
                 if (newClubId != null && newClubId.isNotEmpty && context.mounted) {
@@ -823,7 +803,7 @@ class _MyClubsPageState extends ConsumerState<MyClubsPage> {
               },
             ),
 
-            const SizedBox(height: 14),
+            AppSpacing.gapH12,
 
             // Card 2: Nhập Mã Code
             _buildActionCard(
@@ -834,7 +814,7 @@ class _MyClubsPageState extends ConsumerState<MyClubsPage> {
               onTap: () => _showJoinClubDialog(context, vm),
             ),
 
-            const SizedBox(height: 14),
+            AppSpacing.gapH12,
 
             // Card 3: Khám Phá CLB Quanh Đây (FR06)
             _buildActionCard(
@@ -845,7 +825,7 @@ class _MyClubsPageState extends ConsumerState<MyClubsPage> {
               onTap: () => context.push(AppConfig.exploreClubsScreenPath),
             ),
 
-            const SizedBox(height: 14),
+            AppSpacing.gapH12,
 
             // Card 4: Khám Phá Kèo Giao Lưu (FR12)
             _buildActionCard(
@@ -870,25 +850,19 @@ class _MyClubsPageState extends ConsumerState<MyClubsPage> {
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        color: AppColors.surface,
+        borderRadius: AppRadius.card,
         border: Border.all(color: AppColors.border),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 8,
-            offset: const Offset(0, 3),
-          ),
-        ],
+        boxShadow: AppShadows.sm,
       ),
       child: Material(
         color: Colors.transparent,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: AppRadius.card,
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: AppRadius.card,
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            padding: AppSpacing.card,
             child: Row(
               children: [
                 Container(
@@ -896,37 +870,29 @@ class _MyClubsPageState extends ConsumerState<MyClubsPage> {
                   height: 48,
                   decoration: BoxDecoration(
                     color: accentColor.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: AppRadius.borderMd,
                   ),
-                  child: Icon(icon, color: accentColor, size: 24),
+                  child: Icon(icon, color: accentColor, size: AppSpacing.iconMd),
                 ),
-                const SizedBox(width: 14),
+                AppSpacing.gapW12,
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         title,
-                        style: const TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: AppColor.cTitle,
-                        ),
+                        style: AppTypography.titleSmall.bold.colored(AppColors.textPrimary),
                       ),
-                      const SizedBox(height: 3),
+                      AppSpacing.gapH4,
                       Text(
                         description,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: AppColor.cMuted,
-                          height: 1.35,
-                        ),
+                        style: AppTypography.bodySmall.colored(AppColors.textMuted),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(width: 8),
-                Icon(Icons.arrow_forward_ios_rounded, color: accentColor, size: 16),
+                AppSpacing.gapW8,
+                Icon(Icons.arrow_forward_ios_rounded, color: accentColor, size: AppSpacing.iconSm),
               ],
             ),
           ),

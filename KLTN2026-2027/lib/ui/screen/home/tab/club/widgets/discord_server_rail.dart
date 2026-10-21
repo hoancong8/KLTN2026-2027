@@ -28,18 +28,18 @@ class DiscordServerRail extends StatelessWidget {
       color: AppColors.surfaceDark, // Discord Server Rail Dark Background
       child: Column(
         children: [
-          const SizedBox(height: 12),
+          AppSpacing.gapH12,
 
           // Top Badminton / Community Hub Icon
           _buildHubIcon(),
 
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.base, vertical: AppSpacing.sm),
             child: Container(
               height: 2,
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(1),
+                color: AppColors.white.withValues(alpha: 0.12),
+                borderRadius: AppRadius.borderXs,
               ),
             ),
           ),
@@ -47,7 +47,7 @@ class DiscordServerRail extends StatelessWidget {
           // Scrollable List of Clubs
           Expanded(
             child: ListView.builder(
-              padding: const EdgeInsets.symmetric(vertical: 4),
+              padding: AppSpacing.verticalXs,
               itemCount: clubs.length,
               itemBuilder: (context, index) {
                 final club = clubs[index];
@@ -66,7 +66,7 @@ class DiscordServerRail extends StatelessWidget {
 
           // Add / Join Club Button (+)
           _buildAddClubButton(context),
-          const SizedBox(height: 16),
+          AppSpacing.gapH16,
         ],
       ),
     );
@@ -79,18 +79,12 @@ class DiscordServerRail extends StatelessWidget {
         width: 48,
         height: 48,
         decoration: BoxDecoration(
-          color: AppColor.cMain,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: AppColor.cMain.withValues(alpha: 0.35),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
+          color: AppColors.primary,
+          borderRadius: AppRadius.card,
+          boxShadow: AppShadows.primaryGlow(),
         ),
         child: const Center(
-          child: Icon(Icons.sports_tennis_rounded, color: Colors.white, size: 26),
+          child: Icon(Icons.sports_tennis_rounded, color: AppColors.white, size: 26),
         ),
       ),
     );
@@ -103,18 +97,18 @@ class DiscordServerRail extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           onTap: onAddClubPressed,
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: AppRadius.borderFull,
           child: Container(
             width: 48,
             height: 48,
             decoration: BoxDecoration(
               color: AppColors.surfaceDarkCard,
               shape: BoxShape.circle,
-              border: Border.all(color: Colors.white.withValues(alpha: 0.1), width: 1),
+              border: Border.all(color: AppColors.white.withValues(alpha: 0.1), width: 1),
             ),
             child: const Icon(
               Icons.add_rounded,
-              color: AppColor.cGreen_50,
+              color: AppColors.primaryLight,
               size: 26,
             ),
           ),
@@ -156,7 +150,7 @@ class _ServerItem extends StatelessWidget {
             width: 4,
             height: isSelected ? 36 : (isActiveContext ? 16 : 0),
             decoration: BoxDecoration(
-              color: isSelected ? AppColor.cGreen_50 : Colors.white.withValues(alpha: 0.5),
+              color: isSelected ? AppColors.primaryLight : AppColors.white.withValues(alpha: 0.5),
               borderRadius: const BorderRadius.only(
                 topRight: Radius.circular(4),
                 bottomRight: Radius.circular(4),
@@ -176,10 +170,10 @@ class _ServerItem extends StatelessWidget {
                   width: 48,
                   height: 48,
                   decoration: BoxDecoration(
-                    color: isSelected ? AppColor.cMain : AppColors.surfaceDarkInput,
-                    borderRadius: BorderRadius.circular(isSelected ? 16 : 24),
+                    color: isSelected ? AppColors.primary : AppColors.surfaceDarkInput,
+                    borderRadius: isSelected ? AppRadius.card : AppRadius.borderXxl,
                     border: isActiveContext
-                        ? Border.all(color: AppColor.cGreen_50, width: 2)
+                        ? Border.all(color: AppColors.primaryLight, width: 2)
                         : null,
                     image: club.avatarUrl != null && club.avatarUrl!.isNotEmpty
                         ? DecorationImage(
@@ -192,11 +186,8 @@ class _ServerItem extends StatelessWidget {
                       ? Center(
                           child: Text(
                             initials,
-                            style: TextStyle(
-                              color: isSelected ? Colors.white : AppColors.neutral300,
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 0.5,
+                            style: AppTypography.titleSmall.bold.colored(
+                              isSelected ? AppColors.white : AppColors.neutral300,
                             ),
                           ),
                         )
@@ -215,7 +206,7 @@ class _ServerItem extends StatelessWidget {
                 width: 12,
                 height: 12,
                 decoration: BoxDecoration(
-                  color: AppColor.cGreen_50,
+                  color: AppColors.primaryLight,
                   shape: BoxShape.circle,
                   border: Border.all(color: AppColors.surfaceDark, width: 2),
                 ),

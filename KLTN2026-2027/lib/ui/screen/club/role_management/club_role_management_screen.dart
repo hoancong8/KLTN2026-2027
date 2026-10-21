@@ -63,11 +63,11 @@ class _ClubRoleManagementScreenState extends ConsumerState<ClubRoleManagementScr
         appBar: AppBar(
           title: const Text('Vai trò & Phân quyền', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17)),
           backgroundColor: Colors.white,
-          foregroundColor: AppColor.cTitle,
+          foregroundColor: AppColors.textPrimary,
           elevation: 0.5,
         ),
         body: const Center(
-          child: CircularProgressIndicator(color: AppColor.cMain),
+          child: CircularProgressIndicator(color: AppColors.primary),
         ),
       );
     }

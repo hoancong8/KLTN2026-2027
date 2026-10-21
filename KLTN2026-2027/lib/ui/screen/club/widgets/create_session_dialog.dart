@@ -93,7 +93,7 @@ class _CreateSessionDialogState extends ConsumerState<CreateSessionDialog> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Giờ kết thúc phải sau giờ bắt đầu!'),
-          backgroundColor: AppColor.cRed,
+          backgroundColor: AppColors.error,
         ),
       );
       return;
@@ -125,7 +125,7 @@ class _CreateSessionDialogState extends ConsumerState<CreateSessionDialog> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Tạo buổi chơi thành công'),
-            backgroundColor: AppColor.cMain,
+            backgroundColor: AppColors.primary,
           ),
         );
       }
@@ -151,20 +151,20 @@ class _CreateSessionDialogState extends ConsumerState<CreateSessionDialog> {
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: AppColor.cMain.withValues(alpha: 0.12),
+                        color: AppColors.primary.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: const Icon(Icons.sports_tennis_rounded, color: AppColor.cMain, size: 24),
+                      child: const Icon(Icons.sports_tennis_rounded, color: AppColors.primary, size: 24),
                     ),
                     const SizedBox(width: 12),
                     const Expanded(
                       child: Text(
                         'Khởi Tạo Buổi Chơi (FR13)',
-                        style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: AppColor.cTitle),
+                        style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.close, color: AppColor.cMuted),
+                      icon: const Icon(Icons.close, color: AppColors.textMuted),
                       onPressed: () => Navigator.of(context).pop(),
                     ),
                   ],
@@ -206,12 +206,12 @@ class _CreateSessionDialogState extends ConsumerState<CreateSessionDialog> {
                             child: Container(
                               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
                               decoration: BoxDecoration(
-                                border: Border.all(color: AppColor.cDivider),
+                                border: Border.all(color: AppColors.border),
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: Row(
                                 children: [
-                                  const Icon(Icons.access_time_rounded, size: 18, color: AppColor.cMuted),
+                                  const Icon(Icons.access_time_rounded, size: 18, color: AppColors.textMuted),
                                   const SizedBox(width: 6),
                                   Expanded(
                                     child: Text(
@@ -238,12 +238,12 @@ class _CreateSessionDialogState extends ConsumerState<CreateSessionDialog> {
                             child: Container(
                               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
                               decoration: BoxDecoration(
-                                border: Border.all(color: AppColor.cDivider),
+                                border: Border.all(color: AppColors.border),
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: Row(
                                 children: [
-                                  const Icon(Icons.access_time_filled_rounded, size: 18, color: AppColor.cMuted),
+                                  const Icon(Icons.access_time_filled_rounded, size: 18, color: AppColors.textMuted),
                                   const SizedBox(width: 6),
                                   Expanded(
                                     child: Text(
@@ -315,11 +315,11 @@ class _CreateSessionDialogState extends ConsumerState<CreateSessionDialog> {
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.info_outline, size: 16, color: AppColor.cMain),
+                      const Icon(Icons.info_outline, size: 16, color: AppColors.primary),
                       const SizedBox(width: 8),
                       Text(
                         'Tổng sĩ số tối đa: $_maxPlayers slot chính thức',
-                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColor.cTitle),
+                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
                       ),
                     ],
                   ),
@@ -342,8 +342,8 @@ class _CreateSessionDialogState extends ConsumerState<CreateSessionDialog> {
                 ElevatedButton(
                   onPressed: _isSubmitting ? null : _handleSubmit,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColor.cMain,
-                    foregroundColor: AppColor.white,
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: AppColors.white,
                     padding: const EdgeInsets.symmetric(vertical: 13),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                   ),
@@ -366,19 +366,19 @@ class _CreateSessionDialogState extends ConsumerState<CreateSessionDialog> {
   Widget _buildLabel(String text) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 6),
-      child: Text(text, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColor.cTitle)),
+      child: Text(text, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
     );
   }
 
   InputDecoration _inputDecoration({String? hint, IconData? prefixIcon}) {
     return InputDecoration(
       hintText: hint,
-      hintStyle: const TextStyle(color: AppColor.cMuted, fontSize: 13),
-      prefixIcon: prefixIcon != null ? Icon(prefixIcon, size: 18, color: AppColor.cMuted) : null,
+      hintStyle: const TextStyle(color: AppColors.textMuted, fontSize: 13),
+      prefixIcon: prefixIcon != null ? Icon(prefixIcon, size: 18, color: AppColors.textMuted) : null,
       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppColor.cDivider)),
-      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppColor.cDivider)),
-      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppColor.cMain, width: 1.5)),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppColors.border)),
+      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppColors.border)),
+      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppColors.primary, width: 1.5)),
     );
   }
 }
