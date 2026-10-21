@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 import 'package:kltn2026_2027/app/consts/app_config.dart';
 import 'package:kltn2026_2027/app/provider.dart';
 import 'package:kltn2026_2027/app/provider/localization_provider.dart';
@@ -13,8 +12,7 @@ import 'package:kltn2026_2027/domain/entities/club/explore_club.dart';
 import 'package:kltn2026_2027/domain/entities/player_profile.dart';
 import 'package:kltn2026_2027/domain/entities/session/guest_recruitment.dart';
 import 'package:kltn2026_2027/domain/entities/session/my_booking_item.dart';
-import 'package:kltn2026_2027/ui/screen/club/club_vm/club_context_vm.dart';
-import 'package:kltn2026_2027/widget/club_switcher_dialog.dart';
+import 'package:kltn2026_2027/widget/app_network_image.dart';
 import 'dashboard_vm/dashboard_state.dart';
 import 'dashboard_vm/dashboard_vm.dart';
 
@@ -76,13 +74,10 @@ class DashboardPage extends ConsumerWidget {
   }
 
   // ===========================================================================
-  // 1. TOP HEADER WITH PLAYER IDENTITY & ACTIVE CLUB CONTEXT
+  // 1. TOP HEADER WITH PLAYER IDENTITY
   // ===========================================================================
   Widget _buildHeader(BuildContext context, WidgetRef ref, PlayerProfile? playerProfile) {
     final topPadding = MediaQuery.paddingOf(context).top;
-    final clubContext = ref.watch(clubContextViewModelProvider);
-    final activeClubName = clubContext.currentClubName ?? context.l10n.club_switch;
-    final roleName = clubContext.currentRole?.displayName;
     final colors = context.colors;
     final userProfile = ref.watch(currentUserProfileProvider);
 
@@ -92,6 +87,7 @@ class DashboardPage extends ConsumerWidget {
 
     final skillLevelName = playerProfile?.skillLevel.displayName ?? 'NB';
     final isOpenForGuest = playerProfile?.isOpenForGuest ?? false;
+    final reputation = (playerProfile?.reputationScore ?? 5.0).toStringAsFixed(1);
 
     return Container(
       width: double.infinity,
@@ -116,23 +112,21 @@ class DashboardPage extends ConsumerWidget {
         children: [
           Row(
             children: [
-              // Avatar
+              // Avatar with Safe Network Image
               Container(
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(color: colors.primary, width: 2),
-                  color: colors.primaryContainer,
                 ),
-                child: ClipOval(
-                  child: playerProfile?.avatarUrl != null && playerProfile!.avatarUrl!.isNotEmpty
-                      ? Image.network(
-                          playerProfile.avatarUrl!,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, _, _) => Icon(Icons.person, color: colors.primary, size: 28),
-                        )
-                      : Icon(Icons.person, color: colors.primary, size: 28),
+                child: AppNetworkImage(
+                  imageUrl: playerProfile?.avatarUrl,
+                  width: 44,
+                  height: 44,
+                  isCircle: true,
+                  defaultFallbackIcon: Icons.person,
+                  backgroundColor: colors.primaryContainer,
                 ),
               ),
               AppSpacing.gapW12,
@@ -200,55 +194,28 @@ class DashboardPage extends ConsumerWidget {
                   ],
                 ),
               ),
-              // Context Club Switcher Pill Button (FR04)
-              GestureDetector(
-                onTap: () => ClubSwitcherDialog.show(context),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: colors.cardBackground,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: colors.cardBorder),
-                    boxShadow: context.isDark ? AppShadows.none : AppShadows.sm,
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.groups_rounded, color: colors.primary, size: 15),
-                      AppSpacing.gapW4,
-                      ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 90),
-                        child: Text(
-                          activeClubName,
-                          style: AppTypography.labelSmall.copyWith(
-                            color: colors.textPrimary,
-                            fontWeight: FontWeight.w600,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
+              // Compact Reputation Badge
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: colors.cardBackground,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: colors.cardBorder),
+                  boxShadow: context.isDark ? AppShadows.none : AppShadows.sm,
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.star_rounded, color: colors.accent, size: 16),
+                    AppSpacing.gapW4,
+                    Text(
+                      reputation,
+                      style: AppTypography.labelSmall.copyWith(
+                        color: colors.textPrimary,
+                        fontWeight: FontWeight.bold,
                       ),
-                      if (roleName != null) ...[
-                        AppSpacing.gapW4,
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-                          decoration: BoxDecoration(
-                            color: colors.primaryContainer,
-                            borderRadius: AppRadius.tag,
-                          ),
-                          child: Text(
-                            roleName,
-                            style: AppTypography.labelSmall.copyWith(
-                              fontSize: 9,
-                              color: colors.primary,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ],
-                      Icon(Icons.arrow_drop_down, color: colors.textSecondary, size: 16),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -544,13 +511,20 @@ class DashboardPage extends ConsumerWidget {
         child: Row(
           children: [
             Container(
-              width: 48,
-              height: 48,
+              width: 52,
+              height: 52,
               decoration: BoxDecoration(
-                color: colors.primary.withValues(alpha: 0.12),
+                gradient: LinearGradient(
+                  colors: [
+                    colors.primary.withValues(alpha: 0.2),
+                    colors.primaryContainer,
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
                 borderRadius: AppRadius.borderMd,
               ),
-              child: Icon(Icons.event_busy_rounded, color: colors.primary, size: 26),
+              child: Icon(Icons.event_available_rounded, color: colors.primary, size: 28),
             ),
             AppSpacing.gapW12,
             Expanded(
@@ -581,7 +555,7 @@ class DashboardPage extends ConsumerWidget {
                 backgroundColor: colors.primary,
                 foregroundColor: AppColors.white,
                 elevation: 0,
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                 shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
               ),
               child: Text(
@@ -597,15 +571,17 @@ class DashboardPage extends ConsumerWidget {
       );
     }
 
-    final timeFormatter = DateFormat('HH:mm');
-    final dateFormatter = DateFormat('EEE, dd/MM/yyyy', 'vi');
-    final timeStr = '${timeFormatter.format(booking.startTime)} - ${timeFormatter.format(booking.endTime)}, ${dateFormatter.format(booking.startTime)}';
+    final timeStr = _formatSessionDateTime(booking.startTime, booking.endTime);
 
     Color statusBgColor = colors.success.withValues(alpha: 0.15);
     Color statusTextColor = colors.success;
     String statusText = l10n.booking_status_confirmed;
 
-    if (booking.isWaiting) {
+    if (booking.isOngoing) {
+      statusBgColor = colors.info.withValues(alpha: 0.15);
+      statusTextColor = colors.info;
+      statusText = 'Đang diễn ra';
+    } else if (booking.isWaiting) {
       statusBgColor = colors.warning.withValues(alpha: 0.15);
       statusTextColor = colors.warning;
       statusText = l10n.home_queue_order(booking.queueOrder);
@@ -630,19 +606,33 @@ class DashboardPage extends ConsumerWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  Icon(Icons.sports_tennis_rounded, size: 16, color: colors.primary),
-                  AppSpacing.gapW4,
-                  Text(
-                    booking.clubName,
-                    style: AppTypography.labelMedium.copyWith(
-                      fontWeight: FontWeight.w700,
-                      color: colors.primary,
+              Expanded(
+                child: Row(
+                  children: [
+                    AppNetworkImage(
+                      imageUrl: booking.clubAvatarUrl,
+                      width: 28,
+                      height: 28,
+                      borderRadius: BorderRadius.circular(6),
+                      defaultFallbackIcon: Icons.sports_tennis_rounded,
+                      backgroundColor: colors.primaryContainer,
                     ),
-                  ),
-                ],
+                    AppSpacing.gapW8,
+                    Expanded(
+                      child: Text(
+                        booking.clubName,
+                        style: AppTypography.labelMedium.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: colors.primary,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
               ),
+              AppSpacing.gapW8,
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
@@ -811,8 +801,7 @@ class DashboardPage extends ConsumerWidget {
   ) {
     final colors = context.colors;
     final l10n = context.l10n;
-    final timeFormatter = DateFormat('HH:mm');
-    final timeStr = '${timeFormatter.format(item.startTime)} - ${timeFormatter.format(item.endTime)}';
+    final timeStr = _formatSessionDateTime(item.startTime, item.endTime);
 
     return Container(
       padding: AppSpacing.card,
@@ -829,14 +818,29 @@ class DashboardPage extends ConsumerWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Expanded(
-                child: Text(
-                  item.clubName,
-                  style: AppTypography.titleSmall.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: colors.textPrimary,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                child: Row(
+                  children: [
+                    AppNetworkImage(
+                      imageUrl: null,
+                      width: 26,
+                      height: 26,
+                      borderRadius: BorderRadius.circular(6),
+                      defaultFallbackIcon: Icons.groups_rounded,
+                      backgroundColor: colors.surfaceSubtle,
+                    ),
+                    AppSpacing.gapW8,
+                    Expanded(
+                      child: Text(
+                        item.clubName,
+                        style: AppTypography.titleSmall.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: colors.textPrimary,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
                 ),
               ),
               if (item.distanceKm != null)
@@ -883,9 +887,13 @@ class DashboardPage extends ConsumerWidget {
             children: [
               Icon(Icons.access_time_rounded, size: 13, color: colors.textSecondary),
               AppSpacing.gapW4,
-              Text(
-                timeStr,
-                style: AppTypography.bodySmall.copyWith(color: colors.textSecondary),
+              Expanded(
+                child: Text(
+                  timeStr,
+                  style: AppTypography.bodySmall.copyWith(color: colors.textSecondary),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
             ],
           ),
@@ -1063,23 +1071,13 @@ class DashboardPage extends ConsumerWidget {
           ),
           child: Row(
             children: [
-              Container(
+              AppNetworkImage(
+                imageUrl: club.avatarUrl,
                 width: 60,
                 height: 60,
-                decoration: BoxDecoration(
-                  borderRadius: AppRadius.borderMd,
-                  color: colors.primaryContainer.withValues(alpha: 0.5),
-                ),
-                child: ClipRRect(
-                  borderRadius: AppRadius.borderMd,
-                  child: club.avatarUrl != null && club.avatarUrl!.isNotEmpty
-                      ? Image.network(
-                          club.avatarUrl!,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, _, _) => Icon(Icons.groups_rounded, color: colors.primary, size: 28),
-                        )
-                      : Icon(Icons.groups_rounded, color: colors.primary, size: 28),
-                ),
+                borderRadius: AppRadius.borderMd,
+                defaultFallbackIcon: Icons.groups_rounded,
+                backgroundColor: colors.primaryContainer.withValues(alpha: 0.5),
               ),
               AppSpacing.gapW12,
               Expanded(
@@ -1155,6 +1153,31 @@ class DashboardPage extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  // ===========================================================================
+  // 8. DEFENSIVE TIME FORMATTING (ZERO RUNTIME LOCALE CRASH)
+  // ===========================================================================
+  String _formatSessionDateTime(DateTime startTime, DateTime endTime) {
+    final startHour = startTime.hour.toString().padLeft(2, '0');
+    final startMin = startTime.minute.toString().padLeft(2, '0');
+    final endHour = endTime.hour.toString().padLeft(2, '0');
+    final endMin = endTime.minute.toString().padLeft(2, '0');
+
+    const weekdays = [
+      'Thứ 2',
+      'Thứ 3',
+      'Thứ 4',
+      'Thứ 5',
+      'Thứ 6',
+      'Thứ 7',
+      'Chủ Nhật',
+    ];
+    final weekday = weekdays[(startTime.weekday - 1).clamp(0, 6)];
+    final day = startTime.day.toString().padLeft(2, '0');
+    final month = startTime.month.toString().padLeft(2, '0');
+
+    return '$startHour:$startMin - $endHour:$endMin, $weekday $day/$month';
   }
 }
 

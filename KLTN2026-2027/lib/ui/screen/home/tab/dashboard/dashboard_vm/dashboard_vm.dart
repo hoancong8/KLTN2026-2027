@@ -141,7 +141,9 @@ class DashboardViewModel extends StateNotifier<DashboardState> {
   Future<List<MyBookingItem>> _fetchUpcomingBookings() async {
     try {
       final list = await _getMyBookingsUseCase.execute();
-      return list.where((b) => b.isUpcoming).toList();
+      final activeList = list.where((b) => b.isUpcomingOrOngoing).toList();
+      activeList.sort((a, b) => a.startTime.compareTo(b.startTime));
+      return activeList;
     } catch (_) {
       return state.upcomingBookings;
     }
@@ -157,7 +159,9 @@ class DashboardViewModel extends StateNotifier<DashboardState> {
         longitude: lng,
         radiusKm: 15.0,
       );
-      return list.where((r) => r.isActive).toList();
+      final activeList = list.where((r) => r.isActive).toList();
+      activeList.sort((a, b) => a.startTime.compareTo(b.startTime));
+      return activeList;
     } catch (_) {
       return state.nearbyRecruitments;
     }

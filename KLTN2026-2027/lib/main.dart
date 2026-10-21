@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:kltn2026_2027/app/consts/app_log.dart';
 import 'package:kltn2026_2027/domain/entities/auth_token.dart';
 import 'package:kltn2026_2027/domain/entities/user_profile.dart';
@@ -28,6 +29,11 @@ void main() async {
   // 1. Preserve native splash screen
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
+
+  // 1.1 Initialize locale date formatting for intl
+  await initializeDateFormatting('vi', null);
+  await initializeDateFormatting('en', null);
+
   // 2. Initialize Firebase
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   if (!kIsWeb) {
