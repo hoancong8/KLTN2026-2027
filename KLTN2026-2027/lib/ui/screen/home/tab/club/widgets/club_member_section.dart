@@ -131,8 +131,8 @@ class _ClubMemberSectionState extends ConsumerState<ClubMemberSection> {
           ),
         ),
 
-        // Host Only: Role & Permissions Management Card
-        if (widget.isHost)
+        // Role & Permissions Management Card (Host & Manager)
+        if (widget.isHost || ref.hasClubPermission('MEMBER.ROLE.MANAGE'))
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.base, vertical: AppSpacing.xs),
             child: InkWell(

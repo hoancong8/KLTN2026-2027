@@ -4,11 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:kltn2026_2027/app/provider.dart';
 import 'package:kltn2026_2027/app/theme/theme.dart';
 import '../../../../../../app/consts/app_config.dart';
 import '../../../../../../domain/entities/session/session.dart';
 import '../../../../../../domain/enums/session_enums.dart';
 import '../../../../club/session_vm/club_sessions_vm.dart';
+import '../../../../club/widgets/create_session_dialog.dart';
 
 class ClubSessionsTab extends ConsumerStatefulWidget {
   final String clubId;
@@ -139,9 +141,28 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
       displaySessions = sortedSessions;
     }
 
+    final canCreateSession = widget.isHost || ref.hasClubPermission('OPERATIONS.SESSION.CREATE');
+
     return Scaffold(
       backgroundColor: AppColors.neutral50,
-      floatingActionButton: null,
+      floatingActionButton: canCreateSession
+          ? FloatingActionButton.extended(
+              backgroundColor: AppColors.primary,
+              foregroundColor: AppColors.white,
+              icon: const Icon(Icons.add_rounded),
+              label: const Text('Tạo buổi chơi', style: TextStyle(fontWeight: FontWeight.bold)),
+              onPressed: () async {
+                final sessionId = await CreateSessionDialog.show(
+                  context,
+                  clubId: widget.clubId,
+                  clubName: widget.clubName,
+                );
+                if (sessionId != null && context.mounted) {
+                  ref.read(clubSessionsViewModelProvider(widget.clubId).notifier).loadSessions();
+                }
+              },
+            )
+          : null,
       body: RefreshIndicator(
         onRefresh: vm.loadSessions,
         color: AppColors.primary,
