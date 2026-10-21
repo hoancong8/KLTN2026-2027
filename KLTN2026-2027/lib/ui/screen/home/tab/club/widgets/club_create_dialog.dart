@@ -213,7 +213,7 @@ class _ClubCreateDialogState extends ConsumerState<ClubCreateDialog> {
     final mediaQuery = MediaQuery.of(context);
     final screenWidth = mediaQuery.size.width;
     final dialogWidth = screenWidth > 580 ? 540.0 : screenWidth * 0.94;
-    final availableHeight = mediaQuery.size.height - mediaQuery.viewInsets.bottom;
+    final screenHeight = mediaQuery.size.height;
 
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -222,7 +222,7 @@ class _ClubCreateDialogState extends ConsumerState<ClubCreateDialog> {
       child: ConstrainedBox(
         constraints: BoxConstraints(
           maxWidth: dialogWidth,
-          maxHeight: (availableHeight * 0.92).clamp(280.0, mediaQuery.size.height * 0.9),
+          maxHeight: (screenHeight * 0.88).clamp(380.0, 780.0),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -265,7 +265,7 @@ class _ClubCreateDialogState extends ConsumerState<ClubCreateDialog> {
                   ),
                   IconButton(
                     icon: const Icon(Icons.close_rounded, color: AppColor.cMuted),
-                    onPressed: _isSubmitting ? null : () => Navigator.of(context).pop(false),
+                    onPressed: _isSubmitting ? null : () => Navigator.of(context).pop(),
                   ),
                 ],
               ),
@@ -365,6 +365,7 @@ class _ClubCreateDialogState extends ConsumerState<ClubCreateDialog> {
                                   ? DecorationImage(
                                       image: NetworkImage(_avatarUrlController.text.trim()),
                                       fit: BoxFit.cover,
+                                      onError: (_, _) {},
                                     )
                                   : null,
                             ),
@@ -487,22 +488,25 @@ class _ClubCreateDialogState extends ConsumerState<ClubCreateDialog> {
                             ),
                             const SizedBox(width: 8),
                           ],
-                          OutlinedButton.icon(
-                            style: OutlinedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                            ),
-                            onPressed: _isGettingLocation ? null : _getCurrentLocation,
-                            icon: _isGettingLocation
-                                ? const SizedBox(
-                                    width: 14,
-                                    height: 14,
-                                    child: CircularProgressIndicator(strokeWidth: 2, color: AppColor.cMain),
-                                  )
-                                : const Icon(Icons.my_location_rounded, size: 16, color: AppColor.cMain),
-                            label: Text(
-                              _lat != null ? 'Cập nhật GPS' : 'Lấy vị trí GPS',
-                              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColor.cMain),
+                          Flexible(
+                            child: OutlinedButton.icon(
+                              style: OutlinedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                              ),
+                              onPressed: _isGettingLocation ? null : _getCurrentLocation,
+                              icon: _isGettingLocation
+                                  ? const SizedBox(
+                                      width: 14,
+                                      height: 14,
+                                      child: CircularProgressIndicator(strokeWidth: 2, color: AppColor.cMain),
+                                    )
+                                  : const Icon(Icons.my_location_rounded, size: 16, color: AppColor.cMain),
+                              label: Text(
+                                _lat != null ? 'Cập nhật GPS' : 'Lấy vị trí GPS',
+                                style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColor.cMain),
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ),
                           ),
                         ],
@@ -515,6 +519,7 @@ class _ClubCreateDialogState extends ConsumerState<ClubCreateDialog> {
                         children: [
                           Expanded(
                             child: DropdownButtonFormField<SkillLevel>(
+                              isExpanded: true,
                               initialValue: _minLevel,
                               decoration: InputDecoration(
                                 labelText: 'Từ',
@@ -542,6 +547,7 @@ class _ClubCreateDialogState extends ConsumerState<ClubCreateDialog> {
                           const SizedBox(width: 8),
                           Expanded(
                             child: DropdownButtonFormField<SkillLevel>(
+                              isExpanded: true,
                               initialValue: _maxLevel,
                               decoration: InputDecoration(
                                 labelText: 'Đến',
@@ -586,27 +592,30 @@ class _ClubCreateDialogState extends ConsumerState<ClubCreateDialog> {
                                 : AppColors.border,
                           ),
                         ),
-                        child: SwitchListTile(
-                          value: _hasSchedule,
-                          activeThumbColor: AppColor.cMain,
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
-                          title: const Text(
-                            'Thiết lập lịch sinh hoạt định kỳ',
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.bold,
-                              color: AppColor.cTitle,
+                        child: Material(
+                          color: Colors.transparent,
+                          child: SwitchListTile(
+                            value: _hasSchedule,
+                            activeThumbColor: AppColor.cMain,
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
+                            title: const Text(
+                              'Thiết lập lịch sinh hoạt định kỳ',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                                color: AppColor.cTitle,
+                              ),
                             ),
+                            subtitle: const Text(
+                              'Thiết lập các thứ sinh hoạt cố định trong tuần (Thứ 2 - Chủ Nhật) và khung giờ',
+                              style: TextStyle(fontSize: 11, color: AppColor.cMuted),
+                            ),
+                            onChanged: (val) {
+                              setState(() {
+                                _hasSchedule = val;
+                              });
+                            },
                           ),
-                          subtitle: const Text(
-                            'Thiết lập các thứ sinh hoạt cố định trong tuần (Thứ 2 - Chủ Nhật) và khung giờ',
-                            style: TextStyle(fontSize: 11, color: AppColor.cMuted),
-                          ),
-                          onChanged: (val) {
-                            setState(() {
-                              _hasSchedule = val;
-                            });
-                          },
                         ),
                       ),
 
@@ -658,32 +667,47 @@ class _ClubCreateDialogState extends ConsumerState<ClubCreateDialog> {
             // Footer Actions
             const Divider(height: 1, color: AppColors.border),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  TextButton(
-                    onPressed: _isSubmitting ? null : () => Navigator.of(context).pop(false),
-                    child: const Text('Hủy', style: TextStyle(color: AppColor.cMuted)),
+                  Expanded(
+                    flex: 1,
+                    child: OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        side: const BorderSide(color: AppColors.border),
+                      ),
+                      onPressed: _isSubmitting ? null : () => Navigator.of(context).pop(),
+                      child: const Text('Hủy', style: TextStyle(color: AppColor.cMuted)),
+                    ),
                   ),
                   const SizedBox(width: 12),
-                  ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColor.cMain,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                      elevation: 0,
+                  Expanded(
+                    flex: 2,
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColor.cMain,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        elevation: 0,
+                      ),
+                      onPressed: _isSubmitting ? null : _submit,
+                      icon: _isSubmitting
+                          ? const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                            )
+                          : const Icon(Icons.check_circle_outline_rounded, size: 18),
+                      label: const Text(
+                        'Xác nhận tạo CLB',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
-                    onPressed: _isSubmitting ? null : _submit,
-                    icon: _isSubmitting
-                        ? const SizedBox(
-                            width: 16,
-                            height: 16,
-                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                          )
-                        : const Icon(Icons.check_circle_outline_rounded, size: 18),
-                    label: const Text('Xác nhận tạo CLB', style: TextStyle(fontWeight: FontWeight.bold)),
                   ),
                 ],
               ),
@@ -699,12 +723,14 @@ class _ClubCreateDialogState extends ConsumerState<ClubCreateDialog> {
       children: [
         Icon(icon, size: 16, color: AppColor.cMain),
         const SizedBox(width: 6),
-        Text(
-          title,
-          style: const TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.bold,
-            color: AppColor.cTitle,
+        Expanded(
+          child: Text(
+            title,
+            style: const TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.bold,
+              color: AppColor.cTitle,
+            ),
           ),
         ),
       ],
