@@ -25,8 +25,8 @@
    - **Step 1 (Domain):** Entity -> Repository Interface -> UseCase(s). Pure Dart, zero Flutter/Dio/DTO dependencies.
    - **Step 2 (Data):** DTO (with defensive parsing) -> Mapper -> Remote Datasource (inheriting `BaseRemoteDatasource`) -> Repository Implementation.
    - **Step 3 (App DI):** Register Endpoints in `app_config.dart` and wire up Providers in `lib/app/provider.dart`.
-   - **Step 4 (UI / Presentation):** State (immutable `copyWith`) -> ViewModel (`StateNotifier<State>`) -> Screen (`ResponsiveLayout`) -> Mobile & Tablet Widgets. Check contextual RBAC via `ActiveClubContext`. Enforce Design Tokens (`AppColors`, `AppTypography`, `AppSpacing`, `AppRadius`, `AppShadows`, `AppTheme` from `package:kltn2026_2027/app/theme/theme.dart`). Strictly forbid hardcoded hex codes, random font styles, or ad-hoc margins/paddings.
-   - **Step 5 (Localization & Resilience):** Add `.arb` keys, bind `context.l10n`, handle errors via `AppException`.
+   - **Step 4 (UI / Presentation):** State (immutable `copyWith`) -> ViewModel (`StateNotifier<State>`) -> Screen (`ResponsiveLayout`) -> Mobile & Tablet Widgets. Check contextual RBAC via `ActiveClubContext`. Enforce Design Tokens (`context.colors.*` via `AppThemeColors`, `AppTypography`, `AppSpacing`, `AppRadius`, `AppShadows`, `AppTheme` from `package:kltn2026_2027/app/theme/theme.dart`). Strictly forbid hardcoded hex codes, raw `Colors.*`, static light colors on dynamic widgets, random font styles, or ad-hoc margins/paddings. Guarantee WCAG AA contrast on both Light and Dark themes.
+   - **Step 5 (Localization & Resilience):** Add `.arb` keys synchronized across `app_vi.arb` & `app_en.arb`, bind `context.l10n`, strictly forbid hardcoded UI strings in `Text(...)`, and handle errors via `AppException`.
 3. **Verify Immediately:**
    - Run architecture boundary and code health verification:
      ```powershell

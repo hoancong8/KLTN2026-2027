@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:kltn2026_2027/app/provider/localization_provider.dart';
 import 'package:kltn2026_2027/app/theme/theme.dart';
 import '../../../app/provider.dart';
 import '../../../domain/entities/session/guest_recruitment.dart';
@@ -39,12 +40,16 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
   Future<void> _handleVote() async {
     final vm = ref.read(sessionDetailViewModelProvider(widget.sessionId).notifier);
     final booking = await vm.voteBooking();
-    if (booking != null && mounted) {
+
+    if (!mounted) return;
+    final colors = context.colors;
+
+    if (booking != null) {
       if (booking.isConfirmed) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Chúc mừng! Bạn đã giữ chỗ chính thức thành công!'),
-            backgroundColor: AppColors.primary,
+          SnackBar(
+            content: Text(context.l10n.session_join_success),
+            backgroundColor: colors.primary,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -52,22 +57,31 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
         showDialog(
           context: context,
           builder: (ctx) => AlertDialog(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-            title: const Row(
+            backgroundColor: colors.cardBackground,
+            shape: const RoundedRectangleBorder(borderRadius: AppRadius.dialog),
+            title: Row(
               children: [
-                Icon(Icons.hourglass_top_rounded, color: AppColors.warning),
-                SizedBox(width: 8),
-                Text('Đã Vào Hàng Đợi', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17)),
+                Icon(Icons.hourglass_top_rounded, color: colors.warning),
+                AppSpacing.gapW8,
+                Text(
+                  context.l10n.booking_status_pending,
+                  style: AppTypography.titleMedium.copyWith(color: colors.textPrimary),
+                ),
               ],
             ),
             content: Text(
-              'Hiện buổi chơi đã đủ số lượng chính thức. Bạn đang ở vị trí chờ số #${booking.queueOrder} trong hàng đợi.\nHệ thống sẽ tự động đôn bạn lên chính thức khi có thành viên báo vắng!',
+              'Buổi chơi đã đủ slot chính thức. Bạn đang ở vị trí chờ số #${booking.queueOrder} trong hàng đợi.\nHệ thống sẽ tự động đôn bạn lên chính thức khi có thành viên báo vắng.',
+              style: AppTypography.bodyMedium.copyWith(color: colors.textSecondary),
             ),
             actions: [
               ElevatedButton(
-                style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, foregroundColor: AppColors.white),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: colors.primary,
+                  foregroundColor: AppColors.white,
+                  shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                ),
                 onPressed: () => Navigator.of(ctx).pop(),
-                child: const Text('Đã hiểu'),
+                child: Text(context.l10n.com_confirm),
               ),
             ],
           ),
@@ -77,29 +91,39 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
   }
 
   Future<void> _handleCancelBooking() async {
+    final colors = context.colors;
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-        title: const Row(
+        backgroundColor: colors.cardBackground,
+        shape: const RoundedRectangleBorder(borderRadius: AppRadius.dialog),
+        title: Row(
           children: [
-            Icon(Icons.warning_amber_rounded, color: AppColors.error),
-            SizedBox(width: 8),
-            Text('Xác Nhận Báo Vắng', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17)),
+            Icon(Icons.warning_amber_rounded, color: colors.error),
+            AppSpacing.gapW8,
+            Text(
+              context.l10n.session_cancel_join,
+              style: AppTypography.titleMedium.copyWith(color: colors.textPrimary),
+            ),
           ],
         ),
-        content: const Text(
-          'Nếu bạn đang giữ chỗ chính thức, slot này sẽ tự động được nhường cho người tiếp theo trong hàng đợi (FR10).\nBạn có chắc chắn muốn hủy?',
+        content: Text(
+          context.l10n.session_cancel_confirm,
+          style: AppTypography.bodyMedium.copyWith(color: colors.textSecondary),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Quay lại'),
+            child: Text(context.l10n.com_cancel, style: TextStyle(color: colors.textMuted)),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.error, foregroundColor: AppColors.white),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: colors.error,
+              foregroundColor: AppColors.white,
+              shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+            ),
             onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('Xác nhận báo vắng'),
+            child: Text(context.l10n.session_cancel_join),
           ),
         ],
       ),
@@ -110,9 +134,9 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
       final ok = await vm.cancelBooking();
       if (ok && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Đã báo vắng thành công. Vị trí đã được nhường cho hàng đợi!'),
-            backgroundColor: AppColors.error,
+          SnackBar(
+            content: Text(context.l10n.com_success),
+            backgroundColor: colors.error,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -121,6 +145,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
   }
 
   void _showRecruitmentModal(BuildContext context, Session session) {
+    final colors = context.colors;
     final slotsNeeded = (session.maxPlayers - session.confirmedCount).clamp(1, session.maxPlayers);
     final slotsCtl = TextEditingController(text: slotsNeeded.toString());
     final costCtl = TextEditingController(text: '50000');
@@ -130,17 +155,18 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      backgroundColor: colors.cardBackground,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: AppRadius.bottomSheet,
       ),
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setModalState) => SafeArea(
           child: Padding(
             padding: EdgeInsets.only(
-              left: 20,
-              right: 20,
-              top: 16,
-              bottom: MediaQuery.of(ctx).viewInsets.bottom + 16,
+              left: AppSpacing.lg,
+              right: AppSpacing.lg,
+              top: AppSpacing.base,
+              bottom: MediaQuery.of(ctx).viewInsets.bottom + AppSpacing.base,
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -151,57 +177,81 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                     width: 40,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: AppColors.divider,
+                      color: colors.borderStrong,
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
                 ),
-                const SizedBox(height: 16),
-                const Row(
+                AppSpacing.gapH16,
+                Row(
                   children: [
-                    Icon(Icons.radar_rounded, color: AppColors.roleViolet, size: 24),
-                    SizedBox(width: 8),
+                    const Icon(Icons.radar_rounded, color: AppColors.roleViolet, size: 24),
+                    AppSpacing.gapW8,
                     Text(
-                      'Phát Tín Hiệu Tuyển Khách (FR11)',
-                      style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                      context.l10n.explore_tab_recruitments,
+                      style: AppTypography.titleMedium.copyWith(color: colors.textPrimary),
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
+                AppSpacing.gapH16,
                 Row(
                   children: [
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('Số slot cần tuyển *', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
-                          const SizedBox(height: 6),
+                          Text(
+                            context.l10n.session_max_players,
+                            style: AppTypography.labelMedium.copyWith(color: colors.textPrimary),
+                          ),
+                          AppSpacing.gapH4,
                           TextFormField(
                             controller: slotsCtl,
                             keyboardType: TextInputType.number,
+                            style: AppTypography.bodyMedium.copyWith(color: colors.textPrimary),
                             decoration: InputDecoration(
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                              filled: true,
+                              fillColor: colors.inputFill,
+                              border: OutlineInputBorder(
+                                borderRadius: AppRadius.input,
+                                borderSide: BorderSide(color: colors.inputBorder),
+                              ),
                               contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                             ),
                           ),
                         ],
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    AppSpacing.gapW12,
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('Trình độ tối thiểu', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
-                          const SizedBox(height: 6),
+                          Text(
+                            context.l10n.club_level,
+                            style: AppTypography.labelMedium.copyWith(color: colors.textPrimary),
+                          ),
+                          AppSpacing.gapH4,
                           DropdownButtonFormField<SkillLevel>(
                             initialValue: selectedLevel,
+                            dropdownColor: colors.cardBackground,
                             decoration: InputDecoration(
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                              filled: true,
+                              fillColor: colors.inputFill,
+                              border: OutlineInputBorder(
+                                borderRadius: AppRadius.input,
+                                borderSide: BorderSide(color: colors.inputBorder),
+                              ),
                               contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                             ),
                             items: SkillLevel.values.map((s) {
-                              return DropdownMenuItem(value: s, child: Text(s.displayName));
+                              return DropdownMenuItem(
+                                value: s,
+                                child: Text(
+                                  s.displayName,
+                                  style: AppTypography.bodyMedium.copyWith(color: colors.textPrimary),
+                                ),
+                              );
                             }).toList(),
                             onChanged: (val) {
                               if (val != null) setModalState(() => selectedLevel = val);
@@ -212,25 +262,44 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                     ),
                   ],
                 ),
-                const SizedBox(height: 14),
-                const Text('Tiền sân chia sẻ / người (VNĐ)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
-                const SizedBox(height: 6),
+                AppSpacing.gapH16,
+                Text(
+                  context.l10n.session_fee_per_player,
+                  style: AppTypography.labelMedium.copyWith(color: colors.textPrimary),
+                ),
+                AppSpacing.gapH4,
                 TextFormField(
                   controller: costCtl,
                   keyboardType: TextInputType.number,
+                  style: AppTypography.bodyMedium.copyWith(color: colors.textPrimary),
                   decoration: InputDecoration(
                     hintText: '50,000',
-                    prefixIcon: const Icon(Icons.attach_money_rounded, size: 20, color: AppColors.textMuted),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                    hintStyle: AppTypography.bodyMedium.copyWith(color: colors.textPlaceholder),
+                    filled: true,
+                    fillColor: colors.inputFill,
+                    prefixIcon: Icon(Icons.attach_money_rounded, size: 20, color: colors.textMuted),
+                    border: OutlineInputBorder(
+                      borderRadius: AppRadius.input,
+                      borderSide: BorderSide(color: colors.inputBorder),
+                    ),
                     contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                   ),
                 ),
-                const SizedBox(height: 14),
+                AppSpacing.gapH16,
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('Bán kính phát tín hiệu:', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
-                    Text('${radiusKm.toStringAsFixed(1)} km', style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.roleViolet)),
+                    Text(
+                      'Bán kính phát tín hiệu:',
+                      style: AppTypography.labelMedium.copyWith(color: colors.textPrimary),
+                    ),
+                    Text(
+                      '${radiusKm.toStringAsFixed(1)} km',
+                      style: AppTypography.labelMedium.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.roleViolet,
+                      ),
+                    ),
                   ],
                 ),
                 Slider(
@@ -241,7 +310,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                   activeColor: AppColors.roleViolet,
                   onChanged: (val) => setModalState(() => radiusKm = val),
                 ),
-                const SizedBox(height: 16),
+                AppSpacing.gapH16,
                 ElevatedButton(
                   onPressed: () async {
                     final slots = int.tryParse(slotsCtl.text) ?? 1;
@@ -273,9 +342,15 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                     backgroundColor: AppColors.roleViolet,
                     foregroundColor: AppColors.white,
                     padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
                   ),
-                  child: const Text('Phát Tin Tuyển Khách', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+                  child: Text(
+                    context.l10n.explore_tab_recruitments,
+                    style: AppTypography.titleSmall.copyWith(
+                      color: AppColors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -289,26 +364,43 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
   Widget build(BuildContext context) {
     final state = ref.watch(sessionDetailViewModelProvider(widget.sessionId));
     final vm = ref.read(sessionDetailViewModelProvider(widget.sessionId).notifier);
+    final colors = context.colors;
 
     if (state.isLoading) {
-      return const Scaffold(
-        backgroundColor: AppColors.neutral50,
-        body: Center(child: CircularProgressIndicator(color: AppColors.primary)),
+      return Scaffold(
+        backgroundColor: colors.background,
+        body: Center(child: CircularProgressIndicator(color: colors.primary)),
       );
     }
 
     if (state.detail == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Chi Tiết Buổi Chơi')),
+        backgroundColor: colors.background,
+        appBar: AppBar(
+          title: Text(context.l10n.session_detail),
+          backgroundColor: colors.surface,
+          foregroundColor: colors.textPrimary,
+        ),
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.error_outline_rounded, color: AppColors.error, size: 48),
-              const SizedBox(height: 12),
-              Text(state.errorMessage ?? 'Không tìm thấy thông tin buổi chơi'),
-              const SizedBox(height: 16),
-              ElevatedButton(onPressed: vm.loadDetail, child: const Text('Thử lại')),
+              Icon(Icons.error_outline_rounded, color: colors.error, size: 48),
+              AppSpacing.gapH12,
+              Text(
+                state.errorMessage ?? context.l10n.error_not_found,
+                style: AppTypography.bodyMedium.copyWith(color: colors.textSecondary),
+              ),
+              AppSpacing.gapH16,
+              ElevatedButton(
+                onPressed: vm.loadDetail,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: colors.primary,
+                  foregroundColor: AppColors.white,
+                  shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                ),
+                child: Text(context.l10n.com_retry),
+              ),
             ],
           ),
         ),
@@ -321,20 +413,27 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
     final waitingCount = detail.waitingQueue.length;
 
     return Scaffold(
-      backgroundColor: AppColors.neutral50,
+      backgroundColor: colors.background,
       appBar: AppBar(
-        title: Text(session.title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17)),
-        backgroundColor: AppColors.white,
-        foregroundColor: AppColors.textPrimary,
+        title: Text(
+          session.title,
+          style: AppTypography.titleMedium.copyWith(
+            fontWeight: FontWeight.bold,
+            color: colors.textPrimary,
+          ),
+        ),
+        backgroundColor: colors.surface,
+        foregroundColor: colors.textPrimary,
         elevation: 0.5,
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh_rounded),
             onPressed: vm.loadDetail,
-            tooltip: 'Làm mới',
+            tooltip: context.l10n.com_refresh,
           ),
           PopupMenuButton<String>(
             icon: const Icon(Icons.more_vert_rounded),
+            color: colors.cardBackground,
             onSelected: (val) async {
               if (val == 'recruit') {
                 _showRecruitmentModal(context, session);
@@ -348,14 +447,29 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                 final ok = await showDialog<bool>(
                   context: context,
                   builder: (ctx) => AlertDialog(
-                    title: const Text('Hủy Buổi Chơi'),
-                    content: const Text('Hành động này sẽ hủy buổi chơi vĩnh viễn và gửi thông báo tới người đã vote.'),
+                    backgroundColor: colors.cardBackground,
+                    shape: const RoundedRectangleBorder(borderRadius: AppRadius.dialog),
+                    title: Text(
+                      context.l10n.session_status_cancelled,
+                      style: AppTypography.titleMedium.copyWith(color: colors.textPrimary),
+                    ),
+                    content: Text(
+                      'Hành động này sẽ hủy buổi chơi vĩnh viễn và gửi thông báo tới người đã vote.',
+                      style: AppTypography.bodyMedium.copyWith(color: colors.textSecondary),
+                    ),
                     actions: [
-                      TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Bỏ qua')),
+                      TextButton(
+                        onPressed: () => Navigator.of(ctx).pop(false),
+                        child: Text(context.l10n.com_cancel, style: TextStyle(color: colors.textMuted)),
+                      ),
                       ElevatedButton(
-                        style: ElevatedButton.styleFrom(backgroundColor: AppColors.error, foregroundColor: Colors.white),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: colors.error,
+                          foregroundColor: AppColors.white,
+                          shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                        ),
                         onPressed: () => Navigator.of(ctx).pop(true),
-                        child: const Text('Hủy ngay'),
+                        child: Text(context.l10n.com_delete),
                       ),
                     ],
                   ),
@@ -367,56 +481,71 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
               }
             },
             itemBuilder: (ctx) => [
-              const PopupMenuItem(
+              PopupMenuItem(
                 value: 'recruit',
                 child: Row(
                   children: [
-                    Icon(Icons.radar_rounded, color: AppColors.roleViolet, size: 18),
-                    SizedBox(width: 8),
-                    Text('Tuyển khách giao lưu (FR11)'),
+                    const Icon(Icons.radar_rounded, color: AppColors.roleViolet, size: 18),
+                    AppSpacing.gapW8,
+                    Text(
+                      context.l10n.explore_tab_recruitments,
+                      style: AppTypography.bodyMedium.copyWith(color: colors.textPrimary),
+                    ),
                   ],
                 ),
               ),
               if (session.status == SessionStatus.open)
-                const PopupMenuItem(
+                PopupMenuItem(
                   value: 'lock',
                   child: Row(
                     children: [
-                      Icon(Icons.lock_outline, size: 18),
-                      SizedBox(width: 8),
-                      Text('Khóa sổ biểu quyết'),
+                      const Icon(Icons.lock_outline, size: 18),
+                      AppSpacing.gapW8,
+                      Text(
+                        'Khóa sổ biểu quyết',
+                        style: AppTypography.bodyMedium.copyWith(color: colors.textPrimary),
+                      ),
                     ],
                   ),
                 )
               else
-                const PopupMenuItem(
+                PopupMenuItem(
                   value: 'open',
                   child: Row(
                     children: [
-                      Icon(Icons.lock_open, size: 18),
-                      SizedBox(width: 8),
-                      Text('Mở lại biểu quyết'),
+                      const Icon(Icons.lock_open, size: 18),
+                      AppSpacing.gapW8,
+                      Text(
+                        'Mở lại biểu quyết',
+                        style: AppTypography.bodyMedium.copyWith(color: colors.textPrimary),
+                      ),
                     ],
                   ),
                 ),
-              const PopupMenuItem(
+              PopupMenuItem(
                 value: 'play',
                 child: Row(
                   children: [
-                    Icon(Icons.sports_tennis, size: 18),
-                    SizedBox(width: 8),
-                    Text('Bắt đầu thi đấu'),
+                    const Icon(Icons.sports_tennis, size: 18),
+                    AppSpacing.gapW8,
+                    Text(
+                      'Bắt đầu thi đấu',
+                      style: AppTypography.bodyMedium.copyWith(color: colors.textPrimary),
+                    ),
                   ],
                 ),
               ),
               const PopupMenuDivider(),
-              const PopupMenuItem(
+              PopupMenuItem(
                 value: 'delete',
                 child: Row(
                   children: [
-                    Icon(Icons.delete_outline, color: AppColors.error, size: 18),
-                    SizedBox(width: 8),
-                    Text('Hủy buổi chơi', style: TextStyle(color: AppColors.error)),
+                    Icon(Icons.delete_outline, color: colors.error, size: 18),
+                    AppSpacing.gapW8,
+                    Text(
+                      context.l10n.com_delete,
+                      style: AppTypography.bodyMedium.copyWith(color: colors.error),
+                    ),
                   ],
                 ),
               ),
@@ -432,12 +561,12 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
 
           // 2. Tab Bar: Confirmed vs Waiting Queue
           Container(
-            color: AppColors.white,
+            color: colors.cardBackground,
             child: TabBar(
               controller: _tabController,
-              labelColor: AppColors.primary,
-              unselectedLabelColor: AppColors.textMuted,
-              indicatorColor: AppColors.primary,
+              labelColor: colors.primary,
+              unselectedLabelColor: colors.textMuted,
+              indicatorColor: colors.primary,
               indicatorWeight: 3,
               tabs: [
                 Tab(
@@ -445,8 +574,8 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       const Icon(Icons.check_circle_outline, size: 18),
-                      const SizedBox(width: 6),
-                      Text('Chính thức ($confirmedCount/${session.maxPlayers})'),
+                      AppSpacing.gapW4,
+                      Text('${context.l10n.booking_status_confirmed} ($confirmedCount/${session.maxPlayers})'),
                     ],
                   ),
                 ),
@@ -455,8 +584,8 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       const Icon(Icons.hourglass_empty_rounded, size: 18),
-                      const SizedBox(width: 6),
-                      Text('Hàng đợi ($waitingCount)'),
+                      AppSpacing.gapW4,
+                      Text('${context.l10n.booking_status_pending} ($waitingCount)'),
                     ],
                   ),
                 ),
@@ -469,10 +598,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
             child: TabBarView(
               controller: _tabController,
               children: [
-                // Confirmed Tab
                 _buildPlayersList(detail.confirmedPlayers, isWaiting: false),
-
-                // Waiting Queue Tab
                 _buildPlayersList(detail.waitingQueue, isWaiting: true),
               ],
             ),
@@ -483,6 +609,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
   }
 
   Widget _buildSessionHeaderCard(Session session, GuestRecruitment? activeRecruitment) {
+    final colors = context.colors;
     final dateFormat = DateFormat('HH:mm, dd/MM/yyyy');
     final timeStr = '${DateFormat('HH:mm').format(session.startTime)} - ${dateFormat.format(session.endTime)}';
     final progress = session.maxPlayers > 0 ? (session.confirmedCount / session.maxPlayers).clamp(0.0, 1.0) : 0.0;
@@ -490,8 +617,8 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
 
     return Container(
       width: double.infinity,
-      color: AppColors.white,
-      padding: const EdgeInsets.all(16),
+      color: colors.cardBackground,
+      padding: AppSpacing.card,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -500,74 +627,79 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(6),
+                  color: colors.primaryContainer,
+                  borderRadius: AppRadius.tag,
                 ),
                 child: Text(
                   session.clubName,
-                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.primary),
+                  style: AppTypography.labelSmall.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: colors.primary,
+                  ),
                 ),
               ),
               const Spacer(),
               _buildStatusBadge(session.status),
             ],
           ),
-          const SizedBox(height: 10),
+          AppSpacing.gapH8,
 
           // Court address & Time
           Row(
             children: [
-              const Icon(Icons.location_on_rounded, size: 16, color: AppColors.textMuted),
-              const SizedBox(width: 6),
+              Icon(Icons.location_on_rounded, size: 16, color: colors.textMuted),
+              AppSpacing.gapW4,
               Expanded(
                 child: Text(
                   session.courtLocation,
-                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+                  style: AppTypography.titleSmall.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: colors.textPrimary,
+                  ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 6),
+          AppSpacing.gapH4,
           Row(
             children: [
-              const Icon(Icons.access_time_filled_rounded, size: 16, color: AppColors.textMuted),
-              const SizedBox(width: 6),
+              Icon(Icons.access_time_filled_rounded, size: 16, color: colors.textMuted),
+              AppSpacing.gapW4,
               Text(
                 timeStr,
-                style: const TextStyle(fontSize: 13, color: AppColors.textPrimary),
+                style: AppTypography.bodySmall.copyWith(color: colors.textPrimary),
               ),
               const Spacer(),
               Text(
                 '${session.courtCount} sân • ${session.targetPlayerPerCourt} người/sân',
-                style: const TextStyle(fontSize: 12, color: AppColors.textMuted),
+                style: AppTypography.bodySmall.copyWith(color: colors.textMuted),
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          AppSpacing.gapH12,
 
           // Sĩ số Progress Bar
           Row(
             children: [
               Expanded(
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(4),
+                  borderRadius: AppRadius.borderXs,
                   child: LinearProgressIndicator(
                     value: progress,
                     minHeight: 8,
-                    backgroundColor: AppColors.border,
+                    backgroundColor: colors.borderSubtle,
                     valueColor: AlwaysStoppedAnimation<Color>(
-                      isFull ? AppColors.warning : AppColors.primary,
+                      isFull ? colors.warning : colors.primary,
                     ),
                   ),
                 ),
               ),
-              const SizedBox(width: 12),
+              AppSpacing.gapW12,
               Text(
                 '${session.confirmedCount}/${session.maxPlayers} slot',
-                style: TextStyle(
-                  fontSize: 13,
+                style: AppTypography.labelMedium.copyWith(
                   fontWeight: FontWeight.bold,
-                  color: isFull ? AppColors.warning : AppColors.primary,
+                  color: isFull ? colors.warning : colors.primary,
                 ),
               ),
             ],
@@ -575,22 +707,25 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
 
           // Active recruitment banner
           if (activeRecruitment != null) ...[
-            const SizedBox(height: 12),
+            AppSpacing.gapH12,
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
-                color: AppColors.violetLight,
-                borderRadius: BorderRadius.circular(8),
+                color: context.isDark ? AppColors.roleViolet.withValues(alpha: 0.2) : AppColors.violetLight,
+                borderRadius: AppRadius.borderSm,
                 border: Border.all(color: AppColors.violetBorder),
               ),
               child: Row(
                 children: [
                   const Icon(Icons.radar_rounded, size: 18, color: AppColors.roleViolet),
-                  const SizedBox(width: 8),
+                  AppSpacing.gapW8,
                   Expanded(
                     child: Text(
                       'Đang phát tin tìm ${activeRecruitment.slotsRemaining} khách giao lưu (${NumberFormat('#,###').format(activeRecruitment.sharedCost)} đ)',
-                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.roleHost),
+                      style: AppTypography.bodySmall.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: context.isDark ? AppColors.white : AppColors.roleHost,
+                      ),
                     ),
                   ),
                 ],
@@ -603,6 +738,8 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
   }
 
   Widget _buildPlayersList(List<SessionBooking> players, {required bool isWaiting}) {
+    final colors = context.colors;
+
     if (players.isEmpty) {
       return Center(
         child: Padding(
@@ -613,19 +750,22 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
               Icon(
                 isWaiting ? Icons.hourglass_disabled_rounded : Icons.person_off_outlined,
                 size: 46,
-                color: AppColors.textMuted,
+                color: colors.textMuted,
               ),
-              const SizedBox(height: 12),
+              AppSpacing.gapH12,
               Text(
                 isWaiting ? 'Hàng đợi đang trống' : 'Chưa có người chơi chính thức',
-                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                style: AppTypography.titleSmall.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: colors.textPrimary,
+                ),
               ),
-              const SizedBox(height: 4),
+              AppSpacing.gapH4,
               Text(
                 isWaiting
                     ? 'Khi slot chính thức đầy, các biểu quyết tiếp theo sẽ vào đây.'
                     : 'Hãy là người đầu tiên biểu quyết giữ chỗ cho buổi chơi này!',
-                style: const TextStyle(fontSize: 13, color: AppColors.textMuted),
+                style: AppTypography.bodySmall.copyWith(color: colors.textMuted),
                 textAlign: TextAlign.center,
               ),
             ],
@@ -635,17 +775,18 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
     }
 
     return ListView.separated(
-      padding: const EdgeInsets.all(16),
+      padding: AppSpacing.screen,
       itemCount: players.length,
-      separatorBuilder: (_, _) => const SizedBox(height: 8),
+      separatorBuilder: (_, _) => AppSpacing.gapH8,
       itemBuilder: (ctx, index) {
         final player = players[index];
         return Card(
-          elevation: 0.5,
+          elevation: 0,
           margin: EdgeInsets.zero,
+          color: colors.cardBackground,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-            side: const BorderSide(color: AppColors.border),
+            borderRadius: AppRadius.card,
+            side: BorderSide(color: colors.cardBorder),
           ),
           child: ListTile(
             contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
@@ -655,39 +796,51 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                     height: 36,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      color: AppColors.warning.withValues(alpha: 0.15),
+                      color: colors.warning.withValues(alpha: 0.15),
                       shape: BoxShape.circle,
                     ),
                     child: Text(
                       '#${player.queueOrder}',
-                      style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.warning, fontSize: 13),
+                      style: AppTypography.labelSmall.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: colors.warning,
+                      ),
                     ),
                   )
                 : CircleAvatar(
                     radius: 18,
-                    backgroundColor: AppColors.primary.withValues(alpha: 0.15),
+                    backgroundColor: colors.primaryContainer,
                     child: Text(
                       player.fullName.isNotEmpty ? player.fullName[0].toUpperCase() : '?',
-                      style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.primary),
+                      style: AppTypography.labelSmall.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: colors.primary,
+                      ),
                     ),
                   ),
             title: Text(
               player.fullName,
-              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: AppColors.textPrimary),
+              style: AppTypography.bodyMedium.copyWith(
+                fontWeight: FontWeight.w600,
+                color: colors.textPrimary,
+              ),
             ),
             subtitle: Text(
               'Biểu quyết lúc: ${DateFormat('HH:mm, dd/MM').format(player.bookedAt)}',
-              style: const TextStyle(fontSize: 11, color: AppColors.textMuted),
+              style: AppTypography.bodySmall.copyWith(color: colors.textMuted),
             ),
             trailing: Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
               decoration: BoxDecoration(
-                color: AppColors.surfaceSubtle,
-                borderRadius: BorderRadius.circular(6),
+                color: colors.surfaceSubtle,
+                borderRadius: AppRadius.tag,
               ),
               child: Text(
                 player.skillLevel,
-                style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                style: AppTypography.labelSmall.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: colors.textPrimary,
+                ),
               ),
             ),
           ),
@@ -697,6 +850,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
   }
 
   Widget _buildBottomActionBar(BuildContext context, Session session, bool isSubmitting) {
+    final colors = context.colors;
     final detail = ref.watch(sessionDetailViewModelProvider(widget.sessionId)).detail;
     final currentUserId = ref.watch(currentUserProfileProvider)?.id ?? ref.watch(authTokenProvider)?.userId;
 
@@ -713,16 +867,11 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
     final isOpen = session.status == SessionStatus.open;
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: AppSpacing.screen,
       decoration: BoxDecoration(
-        color: AppColors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
-            blurRadius: 8,
-            offset: const Offset(0, -3),
-          ),
-        ],
+        color: colors.cardBackground,
+        border: Border(top: BorderSide(color: colors.divider)),
+        boxShadow: context.isDark ? AppShadows.none : AppShadows.bottomBar,
       ),
       child: SafeArea(
         child: isBooked
@@ -735,26 +884,28 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                       children: [
                         Text(
                           isConfirmed ? 'Bạn đã có slot chính thức' : 'Đang ở hàng đợi số #$waitingOrder',
-                          style: TextStyle(
-                            fontSize: 13,
+                          style: AppTypography.titleSmall.copyWith(
                             fontWeight: FontWeight.bold,
-                            color: isConfirmed ? AppColors.primary : AppColors.warning,
+                            color: isConfirmed ? colors.primary : colors.warning,
                           ),
                         ),
-                        const SizedBox(height: 2),
-                        const Text('Báo vắng để tự động nhường slot', style: TextStyle(fontSize: 11, color: AppColors.textMuted)),
+                        AppSpacing.gapH4,
+                        Text(
+                          'Báo vắng để tự động nhường slot',
+                          style: AppTypography.bodySmall.copyWith(color: colors.textMuted),
+                        ),
                       ],
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  AppSpacing.gapW12,
                   ElevatedButton.icon(
                     onPressed: isSubmitting ? null : _handleCancelBooking,
                     icon: const Icon(Icons.cancel_outlined, size: 18),
                     label: Text(isConfirmed ? 'Báo Vắng' : 'Rút Hàng Đợi'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.error,
+                      backgroundColor: colors.error,
                       foregroundColor: AppColors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                     ),
                   ),
@@ -763,19 +914,22 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
             : ElevatedButton(
                 onPressed: (!isOpen || isSubmitting) ? null : _handleVote,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: session.isFull ? AppColors.warning : AppColors.primary,
+                  backgroundColor: session.isFull ? colors.warning : colors.primary,
                   foregroundColor: AppColors.white,
                   padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  elevation: 2,
+                  shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                  elevation: 0,
                 ),
                 child: isSubmitting
-                    ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                    ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.white))
                     : Text(
                         !isOpen
                             ? 'Buổi chơi đã đóng biểu quyết'
                             : (session.isFull ? 'Xếp Vào Hàng Đợi Chờ (Slot #${session.waitingCount + 1})' : 'Biểu Quyết Tham Gia (Vote YES)'),
-                        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                        style: AppTypography.titleSmall.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.white,
+                        ),
                       ),
               ),
       ),
@@ -805,10 +959,10 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(6)),
+      decoration: BoxDecoration(color: bg, borderRadius: AppRadius.tag),
       child: Text(
         status.displayName,
-        style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: fg),
+        style: AppTypography.labelSmall.copyWith(fontWeight: FontWeight.bold, color: fg),
       ),
     );
   }

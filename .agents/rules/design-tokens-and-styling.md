@@ -1,13 +1,14 @@
 ---
 trigger: glob
 globs: "lib/ui/**, lib/widget/**, lib/app/theme/**"
-description: "Quy chuẩn bắt buộc xây dựng giao diện dựa trên Design Tokens (AppColors, AppTypography, AppSpacing, AppRadius, AppShadows, AppTheme), nghiêm cấm hardcode hex colors, arbitrary text styles, paddings/gaps tùy tiện."
+description: "Quy chuẩn bắt buộc xây dựng giao diện dựa trên Design Tokens (context.colors / AppThemeColors, AppTypography, AppSpacing, AppRadius, AppShadows, AppTheme), đồng bộ Light/Dark Theme, chuẩn UI/UX WCAG và bắt buộc sử dụng context.l10n."
 ---
 
-# Quy Chuẩn Bắt Buộc Áp Dụng Design Tokens & Theming
+# Quy Chuẩn Bắt Buộc Áp Dụng Design Tokens & Theming Chuẩn UI/UX
 
 > [!IMPORTANT]
-> Toàn bộ AI Agent và kỹ sư phần mềm khi xây dựng, chỉnh sửa hoặc tối ưu hóa giao diện (Screens, Widgets, Dialogs, BottomSheets, Cards) trong dự án **KLTN2026-2027** bắt buộc phải tuân thủ triệt để hệ thống **Design Tokens** tập trung tại `lib/app/theme/` (hoặc thông qua barrel `package:kltn2026_2027/app/theme/theme.dart`). Nghiêm cấm hoàn toàn việc tự tiện hardcode mã màu hex, font size tự phát, khoảng cách hoặc bo góc tùy tiện.
+> Toàn bộ AI Agent và kỹ sư phần mềm khi xây dựng, chỉnh sửa hoặc tối ưu hóa giao diện (Screens, Widgets, Dialogs, BottomSheets, Cards) trong dự án **KLTN2026-2027** bắt buộc phải tuân thủ triệt để hệ thống **Design Tokens** tập trung tại `lib/app/theme/` (thông qua barrel `package:kltn2026_2027/app/theme/theme.dart`).
+> Nghiêm cấm hoàn toàn việc tự tiện hardcode mã màu hex, dùng màu ad-hoc của Flutter (`Colors.*`), font size tự phát, khoảng cách hoặc bo góc tùy tiện, và hardcode chuỗi ngôn ngữ không thông qua `context.l10n`.
 
 ---
 
@@ -15,70 +16,97 @@ description: "Quy chuẩn bắt buộc xây dựng giao diện dựa trên Desig
 
 ```
 lib/app/theme/
-├── app_colors.dart       # Brand (Emerald #3CC18E, Sky #0EA5E9), Semantic, Neutral Slate, Badminton Domain, Gradients
-├── app_typography.dart   # Tỉ lệ font chuẩn Display, Headline, Title, Body, Label & AppTextStyleExtension
-├── app_spacing.dart      # Thang 8-point grid, Insets, gapW*, gapH*, Icon & Component Dimensions
-├── app_radius.dart       # Bo góc AppRadius (xs..full, card, dialog, bottomSheet, input, button)
+├── app_colors.dart       # AppColors (Brand, Neutral Slate, Sports) & AppThemeColors (ThemeExtension adaptive Light/Dark)
+├── app_typography.dart   # Thang tỉ lệ font chuẩn Material 3 Display, Headline, Title, Body, Label & AppTextStyleExtension
+├── app_spacing.dart      # Thang 8-point grid chuẩn, Insets, gapW*, gapH*, Icon & Component Dimensions
+├── app_radius.dart       # Bo góc AppRadius (xs..full, card, dialog, bottomSheet, input, button, chip)
 ├── app_shadows.dart      # Đổ bóng AppShadows (sm..xl, bottomBar, primaryGlow, colored)
-├── app_theme.dart        # Cấu hình Material 3 ThemeData (Light & Dark)
+├── app_theme.dart        # Cấu hình Material 3 ThemeData hoàn chỉnh cho cả Light và Dark
 └── theme.dart            # Barrel file export toàn bộ hệ thống Tokens
 ```
 
 ---
 
-## 2. Các Điều Cấm Tuyệt Đối (Strictly Forbidden)
+## 2. Các Điều Cấm Tuyệt Đối (Strictly Forbidden Invariants)
 
 1. **CẤM hardcode mã màu Hex rải rác trong UI:**
    - ❌ `color: Color(0xFF3CC18E)` hoặc `backgroundColor: Color(0xFFF8FAFC)`
-   - ✅ `color: AppColors.primary` hoặc `backgroundColor: AppColors.background`
+   - ✅ Dùng `context.colors.primary` hoặc `context.colors.background` (hoặc hằng số tĩnh `AppColors.primary` nếu là màu brand cố định).
 
-2. **CẤM dùng màu mặc định ad-hoc của framework khi đã có Token tương ứng:**
-   - ❌ `color: Colors.blue`, `color: Colors.green`, `color: Colors.grey[300]`, `color: Colors.black87`
-   - ✅ `color: AppColors.secondary`, `color: AppColors.success`, `color: AppColors.border`, `color: AppColors.textPrimary`
+2. **CẤM dùng màu `Colors.*` mặc định ad-hoc của framework:**
+   - ❌ `Colors.white`, `Colors.black`, `Colors.transparent`, `Colors.blue`, `Colors.green`, `Colors.grey[300]`, `Colors.orange`
+   - ✅ Dùng token:
+     + Trong suốt: `AppColors.transparent`
+     + Trắng/Đen cố định: `AppColors.white`, `AppColors.black`
+     + Màu theo ngữ cảnh theme: `context.colors.surface`, `context.colors.cardBackground`, `context.colors.textPrimary`, `context.colors.border`, `context.colors.warning`, `context.colors.info`.
 
-3. **CẤM tự tạo TextStyle với font size / font weight ngẫu nhiên:**
+3. **CẤM hardcode màu tĩnh sáng trên các thành phần UI động (Gây lỗi tàng hình / chói lóa trong Dark Mode):**
+   - ❌ `color: AppColors.textPrimary` (Màu tĩnh `#0F172A` - trong Dark Mode sẽ biến thành chữ đen trên nền tối khiến người dùng không đọc được!)
+   - ❌ `color: AppColors.surface` (Màu tĩnh `#FFFFFF` - trong Dark Mode sẽ thành mảng trắng chói lòa phá vỡ giao diện tối!)
+   - ✅ Luôn sử dụng Theme-Adaptive Tokens qua context:
+     ```dart
+     color: context.colors.textPrimary   // Light: Slate 900 (#0F172A) | Dark: Slate 50 (#F8FAFC)
+     color: context.colors.textSecondary // Light: Slate 600 (#475569) | Dark: Slate 400 (#94A3B8)
+     color: context.colors.surface       // Light: Pure White (#FFFFFF) | Dark: Slate Card (#162032)
+     color: context.colors.cardBackground// Tự động thích ứng 100%
+     color: context.colors.border        // Light: Slate 200 (#E2E8F0) | Dark: Slate 700 (#334155)
+     ```
+
+4. **CẤM tự tạo TextStyle với font size / font weight ngẫu nhiên:**
    - ❌ `TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.black87)`
-   - ✅ `AppTypography.titleSmall` hoặc `AppTypography.bodyMedium.semiBold.colored(AppColors.textPrimary)`
+   - ✅ `AppTypography.titleSmall` hoặc `context.textTheme.titleSmall` kết hợp tiện ích mở rộng fluent:
+     ```dart
+     AppTypography.titleMedium.bold.colored(context.colors.primary)
+     ```
 
-4. **CẤM tự gõ SizedBox hoặc Padding với số liệu tùy hứng:**
+5. **CẤM tự gõ SizedBox hoặc Padding với số liệu tùy hứng:**
    - ❌ `SizedBox(height: 16)` hoặc `SizedBox(width: 8)`
    - ✅ `AppSpacing.gapH16` hoặc `AppSpacing.gapW8`
    - ❌ `padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12)`
    - ✅ `padding: AppSpacing.horizontalBase` kết hợp `AppSpacing.verticalMd` (hoặc `AppSpacing.screen`)
 
-5. **CẤM tự định nghĩa BorderRadius lặp lại:**
+6. **CẤM tự định nghĩa BorderRadius lặp lại:**
    - ❌ `borderRadius: BorderRadius.circular(16)` (cho Card)
    - ✅ `borderRadius: AppRadius.card` (hoặc `AppRadius.borderLg`)
    - ❌ `borderRadius: BorderRadius.vertical(top: Radius.circular(24))` (cho BottomSheet)
    - ✅ `borderRadius: AppRadius.bottomSheet`
 
-6. **CẤM tự dựng BoxShadow inline thiếu chuẩn mực:**
+7. **CẤM tự dựng BoxShadow inline thiếu chuẩn mực:**
    - ❌ `boxShadow: [BoxShadow(color: Colors.black.withAlpha(25), blurRadius: 8)]`
-   - ✅ `boxShadow: AppShadows.md` (hoặc `AppShadows.primaryGlow()` cho CTA chính)
+   - ✅ `boxShadow: AppShadows.md` (hoặc `AppShadows.primaryGlow()` cho CTA chính).
+
+8. **CẤM hardcode chuỗi người dùng nhìn thấy trong UI (Phá vỡ tính năng Đa ngôn ngữ):**
+   - ❌ `Text('Chào mừng trở lại!')` hoặc `Text('Đăng nhập thất bại')`
+   - ✅ `Text(context.l10n.com_welcome_back)` hoặc `Text(context.l10n.auth_login_failed)`
 
 ---
 
-## 3. Quy Chuẩn Sử Dụng Chi Tiết Theo Từng Token
+## 3. Hệ Thống Màu Thích Ứng Light / Dark (`AppThemeColors`)
 
-### 3.1 Màu sắc (`AppColors` / `AppColor`)
+| Semantic Token | Light Mode (Trang nhã, rõ ràng) | Dark Mode (OLED Slate, chống mỏi mắt) | Chuẩn tương phản WCAG |
+| :--- | :--- | :--- | :--- |
+| `context.colors.background` | Slate 50 (`#F8FAFC`) | Deep Slate (`#0B1220`) | Chuẩn nền chính |
+| `context.colors.surface` / `cardBackground` | Pure White (`#FFFFFF`) | Slate Card (`#162032`) | Tách lớp rõ ràng (>10% lightness) |
+| `context.colors.surfaceSubtle` / `inputFill` | Slate 100 (`#F1F5F9`) | Slate Input (`#1E293B`) | Nền ô nhập, thanh tìm kiếm |
+| `context.colors.textPrimary` | Slate 900 (`#0F172A`) | Slate 50 (`#F8FAFC`) | **WCAG AAA** (Contrast > 13.5:1) |
+| `context.colors.textSecondary` | Slate 600 (`#475569`) | Slate 400 (`#94A3B8`) | **WCAG AAA** (Contrast > 6.8:1) |
+| `context.colors.textMuted` | Slate 500 (`#64748B`) | Slate 500 (`#64748B`) | **WCAG AA** (Contrast > 3.8:1) |
+| `context.colors.border` | Slate 200 (`#E2E8F0`) | Slate 700 (`#334155`) | Đường viền thanh thoát |
+| `context.colors.borderSubtle` | Slate 100 (`#F1F5F9`) | Slate 800 (`#1E293B`) | Đường viền ngăn cách phụ |
+| `context.colors.divider` | Slate 200 (`#EAEAEA`) | Slate 800 (`#1E293B`) | Dải phân cách |
+| `context.colors.primary` | Mint Green (`#3CC18E`) | Mint Green (`#3CC18E`) | Màu nhận diện thương hiệu |
+| `context.colors.primaryContainer` | Mint Subtle (`#E8F9F3`) | Deep Mint (`#0F5A40`) | Active tab, Chip đã chọn |
+| `context.colors.onPrimaryContainer` | Dark Mint (`#0F5A40`) | Light Mint (`#A7F3D0`) | Chữ/icon trong container |
+| `context.colors.secondary` | Ocean Sky (`#0EA5E9`) | Sky Blue (`#38BDF8`) | Nút phụ, điểm nhấn liên kết |
+| `context.colors.accent` | Warm Amber (`#FFA61E`) | Amber Gold (`#FBBF24`) | MVP, điểm đánh giá, xếp hạng |
+| `context.colors.success` | Emerald (`#10B981`) | Emerald Light (`#34D399`)| Trạng thái thành công |
+| `context.colors.warning` | Amber (`#F59E0B`) | Amber Light (`#FBBF24`) | Cảnh báo, chờ duyệt |
+| `context.colors.error` | Crimson (`#EF4444`) | Crimson Light (`#F87171`)| Báo lỗi, hủy buổi chơi |
+| `context.colors.info` | Blue (`#3B82F6`) | Sky Blue (`#60A5FA`) | Thông báo, hướng dẫn |
 
-| Mục đích | Token Chuẩn | Giá trị / Mô tả |
-| :--- | :--- | :--- |
-| **Màu thương hiệu chính** | `AppColors.primary` | `#3CC18E` (Mint/Emerald green) |
-| **Thương hiệu đậm/nhạt** | `AppColors.primaryDark` / `primaryLight` | `#2EA578` / `#55D4A2` |
-| **Container / Nền hoạt động** | `AppColors.primaryContainer` | `#E8F9F3` (Active tab, chip nền nhẹ) |
-| **Màu phụ / Điểm nhấn** | `AppColors.secondary` / `accent` | `#0EA5E9` (Sky) / `#FFA61E` (Amber) |
-| **Trạng thái thành công** | `AppColors.success` / `successContainer` | `#10B981` / `#ECFDF5` |
-| **Trạng thái cảnh báo** | `AppColors.warning` / `warningContainer` | `#F59E0B` / `#FFFBEB` |
-| **Trạng thái lỗi / Nguy hiểm** | `AppColors.error` / `errorContainer` | `#EF4444` / `#FEF2F2` |
-| **Nền trang chính** | `AppColors.background` | `#F8FAFC` (Slate neutral) |
-| **Màu bề mặt Card / Modal** | `AppColors.surface` | `#FFFFFF` |
-| **Đường viền / Ngăn cách** | `AppColors.border` / `divider` | `#E2E8F0` / `#EAEAEA` |
-| **Chữ tiêu đề chính** | `AppColors.textPrimary` | `#0F172A` (Slate 900) |
-| **Chữ phụ / Mô tả** | `AppColors.textSecondary` / `textMuted` | `#475569` / `#64748B` |
-| **Sân cầu lông & Match** | `AppColors.courtGreen`, `statusOngoing`... | Chuyên biệt cho domain thể thao |
+---
 
-### 3.2 Kiểu chữ (`AppTypography` & Fluent Extension)
+## 4. Kiểu Chữ (`AppTypography` & Fluent Extension)
 
 | Tên Style | Size / Weight | Trường hợp sử dụng |
 | :--- | :--- | :--- |
@@ -98,122 +126,71 @@ lib/app/theme/
 > [!TIP]
 > **Fluent Chaining:** Sử dụng các tiện ích mở rộng để tinh chỉnh trực tiếp mà không cần `copyWith`:
 > ```dart
-> AppTypography.titleMedium.bold.colored(AppColors.primary)
+> AppTypography.titleMedium.bold.colored(context.colors.primary)
 > AppTypography.bodySmall.underlined.withOpacity(0.7)
 > ```
 
-### 3.3 Khoảng cách & Kích thước (`AppSpacing`)
+---
 
-- **Giá trị:** `xs` (4), `sm` (8), `md` (12), `base` (16), `lg` (20), `xl` (24), `xxl` (32), `xxxl` (40), `x4l` (48), `x5l` (64).
-- **Spacers theo chiều ngang:** `AppSpacing.gapW4`, `AppSpacing.gapW8`, `AppSpacing.gapW12`, `AppSpacing.gapW16`, `AppSpacing.gapW20`, `AppSpacing.gapW24`, `AppSpacing.gapW32`.
-- **Spacers theo chiều dọc:** `AppSpacing.gapH4`, `AppSpacing.gapH8`, `AppSpacing.gapH12`, `AppSpacing.gapH16`, `AppSpacing.gapH20`, `AppSpacing.gapH24`, `AppSpacing.gapH32`, `AppSpacing.gapH40`, `AppSpacing.gapH48`, `AppSpacing.gapH64`.
-- **Padding chuẩn:** `AppSpacing.screen` (16dp đều), `AppSpacing.card` (16dp), `AppSpacing.dialog` (24dp), `AppSpacing.bottomSheet`.
-- **Icon chuẩn:** `AppSpacing.iconXs` (14), `iconSm` (18), `iconMd` (24), `iconLg` (32), `iconXl` (40).
+## 5. Khoảng Cách & Bo Góc (`AppSpacing` & `AppRadius`)
 
-### 3.4 Bo góc (`AppRadius`)
-
-- **Theo kích thước:** `AppRadius.borderXs` (4dp), `borderSm` (8dp), `borderMd` (12dp), `borderLg` (16dp), `borderXl` (20dp), `borderXxl` (24dp), `borderFull` (999dp).
-- **Theo thành phần:**
-  - Card / Panel: `AppRadius.card` (16dp)
-  - Dialog / Modal: `AppRadius.dialog` (20dp)
-  - BottomSheet: `AppRadius.bottomSheet` (top 24dp)
-  - Button / Input: `AppRadius.button` / `AppRadius.input` (12dp)
-  - Chip / Tag: `AppRadius.chip` (8dp) / `AppRadius.tag` (6dp)
-
-### 3.5 Đổ bóng (`AppShadows`)
-
-- Đổ bóng nhẹ: `AppShadows.sm`
-- Đổ bóng thẻ Card chuẩn: `AppShadows.md`
-- Đổ bóng thực đơn / Popover: `AppShadows.lg`
-- Đổ bóng Modal Dialog: `AppShadows.xl`
-- Đổ bóng chân trang: `AppShadows.bottomBar`
-- Phát sáng nút bấm chính: `AppShadows.primaryGlow()`
+- **Thang Spacing 8-point:**
+  + `xs` (4dp), `sm` (8dp), `md` (12dp), `base` (16dp), `lg` (20dp), `xl` (24dp), `xxl` (32dp), `xxxl` (40dp).
+  + Gaps chiều ngang: `AppSpacing.gapW4`, `AppSpacing.gapW8`, `AppSpacing.gapW12`, `AppSpacing.gapW16`, `AppSpacing.gapW24`, `AppSpacing.gapW32`.
+  + Gaps chiều dọc: `AppSpacing.gapH4`, `AppSpacing.gapH8`, `AppSpacing.gapH12`, `AppSpacing.gapH16`, `AppSpacing.gapH24`, `AppSpacing.gapH32`, `AppSpacing.gapH48`.
+- **Bo góc chuẩn:**
+  + Card / Container chính: `AppRadius.card` (16dp)
+  + Modal Dialog: `AppRadius.dialog` (20dp)
+  + BottomSheet: `AppRadius.bottomSheet` (top 24dp)
+  + Button / Text Field: `AppRadius.button` / `AppRadius.input` (12dp)
+  + Tag / Chip: `AppRadius.chip` (8dp)
 
 ---
 
-## 4. Bảng So Sánh Mẫu Code
+## 6. Mẫu Code Chuẩn (Best Practice Template)
 
-### Trường hợp 1: Dựng Card hiển thị thông tin CLB / Buổi chơi
-
-**❌ Vi phạm (Hardcode ad-hoc):**
-```dart
-Container(
-  padding: const EdgeInsets.all(16.0),
-  decoration: BoxDecoration(
-    color: Colors.white,
-    borderRadius: BorderRadius.circular(15.0),
-    border: Border.all(color: Colors.grey.shade300),
-    boxShadow: [
-      BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, 4)),
-    ],
-  ),
-  child: Column(
-    children: [
-      Text('Sân Cầu Lông Số 1', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87)),
-      SizedBox(height: 8),
-      Text('18:00 - 20:00', style: TextStyle(fontSize: 12, color: Colors.grey)),
-    ],
-  ),
-)
-```
-
-**✅ Đúng chuẩn (Sử dụng Design Tokens):**
+### Dựng Card Thông Tin Thích Ứng Cả Light & Dark Theme:
 ```dart
 Container(
   padding: AppSpacing.card,
   decoration: BoxDecoration(
-    color: AppColors.surface,
+    color: context.colors.cardBackground,
     borderRadius: AppRadius.card,
-    border: Border.all(color: AppColors.borderSubtle),
-    boxShadow: AppShadows.md,
+    border: Border.all(color: context.colors.cardBorder),
+    boxShadow: context.isDark ? AppShadows.none : AppShadows.sm,
   ),
   child: Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      Text('Sân Cầu Lông Số 1', style: AppTypography.titleMedium),
+      Text(
+        context.l10n.club_sessions,
+        style: AppTypography.titleMedium.copyWith(color: context.colors.textPrimary),
+      ),
       AppSpacing.gapH8,
-      Text('18:00 - 20:00', style: AppTypography.bodySmall),
+      Text(
+        session.title,
+        style: AppTypography.bodyMedium.copyWith(color: context.colors.textSecondary),
+      ),
     ],
   ),
 )
 ```
 
-### Trường hợp 2: Dựng Nút Bấm / CTA
-
-**❌ Vi phạm:**
-```dart
-ElevatedButton(
-  style: ElevatedButton.styleFrom(
-    backgroundColor: Color(0xFF3CC18E),
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-  ),
-  onPressed: () {},
-  child: Text('Đặt Sân Ngay', style: TextStyle(fontSize: 14)),
-)
-```
-
-**✅ Đúng chuẩn:**
-```dart
-AppButtonCommon(
-  text: context.l10n.bookCourtNow,
-  type: AppButtonType.primary,
-  size: AppButtonSize.medium,
-  onPressed: () async => handleBooking(),
-)
-```
-
 ---
 
-## 5. Quy Trình Kiểm Thử & Xác Minh Khi Thêm Sửa UI
+## 7. Quy Trình Kiểm Thử & Xác Minh Bắt Buộc
 
-Mỗi khi chỉnh sửa hoặc thêm mới Widget/Screen, phải đảm bảo:
+Trước khi hoàn thành công việc:
 1. File có import chuẩn: `import 'package:kltn2026_2027/app/theme/theme.dart';`.
-2. Không còn mã màu hex trực tiếp (`Color(0xFF...)`) trong code UI.
-3. Chạy lệnh phân tích tĩnh:
+2. Không còn mã màu hex trực tiếp (`Color(0xFF...)`) ngoài `app_colors.dart`.
+3. Không sử dụng `Colors.*` thô từ Flutter material package.
+4. Chạy kiểm tra kiến trúc và Design Tokens:
+   ```powershell
+   python .agents/skills/verify-architecture/scripts/verify_architecture.py
+   ```
+5. Chạy phân tích tĩnh và unit tests:
    ```powershell
    cd KLTN2026-2027; flutter analyze
+   cd KLTN2026-2027; flutter test
    ```
-4. Chạy kiểm tra bộ test tokens:
-   ```powershell
-   cd KLTN2026-2027; flutter test test/theme/design_tokens_test.dart
-   ```
+   Đảm bảo 100% tests pass và zero analyzer issues.

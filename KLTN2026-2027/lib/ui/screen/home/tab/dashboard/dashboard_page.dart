@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kltn2026_2027/app/consts/app_config.dart';
+import 'package:kltn2026_2027/app/provider/localization_provider.dart';
 import 'package:kltn2026_2027/app/theme/theme.dart';
 import 'package:kltn2026_2027/ui/screen/club/club_vm/club_context_vm.dart';
 import 'package:kltn2026_2027/widget/club_switcher_dialog.dart';
@@ -16,18 +17,19 @@ class DashboardPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(dashboardViewModelProvider);
     final vm = ref.read(dashboardViewModelProvider.notifier);
+    final colors = context.colors;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light.copyWith(
-        statusBarColor: Colors.transparent,
+        statusBarColor: AppColors.transparent,
       ),
       child: Scaffold(
-        backgroundColor: AppColors.neutral50,
+        backgroundColor: colors.background,
         body: SafeArea(
           top: false,
           child: RefreshIndicator(
-            color: AppColors.primaryHeader,
-            backgroundColor: AppColors.white,
+            color: colors.primary,
+            backgroundColor: colors.cardBackground,
             onRefresh: () async {
               await vm.loadData();
             },
@@ -38,19 +40,19 @@ class DashboardPage extends ConsumerWidget {
                 children: [
                   _buildHeader(context, ref, state.userProfile),
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.base),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const SizedBox(height: 16),
+                        AppSpacing.gapH16,
                         _buildQuickActions(context, state.quickActions),
-                        const SizedBox(height: 20),
+                        AppSpacing.gapH20,
                         _buildSportCategories(context, state.categories, vm),
-                        const SizedBox(height: 20),
+                        AppSpacing.gapH20,
                         _buildPromoBanner(context, state.promoBanner),
-                        const SizedBox(height: 20),
+                        AppSpacing.gapH20,
                         _buildNearbyVenues(context, state.venues, vm, state.isLoadingVenues),
-                        const SizedBox(height: 24),
+                        AppSpacing.gapH24,
                       ],
                     ),
                   ),
@@ -69,23 +71,24 @@ class DashboardPage extends ConsumerWidget {
   Widget _buildHeader(BuildContext context, WidgetRef ref, DashboardUserProfile profile) {
     final topPadding = MediaQuery.of(context).padding.top;
     final clubContext = ref.watch(clubContextViewModelProvider);
-    final activeClubName = clubContext.currentClubName ?? 'Chọn CLB';
+    final activeClubName = clubContext.currentClubName ?? context.l10n.club_switch;
     final roleName = clubContext.currentRole?.displayName;
+    final colors = context.colors;
 
     return Container(
       width: double.infinity,
-      decoration: const BoxDecoration(
-        color: AppColors.primaryHeader,
-        borderRadius: BorderRadius.only(
+      decoration: BoxDecoration(
+        color: context.isDark ? colors.surface : AppColors.primaryHeader,
+        borderRadius: const BorderRadius.only(
           bottomLeft: Radius.circular(24),
           bottomRight: Radius.circular(24),
         ),
       ),
       padding: EdgeInsets.only(
         top: topPadding + 12,
-        left: 16,
-        right: 16,
-        bottom: 20,
+        left: AppSpacing.base,
+        right: AppSpacing.base,
+        bottom: AppSpacing.lg,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -99,21 +102,21 @@ class DashboardPage extends ConsumerWidget {
                 height: 46,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white.withValues(alpha: 0.4), width: 2),
-                  color: Colors.white24,
+                  border: Border.all(color: AppColors.white.withValues(alpha: 0.4), width: 2),
+                  color: AppColors.white.withValues(alpha: 0.2),
                 ),
                 child: ClipOval(
                   child: profile.avatarUrl.isNotEmpty
                       ? Image.network(
                           profile.avatarUrl,
                           fit: BoxFit.cover,
-                          errorBuilder: (_, _, _) => const Icon(Icons.person, color: Colors.white, size: 28),
+                          errorBuilder: (_, _, _) => const Icon(Icons.person, color: AppColors.white, size: 28),
                         )
-                      : const Icon(Icons.person, color: Colors.white, size: 28),
+                      : const Icon(Icons.person, color: AppColors.white, size: 28),
                 ),
               ),
-              const SizedBox(width: 12),
-              // User Greeting & Member Tier
+              AppSpacing.gapW12,
+              // Welcome greeting & Name
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -121,123 +124,107 @@ class DashboardPage extends ConsumerWidget {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(10),
+                        color: AppColors.white.withValues(alpha: 0.2),
+                        borderRadius: AppRadius.chip,
                       ),
                       child: Text(
-                        profile.memberTier,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 10,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 0.5,
+                        'VIP ${profile.memberTier}',
+                        style: AppTypography.labelSmall.copyWith(
+                          color: AppColors.white,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
-                    const SizedBox(height: 2),
-                    Row(
-                      children: [
-                        Flexible(
-                          child: Text(
-                            'Xin chào, ${profile.name}',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
+                    AppSpacing.gapH4,
+                    Text(
+                      profile.name.isNotEmpty ? profile.name : context.l10n.com_welcome_back,
+                      style: AppTypography.titleMedium.copyWith(
+                        color: AppColors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ),
               ),
-              const SizedBox(width: 8),
-
-              // Club Switcher Quick Chip (FR03 / FR04)
-              InkWell(
-                onTap: () => ClubSwitcherDialog.show(context),
-                borderRadius: BorderRadius.circular(14),
+              // Context Club Switcher Pill Button
+              GestureDetector(
+                onTap: () {
+                  ClubSwitcherDialog.show(context);
+                },
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.22),
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: Colors.white.withValues(alpha: 0.35)),
+                    color: AppColors.white.withValues(alpha: 0.22),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: AppColors.white.withValues(alpha: 0.35)),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.sports_tennis_rounded, color: Colors.white, size: 14),
-                      const SizedBox(width: 4),
+                      const Icon(Icons.sports_tennis_rounded, color: AppColors.white, size: 14),
+                      AppSpacing.gapW4,
                       ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 85),
+                        constraints: const BoxConstraints(maxWidth: 95),
                         child: Text(
                           activeClubName,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
+                          style: AppTypography.labelSmall.copyWith(
+                            color: AppColors.white,
+                            fontWeight: FontWeight.w600,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
                       if (roleName != null) ...[
-                        const SizedBox(width: 4),
+                        AppSpacing.gapW4,
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
                           decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.3),
-                            borderRadius: BorderRadius.circular(6),
+                            color: AppColors.white.withValues(alpha: 0.3),
+                            borderRadius: AppRadius.tag,
                           ),
                           child: Text(
                             roleName,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 9.5,
-                              fontWeight: FontWeight.w700,
+                            style: AppTypography.labelSmall.copyWith(
+                              fontSize: 9,
+                              color: AppColors.white,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
                         ),
                       ],
-                      const SizedBox(width: 2),
-                      const Icon(Icons.arrow_drop_down, color: Colors.white, size: 16),
+                      const Icon(Icons.arrow_drop_down, color: AppColors.white, size: 16),
                     ],
                   ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          AppSpacing.gapH16,
           // Search Input Bar
           Container(
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: colors.cardBackground,
               borderRadius: BorderRadius.circular(25),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.06),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                ),
-              ],
+              border: Border.all(color: colors.cardBorder),
+              boxShadow: context.isDark ? AppShadows.none : AppShadows.sm,
             ),
             child: TextField(
+              style: AppTypography.bodyMedium.copyWith(color: colors.textPrimary),
               decoration: InputDecoration(
-                hintText: 'Tìm sân cầu lông, pickleball, địa điểm...',
-                hintStyle: TextStyle(
-                  color: Colors.grey.shade500,
+                hintText: context.l10n.com_search,
+                hintStyle: AppTypography.bodyMedium.copyWith(
+                  color: colors.textPlaceholder,
                   fontSize: 13.5,
                 ),
-                prefixIcon: Icon(Icons.search, color: Colors.grey.shade500, size: 22),
+                prefixIcon: Icon(Icons.search, color: colors.textSecondary, size: 22),
                 suffixIcon: Container(
                   padding: const EdgeInsets.all(8),
-                  child: const Icon(
+                  child: Icon(
                     Icons.tune,
-                    color: AppColors.primaryHeader,
+                    color: colors.primary,
                     size: 20,
                   ),
                 ),
@@ -255,11 +242,13 @@ class DashboardPage extends ConsumerWidget {
   // 2. QUICK ACTION CARDS (4 ITEM ROW)
   // ===========================================================================
   Widget _buildQuickActions(BuildContext context, List<QuickActionItem> actions) {
+    final colors = context.colors;
+
     return Row(
       children: actions.map((item) {
         return Expanded(
           child: Material(
-            color: Colors.transparent,
+            color: AppColors.transparent,
             child: InkWell(
               onTap: () {
                 switch (item.id) {
@@ -275,28 +264,22 @@ class DashboardPage extends ConsumerWidget {
                   default:
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text('Tính năng "${item.title}" đang phát triển'),
+                        content: Text('${context.l10n.com_feature_under_dev}: ${item.title}'),
                         duration: const Duration(seconds: 1),
                         behavior: SnackBarBehavior.floating,
                       ),
                     );
                 }
               },
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: AppRadius.card,
               child: Container(
                 margin: const EdgeInsets.symmetric(horizontal: 4),
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.03),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                  border: Border.all(color: AppColors.surfaceSubtle),
+                  color: colors.cardBackground,
+                  borderRadius: AppRadius.card,
+                  boxShadow: context.isDark ? AppShadows.none : AppShadows.sm,
+                  border: Border.all(color: colors.cardBorder),
                 ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -306,17 +289,16 @@ class DashboardPage extends ConsumerWidget {
                       height: 44,
                       decoration: BoxDecoration(
                         color: item.bgColor,
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: AppRadius.borderSm,
                       ),
                       child: Icon(item.icon, color: item.iconColor, size: 22),
                     ),
-                    const SizedBox(height: 8),
+                    AppSpacing.gapH8,
                     Text(
                       item.title,
-                      style: const TextStyle(
-                        fontSize: 12,
+                      style: AppTypography.labelMedium.copyWith(
                         fontWeight: FontWeight.w600,
-                        color: AppColors.neutral800,
+                        color: colors.textPrimary,
                       ),
                       textAlign: TextAlign.center,
                       maxLines: 1,
@@ -340,41 +322,41 @@ class DashboardPage extends ConsumerWidget {
     List<SportCategoryItem> categories,
     DashboardViewModel vm,
   ) {
+    final colors = context.colors;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
-              'MÔN THỂ THAO',
-              style: TextStyle(
-                fontSize: 15,
+            Text(
+              context.l10n.explore_tab_clubs.toUpperCase(),
+              style: AppTypography.titleSmall.copyWith(
                 fontWeight: FontWeight.bold,
-                color: AppColors.neutral800,
+                color: colors.textPrimary,
                 letterSpacing: 0.3,
               ),
             ),
             GestureDetector(
               onTap: () {},
               child: Row(
-                children: const [
+                children: [
                   Text(
-                    'Xem tất cả',
-                    style: TextStyle(
-                      fontSize: 13,
+                    context.l10n.com_view_all,
+                    style: AppTypography.labelMedium.copyWith(
                       fontWeight: FontWeight.w600,
-                      color: AppColors.primaryHeader,
+                      color: colors.primary,
                     ),
                   ),
-                  SizedBox(width: 2),
-                  Icon(Icons.arrow_forward_ios, size: 12, color: AppColors.primaryHeader),
+                  const SizedBox(width: 2),
+                  Icon(Icons.arrow_forward_ios, size: 12, color: colors.primary),
                 ],
               ),
             ),
           ],
         ),
-        const SizedBox(height: 12),
+        AppSpacing.gapH12,
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           physics: const BouncingScrollPhysics(),
@@ -386,23 +368,22 @@ class DashboardPage extends ConsumerWidget {
                   margin: const EdgeInsets.only(right: 10),
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                   decoration: BoxDecoration(
-                    color: cat.isSelected ? AppColors.primaryHeader.withValues(alpha: 0.08) : Colors.white,
+                    color: cat.isSelected ? colors.primaryContainer : colors.cardBackground,
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
-                      color: cat.isSelected ? AppColors.primaryHeader : AppColors.border,
+                      color: cat.isSelected ? colors.primary : colors.cardBorder,
                       width: cat.isSelected ? 1.5 : 1.0,
                     ),
                   ),
                   child: Row(
                     children: [
-                      Icon(cat.icon, size: 16, color: cat.isSelected ? AppColors.primaryHeader : AppColors.neutral600),
-                      const SizedBox(width: 6),
+                      Icon(cat.icon, size: 16, color: cat.isSelected ? colors.primary : colors.textSecondary),
+                      AppSpacing.gapW8,
                       Text(
                         cat.name,
-                        style: TextStyle(
-                          fontSize: 13,
+                        style: AppTypography.labelMedium.copyWith(
                           fontWeight: cat.isSelected ? FontWeight.bold : FontWeight.w500,
-                          color: cat.isSelected ? AppColors.primaryHeader : AppColors.neutral600,
+                          color: cat.isSelected ? colors.primary : colors.textSecondary,
                         ),
                       ),
                     ],
@@ -422,17 +403,13 @@ class DashboardPage extends ConsumerWidget {
   Widget _buildPromoBanner(BuildContext context, PromoBannerItem promo) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(18),
+      padding: AppSpacing.card,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(18),
-        gradient: const LinearGradient(
-          colors: [AppColors.accentOrange, AppColors.accentOrangeLight],
-          begin: Alignment.centerLeft,
-          end: Alignment.centerRight,
-        ),
+        borderRadius: AppRadius.card,
+        gradient: AppColors.warningGradient,
         boxShadow: [
           BoxShadow(
-            color: AppColors.accentOrange.withValues(alpha: 0.3),
+            color: AppColors.accent.withValues(alpha: 0.3),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -447,57 +424,51 @@ class DashboardPage extends ConsumerWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.25),
-                    borderRadius: BorderRadius.circular(6),
+                    color: AppColors.white.withValues(alpha: 0.25),
+                    borderRadius: AppRadius.tag,
                   ),
                   child: Text(
-                    'MÃ: ${promo.promoCode}',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 10.5,
+                    'CODE: ${promo.promoCode}',
+                    style: AppTypography.labelSmall.copyWith(
+                      color: AppColors.white,
                       fontWeight: FontWeight.w800,
                       letterSpacing: 0.5,
                     ),
                   ),
                 ),
-                const SizedBox(height: 6),
+                AppSpacing.gapH8,
                 Text(
                   promo.title,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
+                  style: AppTypography.titleMedium.copyWith(
+                    color: AppColors.white,
                     fontWeight: FontWeight.w800,
                     height: 1.2,
                   ),
                 ),
-                const SizedBox(height: 4),
+                AppSpacing.gapH4,
                 Text(
                   promo.subtitle,
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.9),
-                    fontSize: 11.5,
+                  style: AppTypography.bodySmall.copyWith(
+                    color: AppColors.white.withValues(alpha: 0.9),
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(width: 12),
+          AppSpacing.gapW12,
           ElevatedButton(
             onPressed: () {},
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: AppColors.accentOrange,
+              backgroundColor: AppColors.white,
+              foregroundColor: AppColors.accentDark,
               elevation: 0,
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-              ),
+              shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
             ),
             child: Text(
               promo.buttonText,
-              style: const TextStyle(
+              style: AppTypography.labelSmall.copyWith(
                 fontWeight: FontWeight.w800,
-                fontSize: 12,
               ),
             ),
           ),
@@ -515,6 +486,8 @@ class DashboardPage extends ConsumerWidget {
     DashboardViewModel vm,
     bool isLoading,
   ) {
+    final colors = context.colors;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -522,38 +495,36 @@ class DashboardPage extends ConsumerWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Row(
-              children: const [
-                Icon(Icons.location_on_outlined, size: 18, color: AppColors.primaryHeader),
-                SizedBox(width: 4),
+              children: [
+                Icon(Icons.location_on_outlined, size: 18, color: colors.primary),
+                const SizedBox(width: 4),
                 Text(
-                  'Cơ sở gần bạn',
-                  style: TextStyle(
-                    fontSize: 15,
+                  context.l10n.explore_tab_clubs,
+                  style: AppTypography.titleSmall.copyWith(
                     fontWeight: FontWeight.bold,
-                    color: AppColors.neutral800,
+                    color: colors.textPrimary,
                   ),
                 ),
               ],
             ),
             GestureDetector(
               onTap: () {},
-              child: const Text(
-                'Xem tất cả',
-                style: TextStyle(
-                  fontSize: 13,
+              child: Text(
+                context.l10n.com_view_all,
+                style: AppTypography.labelMedium.copyWith(
                   fontWeight: FontWeight.w600,
-                  color: AppColors.primaryHeader,
+                  color: colors.primary,
                 ),
               ),
             ),
           ],
         ),
-        const SizedBox(height: 14),
+        AppSpacing.gapH12,
         if (isLoading && venues.isEmpty)
-          const Center(
+          Center(
             child: Padding(
-              padding: EdgeInsets.symmetric(vertical: 28),
-              child: CircularProgressIndicator(color: AppColors.primaryHeader),
+              padding: const EdgeInsets.symmetric(vertical: 28),
+              child: CircularProgressIndicator(color: colors.primary),
             ),
           )
         else if (venues.isEmpty)
@@ -561,17 +532,14 @@ class DashboardPage extends ConsumerWidget {
             width: double.infinity,
             padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
             decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.surfaceSubtle),
+              color: colors.cardBackground,
+              borderRadius: AppRadius.card,
+              border: Border.all(color: colors.cardBorder),
             ),
             child: Center(
               child: Text(
-                'Chưa có cơ sở nào phù hợp',
-                style: TextStyle(
-                  fontSize: 13,
-                  color: Colors.grey.shade500,
-                ),
+                context.l10n.com_empty_data,
+                style: AppTypography.bodySmall.copyWith(color: colors.textSecondary),
               ),
             ),
           )
@@ -580,7 +548,7 @@ class DashboardPage extends ConsumerWidget {
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: venues.length,
-            separatorBuilder: (_, _) => const SizedBox(height: 12),
+            separatorBuilder: (_, _) => AppSpacing.gapH12,
             itemBuilder: (context, index) {
               final venue = venues[index];
               return _buildVenueCard(context, venue, vm);
@@ -595,19 +563,15 @@ class DashboardPage extends ConsumerWidget {
     VenueItem venue,
     DashboardViewModel vm,
   ) {
+    final colors = context.colors;
+
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: AppSpacing.card,
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.surfaceSubtle),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        color: colors.cardBackground,
+        borderRadius: AppRadius.card,
+        border: Border.all(color: colors.cardBorder),
+        boxShadow: context.isDark ? AppShadows.none : AppShadows.sm,
       ),
       child: Row(
         children: [
@@ -618,21 +582,21 @@ class DashboardPage extends ConsumerWidget {
                 width: 90,
                 height: 90,
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  color: Colors.grey.shade200,
+                  borderRadius: AppRadius.borderMd,
+                  color: colors.surfaceSubtle,
                 ),
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: AppRadius.borderMd,
                   child: venue.imageUrl.isNotEmpty
                       ? Image.network(
                           venue.imageUrl,
                           fit: BoxFit.cover,
-                          errorBuilder: (_, _, _) => const Center(
-                            child: Icon(Icons.sports_tennis, color: Colors.grey, size: 36),
+                          errorBuilder: (_, _, _) => Center(
+                            child: Icon(Icons.sports_tennis, color: colors.textMuted, size: 36),
                           ),
                         )
-                      : const Center(
-                          child: Icon(Icons.sports_tennis, color: Colors.grey, size: 36),
+                      : Center(
+                          child: Icon(Icons.sports_tennis, color: colors.textMuted, size: 36),
                         ),
                 ),
               ),
@@ -644,20 +608,20 @@ class DashboardPage extends ConsumerWidget {
                   child: Container(
                     padding: const EdgeInsets.all(4),
                     decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.35),
+                      color: AppColors.black.withValues(alpha: 0.35),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
                       venue.isFavorite ? Icons.favorite : Icons.favorite_border,
                       size: 14,
-                      color: venue.isFavorite ? Colors.redAccent : Colors.white,
+                      color: venue.isFavorite ? colors.error : AppColors.white,
                     ),
                   ),
                 ),
               ),
             ],
           ),
-          const SizedBox(width: 12),
+          AppSpacing.gapW12,
           // Right Content Details
           Expanded(
             child: Column(
@@ -666,72 +630,66 @@ class DashboardPage extends ConsumerWidget {
                 // Category Tags
                 Text(
                   venue.categories,
-                  style: const TextStyle(
-                    color: AppColors.primaryHeader,
-                    fontSize: 10.5,
+                  style: AppTypography.labelSmall.copyWith(
+                    color: colors.primary,
                     fontWeight: FontWeight.w800,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 2),
+                AppSpacing.gapH4,
                 // Title & Rating Row
                 Row(
                   children: [
                     Expanded(
                       child: Text(
                         venue.name,
-                        style: const TextStyle(
-                          fontSize: 14.5,
+                        style: AppTypography.titleSmall.copyWith(
                           fontWeight: FontWeight.bold,
-                          color: AppColors.neutral800,
+                          color: colors.textPrimary,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    const SizedBox(width: 4),
-                    const Icon(Icons.star, size: 14, color: Colors.amber),
+                    AppSpacing.gapW4,
+                    Icon(Icons.star, size: 14, color: colors.accent),
                     const SizedBox(width: 2),
                     Text(
                       '${venue.rating}',
-                      style: const TextStyle(
-                        fontSize: 12.5,
+                      style: AppTypography.labelSmall.copyWith(
                         fontWeight: FontWeight.bold,
-                        color: AppColors.neutral800,
+                        color: colors.textPrimary,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 4),
+                AppSpacing.gapH4,
                 // Address
                 Text(
                   venue.address,
-                  style: TextStyle(
-                    fontSize: 11.5,
-                    color: Colors.grey.shade600,
+                  style: AppTypography.bodySmall.copyWith(
+                    color: colors.textSecondary,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 8),
+                AppSpacing.gapH8,
                 // Footer: Distance & Price
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
                       venue.distance,
-                      style: TextStyle(
-                        fontSize: 11.5,
-                        color: Colors.grey.shade500,
+                      style: AppTypography.bodySmall.copyWith(
+                        color: colors.textMuted,
                       ),
                     ),
                     Text(
                       venue.priceText,
-                      style: const TextStyle(
-                        fontSize: 12,
+                      style: AppTypography.labelSmall.copyWith(
                         fontWeight: FontWeight.w800,
-                        color: AppColors.primaryHeader,
+                        color: colors.primary,
                       ),
                     ),
                   ],

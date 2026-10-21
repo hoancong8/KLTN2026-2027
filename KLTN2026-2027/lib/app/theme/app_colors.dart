@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 /// Design tokens for colors across the KLTN2026-2027 application.
 /// Provides brand palettes, semantic functional colors, neutral slate scales,
-/// surfaces, borders, and backward compatibility for legacy color constants.
+/// surfaces, borders, domain-specific sports tokens, and backward compatibility.
 class AppColors {
   AppColors._();
 
@@ -72,6 +72,7 @@ class AppColors {
   // ---------------------------------------------------------------------------
   static const Color white = Color(0xFFFFFFFF);
   static const Color black = Color(0xFF000000);
+  static const Color transparent = Color(0x00000000);
 
   static const Color neutral50 = Color(0xFFF8FAFC);
   static const Color neutral100 = Color(0xFFF1F5F9);
@@ -86,7 +87,7 @@ class AppColors {
   static const Color neutral950 = Color(0xFF020617);
 
   // ---------------------------------------------------------------------------
-  // 5. SURFACE & BACKGROUND TOKENS
+  // 5. SURFACE & BACKGROUND TOKENS (LIGHT DEFAULT)
   // ---------------------------------------------------------------------------
   static const Color background = Color(0xFFF8FAFC);
   static const Color surface = Color(0xFFFFFFFF);
@@ -212,7 +213,17 @@ class AppColors {
   );
 
   // ---------------------------------------------------------------------------
-  // 10. BACKWARD COMPATIBILITY ALIASES (FOR EXISTING CODEBASE)
+  // 10. CONTEXTUAL ADAPTIVE HELPER
+  // ---------------------------------------------------------------------------
+  /// Helper to access dynamic theme tokens according to current BuildContext.
+  static AppThemeColors of(BuildContext context) =>
+      Theme.of(context).extension<AppThemeColors>() ??
+      (Theme.of(context).brightness == Brightness.dark
+          ? AppThemeColors.dark
+          : AppThemeColors.light);
+
+  // ---------------------------------------------------------------------------
+  // 11. BACKWARD COMPATIBILITY ALIASES (FOR EXISTING CODEBASE)
   // ---------------------------------------------------------------------------
   static const Color bgr = white;
   static const Color cYan = Color(0xFFF4FDFA);
@@ -242,7 +253,7 @@ class AppColors {
   static const Color cWeak = Color(0xFFFAC71E);
   static const Color cNeedCheck = Color(0xFFFF6D0C);
   static const Color cAlert = Color(0xFFFA2020);
-  static const Color cText = Colors.black87;
+  static const Color cText = Color(0xDD000000);
   static const Color cMuted = Color(0xFF8C8C8C);
   static const Color cChip = Color(0xFFEFF8F4);
   static const Color cDivider = Color(0xFFEAEAEA);
@@ -298,3 +309,337 @@ class AppColors {
 
 /// Shorthand type alias so either AppColor or AppColors can be used interchangeably.
 typedef AppColor = AppColors;
+
+// -----------------------------------------------------------------------------
+// ADAPTIVE THEME EXTENSION (LIGHT & DARK THEME UNIFICATION)
+// -----------------------------------------------------------------------------
+
+/// Immutable ThemeExtension providing theme-adaptive semantic color tokens.
+/// Guarantees that any UI component referencing `context.colors.*` automatically
+/// resolves the visually correct, high-contrast palette for Light and Dark modes.
+class AppThemeColors extends ThemeExtension<AppThemeColors> {
+  final Brightness brightness;
+  final Color background;
+  final Color surface;
+  final Color surfaceSubtle;
+  final Color surfaceElevated;
+  final Color cardBackground;
+  final Color cardBorder;
+  final Color inputFill;
+  final Color inputBorder;
+  final Color textPrimary;
+  final Color textSecondary;
+  final Color textMuted;
+  final Color textPlaceholder;
+  final Color textDisabled;
+  final Color textInverse;
+  final Color textBrand;
+  final Color border;
+  final Color borderSubtle;
+  final Color borderStrong;
+  final Color divider;
+  final Color primary;
+  final Color primaryDark;
+  final Color primaryLight;
+  final Color primaryContainer;
+  final Color onPrimaryContainer;
+  final Color secondary;
+  final Color secondaryContainer;
+  final Color onSecondaryContainer;
+  final Color accent;
+  final Color accentLight;
+  final Color success;
+  final Color successContainer;
+  final Color warning;
+  final Color warningContainer;
+  final Color error;
+  final Color errorContainer;
+  final Color info;
+  final Color infoContainer;
+  final Color courtGreen;
+  final Color courtLine;
+
+  const AppThemeColors({
+    required this.brightness,
+    required this.background,
+    required this.surface,
+    required this.surfaceSubtle,
+    required this.surfaceElevated,
+    required this.cardBackground,
+    required this.cardBorder,
+    required this.inputFill,
+    required this.inputBorder,
+    required this.textPrimary,
+    required this.textSecondary,
+    required this.textMuted,
+    required this.textPlaceholder,
+    required this.textDisabled,
+    required this.textInverse,
+    required this.textBrand,
+    required this.border,
+    required this.borderSubtle,
+    required this.borderStrong,
+    required this.divider,
+    required this.primary,
+    required this.primaryDark,
+    required this.primaryLight,
+    required this.primaryContainer,
+    required this.onPrimaryContainer,
+    required this.secondary,
+    required this.secondaryContainer,
+    required this.onSecondaryContainer,
+    required this.accent,
+    required this.accentLight,
+    required this.success,
+    required this.successContainer,
+    required this.warning,
+    required this.warningContainer,
+    required this.error,
+    required this.errorContainer,
+    required this.info,
+    required this.infoContainer,
+    required this.courtGreen,
+    required this.courtLine,
+  });
+
+  /// Light Mode Palette - Crisp, airy, high-contrast Slate & Mint.
+  static const AppThemeColors light = AppThemeColors(
+    brightness: Brightness.light,
+    background: Color(0xFFF8FAFC),
+    surface: Color(0xFFFFFFFF),
+    surfaceSubtle: Color(0xFFF1F5F9),
+    surfaceElevated: Color(0xFFFFFFFF),
+    cardBackground: Color(0xFFFFFFFF),
+    cardBorder: Color(0xFFE2E8F0),
+    inputFill: Color(0xFFF1F5F9),
+    inputBorder: Color(0xFFCBD5E1),
+    textPrimary: Color(0xFF0F172A),
+    textSecondary: Color(0xFF475569),
+    textMuted: Color(0xFF64748B),
+    textPlaceholder: Color(0xFF94A3B8),
+    textDisabled: Color(0xFFCBD5E1),
+    textInverse: Color(0xFFFFFFFF),
+    textBrand: Color(0xFF3CC18E),
+    border: Color(0xFFE2E8F0),
+    borderSubtle: Color(0xFFF1F5F9),
+    borderStrong: Color(0xFFCBD5E1),
+    divider: Color(0xFFEAEAEA),
+    primary: Color(0xFF3CC18E),
+    primaryDark: Color(0xFF2EA578),
+    primaryLight: Color(0xFF55D4A2),
+    primaryContainer: Color(0xFFE8F9F3),
+    onPrimaryContainer: Color(0xFF0F5A40),
+    secondary: Color(0xFF0EA5E9),
+    secondaryContainer: Color(0xFFF0F9FF),
+    onSecondaryContainer: Color(0xFF075985),
+    accent: Color(0xFFFFA61E),
+    accentLight: Color(0xFFFFF3DD),
+    success: Color(0xFF10B981),
+    successContainer: Color(0xFFECFDF5),
+    warning: Color(0xFFF59E0B),
+    warningContainer: Color(0xFFFFFBEB),
+    error: Color(0xFFEF4444),
+    errorContainer: Color(0xFFFEF2F2),
+    info: Color(0xFF3B82F6),
+    infoContainer: Color(0xFFEFF6FF),
+    courtGreen: Color(0xFF0D5E3A),
+    courtLine: Color(0xFFFFFFFF),
+  );
+
+  /// Dark Mode Palette - Deep Navy Slate, reduced glare, calibrated contrast.
+  static const AppThemeColors dark = AppThemeColors(
+    brightness: Brightness.dark,
+    background: Color(0xFF0B1220),
+    surface: Color(0xFF162032),
+    surfaceSubtle: Color(0xFF1E293B),
+    surfaceElevated: Color(0xFF1E293B),
+    cardBackground: Color(0xFF162032),
+    cardBorder: Color(0xFF1E293B),
+    inputFill: Color(0xFF1E293B),
+    inputBorder: Color(0xFF334155),
+    textPrimary: Color(0xFFF8FAFC),
+    textSecondary: Color(0xFF94A3B8),
+    textMuted: Color(0xFF64748B),
+    textPlaceholder: Color(0xFF475569),
+    textDisabled: Color(0xFF334155),
+    textInverse: Color(0xFF0F172A),
+    textBrand: Color(0xFF3CC18E),
+    border: Color(0xFF334155),
+    borderSubtle: Color(0xFF1E293B),
+    borderStrong: Color(0xFF475569),
+    divider: Color(0xFF1E293B),
+    primary: Color(0xFF3CC18E),
+    primaryDark: Color(0xFF2EA578),
+    primaryLight: Color(0xFF55D4A2),
+    primaryContainer: Color(0xFF0F5A40),
+    onPrimaryContainer: Color(0xFFA7F3D0),
+    secondary: Color(0xFF38BDF8),
+    secondaryContainer: Color(0xFF075985),
+    onSecondaryContainer: Color(0xFFBAE6FD),
+    accent: Color(0xFFFBBF24),
+    accentLight: Color(0xFF78350F),
+    success: Color(0xFF34D399),
+    successContainer: Color(0xFF064E3B),
+    warning: Color(0xFFFBBF24),
+    warningContainer: Color(0xFF78350F),
+    error: Color(0xFFF87171),
+    errorContainer: Color(0xFF7F1D1D),
+    info: Color(0xFF60A5FA),
+    infoContainer: Color(0xFF1E3A8A),
+    courtGreen: Color(0xFF0D5E3A),
+    courtLine: Color(0xFFFFFFFF),
+  );
+
+  @override
+  AppThemeColors copyWith({
+    Brightness? brightness,
+    Color? background,
+    Color? surface,
+    Color? surfaceSubtle,
+    Color? surfaceElevated,
+    Color? cardBackground,
+    Color? cardBorder,
+    Color? inputFill,
+    Color? inputBorder,
+    Color? textPrimary,
+    Color? textSecondary,
+    Color? textMuted,
+    Color? textPlaceholder,
+    Color? textDisabled,
+    Color? textInverse,
+    Color? textBrand,
+    Color? border,
+    Color? borderSubtle,
+    Color? borderStrong,
+    Color? divider,
+    Color? primary,
+    Color? primaryDark,
+    Color? primaryLight,
+    Color? primaryContainer,
+    Color? onPrimaryContainer,
+    Color? secondary,
+    Color? secondaryContainer,
+    Color? onSecondaryContainer,
+    Color? accent,
+    Color? accentLight,
+    Color? success,
+    Color? successContainer,
+    Color? warning,
+    Color? warningContainer,
+    Color? error,
+    Color? errorContainer,
+    Color? info,
+    Color? infoContainer,
+    Color? courtGreen,
+    Color? courtLine,
+  }) {
+    return AppThemeColors(
+      brightness: brightness ?? this.brightness,
+      background: background ?? this.background,
+      surface: surface ?? this.surface,
+      surfaceSubtle: surfaceSubtle ?? this.surfaceSubtle,
+      surfaceElevated: surfaceElevated ?? this.surfaceElevated,
+      cardBackground: cardBackground ?? this.cardBackground,
+      cardBorder: cardBorder ?? this.cardBorder,
+      inputFill: inputFill ?? this.inputFill,
+      inputBorder: inputBorder ?? this.inputBorder,
+      textPrimary: textPrimary ?? this.textPrimary,
+      textSecondary: textSecondary ?? this.textSecondary,
+      textMuted: textMuted ?? this.textMuted,
+      textPlaceholder: textPlaceholder ?? this.textPlaceholder,
+      textDisabled: textDisabled ?? this.textDisabled,
+      textInverse: textInverse ?? this.textInverse,
+      textBrand: textBrand ?? this.textBrand,
+      border: border ?? this.border,
+      borderSubtle: borderSubtle ?? this.borderSubtle,
+      borderStrong: borderStrong ?? this.borderStrong,
+      divider: divider ?? this.divider,
+      primary: primary ?? this.primary,
+      primaryDark: primaryDark ?? this.primaryDark,
+      primaryLight: primaryLight ?? this.primaryLight,
+      primaryContainer: primaryContainer ?? this.primaryContainer,
+      onPrimaryContainer: onPrimaryContainer ?? this.onPrimaryContainer,
+      secondary: secondary ?? this.secondary,
+      secondaryContainer: secondaryContainer ?? this.secondaryContainer,
+      onSecondaryContainer: onSecondaryContainer ?? this.onSecondaryContainer,
+      accent: accent ?? this.accent,
+      accentLight: accentLight ?? this.accentLight,
+      success: success ?? this.success,
+      successContainer: successContainer ?? this.successContainer,
+      warning: warning ?? this.warning,
+      warningContainer: warningContainer ?? this.warningContainer,
+      error: error ?? this.error,
+      errorContainer: errorContainer ?? this.errorContainer,
+      info: info ?? this.info,
+      infoContainer: infoContainer ?? this.infoContainer,
+      courtGreen: courtGreen ?? this.courtGreen,
+      courtLine: courtLine ?? this.courtLine,
+    );
+  }
+
+  @override
+  AppThemeColors lerp(ThemeExtension<AppThemeColors>? other, double t) {
+    if (other is! AppThemeColors) return this;
+    return AppThemeColors(
+      brightness: t < 0.5 ? brightness : other.brightness,
+      background: Color.lerp(background, other.background, t) ?? background,
+      surface: Color.lerp(surface, other.surface, t) ?? surface,
+      surfaceSubtle: Color.lerp(surfaceSubtle, other.surfaceSubtle, t) ?? surfaceSubtle,
+      surfaceElevated: Color.lerp(surfaceElevated, other.surfaceElevated, t) ?? surfaceElevated,
+      cardBackground: Color.lerp(cardBackground, other.cardBackground, t) ?? cardBackground,
+      cardBorder: Color.lerp(cardBorder, other.cardBorder, t) ?? cardBorder,
+      inputFill: Color.lerp(inputFill, other.inputFill, t) ?? inputFill,
+      inputBorder: Color.lerp(inputBorder, other.inputBorder, t) ?? inputBorder,
+      textPrimary: Color.lerp(textPrimary, other.textPrimary, t) ?? textPrimary,
+      textSecondary: Color.lerp(textSecondary, other.textSecondary, t) ?? textSecondary,
+      textMuted: Color.lerp(textMuted, other.textMuted, t) ?? textMuted,
+      textPlaceholder: Color.lerp(textPlaceholder, other.textPlaceholder, t) ?? textPlaceholder,
+      textDisabled: Color.lerp(textDisabled, other.textDisabled, t) ?? textDisabled,
+      textInverse: Color.lerp(textInverse, other.textInverse, t) ?? textInverse,
+      textBrand: Color.lerp(textBrand, other.textBrand, t) ?? textBrand,
+      border: Color.lerp(border, other.border, t) ?? border,
+      borderSubtle: Color.lerp(borderSubtle, other.borderSubtle, t) ?? borderSubtle,
+      borderStrong: Color.lerp(borderStrong, other.borderStrong, t) ?? borderStrong,
+      divider: Color.lerp(divider, other.divider, t) ?? divider,
+      primary: Color.lerp(primary, other.primary, t) ?? primary,
+      primaryDark: Color.lerp(primaryDark, other.primaryDark, t) ?? primaryDark,
+      primaryLight: Color.lerp(primaryLight, other.primaryLight, t) ?? primaryLight,
+      primaryContainer: Color.lerp(primaryContainer, other.primaryContainer, t) ?? primaryContainer,
+      onPrimaryContainer: Color.lerp(onPrimaryContainer, other.onPrimaryContainer, t) ?? onPrimaryContainer,
+      secondary: Color.lerp(secondary, other.secondary, t) ?? secondary,
+      secondaryContainer: Color.lerp(secondaryContainer, other.secondaryContainer, t) ?? secondaryContainer,
+      onSecondaryContainer: Color.lerp(onSecondaryContainer, other.onSecondaryContainer, t) ?? onSecondaryContainer,
+      accent: Color.lerp(accent, other.accent, t) ?? accent,
+      accentLight: Color.lerp(accentLight, other.accentLight, t) ?? accentLight,
+      success: Color.lerp(success, other.success, t) ?? success,
+      successContainer: Color.lerp(successContainer, other.successContainer, t) ?? successContainer,
+      warning: Color.lerp(warning, other.warning, t) ?? warning,
+      warningContainer: Color.lerp(warningContainer, other.warningContainer, t) ?? warningContainer,
+      error: Color.lerp(error, other.error, t) ?? error,
+      errorContainer: Color.lerp(errorContainer, other.errorContainer, t) ?? errorContainer,
+      info: Color.lerp(info, other.info, t) ?? info,
+      infoContainer: Color.lerp(infoContainer, other.infoContainer, t) ?? infoContainer,
+      courtGreen: Color.lerp(courtGreen, other.courtGreen, t) ?? courtGreen,
+      courtLine: Color.lerp(courtLine, other.courtLine, t) ?? courtLine,
+    );
+  }
+}
+
+/// Convenient BuildContext extension to access design system tokens with zero boilerplate.
+extension AppThemeContextExtension on BuildContext {
+  /// Resolves the theme-adaptive colors palette for current theme mode.
+  AppThemeColors get colors =>
+      Theme.of(this).extension<AppThemeColors>() ??
+      (Theme.of(this).brightness == Brightness.dark
+          ? AppThemeColors.dark
+          : AppThemeColors.light);
+
+  /// Standard Material 3 ColorScheme.
+  ColorScheme get colorScheme => Theme.of(this).colorScheme;
+
+  /// Material 3 TextTheme.
+  TextTheme get textTheme => Theme.of(this).textTheme;
+
+  /// Quick check for Dark Mode status.
+  bool get isDark => Theme.of(this).brightness == Brightness.dark;
+}

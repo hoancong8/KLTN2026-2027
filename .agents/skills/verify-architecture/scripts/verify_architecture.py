@@ -3,6 +3,7 @@ import sys
 import subprocess
 import re
 import argparse
+import json
 
 # Force UTF-8 output on Windows consoles
 if hasattr(sys.stdout, "reconfigure"):
@@ -45,6 +46,14 @@ TROUBLESHOOTING_GUIDE = {
         "Mã nguồn hoặc comment chứa ký tự emoji vi phạm Zero Emoji Policy.",
         "Xóa các icon/emoji khỏi source code và sử dụng ASCII markers như [OK], [WARN], [ERROR]."
     ),
+    "HEX_COLORS_OUTSIDE_THEME": (
+        "Phát hiện hardcode mã màu hex Color(0x...) ngoài thư mục theme.",
+        "Chuyển toàn bộ định nghĩa màu hex vào 'lib/app/theme/app_colors.dart' và sử dụng qua token context.colors hoặc AppColors."
+    ),
+    "L10N_KEY_MISMATCH": (
+        "Tập khóa ngôn ngữ giữa 'app_vi.arb' và 'app_en.arb' bị lệch hoặc thiếu đồng bộ.",
+        "Cập nhật cả hai file 'lib/l10n/app_vi.arb' và 'lib/l10n/app_en.arb' để có đầy đủ và khớp 100% các localization keys."
+    ),
     "FLUTTER_ANALYZE_FAILURE": (
         "Lệnh 'flutter analyze' phát hiện warning hoặc linter error.",
         "Chạy 'flutter analyze' trong thư mục Flutter và sửa triệt để các cảnh báo linter."
@@ -67,11 +76,12 @@ def check_architecture_boundaries(flutter_dir, strict_emoji=False):
     lib_dir = os.path.join(flutter_dir, "lib")
     if not os.path.exists(lib_dir):
         print(f"[ERROR] 'lib/' directory not found at: {flutter_dir}")
-        return False, []
+        return False, [], []
 
     errors = []
     warnings = []
     emoji_pattern = re.compile("[\U00010000-\U0010ffff\u2600-\u26ff\u2700-\u27bf]", flags=re.UNICODE)
+    hex_color_pattern = re.compile(r"Color\(0x[0-9a-fA-F]+\)")
 
     for root, _, files in os.walk(lib_dir):
         for f in files:
@@ -90,7 +100,12 @@ def check_architecture_boundaries(flutter_dir, strict_emoji=False):
                 else:
                     warnings.append(item)
 
-            # 1. Domain checks
+            # 1. Hex Color Check (Must strictly live in lib/app/theme/)
+            if not rel_path.startswith("lib/app/theme/") and not rel_path.endswith(".g.dart"):
+                if hex_color_pattern.search(content):
+                    errors.append(("HEX_COLORS_OUTSIDE_THEME", f"{rel_path}: Hardcode mã màu hex Color(0x...). Phải đưa vào AppColors."))
+
+            # 2. Domain checks
             if rel_path.startswith("lib/domain/"):
                 if "package:flutter/material.dart" in content or "package:flutter/widgets.dart" in content:
                     errors.append(("DOMAIN_IMPORTS_FLUTTER", f"{rel_path}: Import Flutter UI framework."))
@@ -99,7 +114,7 @@ def check_architecture_boundaries(flutter_dir, strict_emoji=False):
                 if "/data/dto/" in content:
                     errors.append(("DOMAIN_IMPORTS_DTO", f"{rel_path}: Import DTO từ tầng Data."))
 
-            # 2. UI checks
+            # 3. UI checks
             if rel_path.startswith("lib/ui/"):
                 if "/data/datasource/" in content:
                     errors.append(("UI_IMPORTS_DATASOURCE", f"{rel_path}: Import Datasource trực tiếp."))
@@ -108,10 +123,35 @@ def check_architecture_boundaries(flutter_dir, strict_emoji=False):
                 if "/data/dto/" in content:
                     errors.append(("UI_IMPORTS_DTO", f"{rel_path}: Import DTO trong tầng UI."))
 
-            # 3. Remote Datasource Impl checks
+            # 4. Remote Datasource Impl checks
             if rel_path.startswith("lib/data/datasource/remote/implement/"):
                 if "BaseRemoteDatasource" not in content:
                     errors.append(("DATASOURCE_MISSING_BASE", f"{rel_path}: Không kế thừa BaseRemoteDatasource."))
+
+    # 5. Localization ARB Synchronization Check
+    l10n_dir = os.path.join(flutter_dir, "lib", "l10n")
+    vi_path = os.path.join(l10n_dir, "app_vi.arb")
+    en_path = os.path.join(l10n_dir, "app_en.arb")
+
+    if os.path.exists(vi_path) and os.path.exists(en_path):
+        try:
+            with open(vi_path, "r", encoding="utf-8") as vf:
+                vi_json = json.load(vf)
+            with open(en_path, "r", encoding="utf-8") as ef:
+                en_json = json.load(ef)
+
+            vi_keys = set(k for k in vi_json.keys() if not k.startswith("@"))
+            en_keys = set(k for k in en_json.keys() if not k.startswith("@"))
+
+            missing_in_en = vi_keys - en_keys
+            missing_in_vi = en_keys - vi_keys
+
+            if missing_in_en:
+                errors.append(("L10N_KEY_MISMATCH", f"Các key có trong app_vi.arb nhưng thiếu trong app_en.arb: {sorted(list(missing_in_en))[:5]}... ({len(missing_in_en)} keys)"))
+            if missing_in_vi:
+                errors.append(("L10N_KEY_MISMATCH", f"Các key có trong app_en.arb nhưng thiếu trong app_vi.arb: {sorted(list(missing_in_vi))[:5]}... ({len(missing_in_vi)} keys)"))
+        except Exception as e:
+            errors.append(("L10N_KEY_MISMATCH", f"Lỗi đọc file l10n .arb: {e}"))
 
     return (len(errors) == 0), errors, warnings
 
@@ -168,8 +208,8 @@ def main():
     print(f" Flutter Project: {flutter_dir}")
     print(f"==================================================\n")
 
-    # 1. Architectural Boundaries
-    print("[STEP 1/3] Verifying Clean Architecture boundaries & Zero Emoji...")
+    # 1. Architectural Boundaries, Design Tokens & L10n
+    print("[STEP 1/3] Verifying Clean Architecture boundaries, Design Tokens & L10n sync...")
     passed_arch, arch_errors, arch_warnings = check_architecture_boundaries(flutter_dir, strict_emoji=args.strict_emoji)
 
     if arch_warnings:
@@ -179,9 +219,9 @@ def main():
         print()
 
     if passed_arch:
-        print("[OK] Architecture boundaries and layer purity: 100% compliant.\n")
+        print("[OK] Architecture boundaries, Design Tokens & L10n: 100% compliant.\n")
     else:
-        print(f"[FAIL] Found {len(arch_errors)} architectural violation(s):")
+        print(f"[FAIL] Found {len(arch_errors)} architectural / token violation(s):")
         for code, msg in arch_errors:
             print(f"  - [{code}] {msg}")
             if code in TROUBLESHOOTING_GUIDE:
@@ -203,7 +243,7 @@ def main():
 
     print("==================================================")
     if all_passed:
-        print("[SUCCESS] ALL ARCHITECTURAL AND QUALITY CHECKS PASSED!")
+        print("[SUCCESS] ALL ARCHITECTURAL, TOKEN AND QUALITY CHECKS PASSED!")
         print("==================================================")
         sys.exit(0)
     else:

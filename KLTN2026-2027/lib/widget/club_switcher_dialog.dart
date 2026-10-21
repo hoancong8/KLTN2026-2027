@@ -3,7 +3,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../app/consts/app_color.dart';
+import 'package:kltn2026_2027/app/provider/localization_provider.dart';
+import 'package:kltn2026_2027/app/theme/theme.dart';
 import '../domain/entities/club/my_club.dart';
 import '../domain/enums/club_role.dart';
 import '../ui/screen/club/club_vm/club_context_vm.dart';
@@ -17,7 +18,7 @@ class ClubSwitcherDialog extends ConsumerWidget {
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
+      backgroundColor: AppColors.transparent,
       builder: (_) => const ClubSwitcherDialog(),
     );
   }
@@ -27,14 +28,15 @@ class ClubSwitcherDialog extends ConsumerWidget {
     final state = ref.watch(clubContextViewModelProvider);
     final vm = ref.read(clubContextViewModelProvider.notifier);
     final activeId = state.currentClubId;
+    final colors = context.colors;
 
     return Container(
       constraints: BoxConstraints(
         maxHeight: MediaQuery.of(context).size.height * 0.85,
       ),
-      decoration: const BoxDecoration(
-        color: AppColor.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      decoration: BoxDecoration(
+        color: colors.cardBackground,
+        borderRadius: AppRadius.bottomSheet,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -42,42 +44,41 @@ class ClubSwitcherDialog extends ConsumerWidget {
           // Header
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            decoration: const BoxDecoration(
-              border: Border(bottom: BorderSide(color: AppColor.cDivider)),
+            decoration: BoxDecoration(
+              border: Border(bottom: BorderSide(color: colors.divider)),
             ),
             child: Row(
               children: [
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: AppColor.cMain.withAlpha(25),
-                    borderRadius: BorderRadius.circular(10),
+                    color: colors.primaryContainer,
+                    borderRadius: AppRadius.borderSm,
                   ),
-                  child: const Icon(Icons.sports_tennis_rounded, color: AppColor.cMain, size: 22),
+                  child: Icon(Icons.sports_tennis_rounded, color: colors.primary, size: 22),
                 ),
-                const SizedBox(width: 12),
-                const Expanded(
+                AppSpacing.gapW12,
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Danh sách Nhóm Cầu Lông',
-                        style: TextStyle(
-                          fontSize: 16,
+                        context.l10n.club_my_clubs,
+                        style: AppTypography.titleMedium.copyWith(
+                          color: colors.textPrimary,
                           fontWeight: FontWeight.bold,
-                          color: AppColor.cTitle,
                         ),
                       ),
-                      SizedBox(height: 2),
+                      AppSpacing.gapH4,
                       Text(
-                        'Chọn câu lạc bộ để đồng bộ quyền hạn tương ứng',
-                        style: TextStyle(fontSize: 12, color: AppColor.cMuted),
+                        context.l10n.club_switch,
+                        style: AppTypography.bodySmall.copyWith(color: colors.textSecondary),
                       ),
                     ],
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.close_rounded, color: AppColor.cMuted),
+                  icon: Icon(Icons.close_rounded, color: colors.textMuted),
                   onPressed: () => Navigator.of(context).pop(),
                 ),
               ],
@@ -90,18 +91,18 @@ class ClubSwitcherDialog extends ConsumerWidget {
               margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppColor.cAlert.withAlpha(20),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: AppColor.cAlert.withAlpha(50)),
+                color: colors.errorContainer,
+                borderRadius: AppRadius.borderSm,
+                border: Border.all(color: colors.error.withValues(alpha: 0.3)),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.error_outline_rounded, color: AppColor.cAlert, size: 18),
-                  const SizedBox(width: 8),
+                  Icon(Icons.error_outline_rounded, color: colors.error, size: 18),
+                  AppSpacing.gapW8,
                   Expanded(
                     child: Text(
-                      state.error!.message ?? 'Có lỗi xảy ra',
-                      style: const TextStyle(fontSize: 12, color: AppColor.cAlert),
+                      state.error!.message ?? context.l10n.error_occurred,
+                      style: AppTypography.bodySmall.copyWith(color: colors.error),
                     ),
                   ),
                 ],
@@ -111,26 +112,29 @@ class ClubSwitcherDialog extends ConsumerWidget {
           // List of clubs
           Flexible(
             child: state.isLoading && state.myClubs.isEmpty
-                ? const Padding(
-                    padding: EdgeInsets.all(32),
-                    child: Center(child: CircularProgressIndicator(color: AppColor.cMain)),
+                ? Padding(
+                    padding: const EdgeInsets.all(32),
+                    child: Center(child: CircularProgressIndicator(color: colors.primary)),
                   )
                 : state.myClubs.isEmpty
                     ? Padding(
                         padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 20),
                         child: Column(
                           children: [
-                            Icon(Icons.group_off_outlined, size: 56, color: AppColor.cMuted.withAlpha(120)),
-                            const SizedBox(height: 12),
-                            const Text(
-                              'Bạn chưa tham gia nhóm cầu lông nào',
-                              style: TextStyle(fontWeight: FontWeight.w600, color: AppColor.cTitle),
+                            Icon(Icons.group_off_outlined, size: 56, color: colors.textMuted),
+                            AppSpacing.gapH12,
+                            Text(
+                              context.l10n.club_no_clubs,
+                              style: AppTypography.titleSmall.copyWith(
+                                fontWeight: FontWeight.w600,
+                                color: colors.textPrimary,
+                              ),
                             ),
-                            const SizedBox(height: 6),
-                            const Text(
-                              'Hãy tham gia bằng mã Code hoặc tự tạo một câu lạc bộ mới bên dưới.',
+                            AppSpacing.gapH8,
+                            Text(
+                              context.l10n.club_description_hint,
                               textAlign: TextAlign.center,
-                              style: TextStyle(fontSize: 12, color: AppColor.cMuted),
+                              style: AppTypography.bodySmall.copyWith(color: colors.textSecondary),
                             ),
                           ],
                         ),
@@ -138,7 +142,7 @@ class ClubSwitcherDialog extends ConsumerWidget {
                     : ListView.separated(
                         padding: const EdgeInsets.all(16),
                         itemCount: state.myClubs.length,
-                        separatorBuilder: (_, _) => const SizedBox(height: 10),
+                        separatorBuilder: (_, _) => AppSpacing.gapH8,
                         itemBuilder: (context, index) {
                           final club = state.myClubs[index];
                           final isActive = club.clubId == activeId;
@@ -154,8 +158,8 @@ class ClubSwitcherDialog extends ConsumerWidget {
                                   Navigator.of(context).pop();
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
-                                      content: Text('Đã chuyển sang nhóm ${club.clubName}'),
-                                      backgroundColor: AppColor.cGreen,
+                                      content: Text(club.clubName),
+                                      backgroundColor: colors.primary,
                                       behavior: SnackBarBehavior.floating,
                                     ),
                                   );
@@ -170,38 +174,38 @@ class ClubSwitcherDialog extends ConsumerWidget {
           // Bottom Action Buttons
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            decoration: const BoxDecoration(
-              color: AppColors.neutral50,
-              border: Border(top: BorderSide(color: AppColor.cDivider)),
+            decoration: BoxDecoration(
+              color: colors.surfaceSubtle,
+              border: Border(top: BorderSide(color: colors.divider)),
             ),
             child: Row(
               children: [
                 Expanded(
                   child: OutlinedButton.icon(
                     icon: const Icon(Icons.qr_code_rounded, size: 18),
-                    label: const Text('Tham gia bằng Code'),
+                    label: Text(context.l10n.club_join),
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: AppColor.cMain,
-                      side: const BorderSide(color: AppColor.cMain),
+                      foregroundColor: colors.primary,
+                      side: BorderSide(color: colors.primary),
                       padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
                     ),
                     onPressed: () {
                       _showJoinClubDialog(context, vm);
                     },
                   ),
                 ),
-                const SizedBox(width: 12),
+                AppSpacing.gapW12,
                 Expanded(
                   child: ElevatedButton.icon(
                     icon: const Icon(Icons.add_rounded, size: 18),
-                    label: const Text('Tạo nhóm mới'),
+                    label: Text(context.l10n.club_create),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColor.cMain,
-                      foregroundColor: AppColor.white,
+                      backgroundColor: colors.primary,
+                      foregroundColor: AppColors.white,
                       elevation: 0,
                       padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
                     ),
                     onPressed: () async {
                       Navigator.of(context).pop();
@@ -221,6 +225,7 @@ class ClubSwitcherDialog extends ConsumerWidget {
   }
 
   void _showJoinClubDialog(BuildContext context, ClubContextViewModel vm) {
+    final colors = context.colors;
     final codeController = TextEditingController();
     final nicknameController = TextEditingController();
     ClubRole selectedRole = ClubRole.member;
@@ -229,48 +234,84 @@ class ClubSwitcherDialog extends ConsumerWidget {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setState) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: const Text('Tham gia Nhóm Cầu Lông', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          backgroundColor: colors.cardBackground,
+          shape: const RoundedRectangleBorder(borderRadius: AppRadius.dialog),
+          title: Text(
+            context.l10n.club_join,
+            style: AppTypography.titleLarge.copyWith(color: colors.textPrimary),
+          ),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Mã tham gia (Club Code) *', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
-                const SizedBox(height: 6),
+                Text(
+                  '${context.l10n.club_join_request} *',
+                  style: AppTypography.titleSmall.copyWith(color: colors.textPrimary),
+                ),
+                AppSpacing.gapH8,
                 TextField(
                   controller: codeController,
                   textCapitalization: TextCapitalization.characters,
+                  style: AppTypography.bodyMedium.copyWith(color: colors.textPrimary),
                   decoration: InputDecoration(
-                    hintText: 'Nhập mã Code (ví dụ: BADMINTON-A)',
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                    hintText: 'Code (e.g. BADMINTON-A)',
+                    hintStyle: AppTypography.bodyMedium.copyWith(color: colors.textPlaceholder),
+                    filled: true,
+                    fillColor: colors.inputFill,
+                    border: OutlineInputBorder(
+                      borderRadius: AppRadius.input,
+                      borderSide: BorderSide(color: colors.inputBorder),
+                    ),
                     contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                   ),
                 ),
-                const SizedBox(height: 14),
-                const Text('Biệt danh / Tên hiển thị', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
-                const SizedBox(height: 6),
+                AppSpacing.gapH16,
+                Text(
+                  context.l10n.prof_full_name,
+                  style: AppTypography.titleSmall.copyWith(color: colors.textPrimary),
+                ),
+                AppSpacing.gapH8,
                 TextField(
                   controller: nicknameController,
+                  style: AppTypography.bodyMedium.copyWith(color: colors.textPrimary),
                   decoration: InputDecoration(
-                    hintText: 'Biệt danh trong nhóm (tùy chọn)',
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                    hintText: context.l10n.prof_enter_name_hint,
+                    hintStyle: AppTypography.bodyMedium.copyWith(color: colors.textPlaceholder),
+                    filled: true,
+                    fillColor: colors.inputFill,
+                    border: OutlineInputBorder(
+                      borderRadius: AppRadius.input,
+                      borderSide: BorderSide(color: colors.inputBorder),
+                    ),
                     contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                   ),
                 ),
-                const SizedBox(height: 14),
-                const Text('Vai trò mong muốn', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
-                const SizedBox(height: 6),
+                AppSpacing.gapH16,
+                Text(
+                  context.l10n.club_roles,
+                  style: AppTypography.titleSmall.copyWith(color: colors.textPrimary),
+                ),
+                AppSpacing.gapH8,
                 DropdownButtonFormField<ClubRole>(
                   initialValue: selectedRole,
+                  dropdownColor: colors.cardBackground,
                   decoration: InputDecoration(
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                    filled: true,
+                    fillColor: colors.inputFill,
+                    border: OutlineInputBorder(
+                      borderRadius: AppRadius.input,
+                      borderSide: BorderSide(color: colors.inputBorder),
+                    ),
                     contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   ),
                   items: [ClubRole.member, ClubRole.guest].map((role) {
                     return DropdownMenuItem(
                       value: role,
-                      child: Text(role.displayName),
+                      child: Text(
+                        role.displayName,
+                        style: AppTypography.bodyMedium.copyWith(color: colors.textPrimary),
+                      ),
                     );
                   }).toList(),
                   onChanged: (val) {
@@ -283,13 +324,13 @@ class ClubSwitcherDialog extends ConsumerWidget {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(ctx).pop(),
-              child: const Text('Hủy'),
+              child: Text(context.l10n.com_cancel, style: TextStyle(color: colors.textMuted)),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColor.cMain,
-                foregroundColor: AppColor.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                backgroundColor: colors.primary,
+                foregroundColor: AppColors.white,
+                shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
               ),
               onPressed: () async {
                 final code = codeController.text.trim();
@@ -302,21 +343,20 @@ class ClubSwitcherDialog extends ConsumerWidget {
                 );
                 if (ok && context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Tham gia nhóm thành công!'),
-                      backgroundColor: AppColor.cGreen,
+                    SnackBar(
+                      content: Text(context.l10n.club_join_request_sent),
+                      backgroundColor: colors.primary,
                     ),
                   );
                 }
               },
-              child: const Text('Tham gia'),
+              child: Text(context.l10n.club_join),
             ),
           ],
         ),
       ),
     );
   }
-
 }
 
 class _ClubItemCard extends StatelessWidget {
@@ -334,18 +374,19 @@ class _ClubItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     final roleColor = _getRoleColor(club.role);
 
     return InkWell(
       onTap: isSwitching ? null : onTap,
-      borderRadius: BorderRadius.circular(14),
+      borderRadius: AppRadius.card,
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: isActive ? AppColor.cMain.withAlpha(12) : AppColors.neutral50,
-          borderRadius: BorderRadius.circular(14),
+          color: isActive ? colors.primary.withValues(alpha: 0.12) : colors.surfaceSubtle,
+          borderRadius: AppRadius.card,
           border: Border.all(
-            color: isActive ? AppColor.cMain : AppColor.cDivider,
+            color: isActive ? colors.primary : colors.cardBorder,
             width: isActive ? 1.8 : 1,
           ),
         ),
@@ -356,18 +397,18 @@ class _ClubItemCard extends StatelessWidget {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: isActive ? AppColor.cMain : AppColors.border,
-                borderRadius: BorderRadius.circular(10),
+                color: isActive ? colors.primary : colors.border,
+                borderRadius: AppRadius.borderSm,
               ),
               child: Center(
                 child: Icon(
                   Icons.sports_tennis_rounded,
-                  color: isActive ? Colors.white : AppColors.textSecondary,
+                  color: isActive ? AppColors.white : colors.textSecondary,
                   size: 22,
                 ),
               ),
             ),
-            const SizedBox(width: 12),
+            AppSpacing.gapW12,
 
             // Info
             Expanded(
@@ -379,28 +420,26 @@ class _ClubItemCard extends StatelessWidget {
                       Expanded(
                         child: Text(
                           club.clubName,
-                          style: TextStyle(
-                            fontSize: 14,
+                          style: AppTypography.titleSmall.copyWith(
                             fontWeight: FontWeight.bold,
-                            color: isActive ? AppColor.cMain : AppColor.cTitle,
+                            color: isActive ? colors.primary : colors.textPrimary,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      const SizedBox(width: 6),
+                      AppSpacing.gapW8,
                       // Role Badge
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                         decoration: BoxDecoration(
-                          color: roleColor.withAlpha(25),
-                          borderRadius: BorderRadius.circular(6),
-                          border: Border.all(color: roleColor.withAlpha(80)),
+                          color: roleColor.withValues(alpha: 0.15),
+                          borderRadius: AppRadius.tag,
+                          border: Border.all(color: roleColor.withValues(alpha: 0.4)),
                         ),
                         child: Text(
                           club.role.displayName,
-                          style: TextStyle(
-                            fontSize: 11,
+                          style: AppTypography.labelSmall.copyWith(
                             fontWeight: FontWeight.w600,
                             color: roleColor,
                           ),
@@ -408,21 +447,21 @@ class _ClubItemCard extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 4),
+                  AppSpacing.gapH4,
                   Row(
                     children: [
                       Text(
-                        'Mã: ${club.clubCode}',
-                        style: const TextStyle(fontSize: 12, color: AppColor.cMuted),
+                        'Code: ${club.clubCode}',
+                        style: AppTypography.bodySmall.copyWith(color: colors.textMuted),
                       ),
                       if (club.description != null && club.description!.isNotEmpty) ...[
-                        const Text(' • ', style: TextStyle(color: AppColor.cMuted)),
+                        Text(' • ', style: AppTypography.bodySmall.copyWith(color: colors.textMuted)),
                         Expanded(
                           child: Text(
                             club.description!,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(fontSize: 11, color: AppColor.cMuted),
+                            style: AppTypography.bodySmall.copyWith(color: colors.textSecondary),
                           ),
                         ),
                       ],
@@ -431,13 +470,13 @@ class _ClubItemCard extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(width: 8),
+            AppSpacing.gapW8,
 
-            // Active Checkmark or Arrow
+            // Active Checkmark or Radio
             if (isActive)
-              const Icon(Icons.check_circle_rounded, color: AppColor.cMain, size: 22)
+              Icon(Icons.check_circle_rounded, color: colors.primary, size: 22)
             else
-              const Icon(Icons.radio_button_unchecked_rounded, color: AppColors.neutral300, size: 20),
+              Icon(Icons.radio_button_unchecked_rounded, color: colors.borderStrong, size: 20),
           ],
         ),
       ),
@@ -453,7 +492,7 @@ class _ClubItemCard extends StatelessWidget {
       case ClubRole.treasurer:
         return AppColors.roleTreasurer;
       case ClubRole.member:
-        return AppColor.cGreen;
+        return AppColors.roleMember;
       case ClubRole.guest:
         return AppColors.roleGuest;
     }

@@ -1,7 +1,32 @@
+import 'dart:convert';
+import 'dart:io';
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kltn2026_2027/app/consts/app_dimens.dart';
 import 'package:kltn2026_2027/app/theme/theme.dart';
+
+/// Helper to calculate relative luminance according to W3C WCAG 2.1 specs.
+double _calculateLuminance(Color color) {
+  double channel(double value) {
+    return value <= 0.04045 ? value / 12.92 : pow((value + 0.055) / 1.055, 2.4).toDouble();
+  }
+
+  final r = channel(color.r);
+  final g = channel(color.g);
+  final b = channel(color.b);
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
+/// Helper to calculate contrast ratio according to W3C WCAG 2.1.
+double _contrastRatio(Color c1, Color c2) {
+  final l1 = _calculateLuminance(c1);
+  final l2 = _calculateLuminance(c2);
+  final lighter = max(l1, l2);
+  final darker = min(l1, l2);
+  return (lighter + 0.05) / (darker + 0.05);
+}
 
 void main() {
   group('Design Tokens - AppColors & AppColor Tests', () {
@@ -11,6 +36,7 @@ void main() {
       expect(AppColors.primaryContainer, equals(const Color(0xFFE8F9F3)));
       expect(AppColors.secondary, equals(const Color(0xFF0EA5E9)));
       expect(AppColors.accent, equals(const Color(0xFFFFA61E)));
+      expect(AppColors.transparent, equals(const Color(0x00000000)));
     });
 
     test('Semantic colors are properly defined', () {
@@ -37,6 +63,57 @@ void main() {
       expect(AppColors.primaryGradient.colors.length, equals(2));
       expect(AppColors.heroGradient.colors.length, equals(2));
       expect(AppColors.cardGradient.colors.length, equals(2));
+    });
+  });
+
+  group('Design Tokens - AppThemeColors (Adaptive Light & Dark) Tests', () {
+    test('Light palette tokens are defined and cohesive', () {
+      const light = AppThemeColors.light;
+      expect(light.brightness, equals(Brightness.light));
+      expect(light.primary, equals(AppColors.primary));
+      expect(light.surface, equals(const Color(0xFFFFFFFF)));
+      expect(light.cardBackground, equals(const Color(0xFFFFFFFF)));
+      expect(light.background, equals(const Color(0xFFF8FAFC)));
+      expect(light.textPrimary, equals(const Color(0xFF0F172A)));
+    });
+
+    test('Dark palette tokens are defined and cohesive', () {
+      const dark = AppThemeColors.dark;
+      expect(dark.brightness, equals(Brightness.dark));
+      expect(dark.primary, equals(AppColors.primary));
+      expect(dark.surface, equals(const Color(0xFF162032)));
+      expect(dark.cardBackground, equals(const Color(0xFF162032)));
+      expect(dark.background, equals(const Color(0xFF0B1220)));
+      expect(dark.textPrimary, equals(const Color(0xFFF8FAFC)));
+    });
+
+    test('Light theme contrast ratios satisfy WCAG AA (>= 4.5:1)', () {
+      const light = AppThemeColors.light;
+      final textPrimaryRatio = _contrastRatio(light.textPrimary, light.surface);
+      final textSecondaryRatio = _contrastRatio(light.textSecondary, light.surface);
+
+      expect(textPrimaryRatio, greaterThanOrEqualTo(4.5), reason: 'Light textPrimary must be high contrast');
+      expect(textSecondaryRatio, greaterThanOrEqualTo(4.5), reason: 'Light textSecondary must satisfy WCAG AA');
+    });
+
+    test('Dark theme contrast ratios satisfy WCAG AA (>= 4.5:1)', () {
+      const dark = AppThemeColors.dark;
+      final textPrimaryRatio = _contrastRatio(dark.textPrimary, dark.cardBackground);
+      final textSecondaryRatio = _contrastRatio(dark.textSecondary, dark.cardBackground);
+
+      expect(textPrimaryRatio, greaterThanOrEqualTo(4.5), reason: 'Dark textPrimary must be high contrast');
+      expect(textSecondaryRatio, greaterThanOrEqualTo(4.5), reason: 'Dark textSecondary must satisfy WCAG AA');
+    });
+
+    test('ThemeExtension copyWith and lerp functions properly', () {
+      const base = AppThemeColors.light;
+      final modified = base.copyWith(primary: Colors.purple);
+      expect(modified.primary, equals(Colors.purple));
+      expect(modified.surface, equals(base.surface));
+
+      final lerped = base.lerp(AppThemeColors.dark, 0.5);
+      expect(lerped.brightness, equals(Brightness.dark));
+      expect(lerped.background, isNot(equals(base.background)));
     });
   });
 
@@ -115,6 +192,8 @@ void main() {
       expect(theme.colorScheme.primary, equals(AppColors.primary));
       expect(theme.scaffoldBackgroundColor, equals(AppColors.background));
       expect(theme.appBarTheme.backgroundColor, equals(AppColors.surface));
+      expect(theme.extension<AppThemeColors>(), isNotNull);
+      expect(theme.extension<AppThemeColors>()?.brightness, equals(Brightness.light));
     });
 
     test('Dark theme satisfies Material 3 and dark slate specs', () {
@@ -122,6 +201,31 @@ void main() {
       expect(theme.useMaterial3, isTrue);
       expect(theme.brightness, equals(Brightness.dark));
       expect(theme.scaffoldBackgroundColor, equals(AppColors.surfaceDark));
+      expect(theme.extension<AppThemeColors>(), isNotNull);
+      expect(theme.extension<AppThemeColors>()?.brightness, equals(Brightness.dark));
+    });
+  });
+
+  group('Localization - ARB Synchronization Tests', () {
+    test('app_vi.arb and app_en.arb have exactly identical key sets', () {
+      final viFile = File('lib/l10n/app_vi.arb');
+      final enFile = File('lib/l10n/app_en.arb');
+
+      expect(viFile.existsSync(), isTrue, reason: 'app_vi.arb must exist');
+      expect(enFile.existsSync(), isTrue, reason: 'app_en.arb must exist');
+
+      final viJson = jsonDecode(viFile.readAsStringSync()) as Map<String, dynamic>;
+      final enJson = jsonDecode(enFile.readAsStringSync()) as Map<String, dynamic>;
+
+      final viKeys = viJson.keys.where((k) => !k.startsWith('@')).toSet();
+      final enKeys = enJson.keys.where((k) => !k.startsWith('@')).toSet();
+
+      final missingInEn = viKeys.difference(enKeys);
+      final missingInVi = enKeys.difference(viKeys);
+
+      expect(missingInEn, isEmpty, reason: 'Keys in VI but missing in EN: $missingInEn');
+      expect(missingInVi, isEmpty, reason: 'Keys in EN but missing in VI: $missingInVi');
+      expect(viKeys.length, greaterThanOrEqualTo(250), reason: 'Must have comprehensive coverage');
     });
   });
 }

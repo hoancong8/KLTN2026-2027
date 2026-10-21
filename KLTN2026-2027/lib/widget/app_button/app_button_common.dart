@@ -101,21 +101,21 @@ class AppButtonCommonState extends State<AppButtonCommon> {
         height: getHeight(),
         padding: widget.padding ?? getPadding(),
         decoration: BoxDecoration(
-          color: getBackgroundColor(isDisabled),
+          color: getBackgroundColor(context, isDisabled),
           borderRadius: BorderRadius.circular(
             widget.borderRadius ?? getBorderRadius(),
           ),
-          border: getBorder(isDisabled),
+          border: getBorder(context, isDisabled),
           boxShadow: widget.elevation != null && !isDisabled
               ? [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.1),
+                    color: AppColors.black.withValues(alpha: 0.1),
                     blurRadius: widget.elevation!,
                     offset: Offset(0, widget.elevation! / 2),
                   ),
                 ]
               : widget.type == AppButtonType.primary && !isDisabled
-              ? AppShadows.primaryGlow(getBackgroundColor(false))
+              ? AppShadows.primaryGlow(getBackgroundColor(context, false) ?? AppColors.primary)
               : null,
         ),
         child: isLoadingState
@@ -126,7 +126,7 @@ class AppButtonCommonState extends State<AppButtonCommon> {
                   child: CircularProgressIndicator(
                     strokeWidth: 2.5,
                     valueColor: AlwaysStoppedAnimation<Color>(
-                      getLoadingColor(isDisabled),
+                      getLoadingColor(context, isDisabled),
                     ),
                   ),
                 ),
@@ -145,7 +145,7 @@ class AppButtonCommonState extends State<AppButtonCommon> {
                       style: TextStyle(
                         fontSize: widget.fontSize ?? getFontSize(),
                         fontWeight: widget.fontWeight ?? FontWeight.w600,
-                        color: getTextColor(isDisabled),
+                        color: getTextColor(context, isDisabled),
                       ),
                       textAlign: TextAlign.center,
                       overflow: TextOverflow.ellipsis,
@@ -221,9 +221,9 @@ class AppButtonCommonState extends State<AppButtonCommon> {
   }
 
   /// Color configurations
-  Color? getBackgroundColor(bool isDisabled) {
+  Color? getBackgroundColor(BuildContext context, bool isDisabled) {
     if (isDisabled) {
-      return AppColors.neutral200;
+      return context.isDark ? AppColors.neutral800 : AppColors.neutral200;
     }
 
     if (widget.backgroundColor != null) {
@@ -231,16 +231,16 @@ class AppButtonCommonState extends State<AppButtonCommon> {
     }
 
     return switch (widget.type) {
-      AppButtonType.primary => AppColors.primary,
-      AppButtonType.secondary => AppColors.secondary,
-      AppButtonType.outlined || AppButtonType.text => Colors.transparent,
-      AppButtonType.danger => AppColors.error,
+      AppButtonType.primary => context.colors.primary,
+      AppButtonType.secondary => context.colors.secondary,
+      AppButtonType.outlined || AppButtonType.text => AppColors.transparent,
+      AppButtonType.danger => context.colors.error,
     };
   }
 
-  Color getTextColor(bool isDisabled) {
+  Color getTextColor(BuildContext context, bool isDisabled) {
     if (isDisabled) {
-      return AppColors.neutral500;
+      return context.isDark ? AppColors.neutral500 : AppColors.neutral500;
     }
 
     if (widget.textColor != null) {
@@ -251,13 +251,13 @@ class AppButtonCommonState extends State<AppButtonCommon> {
       AppButtonType.primary ||
       AppButtonType.secondary ||
       AppButtonType.danger => AppColors.white,
-      AppButtonType.outlined => widget.borderColor ?? AppColors.primary,
-      AppButtonType.text => AppColors.primary,
+      AppButtonType.outlined => widget.borderColor ?? context.colors.primary,
+      AppButtonType.text => context.colors.primary,
     };
   }
 
   /// Loading color based on button type
-  Color getLoadingColor(bool isDisabled) {
+  Color getLoadingColor(BuildContext context, bool isDisabled) {
     if (isDisabled) {
       return AppColors.neutral500;
     }
@@ -266,17 +266,17 @@ class AppButtonCommonState extends State<AppButtonCommon> {
       AppButtonType.primary ||
       AppButtonType.secondary ||
       AppButtonType.danger => AppColors.white,
-      AppButtonType.outlined => widget.borderColor ?? AppColors.primary,
-      AppButtonType.text => AppColors.primary,
+      AppButtonType.outlined => widget.borderColor ?? context.colors.primary,
+      AppButtonType.text => context.colors.primary,
     };
   }
 
-  Border? getBorder(bool isDisabled) {
+  Border? getBorder(BuildContext context, bool isDisabled) {
     if (widget.type == AppButtonType.outlined) {
       return Border.all(
         color: isDisabled
-            ? AppColors.neutral300
-            : (widget.borderColor ?? AppColors.primary),
+            ? (context.isDark ? AppColors.neutral700 : AppColors.neutral300)
+            : (widget.borderColor ?? context.colors.primary),
         width: 1.5,
       );
     }

@@ -139,11 +139,17 @@ class AppTypography {
   static const TextStyle caption = bodySmall;
 
   // ---------------------------------------------------------------------------
-  // 7. MATERIAL 3 TEXT THEME CONVERSION
+  // 7. MATERIAL 3 TEXT THEME CONVERSION & THEME-AWARE TYPOGRAPHY
   // ---------------------------------------------------------------------------
   /// Generates a complete Material 3 TextTheme instance.
-  static TextTheme toTextTheme({Color? defaultColor}) {
+  static TextTheme toTextTheme({
+    Color? defaultColor,
+    Color? secondaryColor,
+    Color? mutedColor,
+  }) {
     final c = defaultColor ?? AppColors.textPrimary;
+    final sec = secondaryColor ?? defaultColor ?? AppColors.textSecondary;
+    final mut = mutedColor ?? defaultColor ?? AppColors.textMuted;
     return TextTheme(
       displayLarge: displayLarge.copyWith(color: c),
       displayMedium: displayMedium.copyWith(color: c),
@@ -155,13 +161,16 @@ class AppTypography {
       titleMedium: titleMedium.copyWith(color: c),
       titleSmall: titleSmall.copyWith(color: c),
       bodyLarge: bodyLarge.copyWith(color: c),
-      bodyMedium: bodyMedium.copyWith(color: defaultColor ?? AppColors.textSecondary),
-      bodySmall: bodySmall.copyWith(color: defaultColor ?? AppColors.textMuted),
+      bodyMedium: bodyMedium.copyWith(color: sec),
+      bodySmall: bodySmall.copyWith(color: mut),
       labelLarge: labelLarge.copyWith(color: c),
-      labelMedium: labelMedium.copyWith(color: defaultColor ?? AppColors.textSecondary),
-      labelSmall: labelSmall.copyWith(color: defaultColor ?? AppColors.textMuted),
+      labelMedium: labelMedium.copyWith(color: sec),
+      labelSmall: labelSmall.copyWith(color: mut),
     );
   }
+
+  /// Shortcut to access theme-adaptive TextTheme via current BuildContext.
+  static TextTheme of(BuildContext context) => Theme.of(context).textTheme;
 }
 
 /// Fluent chaining extensions on TextStyle for fast & clean styling in UI widgets.

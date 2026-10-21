@@ -58,8 +58,13 @@ Universal architectural standards, invariants, and safety guardrails across all 
 11. **Mandatory Commit Prompting:**
     Always ask the user if they want to commit after completing any feature addition, bug fix, refactor, or code change with an atomic Conventional Commits message (`<type>(<scope>): <tiêu đề tiếng Việt có dấu>`). Never commit silently.
 
-12. **Mandatory Design Tokens & Theming Standards:**
-    Never hardcode arbitrary hex colors, ad-hoc font sizes/styles, random padding, inline box-shadows, or custom border-radii in UI screens or widgets. All UI components MUST consume tokens from `lib/app/theme/` (`AppColors`, `AppTypography`, `AppSpacing`, `AppRadius`, `AppShadows`, `AppTheme`).
+12. **Mandatory Design Tokens, Adaptive Theming & L10n Standards:**
+    - Never hardcode arbitrary hex colors (`Color(0xFF...)`) outside `app_colors.dart`.
+    - Never use raw Flutter `Colors.*` (`Colors.white`, `Colors.transparent`, `Colors.black`, `Colors.grey`, `Colors.blue`...). Always use token constants (`AppColors.transparent`, `AppColors.white`) or context-aware tokens (`context.colors.*`).
+    - For all dynamic UI components (cards, text, inputs, backgrounds, borders), MUST consume theme-adaptive tokens via `context.colors.*` (`AppThemeColors`) to ensure 100% harmonious rendering in both Light and Dark modes without text disappearance or glare.
+    - Strictly enforce Design Tokens from `lib/app/theme/theme.dart` (`AppThemeColors`, `AppColors`, `AppTypography`, `AppSpacing`, `AppRadius`, `AppShadows`, `AppTheme`).
+    - Never hardcode user-facing strings in UI `Text(...)` widgets. Always localize strings via `context.l10n.*` backed by synchronized `app_vi.arb` and `app_en.arb`.
+    - Maintain strict UI/UX contrast standards (WCAG AA >= 4.5:1 for body text, >= 3:1 for large text and UI components).
 
 ---
 
