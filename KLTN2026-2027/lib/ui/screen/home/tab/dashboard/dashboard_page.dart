@@ -508,61 +508,71 @@ class DashboardPage extends ConsumerWidget {
           border: Border.all(color: colors.cardBorder),
           boxShadow: context.isDark ? AppShadows.none : AppShadows.sm,
         ),
-        child: Row(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              width: 52,
-              height: 52,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    colors.primary.withValues(alpha: 0.2),
-                    colors.primaryContainer,
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
+            Row(
+              children: [
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        colors.primary.withValues(alpha: 0.2),
+                        colors.primaryContainer,
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: AppRadius.borderMd,
+                  ),
+                  child: Icon(Icons.event_available_rounded, color: colors.primary, size: 24),
                 ),
-                borderRadius: AppRadius.borderMd,
-              ),
-              child: Icon(Icons.event_available_rounded, color: colors.primary, size: 28),
-            ),
-            AppSpacing.gapW12,
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    l10n.home_upcoming_sessions,
-                    style: AppTypography.titleSmall.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: colors.textPrimary,
-                    ),
+                AppSpacing.gapW12,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        l10n.home_upcoming_sessions,
+                        style: AppTypography.titleSmall.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: colors.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        l10n.home_no_upcoming_sessions,
+                        style: AppTypography.bodySmall.copyWith(
+                          color: colors.textSecondary,
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 2),
-                  Text(
-                    l10n.home_no_upcoming_sessions,
-                    style: AppTypography.bodySmall.copyWith(
-                      color: colors.textSecondary,
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
-            AppSpacing.gapW8,
-            ElevatedButton(
-              onPressed: () => context.push(AppConfig.exploreRecruitmentsScreenPath),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: colors.primary,
-                foregroundColor: AppColors.white,
-                elevation: 0,
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
-              ),
-              child: Text(
-                l10n.home_find_matches_now,
-                style: AppTypography.labelSmall.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.white,
+            AppSpacing.gapH12,
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => context.push(AppConfig.exploreRecruitmentsScreenPath),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: colors.primary,
+                  foregroundColor: AppColors.white,
+                  elevation: 0,
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                ),
+                child: Text(
+                  l10n.home_find_matches_now,
+                  style: AppTypography.labelMedium.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.white,
+                  ),
                 ),
               ),
             ),
