@@ -9,15 +9,12 @@ import '../../../../../../app/provider.dart';
 import '../../../../../../app/theme/theme.dart';
 import '../../../../../../app/provider/localization_provider.dart';
 import '../../../../../../app/l10n_gen/app_localizations.dart';
-import '../../../../../../domain/entities/club/club_detail.dart';
 import '../../../../../../domain/enums/club_role.dart';
-import '../../../../../../domain/enums/session_enums.dart';
 import '../../../../club/club_management_vm/club_members_vm.dart';
 import '../../../../club/club_vm/club_context_vm.dart';
 import '../../../../club/role_management/club_role_management_screen.dart';
 import '../../../../club_detail/club_detail_vm/club_detail_vm.dart';
 import 'club_qr_dialog.dart';
-import 'club_schedule_planner.dart';
 
 class ClubOverviewTab extends ConsumerStatefulWidget {
   final String clubId;
@@ -48,230 +45,6 @@ class _ClubOverviewTabState extends ConsumerState<ClubOverviewTab> {
         content: Text(message),
         backgroundColor: AppColors.primary,
         behavior: SnackBarBehavior.floating,
-      ),
-    );
-  }
-
-  void _showEditInfoDialog(ClubDetail club, ClubDetailViewModel vm) {
-    final venueController = TextEditingController(text: club.fixedVenueName ?? '');
-    final addressController = TextEditingController(text: club.fixedAddress ?? '');
-    final descController = TextEditingController(text: club.description ?? '');
-    SkillLevel? minSkill = club.minSkillLevel;
-    SkillLevel? maxSkill = club.maxSkillLevel;
-    bool isRecruiting = club.isRecruiting;
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: AppColors.transparent,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setSheetState) => Container(
-          padding: EdgeInsets.only(
-            top: AppSpacing.lg,
-            left: AppSpacing.lg,
-            right: AppSpacing.lg,
-            bottom: MediaQuery.of(ctx).viewInsets.bottom + AppSpacing.lg,
-          ),
-          decoration: BoxDecoration(
-            color: colors.cardBackground,
-            borderRadius: AppRadius.bottomSheet,
-          ),
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(l10n.club_config_venue_recruit, style: AppTypography.titleMedium.bold.colored(colors.textPrimary)),
-                    IconButton(
-                      icon: Icon(Icons.close_rounded, color: colors.textMuted),
-                      onPressed: () => Navigator.of(ctx).pop(),
-                    ),
-                  ],
-                ),
-                Divider(color: colors.cardBorder),
-                AppSpacing.gapH8,
-                Text(l10n.club_fixed_venue_name, style: AppTypography.labelMedium.bold.colored(colors.textPrimary)),
-                AppSpacing.gapH8,
-                TextField(
-                  controller: venueController,
-                  decoration: InputDecoration(
-                    hintText: l10n.club_fixed_venue_hint,
-                    hintStyle: AppTypography.bodyMedium.colored(colors.textMuted),
-                    filled: true,
-                    fillColor: colors.inputFill,
-                    border: OutlineInputBorder(borderRadius: AppRadius.borderMd, borderSide: BorderSide(color: colors.inputBorder)),
-                    contentPadding: AppSpacing.allMd,
-                  ),
-                ),
-                AppSpacing.gapH12,
-                Text(l10n.club_fixed_address, style: AppTypography.labelMedium.bold.colored(colors.textPrimary)),
-                AppSpacing.gapH8,
-                TextField(
-                  controller: addressController,
-                  decoration: InputDecoration(
-                    hintText: l10n.club_fixed_address_hint,
-                    hintStyle: AppTypography.bodyMedium.colored(colors.textMuted),
-                    filled: true,
-                    fillColor: colors.inputFill,
-                    border: OutlineInputBorder(borderRadius: AppRadius.borderMd, borderSide: BorderSide(color: colors.inputBorder)),
-                    contentPadding: AppSpacing.allMd,
-                  ),
-                ),
-                AppSpacing.gapH12,
-                Text(l10n.role_description_label, style: AppTypography.labelMedium.bold.colored(colors.textPrimary)),
-                AppSpacing.gapH8,
-                TextField(
-                  controller: descController,
-                  maxLines: 2,
-                  decoration: InputDecoration(
-                    hintText: l10n.role_description_hint,
-                    hintStyle: AppTypography.bodyMedium.colored(colors.textMuted),
-                    filled: true,
-                    fillColor: colors.inputFill,
-                    border: OutlineInputBorder(borderRadius: AppRadius.borderMd, borderSide: BorderSide(color: colors.inputBorder)),
-                    contentPadding: AppSpacing.allMd,
-                  ),
-                ),
-                AppSpacing.gapH12,
-                SwitchListTile(
-                  contentPadding: EdgeInsets.zero,
-                  activeThumbColor: colors.primary,
-                  title: Text(l10n.club_recruiting_status, style: AppTypography.titleSmall.bold.colored(colors.textPrimary)),
-                  subtitle: Text('Cho phép người chơi khác tìm thấy và nộp đơn xin gia nhập', style: AppTypography.bodySmall.colored(colors.textMuted)),
-                  value: isRecruiting,
-                  onChanged: (val) => setSheetState(() => isRecruiting = val),
-                ),
-                AppSpacing.gapH16,
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: colors.primary,
-                      foregroundColor: AppColors.white,
-                      padding: AppSpacing.verticalMd,
-                      shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
-                    ),
-                    onPressed: () async {
-                      Navigator.of(ctx).pop();
-                      await vm.updateInfo(
-                        groupName: club.groupName,
-                        fixedVenueName: venueController.text.trim(),
-                        fixedAddress: addressController.text.trim(),
-                        description: descController.text.trim(),
-                        minSkillLevel: minSkill,
-                        maxSkillLevel: maxSkill,
-                        isRecruiting: isRecruiting,
-                      );
-                    },
-                    child: Text('Lưu thông tin sân', style: AppTypography.labelLarge.bold.colored(AppColors.white)),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  TimeOfDay _parseTimeOfDay(String timeStr, TimeOfDay fallback) {
-    try {
-      final parts = timeStr.trim().split(':');
-      if (parts.isEmpty) return fallback;
-      final h = int.parse(parts[0]);
-      final m = parts.length > 1 ? int.parse(parts[1]) : 0;
-      return TimeOfDay(hour: h, minute: m);
-    } catch (_) {
-      return fallback;
-    }
-  }
-
-  void _showEditSchedulesDialog(ClubDetail club, ClubDetailViewModel vm) {
-    final initialSchedules = club.schedules
-        .where((s) => s.isActive)
-        .map((s) => ClubScheduleEntry(
-              dayOfWeek: s.dayOfWeek,
-              startTime: _parseTimeOfDay(s.startTime, const TimeOfDay(hour: 18, minute: 0)),
-              endTime: _parseTimeOfDay(s.endTime, const TimeOfDay(hour: 20, minute: 0)),
-            ))
-        .toList();
-
-    List<ClubScheduleEntry> updatedSchedules = List.from(initialSchedules);
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: AppColors.transparent,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setSheetState) => Container(
-          padding: EdgeInsets.only(
-            top: AppSpacing.lg,
-            left: AppSpacing.lg,
-            right: AppSpacing.lg,
-            bottom: MediaQuery.of(ctx).viewInsets.bottom + AppSpacing.lg,
-          ),
-          decoration: BoxDecoration(
-            color: colors.cardBackground,
-            borderRadius: AppRadius.bottomSheet,
-          ),
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(l10n.club_schedule_setup_title, style: AppTypography.titleMedium.bold.colored(colors.textPrimary)),
-                    IconButton(
-                      icon: Icon(Icons.close_rounded, color: colors.textMuted),
-                      onPressed: () => Navigator.of(ctx).pop(),
-                    ),
-                  ],
-                ),
-                Divider(color: colors.cardBorder),
-                AppSpacing.gapH8,
-                ClubSchedulePlanner(
-                  initialSchedules: initialSchedules,
-                  onChanged: (list) {
-                    updatedSchedules = list;
-                  },
-                ),
-                AppSpacing.gapH16,
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: colors.primary,
-                      foregroundColor: AppColors.white,
-                      padding: AppSpacing.verticalMd,
-                      shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
-                    ),
-                    onPressed: () async {
-                      Navigator.of(ctx).pop();
-                      String formatTime(TimeOfDay t) =>
-                          '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}';
-
-                      final inputs = updatedSchedules
-                          .map((e) => ClubScheduleInput(
-                                dayOfWeek: e.dayOfWeek,
-                                startTime: formatTime(e.startTime),
-                                endTime: formatTime(e.endTime),
-                              ))
-                          .toList();
-
-                      await vm.updateSchedules(inputs);
-                    },
-                    child: Text(l10n.club_schedule_save, style: AppTypography.labelLarge.bold.colored(AppColors.white)),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
       ),
     );
   }
@@ -434,7 +207,7 @@ class _ClubOverviewTabState extends ConsumerState<ClubOverviewTab> {
                     ),
                     if (canManageInfo && club != null)
                       TextButton.icon(
-                        onPressed: () => _showEditInfoDialog(club, vm),
+                        onPressed: () => context.push('/club/${widget.clubId}/settings'),
                         icon: const Icon(Icons.edit_outlined, size: AppSpacing.iconXs),
                         label: Text('Chỉnh sửa', style: AppTypography.labelSmall.colored(AppColors.primary)),
                       ),
@@ -525,7 +298,7 @@ class _ClubOverviewTabState extends ConsumerState<ClubOverviewTab> {
                     ),
                     if (canManageSchedule && club != null)
                       TextButton.icon(
-                        onPressed: () => _showEditSchedulesDialog(club, vm),
+                        onPressed: () => context.push('/club/${widget.clubId}/settings'),
                         icon: const Icon(Icons.edit_calendar_outlined, size: AppSpacing.iconXs),
                         label: Text('Sửa lịch', style: AppTypography.labelSmall.colored(AppColors.primary)),
                       ),

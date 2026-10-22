@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../../../app/consts/app_config.dart';
 import '../../../../../../app/theme/theme.dart';
-import 'club_create_dialog.dart';
 import 'club_join_by_code_dialog.dart';
 
 class ClubActionSheet extends StatelessWidget {
@@ -61,12 +60,9 @@ class ClubActionSheet extends StatelessWidget {
               iconBgColor: AppColors.primaryContainer,
               title: 'Tạo câu lạc bộ mới',
               subtitle: 'Bạn sẽ là Chủ nhóm (Host) quản lý lịch chơi, thu quỹ và duyệt đơn',
-              onTap: () async {
+              onTap: () {
                 Navigator.of(context).pop();
-                final newClubId = await ClubCreateDialog.show(context);
-                if (newClubId != null && newClubId.isNotEmpty && context.mounted) {
-                  context.push('/club/$newClubId');
-                }
+                context.push('/club/create');
               },
             ),
             AppSpacing.gapH12,

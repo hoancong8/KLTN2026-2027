@@ -454,12 +454,12 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
             IconButton(
               icon: Icon(Icons.settings_outlined, color: colors.textPrimary, size: 22),
               tooltip: 'Cài đặt CLB',
-              onPressed: () => _showEditInfoDialog(club),
+              onPressed: () => context.push('/club/${widget.clubId}/settings'),
             ),
             IconButton(
               icon: Icon(Icons.calendar_month_outlined, color: colors.textPrimary, size: 22),
               tooltip: 'Sửa lịch tuần',
-              onPressed: () => _showEditSchedulesDialog(club),
+              onPressed: () => context.push('/club/${widget.clubId}/settings'),
             ),
             IconButton(
               icon: Icon(Icons.people_outline_rounded, color: colors.textPrimary, size: 22),
@@ -1198,7 +1198,22 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
                         style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.tierBronze),
                       ),
                     )
-                  : ElevatedButton.icon(
+                  : !club.isRecruiting
+                      ? ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: colors.inputFill,
+                            foregroundColor: colors.textMuted,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                          onPressed: null,
+                          icon: const Icon(Icons.lock_outline_rounded),
+                          label: const Text(
+                            'CLB đang tạm dừng nhận đơn mới',
+                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                          ),
+                        )
+                      : ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primary,
                         foregroundColor: AppColors.white,

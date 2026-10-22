@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../../../app/consts/app_config.dart';
 import '../../../../../../app/theme/theme.dart';
-import 'club_create_dialog.dart';
 import 'club_join_by_code_dialog.dart';
 
 class ClubEmptyState extends StatelessWidget {
@@ -63,12 +62,7 @@ class ClubEmptyState extends StatelessWidget {
               description: 'Bạn là Chủ nhóm (Host) lên lịch buổi chơi, quản lý quỹ và duyệt thành viên',
               icon: Icons.add_business_rounded,
               accentColor: colors.primary,
-              onTap: () async {
-                final newClubId = await ClubCreateDialog.show(context);
-                if (newClubId != null && newClubId.isNotEmpty && context.mounted) {
-                  context.push('/club/$newClubId');
-                }
-              },
+              onTap: () => context.push('/club/create'),
             ),
             AppSpacing.gapH12,
 

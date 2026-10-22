@@ -8,6 +8,8 @@ import 'package:kltn2026_2027/ui/screen/change_password/change_password_screen.d
 import '../../ui/screen/admin/role_management/role_management_screen.dart';
 import '../../ui/screen/admin/user_management/user_management_screen.dart';
 import '../../ui/screen/club/club_management_screen.dart';
+import '../../ui/screen/club/create_club/create_club_screen.dart';
+import '../../ui/screen/club/settings/club_settings_screen.dart';
 import '../../ui/screen/club/role_management/club_role_management_screen.dart';
 import '../../ui/screen/club/session_detail_screen.dart';
 import '../../ui/screen/club_detail/club_detail_screen.dart';
@@ -75,10 +77,21 @@ GoRouter generateAppRouter(String initialRoute) {
         builder: (_, _) => const ExploreClubsScreen(),
       ),
       GoRoute(
+        path: '/club/create',
+        builder: (_, _) => const CreateClubScreen(),
+      ),
+      GoRoute(
         path: '/club/:clubId',
         builder: (_, state) {
           final clubId = state.pathParameters['clubId'] ?? '';
           return ClubDetailScreen(clubId: clubId);
+        },
+      ),
+      GoRoute(
+        path: '/club/:clubId/settings',
+        builder: (_, state) {
+          final clubId = state.pathParameters['clubId'] ?? '';
+          return ClubSettingsScreen(clubId: clubId);
         },
       ),
       GoRoute(

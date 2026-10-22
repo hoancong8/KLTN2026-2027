@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../../../app/provider.dart';
 import '../../../../../../app/theme/theme.dart';
 import '../../../../../../domain/entities/club/my_club.dart';
@@ -100,41 +101,44 @@ class _ClubDetailViewState extends ConsumerState<ClubDetailView> with SingleTick
 
     return Column(
       children: [
-        // 1. Club Header Banner (Discord Style)
-        _buildClubHeader(context, contextVm),
+        // 1. Club Header Banner (Avatar, Name, Role, Switch Context, Copy Code, QR)
+        _buildClubHeader(context, contextVm, isHost),
 
-        // 2. Tab Bar
+        // 2. Navigation Tabs
         Container(
+          width: double.infinity,
           decoration: BoxDecoration(
-            color: colors.surface,
+            color: colors.cardBackground,
             border: Border(bottom: BorderSide(color: colors.cardBorder)),
           ),
           child: TabBar(
-            controller: _tabController!,
+            controller: _tabController,
             isScrollable: true,
             tabAlignment: TabAlignment.start,
             labelColor: colors.primary,
             unselectedLabelColor: colors.textMuted,
             indicatorColor: colors.primary,
             indicatorWeight: 3,
+            labelStyle: AppTypography.titleSmall.bold,
+            unselectedLabelStyle: AppTypography.titleSmall,
             tabs: [
               const Tab(
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.calendar_month_rounded, size: AppSpacing.iconSm),
+                    Icon(Icons.sports_tennis_rounded, size: AppSpacing.iconSm),
                     AppSpacing.gapW8,
-                    Text('Buổi tập'),
+                    Text('Lịch Sinh Hoạt'),
                   ],
                 ),
               ),
-              Tab(
+              const Tab(
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.people_alt_outlined, size: AppSpacing.iconSm),
+                    Icon(Icons.people_alt_rounded, size: AppSpacing.iconSm),
                     AppSpacing.gapW8,
-                    Text('Thành viên (${membersState.members.length})'),
+                    Text('Thành Viên'),
                   ],
                 ),
               ),
@@ -143,9 +147,9 @@ class _ClubDetailViewState extends ConsumerState<ClubDetailView> with SingleTick
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.how_to_reg_outlined, size: AppSpacing.iconSm),
+                      Icon(Icons.how_to_reg_rounded, size: AppSpacing.iconSm),
                       AppSpacing.gapW8,
-                      Text('Duyệt đơn'),
+                      Text('Đơn Gia Nhập'),
                     ],
                   ),
                 ),
@@ -201,7 +205,7 @@ class _ClubDetailViewState extends ConsumerState<ClubDetailView> with SingleTick
     );
   }
 
-  Widget _buildClubHeader(BuildContext context, ClubContextViewModel contextVm) {
+  Widget _buildClubHeader(BuildContext context, ClubContextViewModel contextVm, bool isHost) {
     final colors = context.colors;
     final roleColor = _getRoleColor(widget.club.role);
 
@@ -303,6 +307,18 @@ class _ClubDetailViewState extends ConsumerState<ClubDetailView> with SingleTick
                   ],
                 ),
               ),
+
+              // Settings button for Host
+              if (isHost)
+                IconButton(
+                  style: IconButton.styleFrom(
+                    backgroundColor: colors.cardBackground,
+                    side: BorderSide(color: colors.cardBorder),
+                  ),
+                  icon: Icon(Icons.settings_outlined, color: colors.textPrimary, size: 20),
+                  tooltip: 'Cài đặt câu lạc bộ',
+                  onPressed: () => context.push('/club/${widget.club.clubId}/settings'),
+                ),
             ],
           ),
 
