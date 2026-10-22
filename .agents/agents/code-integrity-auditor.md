@@ -75,4 +75,4 @@ Báo cáo kiểm toán trả về cho Main Agent bắt buộc tuân thủ cấu 
    - **`[ARCHITECTURAL VIOLATION]`** (Domain import Flutter/Dio/DTO, UI import Datasource/DTO, ViewModel thiếu StateNotifier).
    - **`[STYLE & DESIGN TOKENS]`** (Hardcoded hex colors, raw Colors.*, mất chữ ở Dark mode, thiếu ResponsiveLayout tablet).
    - **`[STANDARDS VIOLATION]`** (Hardcoded text thiếu context.l10n, lệch key .arb, chứa emoji, comment rườm rà).
-3. **Vị Trí & Hướng Dẫn Khắc Phục:** Trích dẫn chính xác dòng bằng link markdown clickable `[File.dart](file:///d:/l7TeamVN/KLTN2026-2027/lib/path/to/File.dart#L10-L20)` kèm đoạn code sửa chữa cụ thể.
+3. **Vị Trí & Hướng Dẫn Khắc Phục:** Trích dẫn chính xác dòng bằng link markdown clickable `[File.dart](lib/path/to/File.dart#L10-L20)` kèm đoạn code sửa chữa cụ thể.

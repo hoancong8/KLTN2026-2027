@@ -22,11 +22,11 @@ Tài liệu định nghĩa các tiêu chuẩn phổ quát, nguyên tắc giao ti
 
 1. **Chuẩn Ngôn Ngữ & Tiếng Việt Có Dấu (Standard Accented Vietnamese):** Khi phản hồi hội thoại, viết UI strings, ghi chú tài liệu hoặc viết commit message bằng tiếng Việt, BẮT BUỘC sử dụng tiếng Việt có dấu đầy đủ, chuẩn chính tả ngữ pháp. Tuyệt đối không viết không dấu, viết tắt hoặc teencode. Các thuật ngữ kỹ thuật chuyên ngành giữ nguyên tiếng Anh (`Entity`, `UseCase`, `Repository`, `Datasource`, `StateNotifier`, `Provider`, `Defensive Parsing`, `ABP Protocol`).
 2. **Chính Sách Zero Emoji (Zero Emoji Policy):** Nghiêm cấm sử dụng emoji trong mã nguồn Dart, commit message, nhật ký log, và phản hồi hội thoại. Sử dụng các ký hiệu ASCII chuẩn: `[OK]`, `[WARN]`, `[ERROR]`, `[INFO]`, hoặc markdown alerts (`> [!NOTE]`, `> [!IMPORTANT]`, `> [!WARNING]`).
-3. **Định Dạng Clickable Links Bắt Buộc (Mandatory Clickable Links):** Mọi file, class, method, struct được trích dẫn bắt buộc ở dạng link markdown clickable với dấu gạch chéo `/`: `[File.dart](file:///d:/l7TeamVN/KLTN2026-2027/path/to/File.dart#L10-L20)`. Trong nội dung mã nguồn hoặc tài liệu repo, luôn dùng repo-relative paths (`lib/...`, `docs/...`).
+3. **Định Dạng Đường Dẫn Tương Đối & Cấm Tuyệt Đối URI Cục Bộ (Repo-Relative Paths Only):** Trong toàn bộ mã nguồn, tài liệu repo, rules, skills, và subagents, TUYỆT ĐỐI CẤM hardcode URI ổ đĩa máy cục bộ (`file:///d:/...` hay `d:\...`). 100% tài liệu và liên kết phải sử dụng đường dẫn tương đối chuẩn repo (`lib/...`, `docs/...`, `.agents/...`). Dạng clickable `file:///` chỉ sử dụng khi trợ lý AI phản hồi trực tiếp trên khung chat nếu môi trường yêu cầu, không bao giờ được ghi vào tệp trong repo.
 4. **Chính Sách Zero Additional Comments (Code Tự Tường Minh):** Tuyệt đối không viết comment giải thích rườm rà (`//`, `/* */`) khi chỉnh sửa hoặc viết code mới. Mã nguồn phải tự tường minh thông qua cấu trúc phân tầng rõ ràng, hàm nhỏ gọn và cách đặt tên biến/phương thức biểu cảm. Bảo toàn nguyên vẹn doc comments hiện có (`///`) không liên quan đến thay đổi.
 5. **Triệt Tiêu Kế Thừa Cũ & Định Danh Duy Nhất (Zero Legacy & Single Canonical ID):** Không tạo các lớp tương thích ngược (deprecated shims, backwards-compatibility fallbacks, overload cũ). Không viết các nhánh fallback kiểm tra nhiều tên alias cho API keys, configuration key hay schema constants. Mỗi khái niệm chỉ có MỘT tên chuẩn duy nhất (Single Canonical Identifier).
 6. **Thực Thi Trực Tiếp End-to-End (Direct End-to-End Execution):** Không chia nhỏ công việc thành các mốc thời gian nhân tạo, timeline nhiều ngày hoặc roadmap kéo dài. Thực thi và hoàn thành dứt điểm, trọn vẹn từ đầu đến cuối trong một phiên làm việc liên tục.
-7. **Quy Trình Git Commit Chuẩn Hóa (Mandatory Commit Prompting & Conventional Commits):** Mọi commit phải tuân thủ nghiêm ngặt chuẩn Conventional Commits v1.0.0 (`<type>(<scope>): <tiêu đề tiếng Việt có dấu>`) theo [`conventional-commits.md`](file:///d:/l7TeamVN/KLTN2026-2027/.agents/rules/conventional-commits.md). Luôn hỏi xin xác nhận từ người dùng kèm thông điệp commit đề xuất và danh sách file thay đổi trước khi thực thi commit. Tuyệt đối không tự động commit ngầm.
+7. **Quy Trình Git Commit Chuẩn Hóa (Mandatory Commit Prompting & Conventional Commits):** Mọi commit phải tuân thủ nghiêm ngặt chuẩn Conventional Commits v1.0.0 (`<type>(<scope>): <tiêu đề tiếng Việt có dấu>`) theo [`conventional-commits.md`](.agents/rules/conventional-commits.md). Luôn hỏi xin xác nhận từ người dùng kèm thông điệp commit đề xuất và danh sách file thay đổi trước khi thực thi commit. Tuyệt đối không tự động commit ngầm.
 8. **Ranh Giới Clean Architecture 3 Tầng Bất Biến (Dependency Rule):**
    - `lib/domain/`: Pure Dart 100%. Nghiêm cấm import Flutter UI (`package:flutter/*`), HTTP client (`package:dio/*`), hay Data models (`package:.../data/dto/*`).
    - `lib/data/`: Triển khai Repository interfaces, giao tiếp Dio, DTO phòng thủ, giải mã ABP wrapper, và chuyển đổi qua Mapper.
@@ -65,13 +65,12 @@ Nhằm tối ưu hóa hiệu năng, ngữ cảnh và tránh nạp thừa các qu
 - **Quy tắc xử lý:**
   - Kích hoạt chu trình phát triển 4 bước chuẩn hóa với sự tham gia của các Subagents chuyên trách.
   - Các quy chuẩn kỹ thuật chuyên sâu được tự động nạp theo đúng ngữ cảnh thực thi:
-    - *Ranh giới Clean Architecture:* [`clean-architecture-boundaries.md`](file:///d:/l7TeamVN/KLTN2026-2027/.agents/rules/clean-architecture-boundaries.md).
-    - *Giao thức API & Defensive Parsing:* [`api-protocol-and-resilience.md`](file:///d:/l7TeamVN/KLTN2026-2027/.agents/rules/api-protocol-and-resilience.md).
-    - *Contextual Multi-Club RBAC:* [`club-context-and-dynamic-rbac.md`](file:///d:/l7TeamVN/KLTN2026-2027/.agents/rules/club-context-and-dynamic-rbac.md).
-    - *Chuẩn Presentation & Responsive:* [`responsive-and-ui-standards.md`](file:///d:/l7TeamVN/KLTN2026-2027/.agents/rules/responsive-and-ui-standards.md).
-    - *Design Tokens & Theming:* [`design-tokens-and-styling.md`](file:///d:/l7TeamVN/KLTN2026-2027/.agents/rules/design-tokens-and-styling.md).
-    - *Đối chiếu đặc tả hệ thống:* [`system-spec-and-api-alignment.md`](file:///d:/l7TeamVN/KLTN2026-2027/.agents/rules/system-spec-and-api-alignment.md).
-    - *Quy chuẩn commit Git:* [`conventional-commits.md`](file:///d:/l7TeamVN/KLTN2026-2027/.agents/rules/conventional-commits.md) & [`git-commit.md`](file:///d:/l7TeamVN/KLTN2026-2027/.agents/rules/git-commit.md).
+    - *Kiến trúc hệ thống & Impact Gate:* [`system-architecture.md`](.agents/rules/system-architecture.md).
+    - *Tầng lõi Core (Domain, Data, API ABP, RBAC):* [`core-architecture.md`](.agents/rules/core-architecture.md).
+    - *Tầng giao diện (Presentation, Responsive, L10n):* [`ui-architecture.md`](.agents/rules/ui-architecture.md).
+    - *Design Tokens & Styling:* [`design-tokens-and-styling.md`](.agents/rules/design-tokens-and-styling.md).
+    - *Đối chiếu đặc tả hệ thống SSOT:* [`system-spec-reference.md`](.agents/rules/system-spec-reference.md).
+    - *Quy chuẩn commit Git:* [`conventional-commits.md`](.agents/rules/conventional-commits.md).
 
 ---
 
@@ -80,19 +79,17 @@ Nhằm tối ưu hóa hiệu năng, ngữ cảnh và tránh nạp thừa các qu
 
 | Subagent Chuyên Trách | Trách Nhiệm Cốt Lõi | Ngữ Cảnh Ủy Thác |
 |---|---|---|
-| [`system-spec-inspector`](file:///d:/l7TeamVN/KLTN2026-2027/.agents/agents/system-spec-inspector.md) | Chuyên gia tra cứu đọc tài liệu đặc tả SSOT (`docs/`, `docs_api.md`, `docs_api_clean_arch.md`, `ARCHITECTURE_RULES.md`), trích xuất yêu cầu FR01-FR23, UC01-UC20, hợp đồng API và RBAC. | Khi cần xác minh yêu cầu, tra cứu schema endpoint, DTO/Entity mapping, hoặc quyền câu lạc bộ. |
-| [`architecture-evaluator`](file:///d:/l7TeamVN/KLTN2026-2027/.agents/agents/architecture-evaluator.md) | Đánh giá tác động kiến trúc Clean Architecture (Architectural Impact Gate), thiết kế Blueprint 5 tầng, sơ đồ Mermaid, đánh giá rủi ro rò rỉ ranh giới và trình người dùng duyệt. | Khi có tính năng mới, thay đổi luồng điều phối, tái cấu trúc, hoặc bổ sung tích hợp nền tảng. |
-| [`feature-engineer`](file:///d:/l7TeamVN/KLTN2026-2027/.agents/agents/feature-engineer.md) | Kỹ sư Clean Architecture Full-Stack trực tiếp viết mã triển khai tính năng khép kín 5 tầng (Domain $\rightarrow$ Data $\rightarrow$ App DI $\rightarrow$ UI $\rightarrow$ L10n). | Sau khi blueprint được duyệt (hoặc thay đổi cục bộ), cần viết mã mới hoặc sửa đổi code Dart/ARB. |
-| [`code-integrity-auditor`](file:///d:/l7TeamVN/KLTN2026-2027/.agents/agents/code-integrity-auditor.md) | Kiểm toán mã nguồn độc lập, rà soát rò rỉ ranh giới, defensive parsing DTO, design tokens/adaptive theming, hardcoded text, chạy verify_architecture.py, flutter analyze và test. | Sau khi viết hoặc sửa code Dart / ARB, trước khi nghiệm thu và commit (tối đa 2 vòng verify-fix). |
+| [`system-spec-inspector`](.agents/agents/system-spec-inspector.md) | Chuyên gia tra cứu đọc tài liệu đặc tả SSOT (`docs/`, `docs_api.md`, `docs_api_clean_arch.md`, `ARCHITECTURE_RULES.md`), trích xuất yêu cầu FR01-FR23, UC01-UC20, hợp đồng API và RBAC. | Khi cần xác minh yêu cầu, tra cứu schema endpoint, DTO/Entity mapping, hoặc quyền câu lạc bộ. |
+| [`architecture-evaluator`](.agents/agents/architecture-evaluator.md) | Đánh giá tác động kiến trúc Clean Architecture (Architectural Impact Gate), thiết kế Blueprint 5 tầng, sơ đồ Mermaid, đánh giá rủi ro rò rỉ ranh giới và trình người dùng duyệt. | Khi có tính năng mới, thay đổi luồng điều phối, tái cấu trúc, hoặc bổ sung tích hợp nền tảng. |
+| [`feature-engineer`](.agents/agents/feature-engineer.md) | Kỹ sư Clean Architecture Full-Stack trực tiếp viết mã triển khai tính năng khép kín 5 tầng (Domain $\rightarrow$ Data $\rightarrow$ App DI $\rightarrow$ UI $\rightarrow$ L10n). | Sau khi blueprint được duyệt (hoặc thay đổi cục bộ), cần viết mã mới hoặc sửa đổi code Dart/ARB. |
+| [`code-integrity-auditor`](.agents/agents/code-integrity-auditor.md) | Kiểm toán mã nguồn độc lập, rà soát rò rỉ ranh giới, defensive parsing DTO, design tokens/adaptive theming, hardcoded text, chạy verify_architecture.py, flutter analyze và test. | Sau khi viết hoặc sửa code Dart / ARB, trước khi nghiệm thu và commit (tối đa 2 vòng verify-fix). |
 
 ---
 
 ## 5. Danh Mục Quy Tắc Chuyên Sâu (Modular Rules Reference)
-- **Clean Architecture Boundaries:** [`.agents/rules/clean-architecture-boundaries.md`](file:///d:/l7TeamVN/KLTN2026-2027/.agents/rules/clean-architecture-boundaries.md) (Trigger: `lib/**, test/**`)
-- **API Protocol & Resilience:** [`.agents/rules/api-protocol-and-resilience.md`](file:///d:/l7TeamVN/KLTN2026-2027/.agents/rules/api-protocol-and-resilience.md) (Trigger: `lib/data/**, lib/app/**`)
-- **Club Context & Dynamic RBAC:** [`.agents/rules/club-context-and-dynamic-rbac.md`](file:///d:/l7TeamVN/KLTN2026-2027/.agents/rules/club-context-and-dynamic-rbac.md) (Trigger: `lib/ui/screen/club/**, lib/domain/entities/club/**, lib/data/**/club/**`)
-- **Responsive & UI Standards:** [`.agents/rules/responsive-and-ui-standards.md`](file:///d:/l7TeamVN/KLTN2026-2027/.agents/rules/responsive-and-ui-standards.md) (Trigger: `lib/ui/**`)
-- **Design Tokens & Theming:** [`.agents/rules/design-tokens-and-styling.md`](file:///d:/l7TeamVN/KLTN2026-2027/.agents/rules/design-tokens-and-styling.md) (Trigger: `lib/ui/**, lib/widget/**, lib/app/theme/**`)
-- **System Spec & API Alignment (SSOT):** [`.agents/rules/system-spec-and-api-alignment.md`](file:///d:/l7TeamVN/KLTN2026-2027/.agents/rules/system-spec-and-api-alignment.md) (Trigger: `model_decision`)
-- **Conventional Commits:** [`.agents/rules/conventional-commits.md`](file:///d:/l7TeamVN/KLTN2026-2027/.agents/rules/conventional-commits.md) (Trigger: `model_decision`)
-- **Git Commit Safety:** [`.agents/rules/git-commit.md`](file:///d:/l7TeamVN/KLTN2026-2027/.agents/rules/git-commit.md) (Trigger: `model_decision`)
+- **System Architecture & Impact Gate:** [`.agents/rules/system-architecture.md`](.agents/rules/system-architecture.md) (Trigger: `lib/**, test/**`)
+- **Core Architecture (Domain, Data & RBAC):** [`.agents/rules/core-architecture.md`](.agents/rules/core-architecture.md) (Trigger: `lib/domain/**, lib/data/**, lib/app/provider.dart`)
+- **UI Architecture & Presentation:** [`.agents/rules/ui-architecture.md`](.agents/rules/ui-architecture.md) (Trigger: `lib/ui/**, lib/widget/**`)
+- **Design Tokens & Theming:** [`.agents/rules/design-tokens-and-styling.md`](.agents/rules/design-tokens-and-styling.md) (Trigger: `lib/ui/**, lib/widget/**, lib/app/theme/**`)
+- **System Spec Reference (SSOT):** [`.agents/rules/system-spec-reference.md`](.agents/rules/system-spec-reference.md) (Trigger: `model_decision`)
+- **Conventional Commits & Safety:** [`.agents/rules/conventional-commits.md`](.agents/rules/conventional-commits.md) (Trigger: `model_decision`)

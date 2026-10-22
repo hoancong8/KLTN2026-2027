@@ -18,14 +18,14 @@ Nhiệm vụ duy nhất của bạn là tra cứu và đối chiếu các tài l
 # Single Source of Truth (SSOT) Repositories
 Khi nhận yêu cầu tra cứu, bạn tìm kiếm và tổng hợp thông tin từ 4 nguồn tài liệu chuẩn:
 1. **Tài Liệu Đặc Tả Yêu Cầu & Thiết Kế Hệ Thống:**
-   - [`docs/01_TONG_QUAN_DE_TAI.md`](file:///d:/l7TeamVN/KLTN2026-2027/docs/01_TONG_QUAN_DE_TAI.md) đến [`docs/06_KIEN_TRUC_HE_THONG_TONG_THE.md`](file:///d:/l7TeamVN/KLTN2026-2027/docs/06_KIEN_TRUC_HE_THONG_TONG_THE.md): Mục tiêu đề tài, nghiệp vụ quản lý câu lạc bộ cầu lông, giải đấu, đặt sân, tìm bạn chơi.
-   - [`docs/07_THIET_KE_CLIENT_FLUTTER_MOBILE.md`](file:///d:/l7TeamVN/KLTN2026-2027/docs/07_THIET_KE_CLIENT_FLUTTER_MOBILE.md): Thiết kế màn hình, wireframe, danh sách ca sử dụng UC01-UC20 và yêu cầu chức năng FR01-FR23 trên mobile.
+   - [`docs/01_TONG_QUAN_DE_TAI.md`](docs/01_TONG_QUAN_DE_TAI.md) đến [`docs/06_KIEN_TRUC_HE_THONG_TONG_THE.md`](docs/06_KIEN_TRUC_HE_THONG_TONG_THE.md): Mục tiêu đề tài, nghiệp vụ quản lý câu lạc bộ cầu lông, giải đấu, đặt sân, tìm bạn chơi.
+   - [`docs/07_THIET_KE_CLIENT_FLUTTER_MOBILE.md`](docs/07_THIET_KE_CLIENT_FLUTTER_MOBILE.md): Thiết kế màn hình, wireframe, danh sách ca sử dụng UC01-UC20 và yêu cầu chức năng FR01-FR23 trên mobile.
 2. **Quy Tắc Kiến Trúc & Phát Triển Chuẩn:**
-   - [`ARCHITECTURE_RULES.md`](file:///d:/l7TeamVN/KLTN2026-2027/ARCHITECTURE_RULES.md): Quy chuẩn 3 tầng Clean Architecture, luồng 5 bước phát triển, cấu trúc DTO/Entity/Mapper/UseCase/Provider/ViewModel.
+   - [`ARCHITECTURE_RULES.md`](ARCHITECTURE_RULES.md): Quy chuẩn 3 tầng Clean Architecture, luồng 5 bước phát triển, cấu trúc DTO/Entity/Mapper/UseCase/Provider/ViewModel.
 3. **Bảng Ánh Xạ API 2 Tầng Sang Clean Architecture:**
-   - [`docs_api_clean_arch.md`](file:///d:/l7TeamVN/KLTN2026-2027/docs_api_clean_arch.md): Ma trận phân tầng từ API Endpoint $\rightarrow$ DTO $\rightarrow$ Entity $\rightarrow$ Mapper $\rightarrow$ Datasource $\rightarrow$ Repository $\rightarrow$ UseCase $\rightarrow$ Riverpod Provider.
+   - [`docs_api_clean_arch.md`](docs_api_clean_arch.md): Ma trận phân tầng từ API Endpoint $\rightarrow$ DTO $\rightarrow$ Entity $\rightarrow$ Mapper $\rightarrow$ Datasource $\rightarrow$ Repository $\rightarrow$ UseCase $\rightarrow$ Riverpod Provider.
 4. **Đặc Tả Chi Tiết API Backend ABP Framework:**
-   - [`docs_api.md`](file:///d:/l7TeamVN/KLTN2026-2027/docs_api.md): Đặc tả chi tiết HTTP Method, URL Endpoint, Request Parameters/Body, và cấu trúc Response JSON bọc trong ABP Framework wrapper (`result`, `items`, `totalCount`, `error`).
+   - [`docs_api.md`](docs_api.md): Đặc tả chi tiết HTTP Method, URL Endpoint, Request Parameters/Body, và cấu trúc Response JSON bọc trong ABP Framework wrapper (`result`, `items`, `totalCount`, `error`).
 
 ---
 
@@ -46,16 +46,16 @@ Khi nhận yêu cầu tra cứu, bạn tìm kiếm và tổng hợp thông tin t
    - F5. Cụm sân & Đặt chỗ (`/api/v1/venues`, `/bookings`)
    - F6. Hồ sơ cá nhân & Thể lực (`/api/v1/users/me`)
 2. **Tra Cứu Hợp Đồng API & DTO Schema:**
-   - Tra cứu endpoint trong [`docs_api.md`](file:///d:/l7TeamVN/KLTN2026-2027/docs_api.md) để xác định payload request/response và kiểu dữ liệu từng trường.
-   - Tra cứu ánh xạ trong [`docs_api_clean_arch.md`](file:///d:/l7TeamVN/KLTN2026-2027/docs_api_clean_arch.md) để xác định tên chuẩn của DTO, Entity, Mapper, Datasource, Repo, UseCase, Provider.
+   - Tra cứu endpoint trong [`docs_api.md`](docs_api.md) để xác định payload request/response và kiểu dữ liệu từng trường.
+   - Tra cứu ánh xạ trong [`docs_api_clean_arch.md`](docs_api_clean_arch.md) để xác định tên chuẩn của DTO, Entity, Mapper, Datasource, Repo, UseCase, Provider.
 3. **Đối Chiếu Luồng UI & Quyền RBAC:**
-   - Tra cứu [`docs/07_THIET_KE_CLIENT_FLUTTER_MOBILE.md`](file:///d:/l7TeamVN/KLTN2026-2027/docs/07_THIET_KE_CLIENT_FLUTTER_MOBILE.md) để xác định luồng màn hình, responsive requirements (Mobile / Tablet) và quyền truy cập câu lạc bộ tương ứng (`activeContext.permissions`).
+   - Tra cứu [`docs/07_THIET_KE_CLIENT_FLUTTER_MOBILE.md`](docs/07_THIET_KE_CLIENT_FLUTTER_MOBILE.md) để xác định luồng màn hình, responsive requirements (Mobile / Tablet) và quyền truy cập câu lạc bộ tương ứng (`activeContext.permissions`).
 
 ---
 
 # Output Contract (Báo Cáo Trả Về Cho Main Agent)
 Báo cáo kiểm tra đặc tả trả về bắt buộc có cấu trúc:
-1. **Thông Tin Phân Hệ & Yêu Cầu:** Mã FR (FR01-FR23) / UC (UC01-UC20), phân hệ nghiệp vụ, và tài liệu nguồn kèm link clickable `[TênTàiLiệu.md](file:///d:/l7TeamVN/KLTN2026-2027/docs/...)`.
+1. **Thông Tin Phân Hệ & Yêu Cầu:** Mã FR (FR01-FR23) / UC (UC01-UC20), phân hệ nghiệp vụ, và tài liệu nguồn kèm link clickable `[TênTàiLiệu.md](docs/...)`.
 2. **Hợp Đồng API Backend:**
    - HTTP Method & Path (VD: `GET /api/v1/clubs/{id}/members`)
    - Request Query/Body Schema

@@ -61,7 +61,7 @@ Nhiệm vụ trọng tâm của bạn là trực tiếp viết mã, mở rộng,
 
 ### Bước 3: Đăng Ký Dependency Injection (App Layer)
 1. Khai báo endpoint URL trong `lib/app/app_config.dart`.
-2. Đăng ký tập trung trong [`lib/app/provider.dart`](file:///d:/l7TeamVN/KLTN2026-2027/lib/app/provider.dart):
+2. Đăng ký tập trung trong [`lib/app/provider.dart`](lib/app/provider.dart):
    - `Provider` cho Datasource.
    - `Provider` cho Repository Implementation.
    - `Provider` cho các UseCases.
