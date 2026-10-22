@@ -181,51 +181,7 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
                   if (nearestSession != null)
                     _buildNearestSessionHero(context, nearestSession),
 
-                  // 2. Banner truy cập nhanh: Lịch tôi đã đăng ký
-                  InkWell(
-                    onTap: () => context.push(AppConfig.myBookingsRoutePath),
-                    borderRadius: BorderRadius.circular(12),
-                    child: Container(
-                      margin: const EdgeInsets.only(bottom: 14),
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
-                      decoration: BoxDecoration(
-                        color: AppColors.primaryContainer,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: AppColors.primary.withValues(alpha: 0.35)),
-                      ),
-                      child: Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(7),
-                            decoration: BoxDecoration(
-                              color: AppColors.primary.withValues(alpha: 0.12),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: const Icon(Icons.event_available_rounded, color: AppColors.primary, size: 20),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Lịch tập tôi đã đăng ký',
-                                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: colors.textPrimary),
-                                ),
-                                Text(
-                                  'Xem danh sách vé, check-in và trạng thái giữ chỗ',
-                                  style: TextStyle(fontSize: 11, color: colors.textMuted),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: AppColors.primary),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  // 3. Lịch tháng trực quan về các ngày tập
+                  // 2. Lịch tháng trực quan về các ngày tập
                   _buildMonthCalendarCard(sortedSessions, nearestSession),
 
                   // 4. Thanh lọc ngày đã chọn trên lịch
