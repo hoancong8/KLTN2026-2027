@@ -218,7 +218,7 @@ class ClubManagementMobile extends ConsumerWidget {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      'Vai trò & Phân quyền (FR03)',
+                                      'Vai trò & Phân quyền',
                                       style: TextStyle(
                                         fontSize: 14,
                                         fontWeight: FontWeight.bold,

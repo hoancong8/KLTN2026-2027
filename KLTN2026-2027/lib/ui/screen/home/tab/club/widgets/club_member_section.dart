@@ -169,7 +169,7 @@ class _ClubMemberSectionState extends ConsumerState<ClubMemberSection> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Vai trò & Phân quyền nhóm (FR03)',
+                            'Vai trò & Phân quyền nhóm',
                             style: AppTypography.titleSmall.bold.colored(AppColors.white),
                           ),
                           Text(

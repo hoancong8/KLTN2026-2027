@@ -160,7 +160,7 @@ class _CreateSessionDialogState extends ConsumerState<CreateSessionDialog> {
                     const SizedBox(width: 12),
                     const Expanded(
                       child: Text(
-                        'Khởi Tạo Buổi Chơi (FR13)',
+                        'Khởi Tạo Buổi Chơi',
                         style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
                       ),
                     ),

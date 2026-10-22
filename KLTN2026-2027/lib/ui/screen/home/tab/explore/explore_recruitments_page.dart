@@ -31,7 +31,7 @@ class ExploreRecruitmentsPage extends ConsumerWidget {
           children: [
             Icon(Icons.radar_rounded, color: AppColors.roleViolet, size: 24),
             SizedBox(width: 8),
-            Text('Tìm Kèo Giao Lưu (FR12)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+            Text('Tìm Kèo Giao Lưu', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
           ],
         ),
         backgroundColor: colors.surface,

@@ -656,7 +656,7 @@ class _ClubOverviewTabState extends ConsumerState<ClubOverviewTab> {
                         const Icon(Icons.account_balance_wallet_rounded, color: AppColors.primary, size: 20),
                         AppSpacing.gapW8,
                         Text(
-                          'Sổ quỹ & Tài chính CLB (FR22)',
+                          'Sổ quỹ & Tài chính CLB',
                           style: AppTypography.titleSmall.bold.colored(colors.textPrimary),
                         ),
                       ],
@@ -719,7 +719,7 @@ class _ClubOverviewTabState extends ConsumerState<ClubOverviewTab> {
                     ),
                     icon: const Icon(Icons.shield_rounded, size: AppSpacing.iconSm),
                     label: Text(
-                      'Vai Trò & Cây Phân Quyền Nhóm (FR03)',
+                      'Vai Trò & Cây Phân Quyền Nhóm',
                       style: AppTypography.labelLarge.bold.colored(AppColors.white),
                     ),
                     onPressed: () {
