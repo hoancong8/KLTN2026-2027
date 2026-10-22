@@ -7,9 +7,7 @@ import '../../../app/provider/localization_provider.dart';
 import '../../../app/l10n_gen/app_localizations.dart';
 import '../../../app/utils/exception_ext.dart';
 import '../../../domain/entities/club/club_detail.dart';
-import '../../../domain/enums/session_enums.dart';
 import '../home/tab/club/widgets/club_qr_dialog.dart';
-import '../home/tab/club/widgets/club_schedule_planner.dart';
 import '../home/tab/club/widgets/club_sessions_tab.dart';
 import 'club_detail_vm/club_detail_vm.dart';
 
@@ -114,296 +112,6 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
     );
   }
 
-  void _showEditInfoDialog(ClubDetail club) {
-    final venueController = TextEditingController(text: club.fixedVenueName ?? '');
-    final addressController = TextEditingController(text: club.fixedAddress ?? '');
-    final descController = TextEditingController(text: club.description ?? '');
-    bool isRecruiting = club.isRecruiting;
-    SkillLevel minSkill = club.minSkillLevel ?? SkillLevel.nb;
-    SkillLevel maxSkill = club.maxSkillLevel ?? SkillLevel.k;
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: AppColors.transparent,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setSheetState) => Container(
-          padding: EdgeInsets.only(
-            top: 20,
-            left: 20,
-            right: 20,
-            bottom: MediaQuery.of(ctx).viewInsets.bottom + 20,
-          ),
-          decoration: BoxDecoration(
-            color: colors.cardBackground,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-          ),
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      l10n.club_config_venue_recruit,
-                      style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: colors.textPrimary),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.close_rounded),
-                      onPressed: () => Navigator.of(ctx).pop(),
-                    ),
-                  ],
-                ),
-                const Divider(),
-                Text(l10n.club_fixed_venue_name, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: colors.textPrimary)),
-                const SizedBox(height: 6),
-                TextField(
-                  controller: venueController,
-                  decoration: InputDecoration(
-                    hintText: l10n.club_fixed_venue_hint,
-                    hintStyle: TextStyle(color: colors.textMuted),
-                    filled: true,
-                    fillColor: colors.inputFill,
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: colors.inputBorder)),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Text(l10n.club_fixed_address, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: colors.textPrimary)),
-                const SizedBox(height: 6),
-                TextField(
-                  controller: addressController,
-                  decoration: InputDecoration(
-                    hintText: l10n.club_fixed_address_hint,
-                    hintStyle: TextStyle(color: colors.textMuted),
-                    filled: true,
-                    fillColor: colors.inputFill,
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: colors.inputBorder)),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Text(l10n.role_description_label, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: colors.textPrimary)),
-                const SizedBox(height: 6),
-                TextField(
-                  controller: descController,
-                  maxLines: 2,
-                  decoration: InputDecoration(
-                    hintText: l10n.role_description_hint,
-                    hintStyle: TextStyle(color: colors.textMuted),
-                    filled: true,
-                    fillColor: colors.inputFill,
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: colors.inputBorder)),
-                    contentPadding: const EdgeInsets.all(12),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                SwitchListTile(
-                  contentPadding: EdgeInsets.zero,
-                  activeThumbColor: colors.primary,
-                  title: Text(l10n.club_recruiting_status, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: colors.textPrimary)),
-                  value: isRecruiting,
-                  onChanged: (val) => setSheetState(() => isRecruiting = val),
-                ),
-                const SizedBox(height: 16),
-                SizedBox(
-                  width: double.infinity,
-                  height: 46,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: colors.primary,
-                      foregroundColor: AppColors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    ),
-                    onPressed: () async {
-                      Navigator.of(ctx).pop();
-                      await ref.read(clubDetailViewModelProvider(widget.clubId).notifier).updateInfo(
-                            groupName: club.groupName,
-                            fixedVenueName: venueController.text.trim(),
-                            fixedAddress: addressController.text.trim(),
-                            description: descController.text.trim(),
-                            minSkillLevel: minSkill,
-                            maxSkillLevel: maxSkill,
-                            isRecruiting: isRecruiting,
-                          );
-                    },
-                    child: const Text('Lưu thông tin sân', style: TextStyle(fontWeight: FontWeight.bold)),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  TimeOfDay _parseTimeOfDay(String timeStr, TimeOfDay fallback) {
-    try {
-      final parts = timeStr.trim().split(':');
-      if (parts.isEmpty) return fallback;
-      final h = int.parse(parts[0]);
-      final m = parts.length > 1 ? int.parse(parts[1]) : 0;
-      return TimeOfDay(hour: h, minute: m);
-    } catch (_) {
-      return fallback;
-    }
-  }
-
-  void _showEditSchedulesDialog(ClubDetail club) {
-    final initialSchedules = club.schedules
-        .where((s) => s.isActive)
-        .map((s) => ClubScheduleEntry(
-              dayOfWeek: s.dayOfWeek,
-              startTime: _parseTimeOfDay(s.startTime, const TimeOfDay(hour: 18, minute: 0)),
-              endTime: _parseTimeOfDay(s.endTime, const TimeOfDay(hour: 20, minute: 0)),
-            ))
-        .toList();
-
-    List<ClubScheduleEntry> currentSchedules = List.from(initialSchedules);
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: AppColors.transparent,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setSheetState) => Container(
-          constraints: BoxConstraints(
-            maxHeight: MediaQuery.of(ctx).size.height * 0.90,
-          ),
-          decoration: BoxDecoration(
-            color: colors.cardBackground,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Header
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 16, 12, 10),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: colors.primary.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Icon(Icons.event_repeat_rounded, color: colors.primary, size: 20),
-                    ),
-                    const SizedBox(width: 12),
-                    const Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Thiết lập lịch sinh hoạt định kỳ',
-                            style: TextStyle(fontSize: 16.5, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
-                          ),
-                          SizedBox(height: 2),
-                          Text(
-                            'Lịch tháng, chọn ngày và cài đặt giờ cố định hoặc tùy chỉnh',
-                            style: TextStyle(fontSize: 11.5, color: AppColors.textMuted),
-                          ),
-                        ],
-                      ),
-                    ),
-                    IconButton(
-                      icon: Icon(Icons.close_rounded, color: colors.textMuted),
-                      onPressed: () => Navigator.of(ctx).pop(),
-                    ),
-                  ],
-                ),
-              ),
-              Divider(height: 1, color: colors.cardBorder),
-
-              // Planner Body
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  child: ClubSchedulePlanner(
-                    initialSchedules: initialSchedules,
-                    onChanged: (updated) {
-                      currentSchedules = updated;
-                    },
-                  ),
-                ),
-              ),
-
-              // Footer Action
-              Divider(height: 1, color: colors.cardBorder),
-              Padding(
-                padding: EdgeInsets.fromLTRB(16, 12, 16, MediaQuery.of(ctx).viewInsets.bottom + 16),
-                child: SizedBox(
-                  width: double.infinity,
-                  height: 48,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      foregroundColor: AppColors.white,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    ),
-                    onPressed: () async {
-                      if (currentSchedules.isEmpty) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Vui lòng chọn ít nhất một ngày sinh hoạt trong tuần.'),
-                            backgroundColor: AppColors.error,
-                          ),
-                        );
-                        return;
-                      }
-
-                      for (final entry in currentSchedules) {
-                        final startMin = entry.startTime.hour * 60 + entry.startTime.minute;
-                        final endMin = entry.endTime.hour * 60 + entry.endTime.minute;
-                        if (startMin >= endMin) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Giờ bắt đầu phải trước giờ kết thúc.'),
-                              backgroundColor: AppColors.error,
-                            ),
-                          );
-                          return;
-                        }
-                      }
-
-                      Navigator.of(ctx).pop();
-                      final Map<int, ClubScheduleInput> distinctMap = {};
-                      for (final entry in currentSchedules) {
-                        final hStart = entry.startTime.hour.toString().padLeft(2, '0');
-                        final mStart = entry.startTime.minute.toString().padLeft(2, '0');
-                        final hEnd = entry.endTime.hour.toString().padLeft(2, '0');
-                        final mEnd = entry.endTime.minute.toString().padLeft(2, '0');
-                        distinctMap[entry.dayOfWeek] = ClubScheduleInput(
-                          dayOfWeek: entry.dayOfWeek,
-                          startTime: '$hStart:$mStart',
-                          endTime: '$hEnd:$mEnd',
-                        );
-                      }
-                      final inputList = distinctMap.values.toList();
-
-                      await ref
-                          .read(clubDetailViewModelProvider(widget.clubId).notifier)
-                          .updateSchedules(inputList);
-                    },
-                    child: const Text(
-                      'Lưu lịch sinh hoạt',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(clubDetailViewModelProvider(widget.clubId));
@@ -457,47 +165,15 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
               onPressed: () => context.push('/club/${widget.clubId}/settings'),
             ),
             IconButton(
-              icon: Icon(Icons.calendar_month_outlined, color: colors.textPrimary, size: 22),
-              tooltip: 'Sửa lịch tuần',
-              onPressed: () => context.push('/club/${widget.clubId}/settings'),
-            ),
-            IconButton(
               icon: Icon(Icons.people_outline_rounded, color: colors.textPrimary, size: 22),
               tooltip: 'Quản lý thành viên',
               onPressed: () => context.push('/club/${widget.clubId}/roles'),
             ),
           ] else if (club != null && club.currentUserStatus.isMember)
-            PopupMenuButton<String>(
-              icon: Icon(Icons.more_vert_rounded, color: colors.textPrimary),
-              onSelected: (val) {
-                if (val == 'info') {
-                  _showEditInfoDialog(club);
-                } else if (val == 'schedules') {
-                  _showEditSchedulesDialog(club);
-                }
-              },
-              itemBuilder: (ctx) => [
-                const PopupMenuItem(
-                  value: 'info',
-                  child: Row(
-                    children: [
-                      Icon(Icons.edit_location_alt_rounded, size: 18, color: AppColors.primary),
-                      SizedBox(width: 8),
-                      Text('Cấu hình sân & tuyển quân', style: TextStyle(fontSize: 13)),
-                    ],
-                  ),
-                ),
-                const PopupMenuItem(
-                  value: 'schedules',
-                  child: Row(
-                    children: [
-                      Icon(Icons.calendar_month_rounded, size: 18, color: AppColors.primary),
-                      SizedBox(width: 8),
-                      Text('Thiết lập lịch tuần', style: TextStyle(fontSize: 13)),
-                    ],
-                  ),
-                ),
-              ],
+            IconButton(
+              icon: Icon(Icons.settings_outlined, color: colors.textPrimary, size: 22),
+              tooltip: 'Cài đặt & Tùy chọn',
+              onPressed: () => context.push('/club/${widget.clubId}/settings'),
             ),
         ],
         bottom: PreferredSize(
@@ -937,9 +613,9 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
                 style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: colors.textPrimary),
               ),
               const Spacer(),
-              if (club.currentUserStatus.isMember)
+              if (club.currentUserStatus.isHost)
                 InkWell(
-                  onTap: () => _showEditSchedulesDialog(club),
+                  onTap: () => context.push('/club/${widget.clubId}/settings'),
                   borderRadius: BorderRadius.circular(8),
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),

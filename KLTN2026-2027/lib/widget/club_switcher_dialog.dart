@@ -8,7 +8,6 @@ import 'package:kltn2026_2027/app/theme/theme.dart';
 import '../domain/entities/club/my_club.dart';
 import '../domain/enums/club_role.dart';
 import '../ui/screen/club/club_vm/club_context_vm.dart';
-import '../ui/screen/home/tab/club/widgets/club_create_dialog.dart';
 
 /// Hộp thoại / BottomSheet chuyển đổi Câu lạc bộ đang hoạt động
 class ClubSwitcherDialog extends ConsumerWidget {
@@ -207,12 +206,9 @@ class ClubSwitcherDialog extends ConsumerWidget {
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
                     ),
-                    onPressed: () async {
+                    onPressed: () {
                       Navigator.of(context).pop();
-                      final newClubId = await ClubCreateDialog.show(context);
-                      if (newClubId != null && newClubId.isNotEmpty && context.mounted) {
-                        context.push('/club/$newClubId');
-                      }
+                      context.push('/club/create');
                     },
                   ),
                 ),

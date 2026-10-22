@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../../../app/theme/theme.dart';
 import '../../../../../../domain/entities/club/my_club.dart';
-import 'club_create_dialog.dart';
 import 'club_join_by_code_dialog.dart';
 
 class ClubSwitcherSheet extends ConsumerWidget {
@@ -194,12 +193,9 @@ class ClubSwitcherSheet extends ConsumerWidget {
                     ),
                     icon: const Icon(Icons.add_rounded, size: AppSpacing.iconSm),
                     label: Text('Tạo CLB mới', style: AppTypography.labelLarge.bold.colored(AppColors.white)),
-                    onPressed: () async {
+                    onPressed: () {
                       Navigator.of(context).pop();
-                      final newClubId = await ClubCreateDialog.show(context);
-                      if (newClubId != null && newClubId.isNotEmpty && context.mounted) {
-                        context.push('/club/$newClubId');
-                      }
+                      context.push('/club/create');
                     },
                   ),
                 ),

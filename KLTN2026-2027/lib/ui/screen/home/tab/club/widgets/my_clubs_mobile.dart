@@ -7,7 +7,6 @@ import '../../../../../../app/theme/theme.dart';
 import '../../../../../../domain/entities/club/my_club.dart';
 import '../../../../club/club_vm/club_context_state.dart';
 import 'club_action_sheet.dart';
-import 'club_create_dialog.dart';
 import 'club_detail_view.dart';
 import 'club_empty_state.dart';
 import 'club_switcher_sheet.dart';
@@ -137,11 +136,8 @@ class MyClubsMobile extends StatelessWidget {
         itemBuilder: (context, index) {
           if (index == clubs.length) {
             return InkWell(
-              onTap: () async {
-                final newClubId = await ClubCreateDialog.show(context);
-                if (newClubId != null && newClubId.isNotEmpty && context.mounted) {
-                  context.push('/club/$newClubId');
-                }
+              onTap: () {
+                context.push('/club/create');
               },
               borderRadius: AppRadius.borderFull,
               child: Container(
