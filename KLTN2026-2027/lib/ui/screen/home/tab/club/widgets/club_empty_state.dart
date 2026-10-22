@@ -12,6 +12,7 @@ class ClubEmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return Center(
       child: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.xl),
@@ -24,25 +25,25 @@ class ClubEmptyState extends StatelessWidget {
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    AppColors.primary.withValues(alpha: 0.15),
-                    AppColors.secondary.withValues(alpha: 0.08),
+                    colors.primary.withValues(alpha: 0.15),
+                    colors.secondary.withValues(alpha: 0.08),
                   ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.sports_tennis_rounded,
                 size: 64,
-                color: AppColors.primary,
+                color: colors.primary,
               ),
             ),
             AppSpacing.gapH24,
             Text(
               'Chưa tham gia Câu lạc bộ nào',
               textAlign: TextAlign.center,
-              style: AppTypography.headlineMedium.bold.colored(AppColors.textPrimary),
+              style: AppTypography.headlineMedium.bold.colored(colors.textPrimary),
             ),
             AppSpacing.gapH8,
             Padding(
@@ -50,17 +51,18 @@ class ClubEmptyState extends StatelessWidget {
               child: Text(
                 'Tham gia hoặc tạo câu lạc bộ để lên lịch thi đấu, bình chọn slot buổi tập, theo dõi hàng chờ và giao lưu cùng đồng đội.',
                 textAlign: TextAlign.center,
-                style: AppTypography.bodyMedium.colored(AppColors.textMuted),
+                style: AppTypography.bodyMedium.colored(colors.textMuted),
               ),
             ),
             AppSpacing.gapH32,
 
             // Card 1: Tạo CLB Mới (Primary Action)
             _buildActionCard(
+              context,
               title: 'Tạo Câu Lạc Bộ Mới',
               description: 'Bạn là Chủ nhóm (Host) lên lịch buổi chơi, quản lý quỹ và duyệt thành viên',
               icon: Icons.add_business_rounded,
-              accentColor: AppColors.primary,
+              accentColor: colors.primary,
               onTap: () async {
                 final newClubId = await ClubCreateDialog.show(context);
                 if (newClubId != null && newClubId.isNotEmpty && context.mounted) {
@@ -72,6 +74,7 @@ class ClubEmptyState extends StatelessWidget {
 
             // Card 2: Nhập Mã Code
             _buildActionCard(
+              context,
               title: 'Tham Gia Bằng Mã Code',
               description: 'Nhập mã Code được Host chia sẻ để gia nhập nhóm bạn bè ngay lập tức',
               icon: Icons.tag_rounded,
@@ -82,6 +85,7 @@ class ClubEmptyState extends StatelessWidget {
 
             // Card 3: Khám Phá CLB Quanh Đây (FR06)
             _buildActionCard(
+              context,
               title: 'Tìm CLB Quanh Đây (Radar GPS)',
               description: 'Quét bán kính xung quanh tìm các CLB cầu lông đang hoạt động và tuyển quân',
               icon: Icons.radar_rounded,
@@ -92,10 +96,11 @@ class ClubEmptyState extends StatelessWidget {
 
             // Card 4: Khám Phá Kèo Giao Lưu (FR12)
             _buildActionCard(
+              context,
               title: 'Tìm Kèo Giao Lưu Gần Bạn',
               description: 'Quét radar tìm kiếm các buổi tập đang tuyển người vãng lai trong khu vực',
               icon: Icons.sports_tennis_rounded,
-              accentColor: AppColors.warning,
+              accentColor: colors.warning,
               onTap: () => context.push(AppConfig.exploreRecruitmentsScreenPath),
             ),
           ],
@@ -104,19 +109,21 @@ class ClubEmptyState extends StatelessWidget {
     );
   }
 
-  Widget _buildActionCard({
+  Widget _buildActionCard(
+    BuildContext context, {
     required String title,
     required String description,
     required IconData icon,
     required Color accentColor,
     required VoidCallback onTap,
   }) {
+    final colors = context.colors;
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: colors.cardBackground,
         borderRadius: AppRadius.card,
-        border: Border.all(color: AppColors.border),
-        boxShadow: AppShadows.sm,
+        border: Border.all(color: colors.cardBorder),
+        boxShadow: context.isDark ? AppShadows.none : AppShadows.sm,
       ),
       child: Material(
         color: Colors.transparent,
@@ -144,12 +151,12 @@ class ClubEmptyState extends StatelessWidget {
                     children: [
                       Text(
                         title,
-                        style: AppTypography.titleSmall.bold.colored(AppColors.textPrimary),
+                        style: AppTypography.titleSmall.bold.colored(colors.textPrimary),
                       ),
                       AppSpacing.gapH4,
                       Text(
                         description,
-                        style: AppTypography.bodySmall.colored(AppColors.textMuted),
+                        style: AppTypography.bodySmall.colored(colors.textMuted),
                       ),
                     ],
                   ),

@@ -78,6 +78,7 @@ class _ClubDetailViewState extends ConsumerState<ClubDetailView> with SingleTick
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     final membersState = ref.watch(clubMembersViewModelProvider);
     final membersVm = ref.read(clubMembersViewModelProvider.notifier);
     final contextVm = ref.read(clubContextViewModelProvider.notifier);
@@ -103,14 +104,17 @@ class _ClubDetailViewState extends ConsumerState<ClubDetailView> with SingleTick
 
         // 2. Tab Bar
         Container(
-          color: AppColors.surface,
+          decoration: BoxDecoration(
+            color: colors.surface,
+            border: Border(bottom: BorderSide(color: colors.cardBorder)),
+          ),
           child: TabBar(
             controller: _tabController!,
             isScrollable: true,
             tabAlignment: TabAlignment.start,
-            labelColor: AppColors.primary,
-            unselectedLabelColor: AppColors.textMuted,
-            indicatorColor: AppColors.primary,
+            labelColor: colors.primary,
+            unselectedLabelColor: colors.textMuted,
+            indicatorColor: colors.primary,
             indicatorWeight: 3,
             tabs: [
               const Tab(
@@ -172,7 +176,7 @@ class _ClubDetailViewState extends ConsumerState<ClubDetailView> with SingleTick
 
               // Tab 2: Member List (Discord Roles)
               membersState.isLoading
-                  ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
+                  ? Center(child: CircularProgressIndicator(color: colors.primary))
                   : ClubMemberSection(
                       members: membersState.members,
                       isHost: isHost,
@@ -197,20 +201,15 @@ class _ClubDetailViewState extends ConsumerState<ClubDetailView> with SingleTick
   }
 
   Widget _buildClubHeader(BuildContext context, ClubContextViewModel contextVm) {
+    final colors = context.colors;
     final roleColor = _getRoleColor(widget.club.role);
 
     return Container(
       width: double.infinity,
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            AppColors.neutral800,
-            AppColors.neutral900,
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        boxShadow: AppShadows.sm,
+      decoration: BoxDecoration(
+        color: context.isDark ? colors.surface : colors.primaryContainer.withValues(alpha: 0.35),
+        border: Border(bottom: BorderSide(color: colors.cardBorder)),
+        boxShadow: context.isDark ? AppShadows.none : AppShadows.sm,
       ),
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.base, vertical: AppSpacing.md),
       child: Column(
@@ -224,9 +223,9 @@ class _ClubDetailViewState extends ConsumerState<ClubDetailView> with SingleTick
                 width: 52,
                 height: 52,
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.2),
+                  color: colors.primary.withValues(alpha: 0.2),
                   borderRadius: AppRadius.borderMd,
-                  border: Border.all(color: AppColors.white.withValues(alpha: 0.2), width: 1.5),
+                  border: Border.all(color: colors.primary.withValues(alpha: 0.3), width: 1.5),
                   image: widget.club.avatarUrl != null && widget.club.avatarUrl!.isNotEmpty
                       ? DecorationImage(
                           image: NetworkImage(widget.club.avatarUrl!),
@@ -235,8 +234,8 @@ class _ClubDetailViewState extends ConsumerState<ClubDetailView> with SingleTick
                       : null,
                 ),
                 child: widget.club.avatarUrl == null || widget.club.avatarUrl!.isEmpty
-                    ? const Center(
-                        child: Icon(Icons.sports_tennis_rounded, color: AppColors.primaryLight, size: 28),
+                    ? Center(
+                        child: Icon(Icons.sports_tennis_rounded, color: colors.primary, size: 28),
                       )
                     : null,
               ),
@@ -249,7 +248,7 @@ class _ClubDetailViewState extends ConsumerState<ClubDetailView> with SingleTick
                   children: [
                     Text(
                       widget.club.clubName,
-                      style: AppTypography.titleMedium.bold.colored(AppColors.white),
+                      style: AppTypography.titleMedium.bold.colored(colors.textPrimary),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -260,9 +259,9 @@ class _ClubDetailViewState extends ConsumerState<ClubDetailView> with SingleTick
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: 2),
                           decoration: BoxDecoration(
-                            color: roleColor.withValues(alpha: 0.25),
+                            color: roleColor.withValues(alpha: 0.2),
                             borderRadius: AppRadius.tag,
-                            border: Border.all(color: roleColor.withValues(alpha: 0.5), width: 1),
+                            border: Border.all(color: roleColor.withValues(alpha: 0.4), width: 1),
                           ),
                           child: Text(
                             (widget.club.roleName != null && widget.club.roleName!.isNotEmpty)
@@ -278,17 +277,18 @@ class _ClubDetailViewState extends ConsumerState<ClubDetailView> with SingleTick
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                             decoration: BoxDecoration(
-                              color: AppColors.primary.withValues(alpha: 0.2),
+                              color: colors.primary.withValues(alpha: 0.15),
                               borderRadius: AppRadius.tag,
+                              border: Border.all(color: colors.primary.withValues(alpha: 0.3)),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(Icons.check_circle_rounded, color: AppColors.primaryLight, size: 12),
+                                Icon(Icons.check_circle_rounded, color: colors.primary, size: 12),
                                 AppSpacing.gapW4,
                                 Text(
                                   'Đang kích hoạt',
-                                  style: AppTypography.labelSmall.bold.colored(AppColors.primaryLight),
+                                  style: AppTypography.labelSmall.bold.colored(colors.primary),
                                 ),
                               ],
                             ),
@@ -309,13 +309,13 @@ class _ClubDetailViewState extends ConsumerState<ClubDetailView> with SingleTick
                 Expanded(
                   child: OutlinedButton.icon(
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: AppColors.white,
-                      side: BorderSide(color: AppColors.white.withValues(alpha: 0.3)),
+                      foregroundColor: colors.textPrimary,
+                      side: BorderSide(color: colors.cardBorder),
                       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
                       shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
                     ),
-                    icon: const Icon(Icons.copy_rounded, size: AppSpacing.iconXs),
-                    label: Text('Mã nhóm: ${widget.club.clubCode}', style: AppTypography.bodySmall.colored(AppColors.white)),
+                    icon: Icon(Icons.copy_rounded, size: AppSpacing.iconXs, color: colors.textSecondary),
+                    label: Text('Mã nhóm: ${widget.club.clubCode}', style: AppTypography.bodySmall.colored(colors.textPrimary)),
                     onPressed: () => _copyClubCode(context),
                   ),
                 ),

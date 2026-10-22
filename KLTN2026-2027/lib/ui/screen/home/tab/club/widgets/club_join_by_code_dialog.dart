@@ -56,9 +56,9 @@ class _ClubJoinByCodeDialogState extends ConsumerState<ClubJoinByCodeDialog> {
     if (ok) {
       Navigator.of(context).pop();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Đã tham gia câu lạc bộ thành công!'),
-          backgroundColor: AppColors.primary,
+        SnackBar(
+          content: const Text('Đã tham gia câu lạc bộ thành công!'),
+          backgroundColor: context.colors.primary,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -76,8 +76,9 @@ class _ClubJoinByCodeDialogState extends ConsumerState<ClubJoinByCodeDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return AlertDialog(
-      backgroundColor: AppColors.surface,
+      backgroundColor: colors.cardBackground,
       shape: const RoundedRectangleBorder(borderRadius: AppRadius.dialog),
       title: Row(
         children: [
@@ -112,32 +113,32 @@ class _ClubJoinByCodeDialogState extends ConsumerState<ClubJoinByCodeDialog> {
               ),
             ),
             AppSpacing.gapH16,
-            Text('Mã Câu Lạc Bộ *', style: AppTypography.labelMedium.bold.colored(AppColors.textPrimary)),
+            Text('Mã Câu Lạc Bộ *', style: AppTypography.labelMedium.bold.colored(colors.textPrimary)),
             AppSpacing.gapH8,
             TextField(
               controller: _codeController,
               textCapitalization: TextCapitalization.characters,
               decoration: InputDecoration(
                 hintText: 'Ví dụ: CLB-LEGENDS7',
-                hintStyle: AppTypography.bodyMedium.colored(AppColors.textMuted),
+                hintStyle: AppTypography.bodyMedium.colored(colors.textMuted),
                 prefixIcon: const Icon(Icons.key_rounded, size: AppSpacing.iconSm, color: AppColors.textMuted),
                 filled: true,
-                fillColor: AppColors.background,
+                fillColor: colors.inputFill,
                 border: const OutlineInputBorder(borderRadius: AppRadius.borderMd, borderSide: BorderSide.none),
                 contentPadding: AppSpacing.allMd,
               ),
             ),
             AppSpacing.gapH12,
-            Text('Biệt danh trong nhóm (Tùy chọn)', style: AppTypography.labelMedium.bold.colored(AppColors.textPrimary)),
+            Text('Biệt danh trong nhóm (Tùy chọn)', style: AppTypography.labelMedium.bold.colored(colors.textPrimary)),
             AppSpacing.gapH8,
             TextField(
               controller: _nicknameController,
               decoration: InputDecoration(
                 hintText: 'Tên bạn bè hay gọi trên sân',
-                hintStyle: AppTypography.bodyMedium.colored(AppColors.textMuted),
+                hintStyle: AppTypography.bodyMedium.colored(colors.textMuted),
                 prefixIcon: const Icon(Icons.badge_outlined, size: AppSpacing.iconSm, color: AppColors.textMuted),
                 filled: true,
-                fillColor: AppColors.background,
+                fillColor: colors.inputFill,
                 border: const OutlineInputBorder(borderRadius: AppRadius.borderMd, borderSide: BorderSide.none),
                 contentPadding: AppSpacing.allMd,
               ),
@@ -148,12 +149,12 @@ class _ClubJoinByCodeDialogState extends ConsumerState<ClubJoinByCodeDialog> {
       actions: [
         TextButton(
           onPressed: _isSubmitting ? null : () => Navigator.of(context).pop(),
-          child: Text('Hủy', style: AppTypography.labelLarge.colored(AppColors.textMuted)),
+          child: Text('Hủy', style: AppTypography.labelLarge.colored(colors.textMuted)),
         ),
         ElevatedButton(
           style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.primary,
-            foregroundColor: AppColors.onPrimary,
+            backgroundColor: colors.primary,
+            foregroundColor: AppColors.white,
             elevation: 0,
             shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
           ),

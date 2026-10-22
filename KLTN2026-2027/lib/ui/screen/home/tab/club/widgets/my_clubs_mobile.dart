@@ -26,21 +26,22 @@ class MyClubsMobile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     final clubs = state.myClubs;
     final activeId = state.activeContext?.clubId;
     final selectedClub = clubs.where((c) => c.clubId == selectedClubId).firstOrNull ??
         (clubs.isNotEmpty ? clubs.first : null);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colors.background,
       appBar: AppBar(
-        backgroundColor: AppColors.surface,
+        backgroundColor: colors.surface,
         elevation: 0,
         scrolledUnderElevation: 0.5,
         title: clubs.isEmpty
             ? Text(
                 'Câu Lạc Bộ Của Tôi',
-                style: AppTypography.titleLarge.bold.colored(AppColors.textPrimary),
+                style: AppTypography.titleLarge.bold.colored(colors.textPrimary),
               )
             : InkWell(
                 onTap: () => ClubSwitcherSheet.show(
@@ -59,13 +60,13 @@ class MyClubsMobile extends StatelessWidget {
                       Flexible(
                         child: Text(
                           selectedClub?.clubName ?? 'Câu Lạc Bộ',
-                          style: AppTypography.titleMedium.bold.colored(AppColors.textPrimary),
+                          style: AppTypography.titleMedium.bold.colored(colors.textPrimary),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
                       AppSpacing.gapW4,
-                      const Icon(Icons.expand_more_rounded, color: AppColors.textMuted, size: AppSpacing.iconSm),
+                      Icon(Icons.expand_more_rounded, color: colors.textMuted, size: AppSpacing.iconSm),
                     ],
                   ),
                 ),
@@ -75,11 +76,11 @@ class MyClubsMobile extends StatelessWidget {
             tooltip: 'Lịch tôi đã đăng ký',
             icon: Container(
               padding: const EdgeInsets.all(6),
-              decoration: const BoxDecoration(
-                color: AppColors.surfaceSubtle,
+              decoration: BoxDecoration(
+                color: colors.surfaceSubtle,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.event_available_rounded, color: AppColors.primary, size: 20),
+              child: Icon(Icons.event_available_rounded, color: colors.primary, size: 20),
             ),
             onPressed: () => context.push(AppConfig.myBookingsRoutePath),
           ),
@@ -87,11 +88,11 @@ class MyClubsMobile extends StatelessWidget {
             tooltip: 'Thêm / Tham gia nhóm',
             icon: Container(
               padding: const EdgeInsets.all(6),
-              decoration: const BoxDecoration(
-                color: AppColors.primaryContainer,
+              decoration: BoxDecoration(
+                color: colors.primaryContainer,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.add_rounded, color: AppColors.primary, size: 22),
+              child: Icon(Icons.add_rounded, color: colors.primary, size: 22),
             ),
             onPressed: () => ClubActionSheet.show(context),
           ),
@@ -102,13 +103,13 @@ class MyClubsMobile extends StatelessWidget {
           child: Column(
             children: [
               if (clubs.length > 1) _buildHorizontalClubStrip(context, clubs, activeId),
-              Container(height: 1, color: AppColors.border),
+              Container(height: 1, color: colors.cardBorder),
             ],
           ),
         ),
       ),
       body: state.isLoading && clubs.isEmpty
-          ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
+          ? Center(child: CircularProgressIndicator(color: colors.primary))
           : selectedClub != null
               ? ClubDetailView(
                   key: ValueKey(selectedClub.clubId),
@@ -120,9 +121,11 @@ class MyClubsMobile extends StatelessWidget {
   }
 
   Widget _buildHorizontalClubStrip(BuildContext context, List<MyClub> clubs, String? activeId) {
+    final colors = context.colors;
+
     return Container(
       height: 60,
-      color: AppColors.surface,
+      color: colors.surface,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.base, vertical: 6),
@@ -141,21 +144,21 @@ class MyClubsMobile extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.xs),
                 decoration: BoxDecoration(
-                  color: AppColors.primaryContainer,
+                  color: colors.primaryContainer,
                   borderRadius: AppRadius.borderFull,
                   border: Border.all(
-                    color: AppColors.primary.withValues(alpha: 0.4),
+                    color: colors.primary.withValues(alpha: 0.4),
                     width: 1,
                   ),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.add_rounded, size: AppSpacing.iconSm, color: AppColors.primary),
+                    Icon(Icons.add_rounded, size: AppSpacing.iconSm, color: colors.primary),
                     AppSpacing.gapW4,
                     Text(
                       'Tạo CLB mới',
-                      style: AppTypography.labelSmall.bold.colored(AppColors.primary),
+                      style: AppTypography.labelSmall.bold.colored(colors.primary),
                     ),
                   ],
                 ),
@@ -176,10 +179,10 @@ class MyClubsMobile extends StatelessWidget {
               duration: const Duration(milliseconds: 200),
               padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.xs),
               decoration: BoxDecoration(
-                color: isSelected ? AppColors.primaryContainer : AppColors.surfaceSubtle,
+                color: isSelected ? colors.primaryContainer : colors.surfaceSubtle,
                 borderRadius: AppRadius.borderFull,
                 border: Border.all(
-                  color: isSelected ? AppColors.primary : AppColors.border,
+                  color: isSelected ? colors.primary : colors.cardBorder,
                   width: isSelected ? 1.5 : 1,
                 ),
               ),
@@ -190,7 +193,7 @@ class MyClubsMobile extends StatelessWidget {
                     width: 26,
                     height: 26,
                     decoration: BoxDecoration(
-                      color: isSelected ? AppColors.primary : AppColors.neutral400,
+                      color: isSelected ? colors.primary : colors.textMuted,
                       shape: BoxShape.circle,
                     ),
                     child: Center(
@@ -204,12 +207,12 @@ class MyClubsMobile extends StatelessWidget {
                   Text(
                     club.clubName,
                     style: AppTypography.bodySmall.colored(
-                      isSelected ? AppColors.primary : AppColors.textPrimary,
+                      isSelected ? colors.primary : colors.textPrimary,
                     ).copyWith(fontWeight: isSelected ? FontWeight.bold : FontWeight.w500),
                   ),
                   if (isActive) ...[
                     AppSpacing.gapW4,
-                    const Icon(Icons.check_circle_rounded, color: AppColors.success, size: 14),
+                    Icon(Icons.check_circle_rounded, color: colors.success, size: 14),
                   ],
                 ],
               ),

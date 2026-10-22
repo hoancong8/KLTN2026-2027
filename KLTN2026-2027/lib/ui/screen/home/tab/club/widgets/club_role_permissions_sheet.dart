@@ -60,7 +60,7 @@ class _ClubRolePermissionsSheetState extends ConsumerState<ClubRolePermissionsSh
           }
 
           return AlertDialog(
-            backgroundColor: AppColors.surface,
+            backgroundColor: context.colors.cardBackground,
             shape: const RoundedRectangleBorder(borderRadius: AppRadius.dialog),
             titlePadding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.lg, AppSpacing.lg, AppSpacing.sm),
             contentPadding: AppSpacing.horizontalBase,
@@ -252,8 +252,8 @@ class _ClubRolePermissionsSheetState extends ConsumerState<ClubRolePermissionsSh
     final allPerms = state.availablePermissions;
 
     return Container(
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
+      decoration: BoxDecoration(
+        color: context.colors.cardBackground,
         borderRadius: AppRadius.bottomSheet,
       ),
       padding: EdgeInsets.only(

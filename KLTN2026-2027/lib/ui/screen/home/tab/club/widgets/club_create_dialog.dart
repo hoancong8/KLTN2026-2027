@@ -217,7 +217,7 @@ class _ClubCreateDialogState extends ConsumerState<ClubCreateDialog> {
 
     return Dialog(
       shape: const RoundedRectangleBorder(borderRadius: AppRadius.dialog),
-      backgroundColor: AppColors.surface,
+      backgroundColor: context.colors.cardBackground,
       insetPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.base, vertical: AppSpacing.base),
       child: ConstrainedBox(
         constraints: BoxConstraints(

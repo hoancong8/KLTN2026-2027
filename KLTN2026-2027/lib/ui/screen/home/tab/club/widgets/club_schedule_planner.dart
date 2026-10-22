@@ -437,6 +437,7 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
 
   /// 1. Giao dien Lich Thang 30/31 ngay
   Widget _buildMonthCalendarCard() {
+    final colors = context.colors;
     final now = DateTime.now();
     final currentMonthFirst = DateTime(now.year, now.month, 1);
     final isAtCurrentMonth = !_focusedMonth.isAfter(currentMonthFirst);
@@ -450,9 +451,9 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
 
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.background,
+        color: colors.cardBackground,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: colors.cardBorder),
       ),
       padding: const EdgeInsets.all(12),
       child: Column(
@@ -919,15 +920,16 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
 
   /// 4a. Che do Gio Co Dinh (Fixed Time cho tat ca cac ngay da tich)
   Widget _buildFixedTimeCard(int selectedCount) {
+    final colors = context.colors;
     final isValid = _isValidTime(_commonStartTime, _commonEndTime);
     final durationText = _calculateDuration(_commonStartTime, _commonEndTime);
 
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.background,
+        color: colors.cardBackground,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: colors.cardBorder),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1043,6 +1045,7 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
 
   /// 4b. Che do Gio Tuy Chinh Theo Tung Ngay Da Tich
   Widget _buildCustomTimeList() {
+    final colors = context.colors;
     final sortedKeys = _selectedDatesMap.keys.toList()..sort();
 
     if (sortedKeys.isEmpty) {
@@ -1109,12 +1112,12 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
             margin: const EdgeInsets.only(bottom: 10),
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: AppColors.background,
+              color: colors.cardBackground,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
                 color: isValid
-                    ? AppColors.border
-                    : AppColors.errorBorder,
+                    ? colors.cardBorder
+                    : colors.error,
               ),
             ),
             child: Column(

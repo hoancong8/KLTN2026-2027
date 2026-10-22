@@ -44,9 +44,10 @@ class ClubSwitcherSheet extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final colors = context.colors;
     return Container(
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
+      decoration: BoxDecoration(
+        color: colors.cardBackground,
         borderRadius: AppRadius.bottomSheet,
       ),
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.base),
@@ -59,8 +60,8 @@ class ClubSwitcherSheet extends ConsumerWidget {
               child: Container(
                 width: 44,
                 height: 5,
-                decoration: const BoxDecoration(
-                  color: AppColors.border,
+                decoration: BoxDecoration(
+                  color: colors.cardBorder,
                   borderRadius: AppRadius.borderXs,
                 ),
               ),
@@ -68,12 +69,12 @@ class ClubSwitcherSheet extends ConsumerWidget {
             AppSpacing.gapH16,
             Text(
               'Danh Sách Câu Lạc Bộ Của Bạn',
-              style: AppTypography.titleLarge.bold.colored(AppColors.textPrimary),
+              style: AppTypography.titleLarge.bold.colored(colors.textPrimary),
             ),
             AppSpacing.gapH4,
             Text(
               'Chọn nhóm để làm việc và đồng bộ vai trò tương ứng',
-              style: AppTypography.bodySmall.colored(AppColors.textMuted),
+              style: AppTypography.bodySmall.colored(colors.textMuted),
             ),
             AppSpacing.gapH16,
             ConstrainedBox(
@@ -88,7 +89,7 @@ class ClubSwitcherSheet extends ConsumerWidget {
                   final isActive = club.clubId == activeClubId;
 
                   return Material(
-                    color: isSelected ? AppColors.primaryContainer : AppColors.background,
+                    color: isSelected ? colors.primaryContainer : colors.surfaceSubtle,
                     borderRadius: AppRadius.borderMd,
                     child: InkWell(
                       onTap: () {
@@ -104,15 +105,15 @@ class ClubSwitcherSheet extends ConsumerWidget {
                               width: 44,
                               height: 44,
                               decoration: BoxDecoration(
-                                color: AppColors.primaryContainer,
+                                color: colors.primaryContainer,
                                 borderRadius: AppRadius.borderMd,
                                 image: club.avatarUrl != null && club.avatarUrl!.isNotEmpty
                                     ? DecorationImage(image: NetworkImage(club.avatarUrl!), fit: BoxFit.cover)
                                     : null,
                               ),
                               child: club.avatarUrl == null || club.avatarUrl!.isEmpty
-                                  ? const Center(
-                                      child: Icon(Icons.sports_tennis_rounded, color: AppColors.primary, size: 22),
+                                  ? Center(
+                                      child: Icon(Icons.sports_tennis_rounded, color: colors.primary, size: 22),
                                     )
                                   : null,
                             ),
@@ -124,7 +125,7 @@ class ClubSwitcherSheet extends ConsumerWidget {
                                   Text(
                                     club.clubName,
                                     style: AppTypography.titleSmall.colored(
-                                      isSelected ? AppColors.primary : AppColors.textPrimary,
+                                      isSelected ? colors.primary : colors.textPrimary,
                                     ).copyWith(fontWeight: isSelected ? FontWeight.bold : FontWeight.w600),
                                   ),
                                   AppSpacing.gapH4,
@@ -132,7 +133,7 @@ class ClubSwitcherSheet extends ConsumerWidget {
                                     children: [
                                       Text(
                                         club.role.displayName,
-                                        style: AppTypography.labelSmall.colored(AppColors.textMuted),
+                                        style: AppTypography.labelSmall.colored(colors.textMuted),
                                       ),
                                       if (isActive) ...[
                                         AppSpacing.gapW8,
@@ -154,7 +155,7 @@ class ClubSwitcherSheet extends ConsumerWidget {
                               ),
                             ),
                             if (isSelected)
-                              const Icon(Icons.check_circle_rounded, color: AppColors.primary, size: 22),
+                              Icon(Icons.check_circle_rounded, color: colors.primary, size: 22),
                           ],
                         ),
                       ),
@@ -170,11 +171,11 @@ class ClubSwitcherSheet extends ConsumerWidget {
                   child: OutlinedButton.icon(
                     style: OutlinedButton.styleFrom(
                       padding: AppSpacing.verticalMd,
-                      side: const BorderSide(color: AppColors.primary),
+                      side: BorderSide(color: colors.primary),
                       shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
                     ),
-                    icon: const Icon(Icons.tag_rounded, color: AppColors.primary, size: AppSpacing.iconSm),
-                    label: Text('Nhập mã Code', style: AppTypography.labelLarge.bold.colored(AppColors.primary)),
+                    icon: Icon(Icons.tag_rounded, color: colors.primary, size: AppSpacing.iconSm),
+                    label: Text('Nhập mã Code', style: AppTypography.labelLarge.bold.colored(colors.primary)),
                     onPressed: () {
                       Navigator.of(context).pop();
                       ClubJoinByCodeDialog.show(context);
@@ -185,14 +186,14 @@ class ClubSwitcherSheet extends ConsumerWidget {
                 Expanded(
                   child: ElevatedButton.icon(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      foregroundColor: AppColors.onPrimary,
+                      backgroundColor: colors.primary,
+                      foregroundColor: AppColors.white,
                       elevation: 0,
                       padding: AppSpacing.verticalMd,
                       shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
                     ),
                     icon: const Icon(Icons.add_rounded, size: AppSpacing.iconSm),
-                    label: Text('Tạo CLB mới', style: AppTypography.labelLarge.bold.colored(AppColors.onPrimary)),
+                    label: Text('Tạo CLB mới', style: AppTypography.labelLarge.bold.colored(AppColors.white)),
                     onPressed: () async {
                       Navigator.of(context).pop();
                       final newClubId = await ClubCreateDialog.show(context);

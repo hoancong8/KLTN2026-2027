@@ -21,9 +21,10 @@ class ClubActionSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return Container(
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
+      decoration: BoxDecoration(
+        color: colors.cardBackground,
         borderRadius: AppRadius.bottomSheet,
       ),
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.base),
@@ -34,26 +35,27 @@ class ClubActionSheet extends StatelessWidget {
             Container(
               width: 44,
               height: 5,
-              decoration: const BoxDecoration(
-                color: AppColors.border,
+              decoration: BoxDecoration(
+                color: colors.cardBorder,
                 borderRadius: AppRadius.borderXs,
               ),
             ),
             AppSpacing.gapH16,
             Text(
               'Tham Gia Hoặc Tạo Câu Lạc Bộ',
-              style: AppTypography.titleLarge.bold.colored(AppColors.textPrimary),
+              style: AppTypography.titleLarge.bold.colored(colors.textPrimary),
             ),
             AppSpacing.gapH8,
             Text(
               'Kết nối cùng đồng đội và tham gia các buổi tập sôi động',
               textAlign: TextAlign.center,
-              style: AppTypography.bodySmall.colored(AppColors.textMuted),
+              style: AppTypography.bodySmall.colored(colors.textMuted),
             ),
             AppSpacing.gapH20,
 
             // 1. Create Club
             _buildActionTile(
+              context: context,
               icon: Icons.add_business_rounded,
               iconColor: AppColors.primary,
               iconBgColor: AppColors.primaryContainer,
@@ -71,6 +73,7 @@ class ClubActionSheet extends StatelessWidget {
 
             // 2. Join with Code
             _buildActionTile(
+              context: context,
               icon: Icons.tag_rounded,
               iconColor: AppColors.roleSky,
               iconBgColor: AppColors.secondaryContainer,
@@ -85,6 +88,7 @@ class ClubActionSheet extends StatelessWidget {
 
             // 3. Radar GPS Explore
             _buildActionTile(
+              context: context,
               icon: Icons.radar_rounded,
               iconColor: AppColors.roleViolet,
               iconBgColor: AppColors.violetLight,
@@ -99,6 +103,7 @@ class ClubActionSheet extends StatelessWidget {
 
             // 4. My Bookings
             _buildActionTile(
+              context: context,
               icon: Icons.event_available_rounded,
               iconColor: AppColors.primaryDark,
               iconBgColor: AppColors.primaryContainer,
@@ -117,6 +122,7 @@ class ClubActionSheet extends StatelessWidget {
   }
 
   Widget _buildActionTile({
+    required BuildContext context,
     required IconData icon,
     required Color iconColor,
     required Color iconBgColor,
@@ -124,8 +130,9 @@ class ClubActionSheet extends StatelessWidget {
     required String subtitle,
     required VoidCallback onTap,
   }) {
+    final colors = context.colors;
     return Material(
-      color: AppColors.background,
+      color: colors.surfaceSubtle,
       borderRadius: AppRadius.card,
       child: InkWell(
         onTap: onTap,
@@ -150,18 +157,18 @@ class ClubActionSheet extends StatelessWidget {
                   children: [
                     Text(
                       title,
-                      style: AppTypography.titleSmall.bold.colored(AppColors.textPrimary),
+                      style: AppTypography.titleSmall.bold.colored(colors.textPrimary),
                     ),
                     AppSpacing.gapH4,
                     Text(
                       subtitle,
-                      style: AppTypography.bodySmall.colored(AppColors.textMuted),
+                      style: AppTypography.bodySmall.colored(colors.textMuted),
                     ),
                   ],
                 ),
               ),
               AppSpacing.gapW8,
-              const Icon(Icons.arrow_forward_ios_rounded, color: AppColors.textMuted, size: AppSpacing.iconSm),
+              Icon(Icons.arrow_forward_ios_rounded, color: colors.textMuted, size: AppSpacing.iconSm),
             ],
           ),
         ),

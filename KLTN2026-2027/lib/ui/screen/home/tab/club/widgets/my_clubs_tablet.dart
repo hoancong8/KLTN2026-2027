@@ -27,8 +27,10 @@ class MyClubsTablet extends StatelessWidget {
     final selectedClub = clubs.where((c) => c.clubId == selectedClubId).firstOrNull ??
         (clubs.isNotEmpty ? clubs.first : null);
 
+    final colors = context.colors;
+
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colors.background,
       body: SafeArea(
         child: Row(
           children: [
@@ -41,7 +43,7 @@ class MyClubsTablet extends StatelessWidget {
             ),
             Expanded(
               child: state.isLoading && clubs.isEmpty
-                  ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
+                  ? Center(child: CircularProgressIndicator(color: colors.primary))
                   : selectedClub != null
                       ? ClubDetailView(
                           key: ValueKey(selectedClub.clubId),

@@ -577,9 +577,9 @@ class _ClubOverviewTabState extends ConsumerState<ClubOverviewTab> {
             Container(
               padding: AppSpacing.allBase,
               decoration: BoxDecoration(
-                color: AppColors.surface,
+                color: colors.cardBackground,
                 borderRadius: AppRadius.card,
-                border: Border.all(color: AppColors.border),
+                border: Border.all(color: colors.cardBorder),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
