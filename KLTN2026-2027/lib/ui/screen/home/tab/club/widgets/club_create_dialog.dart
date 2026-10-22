@@ -24,6 +24,7 @@ class ClubCreateDialog extends ConsumerStatefulWidget {
 }
 
 class _ClubCreateDialogState extends ConsumerState<ClubCreateDialog> {
+  AppThemeColors get colors => context.colors;
   final _formKey = GlobalKey<FormState>();
 
   late final TextEditingController _nameController;
@@ -217,7 +218,7 @@ class _ClubCreateDialogState extends ConsumerState<ClubCreateDialog> {
 
     return Dialog(
       shape: const RoundedRectangleBorder(borderRadius: AppRadius.dialog),
-      backgroundColor: context.colors.cardBackground,
+      backgroundColor: colors.cardBackground,
       insetPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.base, vertical: AppSpacing.base),
       child: ConstrainedBox(
         constraints: BoxConstraints(
@@ -249,24 +250,24 @@ class _ClubCreateDialogState extends ConsumerState<ClubCreateDialog> {
                       children: [
                         Text(
                           'Tạo Câu Lạc Bộ Mới',
-                          style: AppTypography.titleLarge.bold.colored(AppColors.textPrimary),
+                          style: AppTypography.titleLarge.bold.colored(colors.textPrimary),
                         ),
                         AppSpacing.gapH4,
                         Text(
                           'Khởi tạo nhóm cầu lông và trở thành Host',
-                          style: AppTypography.bodySmall.colored(AppColors.textMuted),
+                          style: AppTypography.bodySmall.colored(colors.textMuted),
                         ),
                       ],
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.close_rounded, color: AppColors.textMuted),
+                    icon: Icon(Icons.close_rounded, color: colors.textMuted),
                     onPressed: _isSubmitting ? null : () => Navigator.of(context).pop(),
                   ),
                 ],
               ),
             ),
-            const Divider(height: 1, color: AppColors.border),
+            Divider(height: 1, color: colors.divider),
 
             // Form Body
             Expanded(
@@ -305,15 +306,15 @@ class _ClubCreateDialogState extends ConsumerState<ClubCreateDialog> {
                       _buildSectionHeader('1. Thông tin cơ bản', Icons.info_outline_rounded),
                       AppSpacing.gapH12,
 
-                      Text('Tên câu lạc bộ *', style: AppTypography.labelMedium.semiBold.colored(AppColors.textPrimary)),
+                      Text('Tên câu lạc bộ *', style: AppTypography.labelMedium.semiBold.colored(colors.textPrimary)),
                       AppSpacing.gapH8,
                       TextFormField(
                         controller: _nameController,
                         textInputAction: TextInputAction.next,
                         decoration: InputDecoration(
                           hintText: 'Ví dụ: CLB Cầu Lông Chiến Binh',
-                          hintStyle: AppTypography.bodyMedium.colored(AppColors.textMuted),
-                          prefixIcon: const Icon(Icons.groups_rounded, color: AppColors.textMuted, size: 20),
+                          hintStyle: AppTypography.bodyMedium.colored(colors.textMuted),
+                          prefixIcon: Icon(Icons.groups_rounded, color: colors.textMuted, size: 20),
                           border: const OutlineInputBorder(borderRadius: AppRadius.input),
                           contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.md),
                         ),
@@ -332,7 +333,7 @@ class _ClubCreateDialogState extends ConsumerState<ClubCreateDialog> {
                       ),
 
                       AppSpacing.gapH16,
-                      Text('Ảnh đại diện (Avatar URL)', style: AppTypography.labelMedium.semiBold.colored(AppColors.textPrimary)),
+                      Text('Ảnh đại diện (Avatar URL)', style: AppTypography.labelMedium.semiBold.colored(colors.textPrimary)),
                       AppSpacing.gapH8,
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -344,8 +345,8 @@ class _ClubCreateDialogState extends ConsumerState<ClubCreateDialog> {
                               onChanged: (_) => setState(() {}),
                               decoration: InputDecoration(
                                 hintText: 'https://...',
-                                hintStyle: AppTypography.bodyMedium.colored(AppColors.textMuted),
-                                prefixIcon: const Icon(Icons.image_outlined, color: AppColors.textMuted, size: 20),
+                                hintStyle: AppTypography.bodyMedium.colored(colors.textMuted),
+                                prefixIcon: Icon(Icons.image_outlined, color: colors.textMuted, size: 20),
                                 border: const OutlineInputBorder(borderRadius: AppRadius.input),
                                 contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.md),
                               ),
@@ -356,9 +357,9 @@ class _ClubCreateDialogState extends ConsumerState<ClubCreateDialog> {
                             width: 48,
                             height: 48,
                             decoration: BoxDecoration(
-                              color: AppColors.surfaceSubtle,
+                              color: colors.surfaceSubtle,
                               borderRadius: AppRadius.borderSm,
-                              border: Border.all(color: AppColors.neutral300),
+                              border: Border.all(color: colors.cardBorder),
                               image: _avatarUrlController.text.trim().isNotEmpty
                                   ? DecorationImage(
                                       image: NetworkImage(_avatarUrlController.text.trim()),
@@ -368,7 +369,7 @@ class _ClubCreateDialogState extends ConsumerState<ClubCreateDialog> {
                                   : null,
                             ),
                             child: _avatarUrlController.text.trim().isEmpty
-                                ? const Icon(Icons.sports_tennis_rounded, color: AppColors.textMuted, size: 24)
+                                ? Icon(Icons.sports_tennis_rounded, color: colors.textMuted, size: 24)
                                 : null,
                           ),
                         ],
@@ -378,7 +379,7 @@ class _ClubCreateDialogState extends ConsumerState<ClubCreateDialog> {
                       Wrap(
                         spacing: 8,
                         children: [
-                          Text('Gợi ý ảnh:', style: AppTypography.labelSmall.colored(AppColors.textMuted)),
+                          Text('Gợi ý ảnh:', style: AppTypography.labelSmall.colored(colors.textMuted)),
                           ..._avatarPresets.asMap().entries.map((e) {
                             return InkWell(
                               onTap: () {
@@ -400,7 +401,7 @@ class _ClubCreateDialogState extends ConsumerState<ClubCreateDialog> {
                       ),
 
                       AppSpacing.gapH16,
-                      Text('Mô tả nhóm', style: AppTypography.labelMedium.semiBold.colored(AppColors.textPrimary)),
+                      Text('Mô tả nhóm', style: AppTypography.labelMedium.semiBold.colored(colors.textPrimary)),
                       AppSpacing.gapH8,
                       TextFormField(
                         controller: _descController,
@@ -409,8 +410,8 @@ class _ClubCreateDialogState extends ConsumerState<ClubCreateDialog> {
                         textInputAction: TextInputAction.next,
                         decoration: InputDecoration(
                           hintText: 'Mục tiêu giao lưu, đối tượng thành viên...',
-                          hintStyle: AppTypography.bodyMedium.colored(AppColors.textMuted),
-                          prefixIcon: const Icon(Icons.notes_rounded, color: AppColors.textMuted, size: 20),
+                          hintStyle: AppTypography.bodyMedium.colored(colors.textMuted),
+                          prefixIcon: Icon(Icons.notes_rounded, color: colors.textMuted, size: 20),
                           border: const OutlineInputBorder(borderRadius: AppRadius.input),
                           contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
                           counterText: '',
@@ -422,15 +423,15 @@ class _ClubCreateDialogState extends ConsumerState<ClubCreateDialog> {
                       _buildSectionHeader('2. Sân đấu & Trình độ mục tiêu', Icons.stadium_outlined),
                       AppSpacing.gapH12,
 
-                      Text('Sân cố định & Địa chỉ', style: AppTypography.labelMedium.semiBold.colored(AppColors.textPrimary)),
+                      Text('Sân cố định & Địa chỉ', style: AppTypography.labelMedium.semiBold.colored(colors.textPrimary)),
                       AppSpacing.gapH8,
                       TextFormField(
                         controller: _venueController,
                         textInputAction: TextInputAction.next,
                         decoration: InputDecoration(
                           hintText: 'Tên sân (Ví dụ: Sân Cầu Lông Kỳ Hòa)',
-                          hintStyle: AppTypography.bodyMedium.colored(AppColors.textMuted),
-                          prefixIcon: const Icon(Icons.place_outlined, color: AppColors.textMuted, size: 20),
+                          hintStyle: AppTypography.bodyMedium.colored(colors.textMuted),
+                          prefixIcon: Icon(Icons.place_outlined, color: colors.textMuted, size: 20),
                           border: const OutlineInputBorder(borderRadius: AppRadius.input),
                           contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
                         ),
@@ -441,8 +442,8 @@ class _ClubCreateDialogState extends ConsumerState<ClubCreateDialog> {
                         textInputAction: TextInputAction.next,
                         decoration: InputDecoration(
                           hintText: 'Địa chỉ cụ thể (Ví dụ: 238 Đường 3/2, Quận 10)',
-                          hintStyle: AppTypography.bodyMedium.colored(AppColors.textMuted),
-                          prefixIcon: const Icon(Icons.location_on_outlined, color: AppColors.textMuted, size: 20),
+                          hintStyle: AppTypography.bodyMedium.colored(colors.textMuted),
+                          prefixIcon: Icon(Icons.location_on_outlined, color: colors.textMuted, size: 20),
                           border: const OutlineInputBorder(borderRadius: AppRadius.input),
                           contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
                         ),
@@ -457,9 +458,9 @@ class _ClubCreateDialogState extends ConsumerState<ClubCreateDialog> {
                               child: Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                                 decoration: BoxDecoration(
-                                  color: AppColors.surfaceSubtle,
+                                  color: colors.surfaceSubtle,
                                   borderRadius: AppRadius.borderSm,
-                                  border: Border.all(color: AppColors.borderStrong),
+                                  border: Border.all(color: colors.cardBorder),
                                 ),
                                 child: Row(
                                   children: [
@@ -468,7 +469,7 @@ class _ClubCreateDialogState extends ConsumerState<ClubCreateDialog> {
                                     Expanded(
                                       child: Text(
                                         'GPS: ${_lat!.toStringAsFixed(4)}, ${_lng!.toStringAsFixed(4)}',
-                                        style: AppTypography.labelSmall.semiBold.colored(AppColors.textPrimary),
+                                        style: AppTypography.labelSmall.semiBold.colored(colors.textPrimary),
                                         overflow: TextOverflow.ellipsis,
                                       ),
                                     ),
@@ -477,7 +478,7 @@ class _ClubCreateDialogState extends ConsumerState<ClubCreateDialog> {
                                         _lat = null;
                                         _lng = null;
                                       }),
-                                      child: const Icon(Icons.close_rounded, size: 16, color: AppColors.textMuted),
+                                      child: Icon(Icons.close_rounded, size: 16, color: colors.textMuted),
                                     ),
                                   ],
                                 ),
@@ -510,7 +511,7 @@ class _ClubCreateDialogState extends ConsumerState<ClubCreateDialog> {
                       ),
 
                       AppSpacing.gapH16,
-                      Text('Khoảng trình độ tuyển chọn', style: AppTypography.labelMedium.semiBold.colored(AppColors.textPrimary)),
+                      Text('Khoảng trình độ tuyển chọn', style: AppTypography.labelMedium.semiBold.colored(colors.textPrimary)),
                       AppSpacing.gapH8,
                       Row(
                         children: [
@@ -581,12 +582,12 @@ class _ClubCreateDialogState extends ConsumerState<ClubCreateDialog> {
                         decoration: BoxDecoration(
                           color: _hasSchedule
                               ? AppColors.primaryContainer
-                              : AppColors.surfaceSubtle,
+                              : colors.surfaceSubtle,
                           borderRadius: AppRadius.borderMd,
                           border: Border.all(
                             color: _hasSchedule
                                 ? AppColors.primary.withValues(alpha: 0.3)
-                                : AppColors.border,
+                                : colors.cardBorder,
                           ),
                         ),
                         child: Material(
@@ -597,11 +598,11 @@ class _ClubCreateDialogState extends ConsumerState<ClubCreateDialog> {
                             contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: 2),
                             title: Text(
                               'Thiết lập lịch sinh hoạt định kỳ',
-                              style: AppTypography.titleSmall.bold.colored(AppColors.textPrimary),
+                              style: AppTypography.titleSmall.bold.colored(colors.textPrimary),
                             ),
                             subtitle: Text(
                               'Thiết lập các thứ sinh hoạt cố định trong tuần (Thứ 2 - Chủ Nhật) và khung giờ',
-                              style: AppTypography.labelSmall.colored(AppColors.textMuted),
+                              style: AppTypography.labelSmall.colored(colors.textMuted),
                             ),
                             onChanged: (val) {
                               setState(() {
@@ -630,9 +631,9 @@ class _ClubCreateDialogState extends ConsumerState<ClubCreateDialog> {
                       Container(
                         padding: AppSpacing.allMd,
                         decoration: BoxDecoration(
-                          color: AppColors.surfaceSubtle,
+                          color: colors.surfaceSubtle,
                           borderRadius: AppRadius.borderMd,
-                          border: Border.all(color: AppColors.border),
+                          border: Border.all(color: colors.cardBorder),
                         ),
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -645,7 +646,7 @@ class _ClubCreateDialogState extends ConsumerState<ClubCreateDialog> {
                                 '• Người tạo nhóm tự động giữ vai trò Chủ nhóm (Host) với 100% quyền hạn.\n'
                                 '• Hệ thống tự sinh 4 vai trò chuẩn: Phó nhóm, Thủ quỹ, Thành viên và Khách vãng lai.\n'
                                 '• Bạn có thể thiết lập số tài khoản ngân hàng nhận quỹ (VietQR) và biểu phí đa hệ số trong phần Cài đặt CLB sau khi tạo.',
-                                style: AppTypography.bodySmall.colored(AppColors.textMuted),
+                                style: AppTypography.bodySmall.colored(colors.textMuted),
                               ),
                             ),
                           ],
@@ -658,7 +659,7 @@ class _ClubCreateDialogState extends ConsumerState<ClubCreateDialog> {
             ),
 
             // Footer Actions
-            const Divider(height: 1, color: AppColors.border),
+            Divider(height: 1, color: colors.divider),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: AppSpacing.base, vertical: AppSpacing.md),
               child: Row(
@@ -669,10 +670,10 @@ class _ClubCreateDialogState extends ConsumerState<ClubCreateDialog> {
                       style: OutlinedButton.styleFrom(
                         padding: AppSpacing.verticalMd,
                         shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
-                        side: const BorderSide(color: AppColors.border),
+                        side: BorderSide(color: colors.cardBorder),
                       ),
                       onPressed: _isSubmitting ? null : () => Navigator.of(context).pop(),
-                      child: Text('Hủy', style: AppTypography.labelLarge.colored(AppColors.textMuted)),
+                      child: Text('Hủy', style: AppTypography.labelLarge.colored(colors.textMuted)),
                     ),
                   ),
                   AppSpacing.gapW12,
@@ -719,7 +720,7 @@ class _ClubCreateDialogState extends ConsumerState<ClubCreateDialog> {
         Expanded(
           child: Text(
             title,
-            style: AppTypography.titleSmall.bold.colored(AppColors.textPrimary),
+            style: AppTypography.titleSmall.bold.colored(colors.textPrimary),
           ),
         ),
       ],

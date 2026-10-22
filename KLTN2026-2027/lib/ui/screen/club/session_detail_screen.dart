@@ -953,8 +953,8 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
         fg = AppColors.indigo;
         break;
       default:
-        bg = AppColors.surfaceSubtle;
-        fg = AppColors.neutral500;
+        bg = context.colors.surfaceSubtle;
+        fg = context.colors.textMuted;
     }
 
     return Container(

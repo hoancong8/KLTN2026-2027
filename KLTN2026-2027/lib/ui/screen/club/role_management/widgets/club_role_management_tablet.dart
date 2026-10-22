@@ -78,19 +78,20 @@ class _ClubRoleManagementTabletState extends State<ClubRoleManagementTablet> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return Scaffold(
-      backgroundColor: AppColors.neutral50,
+      backgroundColor: colors.background,
       appBar: AppBar(
         title: const Text(
           'Quản lý Vai trò & Phân quyền',
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
         ),
-        backgroundColor: Colors.white,
-        foregroundColor: AppColors.textPrimary,
+        backgroundColor: colors.surface,
+        foregroundColor: colors.textPrimary,
         elevation: 0.5,
         leading: Navigator.of(context).canPop()
             ? IconButton(
-                icon: const Icon(Icons.arrow_back_rounded, color: AppColors.textPrimary),
+                icon: Icon(Icons.arrow_back_rounded, color: colors.textPrimary),
                 onPressed: () => Navigator.of(context).pop(),
               )
             : null,
@@ -141,10 +142,10 @@ class _ClubRoleManagementTabletState extends State<ClubRoleManagementTablet> {
                       });
                     },
                   )
-                : const Center(
+                : Center(
                     child: Text(
                       'Chọn một vai trò từ danh sách bên trái để chỉnh sửa',
-                      style: TextStyle(color: AppColors.textMuted, fontSize: 14),
+                      style: TextStyle(color: colors.textMuted, fontSize: 14),
                     ),
                   ),
           ),

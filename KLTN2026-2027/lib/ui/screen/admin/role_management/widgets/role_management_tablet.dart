@@ -134,12 +134,13 @@ class _RoleManagementTabletState extends ConsumerState<RoleManagementTablet> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     final state = ref.watch(roleManagementViewModelProvider);
     final vm = ref.read(roleManagementViewModelProvider.notifier);
     final filteredRoles = state.filteredRoles;
 
     return Scaffold(
-      backgroundColor: AppColors.neutral50,
+      backgroundColor: colors.background,
       body: SafeArea(
         child: Column(
           children: [
@@ -210,7 +211,7 @@ class _RoleManagementTabletState extends ConsumerState<RoleManagementTablet> {
                         )
                       : null,
                   filled: true,
-                  fillColor: AppColors.surfaceSubtle,
+                  fillColor: colors.inputFill,
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(24),

@@ -121,7 +121,7 @@ class _ClubJoinByCodeDialogState extends ConsumerState<ClubJoinByCodeDialog> {
               decoration: InputDecoration(
                 hintText: 'Ví dụ: CLB-LEGENDS7',
                 hintStyle: AppTypography.bodyMedium.colored(colors.textMuted),
-                prefixIcon: const Icon(Icons.key_rounded, size: AppSpacing.iconSm, color: AppColors.textMuted),
+                prefixIcon: Icon(Icons.key_rounded, size: AppSpacing.iconSm, color: colors.textMuted),
                 filled: true,
                 fillColor: colors.inputFill,
                 border: const OutlineInputBorder(borderRadius: AppRadius.borderMd, borderSide: BorderSide.none),
@@ -136,7 +136,7 @@ class _ClubJoinByCodeDialogState extends ConsumerState<ClubJoinByCodeDialog> {
               decoration: InputDecoration(
                 hintText: 'Tên bạn bè hay gọi trên sân',
                 hintStyle: AppTypography.bodyMedium.colored(colors.textMuted),
-                prefixIcon: const Icon(Icons.badge_outlined, size: AppSpacing.iconSm, color: AppColors.textMuted),
+                prefixIcon: Icon(Icons.badge_outlined, size: AppSpacing.iconSm, color: colors.textMuted),
                 filled: true,
                 fillColor: colors.inputFill,
                 border: const OutlineInputBorder(borderRadius: AppRadius.borderMd, borderSide: BorderSide.none),

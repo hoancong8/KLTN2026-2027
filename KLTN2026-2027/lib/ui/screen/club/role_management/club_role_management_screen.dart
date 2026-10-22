@@ -49,6 +49,7 @@ class _ClubRoleManagementScreenState extends ConsumerState<ClubRoleManagementScr
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     final clubContext = ref.watch(clubContextViewModelProvider);
     final membersState = ref.watch(clubMembersViewModelProvider);
     final vm = ref.read(clubMembersViewModelProvider.notifier);
@@ -59,11 +60,11 @@ class _ClubRoleManagementScreenState extends ConsumerState<ClubRoleManagementScr
 
     if (membersState.isLoadingRoles && membersState.roles.isEmpty) {
       return Scaffold(
-        backgroundColor: AppColors.neutral50,
+        backgroundColor: colors.background,
         appBar: AppBar(
           title: const Text('Vai trò & Phân quyền', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17)),
-          backgroundColor: Colors.white,
-          foregroundColor: AppColors.textPrimary,
+          backgroundColor: colors.surface,
+          foregroundColor: colors.textPrimary,
           elevation: 0.5,
         ),
         body: const Center(

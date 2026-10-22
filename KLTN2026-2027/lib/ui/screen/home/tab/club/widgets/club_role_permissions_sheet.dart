@@ -26,6 +26,7 @@ class ClubRolePermissionsSheet extends ConsumerStatefulWidget {
 }
 
 class _ClubRolePermissionsSheetState extends ConsumerState<ClubRolePermissionsSheet> {
+  AppThemeColors get colors => context.colors;
   @override
   void initState() {
     super.initState();
@@ -85,7 +86,7 @@ class _ClubRolePermissionsSheetState extends ConsumerState<ClubRolePermissionsSh
                       ),
                       Text(
                         '${selectedIds.length}/${allPerms.length} quyền đã cấp',
-                        style: AppTypography.bodySmall.colored(AppColors.textMuted),
+                        style: AppTypography.bodySmall.colored(colors.textMuted),
                       ),
                     ],
                   ),
@@ -160,7 +161,7 @@ class _ClubRolePermissionsSheetState extends ConsumerState<ClubRolePermissionsSh
                             default:
                               moduleTitle = entry.key;
                               moduleIcon = Icons.tune_rounded;
-                              moduleColor = AppColors.neutral500;
+                              moduleColor = colors.textMuted;
                           }
 
                           return Column(
@@ -192,7 +193,7 @@ class _ClubRolePermissionsSheetState extends ConsumerState<ClubRolePermissionsSh
                                   ),
                                   subtitle: Text(
                                     p.code,
-                                    style: AppTypography.labelSmall.colored(AppColors.textMuted),
+                                    style: AppTypography.labelSmall.colored(colors.textMuted),
                                   ),
                                   onChanged: (val) {
                                     setDialogState(() {
@@ -214,7 +215,7 @@ class _ClubRolePermissionsSheetState extends ConsumerState<ClubRolePermissionsSh
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(ctx).pop(),
-                child: Text('Hủy', style: AppTypography.labelLarge.colored(AppColors.textMuted)),
+                child: Text('Hủy', style: AppTypography.labelLarge.colored(colors.textMuted)),
               ),
               if (!isHost)
                 ElevatedButton(
@@ -290,19 +291,19 @@ class _ClubRolePermissionsSheetState extends ConsumerState<ClubRolePermissionsSh
                     AppSpacing.gapW8,
                     Text(
                       'Vai Trò & Phân Quyền Nhóm',
-                      style: AppTypography.titleMedium.bold.colored(AppColors.textPrimary),
+                      style: AppTypography.titleMedium.bold.colored(colors.textPrimary),
                     ),
                   ],
                 ),
                 IconButton(
-                  icon: const Icon(Icons.close_rounded, color: AppColors.textMuted),
+                  icon: Icon(Icons.close_rounded, color: colors.textMuted),
                   onPressed: () => Navigator.of(context).pop(),
                 ),
               ],
             ),
             Text(
               'Thiết lập quyền hạn cụ thể (Vận hành, Thu chi, Thành viên) cho từng vai trò',
-              style: AppTypography.bodySmall.colored(AppColors.textMuted),
+              style: AppTypography.bodySmall.colored(colors.textMuted),
             ),
             const Divider(height: AppSpacing.lg),
 
@@ -323,7 +324,7 @@ class _ClubRolePermissionsSheetState extends ConsumerState<ClubRolePermissionsSh
                                 state.error != null
                                     ? 'Không thể tải vai trò: ${state.error?.message}'
                                     : 'Chưa có dữ liệu vai trò nội bộ',
-                                style: AppTypography.bodyMedium.colored(AppColors.textMuted),
+                                style: AppTypography.bodyMedium.colored(colors.textMuted),
                                 textAlign: TextAlign.center,
                               ),
                               if (state.error != null) ...[
@@ -354,7 +355,7 @@ class _ClubRolePermissionsSheetState extends ConsumerState<ClubRolePermissionsSh
                             return Container(
                               padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
                               decoration: BoxDecoration(
-                                color: AppColors.surfaceSubtle,
+                                color: colors.surfaceSubtle,
                                 borderRadius: AppRadius.borderMd,
                                 border: Border.all(color: AppColors.border),
                               ),
@@ -378,7 +379,7 @@ class _ClubRolePermissionsSheetState extends ConsumerState<ClubRolePermissionsSh
                                           children: [
                                             Text(
                                               role.roleName,
-                                              style: AppTypography.titleSmall.bold.colored(AppColors.textPrimary),
+                                              style: AppTypography.titleSmall.bold.colored(colors.textPrimary),
                                             ),
                                             if (isHost) ...[
                                               AppSpacing.gapW8,
@@ -401,7 +402,7 @@ class _ClubRolePermissionsSheetState extends ConsumerState<ClubRolePermissionsSh
                                           isHost
                                               ? 'Toàn bộ ${allPerms.isNotEmpty ? allPerms.length : 18} quyền sở hữu cao nhất'
                                               : '${role.permissions.length}/${allPerms.isNotEmpty ? allPerms.length : 18} quyền được cấp',
-                                          style: AppTypography.labelSmall.colored(isHost ? AppColors.roleHost : AppColors.textMuted),
+                                          style: AppTypography.labelSmall.colored(isHost ? AppColors.roleHost : colors.textMuted),
                                         ),
                                       ],
                                     ),

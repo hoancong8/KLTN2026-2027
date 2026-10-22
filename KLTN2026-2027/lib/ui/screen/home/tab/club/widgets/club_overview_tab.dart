@@ -548,7 +548,7 @@ class _ClubOverviewTabState extends ConsumerState<ClubOverviewTab> {
                   'Tuyển thành viên mới',
                   (club?.isRecruiting ?? false) ? 'Đang mở tuyển' : 'Tạm đóng',
                   icon: Icons.how_to_reg_rounded,
-                  valueColor: (club?.isRecruiting ?? false) ? AppColors.success : AppColors.textMuted,
+                  valueColor: (club?.isRecruiting ?? false) ? AppColors.success : colors.textMuted,
                 ),
                 if (club?.host != null) ...[
                   Divider(height: AppSpacing.base, color: colors.cardBorder),
@@ -643,7 +643,7 @@ class _ClubOverviewTabState extends ConsumerState<ClubOverviewTab> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (icon != null) ...[
-          Icon(icon, size: 16, color: iconColor ?? AppColors.textMuted),
+          Icon(icon, size: 16, color: iconColor ?? colors.textMuted),
           AppSpacing.gapW8,
         ],
         SizedBox(
@@ -653,7 +653,7 @@ class _ClubOverviewTabState extends ConsumerState<ClubOverviewTab> {
         Expanded(
           child: Text(
             value,
-            style: AppTypography.bodySmall.semiBold.colored(valueColor ?? AppColors.textPrimary),
+            style: AppTypography.bodySmall.semiBold.colored(valueColor ?? colors.textPrimary),
           ),
         ),
       ],

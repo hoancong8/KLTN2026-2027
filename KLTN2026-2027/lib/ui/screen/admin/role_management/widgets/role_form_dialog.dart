@@ -86,7 +86,7 @@ class _RoleFormDialogState extends State<RoleFormDialog> with SingleTickerProvid
                 children: [
                   IconButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    icon: const Icon(Icons.close_rounded, size: 22, color: AppColors.neutral600),
+                    icon: Icon(Icons.close_rounded, size: 22, color: context.colors.textMuted),
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
                   ),

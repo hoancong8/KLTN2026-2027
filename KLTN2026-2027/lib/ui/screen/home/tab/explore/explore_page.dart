@@ -40,11 +40,12 @@ class _ExplorePageState extends ConsumerState<ExplorePage>
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final colors = context.colors;
 
     return Scaffold(
-      backgroundColor: AppColors.neutral50,
+      backgroundColor: colors.background,
       appBar: AppBar(
-        backgroundColor: AppColors.white,
+        backgroundColor: colors.surface,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
         title: Row(
@@ -70,13 +71,13 @@ class _ExplorePageState extends ConsumerState<ExplorePage>
                   l10n.nav_explore,
                   style: AppTypography.titleMedium.copyWith(
                     fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
+                    color: colors.textPrimary,
                   ),
                 ),
                 Text(
                   'Kèo giao lưu và câu lạc bộ lân cận',
                   style: AppTypography.bodySmall.copyWith(
-                    color: AppColors.textMuted,
+                    color: colors.textMuted,
                     fontSize: 11,
                   ),
                 ),
@@ -87,10 +88,10 @@ class _ExplorePageState extends ConsumerState<ExplorePage>
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(48),
           child: Container(
-            decoration: const BoxDecoration(
-              color: AppColors.white,
+            decoration: BoxDecoration(
+              color: colors.surface,
               border: Border(
-                bottom: BorderSide(color: AppColors.border, width: 1),
+                bottom: BorderSide(color: colors.cardBorder, width: 1),
               ),
             ),
             child: TabBar(
@@ -98,7 +99,7 @@ class _ExplorePageState extends ConsumerState<ExplorePage>
               indicatorColor: AppColors.primary,
               indicatorWeight: 3,
               labelColor: AppColors.primary,
-              unselectedLabelColor: AppColors.textSecondary,
+              unselectedLabelColor: colors.textMuted,
               labelStyle: AppTypography.labelMedium.copyWith(
                 fontWeight: FontWeight.w700,
               ),

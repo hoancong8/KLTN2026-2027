@@ -57,6 +57,7 @@ class _ClubRoleManagementMobileState extends State<ClubRoleManagementMobile> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     if (_selectedRole != null) {
       // Find latest updated instance of selected role
       final updatedRole = widget.roles.firstWhere(
@@ -76,18 +77,18 @@ class _ClubRoleManagementMobileState extends State<ClubRoleManagementMobile> {
     }
 
     return Scaffold(
-      backgroundColor: AppColors.neutral50,
+      backgroundColor: colors.background,
       appBar: AppBar(
         title: const Text(
           'Vai trò & Phân quyền',
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
         ),
-        backgroundColor: Colors.white,
-        foregroundColor: AppColors.textPrimary,
+        backgroundColor: colors.surface,
+        foregroundColor: colors.textPrimary,
         elevation: 0.5,
         leading: Navigator.of(context).canPop()
             ? IconButton(
-                icon: const Icon(Icons.arrow_back_rounded, color: AppColors.textPrimary),
+                icon: Icon(Icons.arrow_back_rounded, color: colors.textPrimary),
                 onPressed: () => Navigator.of(context).pop(),
               )
             : null,

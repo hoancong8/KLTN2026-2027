@@ -134,12 +134,13 @@ class _RoleManagementMobileState extends ConsumerState<RoleManagementMobile> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     final state = ref.watch(roleManagementViewModelProvider);
     final vm = ref.read(roleManagementViewModelProvider.notifier);
     final filteredRoles = state.filteredRoles;
 
     return Scaffold(
-      backgroundColor: AppColors.neutral50,
+      backgroundColor: colors.background,
       appBar: AppBar(
         backgroundColor: AppColor.white,
         elevation: 0,
@@ -205,7 +206,7 @@ class _RoleManagementMobileState extends ConsumerState<RoleManagementMobile> {
                       )
                     : null,
                 filled: true,
-                fillColor: AppColors.surfaceSubtle,
+                fillColor: colors.inputFill,
                 contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(20),

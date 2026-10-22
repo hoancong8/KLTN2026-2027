@@ -18,11 +18,12 @@ class ExploreRecruitmentsPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final colors = context.colors;
     final state = ref.watch(exploreRecruitmentsViewModelProvider);
     final vm = ref.read(exploreRecruitmentsViewModelProvider.notifier);
 
     return Scaffold(
-      backgroundColor: AppColors.neutral50,
+      backgroundColor: colors.background,
       appBar: isEmbedded
           ? null
           : AppBar(
@@ -33,8 +34,8 @@ class ExploreRecruitmentsPage extends ConsumerWidget {
             Text('Tìm Kèo Giao Lưu (FR12)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
           ],
         ),
-        backgroundColor: AppColors.white,
-        foregroundColor: AppColors.textPrimary,
+        backgroundColor: colors.surface,
+        foregroundColor: colors.textPrimary,
         elevation: 0.5,
         actions: [
           IconButton(
@@ -48,7 +49,7 @@ class ExploreRecruitmentsPage extends ConsumerWidget {
         children: [
           // Filter Card: Radius Slider & Skill Chips
           Container(
-            color: AppColors.white,
+            color: colors.cardBackground,
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -58,7 +59,7 @@ class ExploreRecruitmentsPage extends ConsumerWidget {
                   children: [
                     Row(
                       children: [
-                        const Text('Bán kính tìm kiếm:', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+                        Text('Bán kính tìm kiếm:', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: colors.textPrimary)),
                         const SizedBox(width: 6),
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
@@ -154,7 +155,7 @@ class ExploreRecruitmentsPage extends ConsumerWidget {
                                   Text(
                                     state.errorMessage!,
                                     textAlign: TextAlign.center,
-                                    style: const TextStyle(fontSize: 13, color: AppColors.textMuted),
+                                    style: TextStyle(fontSize: 13, color: colors.textMuted),
                                   ),
                                   const SizedBox(height: 16),
                                   ElevatedButton.icon(
@@ -193,6 +194,7 @@ class ExploreRecruitmentsPage extends ConsumerWidget {
   }
 
   void _confirmJoin(BuildContext context, ExploreRecruitmentsViewModel vm, GuestRecruitment match) {
+    final colors = context.colors;
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -214,9 +216,9 @@ class ExploreRecruitmentsPage extends ConsumerWidget {
             Text('Giờ: ${DateFormat('HH:mm').format(match.startTime)} - ${DateFormat('HH:mm, dd/MM').format(match.endTime)}'),
             Text('Tiền sân: ${NumberFormat('#,###').format(match.sharedCost)} đ / người'),
             const SizedBox(height: 12),
-            const Text(
+            Text(
               'Lưu ý: Sau khi nhận suất, hãy đến sân đúng giờ để giao lưu cùng các thành viên!',
-              style: TextStyle(fontSize: 12, color: AppColors.textMuted),
+              style: TextStyle(fontSize: 12, color: colors.textMuted),
             ),
           ],
         ),
@@ -251,6 +253,7 @@ class ExploreRecruitmentsPage extends ConsumerWidget {
   }
 
   Widget _buildEmptyState(BuildContext context, ExploreRecruitmentsViewModel vm) {
+    final colors = context.colors;
     return Center(
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
@@ -267,14 +270,14 @@ class ExploreRecruitmentsPage extends ConsumerWidget {
               child: const Icon(Icons.radar_outlined, size: 54, color: AppColors.roleViolet),
             ),
             const SizedBox(height: 16),
-            const Text(
+            Text(
               'Chưa Tìm Thấy Kèo Giao Lưu Nào',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: colors.textPrimary),
             ),
             const SizedBox(height: 8),
-            const Text(
+            Text(
               'Hiện không có buổi chơi nào đang tuyển khách trong bán kính này. Hãy thử tăng bán kính quét hoặc quay lại sau.',
-              style: TextStyle(fontSize: 13, color: AppColors.textMuted),
+              style: TextStyle(fontSize: 13, color: colors.textMuted),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16),
@@ -303,13 +306,14 @@ class _RecruitmentCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     final timeStr = '${DateFormat('HH:mm').format(match.startTime)} - ${DateFormat('HH:mm, dd/MM/yyyy').format(match.endTime)}';
     return Card(
       elevation: 1,
       margin: EdgeInsets.zero,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(14),
-        side: const BorderSide(color: AppColors.border),
+        side: BorderSide(color: colors.cardBorder),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -321,7 +325,7 @@ class _RecruitmentCard extends StatelessWidget {
                 Expanded(
                   child: Text(
                     match.clubName,
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.textPrimary),
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: colors.textPrimary),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -344,12 +348,12 @@ class _RecruitmentCard extends StatelessWidget {
             // Venue location
             Row(
               children: [
-                const Icon(Icons.location_on_outlined, size: 16, color: AppColors.textMuted),
+                Icon(Icons.location_on_outlined, size: 16, color: colors.textMuted),
                 const SizedBox(width: 4),
                 Expanded(
                   child: Text(
                     match.courtLocation,
-                    style: const TextStyle(fontSize: 13, color: AppColors.textPrimary),
+                    style: TextStyle(fontSize: 13, color: colors.textPrimary),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -385,9 +389,9 @@ class _RecruitmentCard extends StatelessWidget {
             // Time
             Row(
               children: [
-                const Icon(Icons.access_time_rounded, size: 16, color: AppColors.textMuted),
+                Icon(Icons.access_time_rounded, size: 16, color: colors.textMuted),
                 const SizedBox(width: 4),
-                Text(timeStr, style: const TextStyle(fontSize: 13, color: AppColors.textPrimary)),
+                Text(timeStr, style: TextStyle(fontSize: 13, color: colors.textPrimary)),
               ],
             ),
             const Divider(height: 20),
@@ -404,7 +408,7 @@ class _RecruitmentCard extends StatelessWidget {
                     ),
                     Text(
                       'Yêu cầu: ${match.minSkillLevel.displayName}',
-                      style: const TextStyle(fontSize: 11, color: AppColors.textMuted),
+                      style: TextStyle(fontSize: 11, color: colors.textMuted),
                     ),
                   ],
                 ),

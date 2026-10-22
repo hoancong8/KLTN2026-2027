@@ -15,6 +15,7 @@ class MemberCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final colors = context.colors;
     final clubContext = ref.watch(clubContextViewModelProvider);
     final vm = ref.read(clubMembersViewModelProvider.notifier);
     final isHost = clubContext.isCurrentHost;
@@ -27,9 +28,9 @@ class MemberCard extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: colors.cardBackground,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.border.withAlpha(160)),
+        border: Border.all(color: colors.cardBorder),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withAlpha(6),
@@ -65,10 +66,10 @@ class MemberCard extends ConsumerWidget {
                     Expanded(
                       child: Text(
                         member.userName ?? 'Thành viên',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.bold,
-                          color: AppColors.textPrimary,
+                          color: colors.textPrimary,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -103,7 +104,7 @@ class MemberCard extends ConsumerWidget {
                 if (member.email != null && member.email!.isNotEmpty)
                   Text(
                     member.email!,
-                    style: const TextStyle(fontSize: 11.5, color: AppColors.textMuted),
+                    style: TextStyle(fontSize: 11.5, color: colors.textMuted),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -114,7 +115,7 @@ class MemberCard extends ConsumerWidget {
           // Actions for Host
           if (isHost && member.role != ClubRole.host)
             PopupMenuButton<String>(
-              icon: const Icon(Icons.more_vert_rounded, color: AppColors.textMuted),
+              icon: Icon(Icons.more_vert_rounded, color: colors.textMuted),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               onSelected: (val) {
                 if (val == 'role') {
@@ -164,7 +165,7 @@ class MemberCard extends ConsumerWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Chọn vai trò mới cho thành viên:', style: TextStyle(fontSize: 13, color: AppColors.textMuted)),
+              Text('Chọn vai trò mới cho thành viên:', style: TextStyle(fontSize: 13, color: context.colors.textMuted)),
               const SizedBox(height: 12),
               ...ClubRole.values.where((r) => r != ClubRole.host).map((role) {
                 return RadioListTile<ClubRole>(

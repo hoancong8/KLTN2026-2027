@@ -169,12 +169,13 @@ class _UserManagementTabletState extends ConsumerState<UserManagementTablet> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     final state = ref.watch(userManagementViewModelProvider);
     final vm = ref.read(userManagementViewModelProvider.notifier);
     final filteredUsers = state.filteredUsers;
 
     return Scaffold(
-      backgroundColor: AppColors.neutral50,
+      backgroundColor: colors.background,
       body: SafeArea(
         child: Column(
           children: [
@@ -245,7 +246,7 @@ class _UserManagementTabletState extends ConsumerState<UserManagementTablet> {
                         )
                       : null,
                   filled: true,
-                  fillColor: AppColors.surfaceSubtle,
+                  fillColor: colors.inputFill,
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(24),
@@ -269,11 +270,11 @@ class _UserManagementTabletState extends ConsumerState<UserManagementTablet> {
                       selected: isSelected,
                       onSelected: (_) => vm.setFilter(idx),
                       selectedColor: AppColor.cMain,
-                      backgroundColor: AppColors.surfaceSubtle,
+                      backgroundColor: colors.surfaceSubtle,
                       labelStyle: TextStyle(
                         fontSize: 13,
                         fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                        color: isSelected ? AppColor.white : AppColors.neutral600,
+                        color: isSelected ? AppColor.white : colors.textMuted,
                       ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20),

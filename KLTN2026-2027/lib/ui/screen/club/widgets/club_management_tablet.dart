@@ -16,6 +16,7 @@ class ClubManagementTablet extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final colors = context.colors;
     final clubContext = ref.watch(clubContextViewModelProvider);
     final clubMembersState = ref.watch(clubMembersViewModelProvider);
     final vm = ref.read(clubMembersViewModelProvider.notifier);
@@ -23,16 +24,16 @@ class ClubManagementTablet extends ConsumerWidget {
 
     if (activeContext == null) {
       return Scaffold(
-        backgroundColor: AppColors.neutral50,
+        backgroundColor: colors.background,
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.sports_tennis_rounded, size: 72, color: AppColors.textMuted.withAlpha(120)),
+              Icon(Icons.sports_tennis_rounded, size: 72, color: colors.textMuted.withAlpha(120)),
               const SizedBox(height: 16),
               const Text('Chưa chọn Câu lạc bộ hoạt động', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
-              const Text('Vui lòng chọn hoặc tham gia một câu lạc bộ.', style: TextStyle(color: AppColors.textMuted)),
+              Text('Vui lòng chọn hoặc tham gia một câu lạc bộ.', style: TextStyle(color: colors.textMuted)),
               const SizedBox(height: 20),
               ElevatedButton.icon(
                 icon: const Icon(Icons.swap_horiz_rounded),
@@ -50,7 +51,7 @@ class ClubManagementTablet extends ConsumerWidget {
     final members = clubMembersState.filteredMembers;
 
     return Scaffold(
-      backgroundColor: AppColors.neutral50,
+      backgroundColor: colors.background,
       appBar: AppBar(
         title: const Text('Quản lý Câu lạc bộ & Thành viên', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
         backgroundColor: AppColors.white,
@@ -100,7 +101,7 @@ class ClubManagementTablet extends ConsumerWidget {
                             const SizedBox(height: 14),
                             Text(
                               activeContext.clubName,
-                              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: colors.textPrimary),
                             ),
                             const SizedBox(height: 4),
                             Row(
@@ -116,14 +117,14 @@ class ClubManagementTablet extends ConsumerWidget {
                                       );
                                     }
                                   },
-                                  child: const Icon(Icons.copy_rounded, size: 14, color: AppColors.textMuted),
+                                  child: Icon(Icons.copy_rounded, size: 14, color: colors.textMuted),
                                 ),
                               ],
                             ),
                             const SizedBox(height: 16),
                             const Divider(color: AppColors.border),
                             const SizedBox(height: 12),
-                            const Text('Vai trò của bạn trong nhóm:', style: TextStyle(fontSize: 12, color: AppColors.textMuted)),
+                            Text('Vai trò của bạn trong nhóm:', style: TextStyle(fontSize: 12, color: colors.textMuted)),
                             const SizedBox(height: 6),
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -139,9 +140,9 @@ class ClubManagementTablet extends ConsumerWidget {
                             ),
                             const SizedBox(height: 16),
                             if (club?.description != null && club!.description!.isNotEmpty) ...[
-                              const Text('Mô tả nhóm:', style: TextStyle(fontSize: 12, color: AppColors.textMuted)),
+                              Text('Mô tả nhóm:', style: TextStyle(fontSize: 12, color: colors.textMuted)),
                               const SizedBox(height: 4),
-                              Text(club.description!, style: const TextStyle(fontSize: 13, color: AppColors.textPrimary)),
+                              Text(club.description!, style: TextStyle(fontSize: 13, color: colors.textPrimary)),
                               const SizedBox(height: 16),
                             ],
                             const Spacer(),
@@ -218,7 +219,7 @@ class ClubManagementTablet extends ConsumerWidget {
                                 Expanded(
                                   child: Text(
                                     'Danh sách Thành viên (${clubMembersState.members.length})',
-                                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: colors.textPrimary),
                                   ),
                                 ),
                                 SizedBox(
@@ -227,10 +228,10 @@ class ClubManagementTablet extends ConsumerWidget {
                                     onChanged: (val) => vm.setSearchQuery(val),
                                     decoration: InputDecoration(
                                       hintText: 'Tìm theo tên, email, vai trò...',
-                                      hintStyle: const TextStyle(fontSize: 12.5, color: AppColors.textMuted),
-                                      prefixIcon: const Icon(Icons.search_rounded, size: 18, color: AppColors.textMuted),
+                                      hintStyle: TextStyle(fontSize: 12.5, color: colors.textMuted),
+                                      prefixIcon: Icon(Icons.search_rounded, size: 18, color: colors.textMuted),
                                       filled: true,
-                                      fillColor: AppColors.neutral50,
+                                      fillColor: colors.inputFill,
                                       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppColors.border)),
                                       enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppColors.border)),

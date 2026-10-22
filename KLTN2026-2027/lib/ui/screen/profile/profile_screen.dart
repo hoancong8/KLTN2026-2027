@@ -16,6 +16,7 @@ class ProfileScreen extends ConsumerStatefulWidget {
 }
 
 class _ProfileScreenState extends ConsumerState<ProfileScreen> {
+  AppThemeColors get colors => context.colors;
   @override
   void initState() {
     super.initState();
@@ -80,9 +81,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final profile = state.playerProfile;
 
     return Scaffold(
-      backgroundColor: AppColors.neutral50,
+      backgroundColor: colors.background,
       appBar: AppBar(
-        backgroundColor: AppColor.white,
+        backgroundColor: colors.surface,
         elevation: 0,
         title: const Text(
           'Hồ sơ & Trình độ cá nhân',
@@ -487,7 +488,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               margin: const EdgeInsets.only(bottom: 8),
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               decoration: BoxDecoration(
-                color: isCurrent ? color.withValues(alpha: 0.08) : AppColors.neutral50,
+                color: isCurrent ? color.withValues(alpha: 0.08) : colors.surfaceSubtle,
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(
                   color: isCurrent ? color : Colors.transparent,
@@ -624,6 +625,7 @@ class _EditProfileSheet extends ConsumerStatefulWidget {
 }
 
 class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
+  AppThemeColors get colors => context.colors;
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _nameController;
   late int _gender;
@@ -713,7 +715,7 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
                 decoration: InputDecoration(
                   hintText: 'Nhập họ và tên...',
                   filled: true,
-                  fillColor: AppColors.neutral50,
+                  fillColor: colors.inputFill,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                     borderSide: BorderSide.none,
@@ -759,11 +761,11 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
                     label: Text('${level.code} - ${level.displayName}'),
                     selected: isSelected,
                     selectedColor: AppColor.cMain.withValues(alpha: 0.15),
-                    backgroundColor: AppColors.surfaceSubtle,
+                    backgroundColor: colors.surfaceSubtle,
                     labelStyle: TextStyle(
                       fontSize: 12,
                       fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                      color: isSelected ? AppColor.cMain : AppColor.cDark,
+                      color: isSelected ? AppColor.cMain : colors.textPrimary,
                     ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
@@ -858,10 +860,10 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 10),
           decoration: BoxDecoration(
-            color: isSelected ? AppColor.cMain.withValues(alpha: 0.1) : AppColors.neutral50,
+            color: isSelected ? AppColor.cMain.withValues(alpha: 0.1) : colors.surfaceSubtle,
             borderRadius: BorderRadius.circular(10),
             border: Border.all(
-              color: isSelected ? AppColor.cMain : AppColors.border,
+              color: isSelected ? AppColor.cMain : colors.cardBorder,
             ),
           ),
           child: Row(
@@ -878,7 +880,7 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                  color: isSelected ? AppColor.cMain : AppColor.cDark,
+                  color: isSelected ? AppColor.cMain : colors.textPrimary,
                 ),
               ),
             ],

@@ -35,11 +35,13 @@ class ClubExploreCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: colors.cardBackground,
         borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: colors.cardBorder),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.04),
@@ -96,10 +98,10 @@ class ClubExploreCard extends StatelessWidget {
                         children: [
                           Text(
                             club.groupName,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w700,
-                              color: AppColors.textPrimary,
+                              color: colors.textPrimary,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -109,10 +111,10 @@ class ClubExploreCard extends StatelessWidget {
                             children: [
                               Text(
                                 club.code,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w600,
-                                  color: AppColors.textMuted,
+                                  color: colors.textMuted,
                                 ),
                               ),
                               const SizedBox(width: 8),
@@ -247,7 +249,7 @@ class ClubExploreCard extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: club.isRecruiting
                             ? AppColors.successLight
-                            : AppColors.surfaceSubtle,
+                            : colors.surfaceSubtle,
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
@@ -257,7 +259,7 @@ class ClubExploreCard extends StatelessWidget {
                           fontWeight: FontWeight.w700,
                           color: club.isRecruiting
                               ? AppColors.roleMember
-                              : AppColors.neutral400,
+                              : colors.textMuted,
                         ),
                       ),
                     ),
@@ -266,14 +268,14 @@ class ClubExploreCard extends StatelessWidget {
                     // Member count
                     Row(
                       children: [
-                        const Icon(Icons.group_outlined, size: 14, color: AppColors.textMuted),
+                        Icon(Icons.group_outlined, size: 14, color: colors.textMuted),
                         const SizedBox(width: 4),
                         Text(
                           '${club.memberCount} TV',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
-                            color: AppColors.textMuted,
+                            color: colors.textMuted,
                           ),
                         ),
                       ],

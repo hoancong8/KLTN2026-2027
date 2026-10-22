@@ -18,13 +18,14 @@ class MyBookingsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final colors = context.colors;
     final state = ref.watch(myBookingsViewModelProvider);
     final vm = ref.read(myBookingsViewModelProvider.notifier);
 
     return Scaffold(
-      backgroundColor: AppColors.neutral50,
+      backgroundColor: colors.background,
       appBar: AppBar(
-        backgroundColor: AppColor.white,
+        backgroundColor: colors.surface,
         elevation: 0,
         centerTitle: false,
         title: const Text(
@@ -51,7 +52,7 @@ class MyBookingsScreen extends ConsumerWidget {
         children: [
           // Filter Chips Row
           Container(
-            color: AppColor.white,
+            color: colors.cardBackground,
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
@@ -64,11 +65,11 @@ class MyBookingsScreen extends ConsumerWidget {
                       label: Text(f.label),
                       selected: isSelected,
                       selectedColor: AppColor.cMain.withValues(alpha: 0.15),
-                      backgroundColor: AppColors.surfaceSubtle,
+                      backgroundColor: colors.surfaceSubtle,
                       labelStyle: TextStyle(
                         fontSize: 12.5,
                         fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                        color: isSelected ? AppColor.cMain : AppColor.cDark,
+                        color: isSelected ? AppColor.cMain : colors.textPrimary,
                       ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20),

@@ -169,12 +169,13 @@ class _UserManagementMobileState extends ConsumerState<UserManagementMobile> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     final state = ref.watch(userManagementViewModelProvider);
     final vm = ref.read(userManagementViewModelProvider.notifier);
     final filteredUsers = state.filteredUsers;
 
     return Scaffold(
-      backgroundColor: AppColors.neutral50,
+      backgroundColor: colors.background,
       appBar: AppBar(
         backgroundColor: AppColor.white,
         elevation: 0,
@@ -243,7 +244,7 @@ class _UserManagementMobileState extends ConsumerState<UserManagementMobile> {
                           )
                         : null,
                     filled: true,
-                    fillColor: AppColors.surfaceSubtle,
+                    fillColor: colors.inputFill,
                     contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(20),
@@ -266,11 +267,11 @@ class _UserManagementMobileState extends ConsumerState<UserManagementMobile> {
                           selected: isSelected,
                           onSelected: (_) => vm.setFilter(idx),
                           selectedColor: AppColor.cMain,
-                          backgroundColor: AppColors.surfaceSubtle,
+                          backgroundColor: colors.surfaceSubtle,
                           labelStyle: TextStyle(
                             fontSize: 12,
                             fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                            color: isSelected ? AppColor.white : AppColors.neutral600,
+                            color: isSelected ? AppColor.white : colors.textMuted,
                           ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16),

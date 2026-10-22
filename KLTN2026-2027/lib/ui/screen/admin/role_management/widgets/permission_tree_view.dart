@@ -19,6 +19,7 @@ class PermissionTreeView extends StatefulWidget {
 }
 
 class _PermissionTreeViewState extends State<PermissionTreeView> {
+  AppThemeColors get colors => context.colors;
   final TextEditingController _searchController = TextEditingController();
   final Set<String> _expandedNodeNames = {};
   String _searchQuery = '';
@@ -138,7 +139,7 @@ class _PermissionTreeViewState extends State<PermissionTreeView> {
                   )
                 : null,
             filled: true,
-            fillColor: AppColors.neutral50,
+            fillColor: colors.inputFill,
             contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
@@ -192,16 +193,16 @@ class _PermissionTreeViewState extends State<PermissionTreeView> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: AppColors.surfaceSubtle,
+          color: colors.surfaceSubtle,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(color: AppColor.cDivider),
         ),
         child: Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w500,
-            color: AppColors.neutral700,
+            color: colors.textPrimary,
           ),
         ),
       ),
@@ -237,7 +238,7 @@ class _PermissionTreeViewState extends State<PermissionTreeView> {
                     child: Icon(
                       isExpanded ? Icons.arrow_drop_down_rounded : Icons.arrow_right_rounded,
                       size: 20,
-                      color: AppColors.neutral500,
+                      color: colors.textMuted,
                     ),
                   ),
                 )
@@ -308,7 +309,7 @@ class _PermissionTreeViewState extends State<PermissionTreeView> {
               style: TextStyle(
                 fontSize: 12.5,
                 fontWeight: isChecked ? FontWeight.w500 : FontWeight.normal,
-                color: isChecked ? AppColors.neutral900 : AppColors.neutral600,
+                color: isChecked ? colors.textPrimary : colors.textMuted,
               ),
             ),
           ),
@@ -337,7 +338,7 @@ class _PermissionTreeViewState extends State<PermissionTreeView> {
           color: (value == true || value == null) ? AppColor.cMain : Colors.transparent,
           borderRadius: BorderRadius.circular(4),
           border: Border.all(
-            color: (value == true || value == null) ? AppColor.cMain : AppColors.neutral300,
+            color: (value == true || value == null) ? AppColor.cMain : colors.cardBorder,
             width: 1.5,
           ),
         ),

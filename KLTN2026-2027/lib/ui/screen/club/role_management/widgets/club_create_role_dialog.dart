@@ -77,11 +77,12 @@ class _ClubCreateRoleDialogState extends State<ClubCreateRoleDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     final previewColor = ClubRoleColorHelper.getRoleColor(_nameController.text);
 
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      backgroundColor: AppColors.white,
+      backgroundColor: colors.cardBackground,
       insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 480),
@@ -106,7 +107,7 @@ class _ClubCreateRoleDialogState extends State<ClubCreateRoleDialog> {
                       child: Icon(Icons.shield_outlined, color: previewColor, size: 22),
                     ),
                     const SizedBox(width: 12),
-                    const Expanded(
+                    Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -115,18 +116,18 @@ class _ClubCreateRoleDialogState extends State<ClubCreateRoleDialog> {
                             style: TextStyle(
                               fontSize: 17,
                               fontWeight: FontWeight.bold,
-                              color: AppColors.textPrimary,
+                              color: colors.textPrimary,
                             ),
                           ),
                           Text(
                             'Thêm vai trò và cấu hình quyền hạn cho thành viên',
-                            style: TextStyle(fontSize: 12, color: AppColors.textMuted),
+                            style: TextStyle(fontSize: 12, color: colors.textMuted),
                           ),
                         ],
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.close_rounded, size: 20, color: AppColors.textMuted),
+                      icon: Icon(Icons.close_rounded, size: 20, color: colors.textMuted),
                       onPressed: () => Navigator.of(context).pop(false),
                     ),
                   ],
@@ -136,9 +137,9 @@ class _ClubCreateRoleDialogState extends State<ClubCreateRoleDialog> {
                 const SizedBox(height: 18),
 
                 // Role Name
-                const Text(
+                Text(
                   'Tên vai trò *',
-                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: colors.textPrimary),
                 ),
                 const SizedBox(height: 6),
                 TextFormField(
@@ -147,7 +148,7 @@ class _ClubCreateRoleDialogState extends State<ClubCreateRoleDialog> {
                   onChanged: (_) => setState(() {}),
                   decoration: InputDecoration(
                     hintText: 'Ví dụ: Ban trọng tài, HLV, Hậu cần...',
-                    hintStyle: const TextStyle(fontSize: 13, color: AppColors.textMuted),
+                    hintStyle: TextStyle(fontSize: 13, color: colors.textMuted),
                     contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                     prefixIcon: Padding(
                       padding: const EdgeInsets.all(12),
@@ -181,9 +182,9 @@ class _ClubCreateRoleDialogState extends State<ClubCreateRoleDialog> {
                 const SizedBox(height: 16),
 
                 // Description
-                const Text(
+                Text(
                   'Mô tả vai trò',
-                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: colors.textPrimary),
                 ),
                 const SizedBox(height: 6),
                 TextFormField(
@@ -191,7 +192,7 @@ class _ClubCreateRoleDialogState extends State<ClubCreateRoleDialog> {
                   maxLines: 2,
                   decoration: InputDecoration(
                     hintText: 'Mô tả nhiệm vụ của vai trò này trong câu lạc bộ',
-                    hintStyle: const TextStyle(fontSize: 13, color: AppColors.textMuted),
+                    hintStyle: TextStyle(fontSize: 13, color: colors.textMuted),
                     contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
@@ -220,17 +221,17 @@ class _ClubCreateRoleDialogState extends State<ClubCreateRoleDialog> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Expanded(
+                      Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
                               'Vai trò mặc định',
-                              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+                              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: colors.textPrimary),
                             ),
                             Text(
                               'Tự động cấp vai trò này khi có thành viên mới',
-                              style: TextStyle(fontSize: 11.5, color: AppColors.textMuted),
+                              style: TextStyle(fontSize: 11.5, color: colors.textMuted),
                             ),
                           ],
                         ),
@@ -252,7 +253,7 @@ class _ClubCreateRoleDialogState extends State<ClubCreateRoleDialog> {
                   children: [
                     TextButton(
                       onPressed: () => Navigator.of(context).pop(false),
-                      child: const Text('Hủy', style: TextStyle(color: AppColors.textMuted)),
+                      child: Text('Hủy', style: TextStyle(color: colors.textMuted)),
                     ),
                     const SizedBox(width: 8),
                     ElevatedButton(

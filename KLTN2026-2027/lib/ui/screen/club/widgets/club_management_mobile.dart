@@ -16,6 +16,7 @@ class ClubManagementMobile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final colors = context.colors;
     final clubContext = ref.watch(clubContextViewModelProvider);
     final clubMembersState = ref.watch(clubMembersViewModelProvider);
     final vm = ref.read(clubMembersViewModelProvider.notifier);
@@ -23,22 +24,22 @@ class ClubManagementMobile extends ConsumerWidget {
 
     if (activeContext == null) {
       return Scaffold(
-        backgroundColor: AppColors.neutral50,
+        backgroundColor: colors.background,
         appBar: AppBar(
           title: const Text('Quản lý Câu lạc bộ', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17)),
-          backgroundColor: AppColors.white,
-          foregroundColor: AppColors.textPrimary,
+          backgroundColor: colors.surface,
+          foregroundColor: colors.textPrimary,
           elevation: 0,
         ),
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.sports_tennis_rounded, size: 64, color: AppColors.textMuted.withAlpha(120)),
+              Icon(Icons.sports_tennis_rounded, size: 64, color: colors.textMuted.withAlpha(120)),
               const SizedBox(height: 16),
               const Text('Chưa chọn Câu lạc bộ hoạt động', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
-              const Text('Vui lòng chọn một câu lạc bộ để xem thông tin.', style: TextStyle(color: AppColors.textMuted)),
+              Text('Vui lòng chọn một câu lạc bộ để xem thông tin.', style: TextStyle(color: colors.textMuted)),
               const SizedBox(height: 16),
               ElevatedButton.icon(
                 icon: const Icon(Icons.swap_horiz_rounded),
@@ -59,11 +60,11 @@ class ClubManagementMobile extends ConsumerWidget {
     final members = clubMembersState.filteredMembers;
 
     return Scaffold(
-      backgroundColor: AppColors.neutral50,
+      backgroundColor: colors.background,
       appBar: AppBar(
         title: Text(activeContext.clubName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17)),
-        backgroundColor: AppColors.white,
-        foregroundColor: AppColors.textPrimary,
+        backgroundColor: colors.surface,
+        foregroundColor: colors.textPrimary,
         elevation: 0.5,
         actions: [
           IconButton(
@@ -204,9 +205,9 @@ class ClubManagementMobile extends ConsumerWidget {
                               ),
                             ],
                           ),
-                          child: const Row(
+                          child: Row(
                             children: [
-                              CircleAvatar(
+                              const CircleAvatar(
                                 radius: 18,
                                 backgroundColor: AppColors.violetLight,
                                 child: Icon(Icons.shield_rounded, color: AppColors.roleHost, size: 20),
@@ -221,17 +222,17 @@ class ClubManagementMobile extends ConsumerWidget {
                                       style: TextStyle(
                                         fontSize: 14,
                                         fontWeight: FontWeight.bold,
-                                        color: AppColors.textPrimary,
+                                        color: colors.textPrimary,
                                       ),
                                     ),
                                     Text(
                                       'Quản lý danh sách vai trò và phân quyền Discord-style',
-                                      style: TextStyle(fontSize: 11.5, color: AppColors.textMuted),
+                                      style: TextStyle(fontSize: 11.5, color: colors.textMuted),
                                     ),
                                   ],
                                 ),
                               ),
-                              Icon(Icons.arrow_forward_ios_rounded, size: 14, color: AppColors.textMuted),
+                              Icon(Icons.arrow_forward_ios_rounded, size: 14, color: colors.textMuted),
                             ],
                           ),
                         ),
@@ -244,10 +245,10 @@ class ClubManagementMobile extends ConsumerWidget {
                     children: [
                       Text(
                         'Thành viên (${clubMembersState.members.length})',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: AppColors.textPrimary,
+                          color: colors.textPrimary,
                         ),
                       ),
                       TextButton.icon(
@@ -264,10 +265,10 @@ class ClubManagementMobile extends ConsumerWidget {
                     onChanged: (val) => vm.setSearchQuery(val),
                     decoration: InputDecoration(
                       hintText: 'Tìm theo tên, email, vai trò...',
-                      hintStyle: const TextStyle(fontSize: 13, color: AppColors.textMuted),
-                      prefixIcon: const Icon(Icons.search_rounded, size: 20, color: AppColors.textMuted),
+                      hintStyle: TextStyle(fontSize: 13, color: colors.textMuted),
+                      prefixIcon: Icon(Icons.search_rounded, size: 20, color: colors.textMuted),
                       filled: true,
-                      fillColor: AppColors.white,
+                      fillColor: colors.inputFill,
                       contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -283,12 +284,12 @@ class ClubManagementMobile extends ConsumerWidget {
 
                   // 3. Members List
                   if (members.isEmpty)
-                    const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 32),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 32),
                       child: Center(
                         child: Text(
                           'Không tìm thấy thành viên nào',
-                          style: TextStyle(color: AppColors.textMuted),
+                          style: TextStyle(color: colors.textMuted),
                         ),
                       ),
                     )

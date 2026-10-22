@@ -506,7 +506,7 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
             child: TabBar(
               controller: _tabController,
               labelColor: AppColors.primary,
-              unselectedLabelColor: AppColors.textMuted,
+              unselectedLabelColor: colors.textMuted,
               indicatorColor: AppColors.primary,
               indicatorWeight: 3,
               tabs: const [
@@ -542,7 +542,7 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.error_outline_rounded, size: 56, color: AppColors.textMuted),
+                      Icon(Icons.error_outline_rounded, size: 56, color: colors.textMuted),
                       const SizedBox(height: 12),
                       const Text(
                         'Không thể tải thông tin câu lạc bộ',
@@ -707,7 +707,7 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
                 'Tuyển quân',
                 club.isRecruiting ? 'Đang mở' : 'Đã đủ',
                 Icons.how_to_reg_rounded,
-                club.isRecruiting ? AppColors.success : AppColors.neutral400,
+                club.isRecruiting ? AppColors.success : colors.textMuted,
               ),
             ],
           ),
@@ -1068,7 +1068,7 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
           const SizedBox(height: 12),
           Row(
             children: [
-              const Text('Khoảng trình độ: ', style: TextStyle(fontSize: 12, color: AppColors.textMuted)),
+              Text('Khoảng trình độ: ', style: TextStyle(fontSize: 12, color: colors.textMuted)),
               Text(
                 '${club.minSkillLevel?.code ?? "NB"} - ${club.maxSkillLevel?.code ?? "G"}',
                 style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.primary),

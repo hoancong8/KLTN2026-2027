@@ -29,6 +29,7 @@ class CreateSessionDialog extends ConsumerStatefulWidget {
 }
 
 class _CreateSessionDialogState extends ConsumerState<CreateSessionDialog> {
+  AppThemeColors get colors => context.colors;
   final _formKey = GlobalKey<FormState>();
   final _titleCtl = TextEditingController();
   final _courtLocationCtl = TextEditingController();
@@ -164,7 +165,7 @@ class _CreateSessionDialogState extends ConsumerState<CreateSessionDialog> {
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.close, color: AppColors.textMuted),
+                      icon: Icon(Icons.close, color: colors.textMuted),
                       onPressed: () => Navigator.of(context).pop(),
                     ),
                   ],
@@ -211,7 +212,7 @@ class _CreateSessionDialogState extends ConsumerState<CreateSessionDialog> {
                               ),
                               child: Row(
                                 children: [
-                                  const Icon(Icons.access_time_rounded, size: 18, color: AppColors.textMuted),
+                                  Icon(Icons.access_time_rounded, size: 18, color: colors.textMuted),
                                   const SizedBox(width: 6),
                                   Expanded(
                                     child: Text(
@@ -243,7 +244,7 @@ class _CreateSessionDialogState extends ConsumerState<CreateSessionDialog> {
                               ),
                               child: Row(
                                 children: [
-                                  const Icon(Icons.access_time_filled_rounded, size: 18, color: AppColors.textMuted),
+                                  Icon(Icons.access_time_filled_rounded, size: 18, color: colors.textMuted),
                                   const SizedBox(width: 6),
                                   Expanded(
                                     child: Text(
@@ -319,7 +320,7 @@ class _CreateSessionDialogState extends ConsumerState<CreateSessionDialog> {
                       const SizedBox(width: 8),
                       Text(
                         'Tổng sĩ số tối đa: $_maxPlayers slot chính thức',
-                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: colors.textPrimary),
                       ),
                     ],
                   ),
@@ -366,15 +367,15 @@ class _CreateSessionDialogState extends ConsumerState<CreateSessionDialog> {
   Widget _buildLabel(String text) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 6),
-      child: Text(text, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+      child: Text(text, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: colors.textPrimary)),
     );
   }
 
   InputDecoration _inputDecoration({String? hint, IconData? prefixIcon}) {
     return InputDecoration(
       hintText: hint,
-      hintStyle: const TextStyle(color: AppColors.textMuted, fontSize: 13),
-      prefixIcon: prefixIcon != null ? Icon(prefixIcon, size: 18, color: AppColors.textMuted) : null,
+      hintStyle: TextStyle(color: colors.textMuted, fontSize: 13),
+      prefixIcon: prefixIcon != null ? Icon(prefixIcon, size: 18, color: colors.textMuted) : null,
       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppColors.border)),
       enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppColors.border)),

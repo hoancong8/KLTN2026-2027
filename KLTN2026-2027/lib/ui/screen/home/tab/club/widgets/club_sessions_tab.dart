@@ -636,7 +636,7 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
                     style: TextStyle(
                       fontSize: 11.5,
                       fontWeight: FontWeight.bold,
-                      color: isWeekend ? AppColors.accentOrange : AppColors.neutral500,
+                      color: isWeekend ? AppColors.accentOrange : colors.textMuted,
                     ),
                   ),
                 ),
@@ -678,7 +678,7 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
 
               // Visual styling
               Color bgColor = Colors.transparent;
-              Color textColor = AppColors.textPrimary;
+              Color textColor = colors.textPrimary;
               Border? border;
 
               if (isSelected) {
@@ -931,7 +931,7 @@ class _SessionCard extends StatelessWidget {
               // Header Row: Status badge & User booking tag
               Row(
                 children: [
-                  _buildStatusBadge(session.status),
+                  _buildStatusBadge(session.status, colors),
                   const Spacer(),
                   if (session.isBookedByCurrentUser)
                     _buildUserTicketBadge(session.currentUserBookingStatus, session.currentUserQueueOrder),
@@ -1026,7 +1026,7 @@ class _SessionCard extends StatelessWidget {
     );
   }
 
-  Widget _buildStatusBadge(SessionStatus status) {
+  Widget _buildStatusBadge(SessionStatus status, AppThemeColors colors) {
     Color bg;
     Color fg;
     switch (status) {
@@ -1043,8 +1043,8 @@ class _SessionCard extends StatelessWidget {
         fg = AppColors.indigo;
         break;
       default:
-        bg = AppColors.surfaceSubtle;
-        fg = AppColors.neutral500;
+        bg = colors.surfaceSubtle;
+        fg = colors.textMuted;
     }
 
     return Container(

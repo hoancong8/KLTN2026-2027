@@ -32,6 +32,7 @@ class _ExploreClubsScreenState extends ConsumerState<ExploreClubsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     final state = ref.watch(exploreClubsViewModelProvider);
     final vm = ref.read(exploreClubsViewModelProvider.notifier);
 
@@ -48,20 +49,20 @@ class _ExploreClubsScreenState extends ConsumerState<ExploreClubsScreen> {
     });
 
     return Scaffold(
-      backgroundColor: AppColors.neutral50,
+      backgroundColor: colors.background,
       appBar: widget.isEmbedded
           ? null
           : AppBar(
-              backgroundColor: AppColors.white,
+              backgroundColor: colors.surface,
               elevation: 0,
-              title: const Row(
+              title: Row(
                 children: [
-                  Icon(Icons.radar_rounded, color: AppColors.primary, size: 24),
-                  SizedBox(width: 8),
+                  const Icon(Icons.radar_rounded, color: AppColors.primary, size: 24),
+                  const SizedBox(width: 8),
                   Text(
                     'Tìm kiếm CLB quanh đây',
                     style: TextStyle(
-                      color: AppColors.textPrimary,
+                      color: colors.textPrimary,
                       fontSize: 18,
                       fontWeight: FontWeight.w700,
                     ),
@@ -73,17 +74,17 @@ class _ExploreClubsScreenState extends ConsumerState<ExploreClubsScreen> {
         children: [
           // 1. Search Box
           Container(
-            color: AppColors.white,
+            color: colors.cardBackground,
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
                 hintText: 'Tìm theo tên nhóm, tên sân, địa chỉ...',
-                hintStyle: const TextStyle(fontSize: 13, color: AppColors.textMuted),
-                prefixIcon: const Icon(Icons.search_rounded, color: AppColors.textMuted, size: 20),
+                hintStyle: TextStyle(fontSize: 13, color: colors.textMuted),
+                prefixIcon: Icon(Icons.search_rounded, color: colors.textMuted, size: 20),
                 suffixIcon: _searchController.text.isNotEmpty
                     ? IconButton(
-                        icon: const Icon(Icons.clear_rounded, size: 18, color: AppColors.textMuted),
+                        icon: Icon(Icons.clear_rounded, size: 18, color: colors.textMuted),
                         onPressed: () {
                           _searchController.clear();
                           vm.setSearchTerm('');
@@ -91,7 +92,7 @@ class _ExploreClubsScreenState extends ConsumerState<ExploreClubsScreen> {
                       )
                     : null,
                 filled: true,
-                fillColor: AppColors.surfaceSubtle,
+                fillColor: colors.inputFill,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide.none,
@@ -105,7 +106,7 @@ class _ExploreClubsScreenState extends ConsumerState<ExploreClubsScreen> {
 
           // 2. Filters (Radius & Recruiting & Skill)
           Container(
-            color: AppColors.white,
+            color: colors.cardBackground,
             padding: const EdgeInsets.only(bottom: 12),
             child: Column(
               children: [
@@ -115,11 +116,11 @@ class _ExploreClubsScreenState extends ConsumerState<ExploreClubsScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Row(
                     children: [
-                      const Icon(Icons.explore_outlined, size: 16, color: AppColors.textMuted),
+                      Icon(Icons.explore_outlined, size: 16, color: colors.textMuted),
                       const SizedBox(width: 6),
-                      const Text(
+                      Text(
                         'Bán kính: ',
-                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textMuted),
+                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: colors.textMuted),
                       ),
                       for (final r in [5.0, 10.0, 20.0, 50.0]) ...[
                         Padding(
@@ -128,11 +129,11 @@ class _ExploreClubsScreenState extends ConsumerState<ExploreClubsScreen> {
                             label: Text('${r.toInt()} km'),
                             selected: state.radiusKm == r,
                             selectedColor: AppColors.primary.withValues(alpha: 0.15),
-                            backgroundColor: AppColors.surfaceSubtle,
+                            backgroundColor: colors.surfaceSubtle,
                             labelStyle: TextStyle(
                               fontSize: 11,
                               fontWeight: state.radiusKm == r ? FontWeight.w700 : FontWeight.w500,
-                              color: state.radiusKm == r ? AppColors.primary : AppColors.textPrimary,
+                              color: state.radiusKm == r ? AppColors.primary : colors.textPrimary,
                             ),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),
@@ -151,11 +152,11 @@ class _ExploreClubsScreenState extends ConsumerState<ExploreClubsScreen> {
                         label: const Text('Đang tuyển quân'),
                         selected: state.isRecruitingOnly == true,
                         selectedColor: AppColors.successLight,
-                        backgroundColor: AppColors.surfaceSubtle,
+                        backgroundColor: colors.surfaceSubtle,
                         labelStyle: TextStyle(
                           fontSize: 11,
                           fontWeight: state.isRecruitingOnly == true ? FontWeight.w700 : FontWeight.w500,
-                          color: state.isRecruitingOnly == true ? AppColors.roleMember : AppColors.textPrimary,
+                          color: state.isRecruitingOnly == true ? AppColors.roleMember : colors.textPrimary,
                         ),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
@@ -176,11 +177,11 @@ class _ExploreClubsScreenState extends ConsumerState<ExploreClubsScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Row(
                     children: [
-                      const Icon(Icons.sports_tennis_rounded, size: 16, color: AppColors.textMuted),
+                      Icon(Icons.sports_tennis_rounded, size: 16, color: colors.textMuted),
                       const SizedBox(width: 6),
-                      const Text(
+                      Text(
                         'Trình độ: ',
-                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textMuted),
+                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: colors.textMuted),
                       ),
                       Padding(
                         padding: const EdgeInsets.only(right: 6),
@@ -188,11 +189,11 @@ class _ExploreClubsScreenState extends ConsumerState<ExploreClubsScreen> {
                           label: const Text('Tất cả'),
                           selected: state.selectedSkillLevel == null,
                           selectedColor: AppColors.primary.withValues(alpha: 0.15),
-                          backgroundColor: AppColors.surfaceSubtle,
+                          backgroundColor: colors.surfaceSubtle,
                           labelStyle: TextStyle(
                             fontSize: 11,
                             fontWeight: state.selectedSkillLevel == null ? FontWeight.w700 : FontWeight.w500,
-                            color: state.selectedSkillLevel == null ? AppColors.primary : AppColors.textPrimary,
+                            color: state.selectedSkillLevel == null ? AppColors.primary : colors.textPrimary,
                           ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
@@ -210,11 +211,11 @@ class _ExploreClubsScreenState extends ConsumerState<ExploreClubsScreen> {
                             label: Text(skill.code),
                             selected: state.selectedSkillLevel == skill,
                             selectedColor: AppColors.primary.withValues(alpha: 0.15),
-                            backgroundColor: AppColors.surfaceSubtle,
+                            backgroundColor: colors.surfaceSubtle,
                             labelStyle: TextStyle(
                               fontSize: 11,
                               fontWeight: state.selectedSkillLevel == skill ? FontWeight.w700 : FontWeight.w500,
-                              color: state.selectedSkillLevel == skill ? AppColors.primary : AppColors.textPrimary,
+                              color: state.selectedSkillLevel == skill ? AppColors.primary : colors.textPrimary,
                             ),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),
@@ -232,7 +233,7 @@ class _ExploreClubsScreenState extends ConsumerState<ExploreClubsScreen> {
               ],
             ),
           ),
-          const Divider(height: 1, color: AppColors.border),
+          Divider(height: 1, color: colors.divider),
 
           // 3. Results Header & List
           Padding(
@@ -241,12 +242,12 @@ class _ExploreClubsScreenState extends ConsumerState<ExploreClubsScreen> {
               children: [
                 Text(
                   'Tìm thấy ${state.clubs.length} câu lạc bộ',
-                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
+                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: colors.textPrimary),
                 ),
                 const Spacer(),
                 Text(
                   'Quanh bán kính ${state.radiusKm.toInt()} km',
-                  style: const TextStyle(fontSize: 12, color: AppColors.textMuted),
+                  style: TextStyle(fontSize: 12, color: colors.textMuted),
                 ),
               ],
             ),
@@ -261,16 +262,16 @@ class _ExploreClubsScreenState extends ConsumerState<ExploreClubsScreen> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Icon(Icons.explore_off_outlined, size: 56, color: AppColors.textMuted),
+                            Icon(Icons.explore_off_outlined, size: 56, color: colors.textMuted),
                             const SizedBox(height: 12),
-                            const Text(
+                            Text(
                               'Không tìm thấy câu lạc bộ nào phù hợp',
-                              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+                              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: colors.textPrimary),
                             ),
                             const SizedBox(height: 6),
-                            const Text(
+                            Text(
                               'Thử mở rộng bán kính quét hoặc xóa bộ lọc trình độ',
-                              style: TextStyle(fontSize: 13, color: AppColors.textMuted),
+                              style: TextStyle(fontSize: 13, color: colors.textMuted),
                             ),
                             const SizedBox(height: 16),
                             OutlinedButton.icon(
