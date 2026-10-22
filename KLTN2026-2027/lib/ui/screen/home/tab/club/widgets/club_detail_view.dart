@@ -256,7 +256,10 @@ class _ClubDetailViewState extends ConsumerState<ClubDetailView> with SingleTick
                       overflow: TextOverflow.ellipsis,
                     ),
                     AppSpacing.gapH4,
-                    Row(
+                    Wrap(
+                      spacing: AppSpacing.sm,
+                      runSpacing: AppSpacing.xs,
+                      crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
                         // Role Badge
                         Container(
@@ -273,7 +276,6 @@ class _ClubDetailViewState extends ConsumerState<ClubDetailView> with SingleTick
                             style: AppTypography.labelSmall.bold.colored(roleColor),
                           ),
                         ),
-                        AppSpacing.gapW8,
 
                         // Active Context Pill
                         if (widget.isActiveContext)
