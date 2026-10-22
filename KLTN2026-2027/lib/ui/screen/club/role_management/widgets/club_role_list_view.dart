@@ -91,7 +91,7 @@ class _ClubRoleListViewState extends State<ClubRoleListView> {
                   label: const Text('Thêm vai trò', style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold)),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
+                    foregroundColor: AppColors.white,
                     elevation: 0,
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -158,7 +158,7 @@ class _ClubRoleListViewState extends State<ClubRoleListView> {
                     return Material(
                       color: isSelected
                           ? AppColors.primary.withValues(alpha: 0.10)
-                          : Colors.white,
+                          : AppColors.white,
                       borderRadius: BorderRadius.circular(12),
                       child: InkWell(
                         onTap: () => widget.onRoleSelected(role),

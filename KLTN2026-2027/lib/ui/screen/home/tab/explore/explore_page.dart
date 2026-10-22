@@ -47,7 +47,7 @@ class _ExplorePageState extends ConsumerState<ExplorePage>
       appBar: AppBar(
         backgroundColor: colors.surface,
         elevation: 0,
-        surfaceTintColor: Colors.transparent,
+        surfaceTintColor: AppColors.transparent,
         title: Row(
           children: [
             Container(

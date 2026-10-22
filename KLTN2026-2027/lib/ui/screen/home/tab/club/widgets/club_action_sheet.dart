@@ -13,7 +13,7 @@ class ClubActionSheet extends StatelessWidget {
   static Future<void> show(BuildContext context) {
     return showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.transparent,
+      backgroundColor: AppColors.transparent,
       isScrollControlled: true,
       builder: (_) => const ClubActionSheet(),
     );

@@ -74,7 +74,7 @@ class MyBookingsScreen extends ConsumerWidget {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20),
                         side: BorderSide(
-                          color: isSelected ? AppColor.cMain : Colors.transparent,
+                          color: isSelected ? AppColor.cMain : AppColors.transparent,
                         ),
                       ),
                       onSelected: (_) => vm.setFilter(f),
@@ -226,7 +226,7 @@ class MyBookingsScreen extends ConsumerWidget {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
+              color: AppColors.black.withValues(alpha: 0.04),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),

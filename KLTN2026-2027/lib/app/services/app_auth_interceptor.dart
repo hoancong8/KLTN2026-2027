@@ -12,6 +12,7 @@ import 'package:kltn2026_2027/domain/entities/auth_token.dart';
 import 'package:kltn2026_2027/app/consts/app_router.dart';
 
 import '../consts/app_log.dart';
+import '../theme/theme.dart';
 import '../l10n_gen/app_localizations.dart';
 
 class AppAuthInterceptor extends Interceptor {
@@ -262,7 +263,7 @@ class AppAuthInterceptor extends Interceptor {
       builder: (ctx) => AlertDialog(
         title: Row(
           children: [
-            const Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 28),
+            const Icon(Icons.warning_amber_rounded, color: AppColors.warning, size: 28),
             const SizedBox(width: 8),
             Expanded(child: Text(l10n.auth_session_expired_title)),
           ],

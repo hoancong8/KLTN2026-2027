@@ -94,7 +94,7 @@ class DiscordServerRail extends StatelessWidget {
     return Tooltip(
       message: 'Thêm / Tham gia nhóm mới',
       child: Material(
-        color: Colors.transparent,
+        color: AppColors.transparent,
         child: InkWell(
           onTap: onAddClubPressed,
           borderRadius: AppRadius.borderFull,

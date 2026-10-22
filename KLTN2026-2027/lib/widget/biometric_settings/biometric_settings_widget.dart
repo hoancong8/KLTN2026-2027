@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../app/theme/theme.dart';
 import '../../app/l10n/flutter_app_messages.dart';
 import '../../app/provider.dart';
 import '../../app/provider/localization_provider.dart';
@@ -47,7 +48,7 @@ class _BiometricSettingsWidgetState extends ConsumerState<BiometricSettingsWidge
       if (success && mounted) {
         setState(() => _biometricEnabled = true);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.auth_biometric_setup_success), backgroundColor: Colors.green),
+          SnackBar(content: Text(l10n.auth_biometric_setup_success), backgroundColor: AppColors.success),
         );
       }
     } else {
@@ -75,7 +76,7 @@ class _BiometricSettingsWidgetState extends ConsumerState<BiometricSettingsWidge
 
     if (!_biometricAvailable) {
       return ListTile(
-        leading: const Icon(Icons.fingerprint, color: Colors.grey),
+        leading: const Icon(Icons.fingerprint, color: AppColors.neutral400),
         title: Text(l10n.auth_biometric_title),
         subtitle: Text(l10n.auth_biometric_subtitle_unavailable),
         enabled: false,

@@ -138,7 +138,7 @@ class _ExploreClubsScreenState extends ConsumerState<ExploreClubsScreen> {
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),
                               side: BorderSide(
-                                color: state.radiusKm == r ? AppColors.primary : Colors.transparent,
+                                color: state.radiusKm == r ? AppColors.primary : AppColors.transparent,
                               ),
                             ),
                             onSelected: (_) => vm.setRadius(r),
@@ -161,7 +161,7 @@ class _ExploreClubsScreenState extends ConsumerState<ExploreClubsScreen> {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                           side: BorderSide(
-                            color: state.isRecruitingOnly == true ? AppColors.roleMember : Colors.transparent,
+                            color: state.isRecruitingOnly == true ? AppColors.roleMember : AppColors.transparent,
                           ),
                         ),
                         onSelected: (selected) => vm.toggleRecruitingOnly(selected ? true : null),
@@ -198,7 +198,7 @@ class _ExploreClubsScreenState extends ConsumerState<ExploreClubsScreen> {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
                             side: BorderSide(
-                              color: state.selectedSkillLevel == null ? AppColors.primary : Colors.transparent,
+                              color: state.selectedSkillLevel == null ? AppColors.primary : AppColors.transparent,
                             ),
                           ),
                           onSelected: (_) => vm.setSkillLevel(null),
@@ -220,7 +220,7 @@ class _ExploreClubsScreenState extends ConsumerState<ExploreClubsScreen> {
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),
                               side: BorderSide(
-                                color: state.selectedSkillLevel == skill ? AppColors.primary : Colors.transparent,
+                                color: state.selectedSkillLevel == skill ? AppColors.primary : AppColors.transparent,
                               ),
                             ),
                             onSelected: (_) => vm.setSkillLevel(state.selectedSkillLevel == skill ? null : skill),

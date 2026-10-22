@@ -367,7 +367,7 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
                         Text(
                           'BUỔI TẬP GẦN NHẤT',
                           style: TextStyle(
-                            color: Colors.white,
+                            color: AppColors.white,
                             fontSize: 11,
                             fontWeight: FontWeight.bold,
                             letterSpacing: 0.3,
@@ -677,7 +677,7 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
                   date.day == nearestSession.startTime.day;
 
               // Visual styling
-              Color bgColor = Colors.transparent;
+              Color bgColor = AppColors.transparent;
               Color textColor = colors.textPrimary;
               Border? border;
 

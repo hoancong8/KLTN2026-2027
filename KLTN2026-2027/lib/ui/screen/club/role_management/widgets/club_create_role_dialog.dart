@@ -268,7 +268,7 @@ class _ClubCreateRoleDialogState extends State<ClubCreateRoleDialog> {
                           ? const SizedBox(
                               width: 18,
                               height: 18,
-                              child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                              child: CircularProgressIndicator(color: AppColors.white, strokeWidth: 2),
                             )
                           : const Text('Tạo vai trò', style: TextStyle(fontWeight: FontWeight.bold)),
                     ),

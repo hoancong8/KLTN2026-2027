@@ -126,7 +126,7 @@ class ClubEmptyState extends StatelessWidget {
         boxShadow: context.isDark ? AppShadows.none : AppShadows.sm,
       ),
       child: Material(
-        color: Colors.transparent,
+        color: AppColors.transparent,
         borderRadius: AppRadius.card,
         child: InkWell(
           onTap: onTap,

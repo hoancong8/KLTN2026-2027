@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kltn2026_2027/app/consts/app_color.dart';
+import 'package:kltn2026_2027/app/theme/theme.dart';
 import 'package:kltn2026_2027/app/provider/localization_provider.dart';
 import 'package:kltn2026_2027/ui/screen/home/tab/report/report_vm/report_state.dart';
 
@@ -134,7 +135,7 @@ class _ReportTabletState extends State<ReportTablet> {
         decoration: BoxDecoration(
           color: isActive
               ? AppColor.cMain.withValues(alpha: 0.1)
-              : Colors.transparent,
+              : AppColors.transparent,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
@@ -264,7 +265,7 @@ class _ReportTabletState extends State<ReportTablet> {
         border: Border.all(color: AppColor.cDivider),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
+            color: AppColors.black.withValues(alpha: 0.02),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),

@@ -29,7 +29,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
+      backgroundColor: AppColors.transparent,
       builder: (ctx) => _EditProfileSheet(profile: profile),
     );
   }
@@ -192,7 +192,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
+            color: AppColors.black.withValues(alpha: 0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -257,10 +257,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                           decoration: BoxDecoration(
                             color: profile.gender == 1
-                                ? Colors.blue.withValues(alpha: 0.1)
+                                ? AppColors.infoLight
                                 : profile.gender == 2
-                                    ? Colors.pink.withValues(alpha: 0.1)
-                                    : Colors.grey.withValues(alpha: 0.1),
+                                    ? AppColors.pinkLight
+                                    : AppColors.neutral100,
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Row(
@@ -274,10 +274,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                         : Icons.transgender_rounded,
                                 size: 14,
                                 color: profile.gender == 1
-                                    ? Colors.blue[700]
+                                    ? AppColors.info
                                     : profile.gender == 2
-                                        ? Colors.pink[700]
-                                        : Colors.grey[700],
+                                        ? AppColors.pink
+                                        : AppColors.neutral700,
                               ),
                               const SizedBox(width: 4),
                               Text(
@@ -290,10 +290,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                   fontSize: 12,
                                   fontWeight: FontWeight.w600,
                                   color: profile.gender == 1
-                                      ? Colors.blue[700]
+                                      ? AppColors.info
                                       : profile.gender == 2
-                                          ? Colors.pink[700]
-                                          : Colors.grey[700],
+                                          ? AppColors.pink
+                                          : AppColors.neutral700,
                                 ),
                               ),
                             ],
@@ -331,7 +331,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         child: Text(
                           profile.skillLevel.code,
                           style: const TextStyle(
-                            color: Colors.white,
+                            color: AppColors.white,
                             fontSize: 11,
                             fontWeight: FontWeight.w800,
                           ),
@@ -397,7 +397,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
+            color: AppColors.black.withValues(alpha: 0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -449,7 +449,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
+            color: AppColors.black.withValues(alpha: 0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -491,7 +491,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 color: isCurrent ? color.withValues(alpha: 0.08) : colors.surfaceSubtle,
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(
-                  color: isCurrent ? color : Colors.transparent,
+                  color: isCurrent ? color : AppColors.transparent,
                   width: isCurrent ? 1.5 : 1,
                 ),
               ),
@@ -508,7 +508,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     child: Text(
                       level.code,
                       style: const TextStyle(
-                        color: Colors.white,
+                        color: AppColors.white,
                         fontSize: 11,
                         fontWeight: FontWeight.bold,
                       ),
@@ -553,7 +553,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
+            color: AppColors.black.withValues(alpha: 0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -770,7 +770,7 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                       side: BorderSide(
-                        color: isSelected ? AppColor.cMain : Colors.transparent,
+                        color: isSelected ? AppColor.cMain : AppColors.transparent,
                       ),
                     ),
                     onSelected: (val) {
@@ -836,7 +836,7 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
                       ? const SizedBox(
                           width: 20,
                           height: 20,
-                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                          child: CircularProgressIndicator(color: AppColors.white, strokeWidth: 2),
                         )
                       : const Text(
                           'Lưu thay đổi',

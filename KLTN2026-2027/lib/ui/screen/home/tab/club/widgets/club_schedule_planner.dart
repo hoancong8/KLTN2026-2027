@@ -653,7 +653,7 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
                             style: const TextStyle(
                               fontSize: 9.5,
                               fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                              color: AppColors.white,
                             ),
                           ),
                         )
@@ -824,7 +824,7 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
                 decoration: BoxDecoration(
                   color: _timeMode == ScheduleTimeMode.fixed
                       ? colors.cardBackground
-                      : Colors.transparent,
+                      : AppColors.transparent,
                   borderRadius: BorderRadius.circular(8),
                   boxShadow: _timeMode == ScheduleTimeMode.fixed
                       ? [
@@ -876,7 +876,7 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
                 decoration: BoxDecoration(
                   color: _timeMode == ScheduleTimeMode.custom
                       ? colors.cardBackground
-                      : Colors.transparent,
+                      : AppColors.transparent,
                   borderRadius: BorderRadius.circular(8),
                   boxShadow: _timeMode == ScheduleTimeMode.custom
                       ? [
@@ -1142,7 +1142,7 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
                           const Icon(
                             Icons.check_circle_rounded,
                             size: 13,
-                            color: Colors.white,
+                            color: AppColors.white,
                           ),
                           const SizedBox(width: 4),
                           Text(
@@ -1150,7 +1150,7 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
                             style: const TextStyle(
                               fontSize: 11.5,
                               fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                              color: AppColors.white,
                             ),
                           ),
                         ],

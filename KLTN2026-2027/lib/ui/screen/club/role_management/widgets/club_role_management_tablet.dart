@@ -110,7 +110,7 @@ class _ClubRoleManagementTabletState extends State<ClubRoleManagementTablet> {
           Container(
             width: 320,
             decoration: const BoxDecoration(
-              color: Colors.white,
+              color: AppColors.white,
               border: Border(right: BorderSide(color: AppColors.border)),
             ),
             child: ClubRoleListView(

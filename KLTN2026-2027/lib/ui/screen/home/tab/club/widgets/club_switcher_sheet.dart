@@ -31,7 +31,7 @@ class ClubSwitcherSheet extends ConsumerWidget {
   }) {
     return showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.transparent,
+      backgroundColor: AppColors.transparent,
       isScrollControlled: true,
       builder: (_) => ClubSwitcherSheet(
         clubs: clubs,

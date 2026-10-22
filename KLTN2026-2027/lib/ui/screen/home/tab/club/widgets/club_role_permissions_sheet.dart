@@ -16,7 +16,7 @@ class ClubRolePermissionsSheet extends ConsumerStatefulWidget {
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
+      backgroundColor: AppColors.transparent,
       builder: (ctx) => ClubRolePermissionsSheet(vm: vm),
     );
   }

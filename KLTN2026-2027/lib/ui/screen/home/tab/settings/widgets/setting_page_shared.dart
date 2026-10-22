@@ -146,7 +146,7 @@ List<SettingsSection> buildSettingsSections(
       items: [
         SettingsItemData(
           icon: Icons.language,
-          color: Colors.orange,
+          color: AppColors.accentDark,
           title: context.l10n.set_language,
           subtitle: currentLocale.languageCode == 'vi'
               ? context.l10n.set_vietnamese
@@ -254,7 +254,7 @@ Widget buildSettingsItem({
   final titleColor = isDestructive ? AppColor.cError : AppColor.cTitle;
 
   return Material(
-    color: Colors.transparent,
+    color: AppColors.transparent,
     child: InkWell(
       onTap: isLoading ? null : onTap,
       borderRadius: BorderRadius.circular(16),
@@ -389,7 +389,7 @@ void showLanguageBottomSheet(
 ) {
   showModalBottomSheet(
     context: context,
-    backgroundColor: Colors.transparent,
+    backgroundColor: AppColors.transparent,
     isScrollControlled: true,
     builder: (context) {
       String selectedLocale = currentLocale.languageCode;
@@ -411,12 +411,12 @@ void showLanguageBottomSheet(
                     Container(
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: Colors.orange.withValues(alpha: 0.1),
+                        color: AppColors.accent.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: const Icon(
                         Icons.language,
-                        color: Colors.orange,
+                        color: AppColors.accentDark,
                         size: 24,
                       ),
                     ),
@@ -524,7 +524,7 @@ Widget _buildLanguageOption({
       decoration: BoxDecoration(
         color: isSelected
             ? AppColor.cMain.withValues(alpha: 0.05)
-            : Colors.grey[50],
+            : AppColors.neutral50,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: isSelected ? AppColor.cMain : AppColor.cDivider,
@@ -536,7 +536,7 @@ Widget _buildLanguageOption({
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
             decoration: BoxDecoration(
-              color: isSelected ? AppColor.cMain.withValues(alpha: 0.1) : Colors.grey[200],
+              color: isSelected ? AppColor.cMain.withValues(alpha: 0.1) : AppColors.neutral200,
               borderRadius: BorderRadius.circular(6),
             ),
             child: Text(

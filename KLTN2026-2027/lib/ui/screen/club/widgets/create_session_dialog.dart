@@ -352,7 +352,7 @@ class _CreateSessionDialogState extends ConsumerState<CreateSessionDialog> {
                       ? const SizedBox(
                           height: 20,
                           width: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                          child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.white),
                         )
                       : const Text('Tạo Buổi Chơi Ngay', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
                 ),

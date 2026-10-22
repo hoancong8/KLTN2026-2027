@@ -335,7 +335,7 @@ class _PermissionTreeViewState extends State<PermissionTreeView> {
         width: 18,
         height: 18,
         decoration: BoxDecoration(
-          color: (value == true || value == null) ? AppColor.cMain : Colors.transparent,
+          color: (value == true || value == null) ? AppColor.cMain : AppColors.transparent,
           borderRadius: BorderRadius.circular(4),
           border: Border.all(
             color: (value == true || value == null) ? AppColor.cMain : colors.cardBorder,
@@ -343,9 +343,9 @@ class _PermissionTreeViewState extends State<PermissionTreeView> {
           ),
         ),
         child: value == true
-            ? const Icon(Icons.check_rounded, size: 14, color: Colors.white)
+            ? const Icon(Icons.check_rounded, size: 14, color: AppColors.white)
             : value == null
-                ? const Icon(Icons.remove_rounded, size: 14, color: Colors.white)
+                ? const Icon(Icons.remove_rounded, size: 14, color: AppColors.white)
                 : null,
       ),
     );

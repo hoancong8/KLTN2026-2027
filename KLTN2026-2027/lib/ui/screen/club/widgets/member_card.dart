@@ -33,7 +33,7 @@ class MemberCard extends ConsumerWidget {
         border: Border.all(color: colors.cardBorder),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withAlpha(6),
+            color: AppColors.black.withAlpha(6),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),

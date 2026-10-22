@@ -49,7 +49,7 @@ class RoleCard extends StatelessWidget {
         border: Border.all(color: AppColor.cDivider.withAlpha(140)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withAlpha(8),
+            color: AppColors.black.withAlpha(8),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),

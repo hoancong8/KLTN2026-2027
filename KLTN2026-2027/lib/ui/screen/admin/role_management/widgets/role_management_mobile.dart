@@ -121,7 +121,7 @@ class _RoleManagementMobileState extends ConsumerState<RoleManagementMobile> {
               }
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red.shade600,
+              backgroundColor: AppColors.error,
               foregroundColor: AppColor.white,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             ),
@@ -232,7 +232,7 @@ class _RoleManagementMobileState extends ConsumerState<RoleManagementMobile> {
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.error_outline_rounded, size: 48, color: Colors.red.shade300),
+                              Icon(Icons.error_outline_rounded, size: 48, color: AppColors.error),
                               const SizedBox(height: 12),
                               Text(
                                 state.errorMessage!,
@@ -240,7 +240,7 @@ class _RoleManagementMobileState extends ConsumerState<RoleManagementMobile> {
                                 style: const TextStyle(
                                   fontSize: 13.5,
                                   fontWeight: FontWeight.w600,
-                                  color: Colors.red,
+                                  color: AppColors.error,
                                 ),
                               ),
                               const SizedBox(height: 16),
@@ -268,7 +268,7 @@ class _RoleManagementMobileState extends ConsumerState<RoleManagementMobile> {
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(Icons.shield_outlined, size: 52, color: Colors.grey.shade300),
+                                Icon(Icons.shield_outlined, size: 52, color: AppColors.neutral300),
                                 const SizedBox(height: 12),
                                 const Text(
                                   'Không tìm thấy vai trò nào',

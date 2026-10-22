@@ -46,7 +46,7 @@ class ClubManagementMobile extends ConsumerWidget {
                 label: const Text('Chọn Câu lạc bộ'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.white,
+                  foregroundColor: AppColors.white,
                 ),
                 onPressed: () => ClubSwitcherDialog.show(context),
               ),
@@ -108,10 +108,10 @@ class ClubManagementMobile extends ConsumerWidget {
                             Container(
                               padding: const EdgeInsets.all(10),
                               decoration: BoxDecoration(
-                                color: Colors.white.withAlpha(30),
+                                color: AppColors.white.withAlpha(30),
                                 borderRadius: BorderRadius.circular(12),
                               ),
-                              child: const Icon(Icons.sports_tennis_rounded, color: Colors.white, size: 28),
+                              child: const Icon(Icons.sports_tennis_rounded, color: AppColors.white, size: 28),
                             ),
                             const SizedBox(width: 12),
                             Expanded(
@@ -121,7 +121,7 @@ class ClubManagementMobile extends ConsumerWidget {
                                   Text(
                                     activeContext.clubName,
                                     style: const TextStyle(
-                                      color: Colors.white,
+                                      color: AppColors.white,
                                       fontWeight: FontWeight.bold,
                                       fontSize: 17,
                                     ),
@@ -131,7 +131,7 @@ class ClubManagementMobile extends ConsumerWidget {
                                     children: [
                                       Text(
                                         'Mã: ${club?.code ?? ""}',
-                                        style: TextStyle(color: Colors.white.withAlpha(200), fontSize: 12),
+                                        style: TextStyle(color: AppColors.white.withAlpha(200), fontSize: 12),
                                       ),
                                       const SizedBox(width: 6),
                                       InkWell(
@@ -146,7 +146,7 @@ class ClubManagementMobile extends ConsumerWidget {
                                             );
                                           }
                                         },
-                                        child: Icon(Icons.copy_rounded, size: 14, color: Colors.white.withAlpha(200)),
+                                        child: Icon(Icons.copy_rounded, size: 14, color: AppColors.white.withAlpha(200)),
                                       ),
                                     ],
                                   ),
@@ -157,13 +157,13 @@ class ClubManagementMobile extends ConsumerWidget {
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                               decoration: BoxDecoration(
-                                color: Colors.white.withAlpha(40),
+                                color: AppColors.white.withAlpha(40),
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Text(
                                 activeContext.role.displayName,
                                 style: const TextStyle(
-                                  color: Colors.white,
+                                  color: AppColors.white,
                                   fontSize: 11,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -175,7 +175,7 @@ class ClubManagementMobile extends ConsumerWidget {
                           const SizedBox(height: 12),
                           Text(
                             club.description!,
-                            style: TextStyle(color: Colors.white.withAlpha(190), fontSize: 12.5),
+                            style: TextStyle(color: AppColors.white.withAlpha(190), fontSize: 12.5),
                           ),
                         ],
                       ],
@@ -194,12 +194,12 @@ class ClubManagementMobile extends ConsumerWidget {
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: AppColors.white,
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(color: AppColors.border),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.03),
+                                color: AppColors.black.withValues(alpha: 0.03),
                                 blurRadius: 6,
                                 offset: const Offset(0, 2),
                               ),
@@ -338,7 +338,7 @@ class ClubManagementMobile extends ConsumerWidget {
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.error,
-              foregroundColor: Colors.white,
+              foregroundColor: AppColors.white,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             ),
             onPressed: () async {

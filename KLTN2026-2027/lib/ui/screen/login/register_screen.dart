@@ -122,7 +122,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           borderRadius: BorderRadius.circular(16),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.08),
+                              color: AppColors.black.withValues(alpha: 0.08),
                               blurRadius: 10,
                               offset: const Offset(0, 4),
                             ),
@@ -144,9 +144,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                               style: TextStyle(color: AppColor.white, fontWeight: FontWeight.bold, fontSize: 18),
                             ),
                             const SizedBox(height: 4),
-                            const Text(
+                            Text(
                               'Tạo tài khoản để tham gia các CLB và đặt sân giao lưu',
-                              style: TextStyle(color: Colors.white70, fontSize: 13),
+                              style: TextStyle(color: AppColors.white.withAlpha(180), fontSize: 13),
                               textAlign: TextAlign.center,
                             ),
                           ],

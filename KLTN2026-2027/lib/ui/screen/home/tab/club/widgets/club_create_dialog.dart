@@ -591,7 +591,7 @@ class _ClubCreateDialogState extends ConsumerState<ClubCreateDialog> {
                           ),
                         ),
                         child: Material(
-                          color: Colors.transparent,
+                          color: AppColors.transparent,
                           child: SwitchListTile(
                             value: _hasSchedule,
                             activeThumbColor: AppColors.primary,

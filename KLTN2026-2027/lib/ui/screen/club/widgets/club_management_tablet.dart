@@ -38,7 +38,7 @@ class ClubManagementTablet extends ConsumerWidget {
               ElevatedButton.icon(
                 icon: const Icon(Icons.swap_horiz_rounded),
                 label: const Text('Chọn Câu lạc bộ'),
-                style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, foregroundColor: Colors.white),
+                style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, foregroundColor: AppColors.white),
                 onPressed: () => ClubSwitcherDialog.show(context),
               ),
             ],
@@ -155,7 +155,7 @@ class ClubManagementTablet extends ConsumerWidget {
                                   label: const Text('Vai trò & Phân quyền', style: TextStyle(fontWeight: FontWeight.bold)),
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: AppColors.roleHost,
-                                    foregroundColor: Colors.white,
+                                    foregroundColor: AppColors.white,
                                     padding: const EdgeInsets.symmetric(vertical: 12),
                                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                                   ),

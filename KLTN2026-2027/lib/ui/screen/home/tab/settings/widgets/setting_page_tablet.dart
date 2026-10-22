@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kltn2026_2027/app/consts/app_color.dart';
+import 'package:kltn2026_2027/app/theme/theme.dart';
 import 'package:kltn2026_2027/widget/biometric_settings/biometric_settings_item.dart';
 import '../../../../../../app/provider/localization_provider.dart';
 import '../settings_vm/settings_vm.dart';
@@ -132,7 +133,7 @@ class _SettingsSidebar extends StatelessWidget {
           final isSelected = index == selectedIndex;
 
           return Material(
-            color: Colors.transparent,
+            color: AppColors.transparent,
             child: InkWell(
               borderRadius: BorderRadius.circular(10),
               onTap: () => onItemSelected(index),
@@ -146,14 +147,14 @@ class _SettingsSidebar extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: isSelected
                       ? (item.isDestructive
-                          ? Colors.red.withAlpha(25)
+                          ? AppColors.error.withAlpha(25)
                           : AppColor.cMain.withAlpha(25))
-                      : Colors.transparent,
+                      : AppColors.transparent,
                   borderRadius: BorderRadius.circular(10),
                   border: isSelected
                       ? Border.all(
                           color: item.isDestructive
-                              ? Colors.red.withAlpha(70)
+                              ? AppColors.error.withAlpha(70)
                               : AppColor.cMain.withAlpha(70),
                         )
                       : null,
@@ -164,7 +165,7 @@ class _SettingsSidebar extends StatelessWidget {
                       item.icon,
                       size: 20,
                       color: item.isDestructive
-                          ? Colors.red
+                          ? AppColors.error
                           : isSelected
                               ? AppColor.cMain
                               : AppColor.cMuted,
@@ -178,7 +179,7 @@ class _SettingsSidebar extends StatelessWidget {
                           fontWeight:
                               isSelected ? FontWeight.w600 : FontWeight.normal,
                           color: item.isDestructive
-                              ? Colors.red
+                              ? AppColors.error
                               : isSelected
                                   ? AppColor.cMain
                                   : AppColor.cTitle,
@@ -189,7 +190,7 @@ class _SettingsSidebar extends StatelessWidget {
                       Icon(
                         Icons.chevron_right,
                         size: 16,
-                        color: item.isDestructive ? Colors.red : AppColor.cMain,
+                        color: item.isDestructive ? AppColors.error : AppColor.cMain,
                       ),
                   ],
                 ),

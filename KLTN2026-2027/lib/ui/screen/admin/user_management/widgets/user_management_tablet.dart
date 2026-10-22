@@ -133,7 +133,7 @@ class _UserManagementTabletState extends ConsumerState<UserManagementTablet> {
               }
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red.shade600,
+              backgroundColor: AppColors.error,
               foregroundColor: AppColor.white,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             ),
@@ -279,7 +279,7 @@ class _UserManagementTabletState extends ConsumerState<UserManagementTablet> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20),
                         side: BorderSide(
-                          color: isSelected ? AppColor.cMain : Colors.transparent,
+                          color: isSelected ? AppColor.cMain : AppColors.transparent,
                         ),
                       ),
                       showCheckmark: false,
@@ -308,7 +308,7 @@ class _UserManagementTabletState extends ConsumerState<UserManagementTablet> {
                                     child: Column(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        Icon(Icons.error_outline_rounded, size: 56, color: Colors.red.shade300),
+                                        Icon(Icons.error_outline_rounded, size: 56, color: AppColors.error),
                                         const SizedBox(height: 12),
                                         Text(
                                           state.errorMessage!,
@@ -316,7 +316,7 @@ class _UserManagementTabletState extends ConsumerState<UserManagementTablet> {
                                           style: const TextStyle(
                                             fontSize: 14,
                                             fontWeight: FontWeight.w600,
-                                            color: Colors.red,
+                                            color: AppColors.error,
                                           ),
                                         ),
                                         const SizedBox(height: 16),
@@ -346,7 +346,7 @@ class _UserManagementTabletState extends ConsumerState<UserManagementTablet> {
                                       child: Column(
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
-                                          Icon(Icons.people_outline_rounded, size: 56, color: Colors.grey.shade300),
+                                          Icon(Icons.people_outline_rounded, size: 56, color: AppColors.neutral300),
                                           const SizedBox(height: 12),
                                           const Text(
                                             'Không tìm thấy nhân viên nào',

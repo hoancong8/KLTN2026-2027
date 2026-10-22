@@ -49,7 +49,7 @@ class UserCard extends ConsumerWidget {
         border: Border.all(color: AppColor.cDivider.withAlpha(150)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withAlpha(8),
+            color: AppColors.black.withAlpha(8),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -105,21 +105,21 @@ class UserCard extends ConsumerWidget {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
-                          color: Colors.red.shade50,
+                          color: AppColors.errorContainer,
                           borderRadius: BorderRadius.circular(6),
-                          border: Border.all(color: Colors.red.shade200),
+                          border: Border.all(color: AppColors.errorBorder),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.lock_rounded, size: 10, color: Colors.red.shade700),
+                            Icon(Icons.lock_rounded, size: 10, color: AppColors.error),
                             const SizedBox(width: 2),
                             Text(
                               'Đã khóa',
                               style: TextStyle(
                                 fontSize: 10,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.red.shade700,
+                                color: AppColors.error,
                               ),
                             ),
                           ],
@@ -242,14 +242,14 @@ class UserCard extends ConsumerWidget {
                             Icon(
                               user.isLocked ? Icons.lock_open_rounded : Icons.lock_outline_rounded,
                               size: 18,
-                              color: user.isLocked ? Colors.green : Colors.orange.shade800,
+                              color: user.isLocked ? AppColors.success : AppColors.warning,
                             ),
                             const SizedBox(width: 10),
                             Text(
                               user.isLocked ? 'Mở khóa tài khoản' : 'Khóa tài khoản',
                               style: TextStyle(
                                 fontSize: 13,
-                                color: user.isLocked ? Colors.green.shade800 : Colors.orange.shade900,
+                                color: user.isLocked ? AppColors.onSuccess : AppColors.onWarning,
                               ),
                             ),
                           ],
