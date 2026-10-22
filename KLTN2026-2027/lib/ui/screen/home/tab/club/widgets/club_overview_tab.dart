@@ -304,7 +304,7 @@ class _ClubOverviewTabState extends ConsumerState<ClubOverviewTab> {
           Container(
             padding: AppSpacing.allBase,
             decoration: BoxDecoration(
-              color: AppColors.primaryContainer,
+              color: context.isDark ? colors.surfaceSubtle : colors.primaryContainer.withValues(alpha: 0.35),
               borderRadius: AppRadius.card,
               border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
             ),
@@ -347,43 +347,57 @@ class _ClubOverviewTabState extends ConsumerState<ClubOverviewTab> {
                     borderRadius: AppRadius.borderSm,
                     border: Border.all(color: colors.cardBorder),
                   ),
-                  child: Row(
+                  child: Wrap(
+                    alignment: WrapAlignment.spaceBetween,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    spacing: AppSpacing.sm,
+                    runSpacing: AppSpacing.sm,
                     children: [
-                      const Icon(Icons.tag_rounded, color: AppColors.primary, size: 20),
-                      AppSpacing.gapW8,
-                      Expanded(
-                        child: Text(
-                          code,
-                          style: AppTypography.headlineMedium.bold.colored(colors.textPrimary).copyWith(letterSpacing: 2),
-                        ),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.tag_rounded, color: AppColors.primary, size: 20),
+                          AppSpacing.gapW8,
+                          Text(
+                            code,
+                            style: AppTypography.titleLarge.bold.colored(colors.textPrimary),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
                       ),
-                      ElevatedButton.icon(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          foregroundColor: AppColors.onPrimary,
-                          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
-                          shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
-                        ),
-                        icon: const Icon(Icons.copy, size: AppSpacing.iconXs),
-                        label: Text('Sao chép', style: AppTypography.labelMedium.colored(AppColors.onPrimary)),
-                        onPressed: () => _copyToClipboard(code, 'Đã sao chép mã nhóm: $code'),
-                      ),
-                      AppSpacing.gapW8,
-                      OutlinedButton.icon(
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: colors.primary,
-                          side: BorderSide(color: colors.primary.withValues(alpha: 0.4)),
-                          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
-                          shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
-                        ),
-                        icon: const Icon(Icons.qr_code_rounded, size: AppSpacing.iconXs),
-                        label: Text('Mã QR', style: AppTypography.labelMedium.bold.colored(colors.primary)),
-                        onPressed: () => ClubQrDialog.show(
-                          context: context,
-                          clubName: club?.groupName ?? 'Câu Lạc Bộ',
-                          clubCode: code,
-                          avatarUrl: club?.avatarUrl,
-                        ),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          ElevatedButton.icon(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.primary,
+                              foregroundColor: AppColors.onPrimary,
+                              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+                              shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                            ),
+                            icon: const Icon(Icons.copy, size: AppSpacing.iconXs),
+                            label: Text('Sao chép', style: AppTypography.labelMedium.colored(AppColors.onPrimary)),
+                            onPressed: () => _copyToClipboard(code, 'Đã sao chép mã nhóm: $code'),
+                          ),
+                          AppSpacing.gapW8,
+                          OutlinedButton.icon(
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: colors.primary,
+                              side: BorderSide(color: colors.primary.withValues(alpha: 0.4)),
+                              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+                              shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                            ),
+                            icon: const Icon(Icons.qr_code_rounded, size: AppSpacing.iconXs),
+                            label: Text('Mã QR', style: AppTypography.labelMedium.bold.colored(colors.primary)),
+                            onPressed: () => ClubQrDialog.show(
+                              context: context,
+                              clubName: club?.groupName ?? 'Câu Lạc Bộ',
+                              clubCode: code,
+                              avatarUrl: club?.avatarUrl,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
