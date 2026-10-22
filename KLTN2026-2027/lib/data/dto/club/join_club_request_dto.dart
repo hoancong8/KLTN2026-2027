@@ -14,8 +14,7 @@ class JoinClubRequestDto {
   Map<String, dynamic> toJson() {
     return {
       'clubCode': clubCode,
-      'role': role,
-      if (nickname != null) 'nickname': nickname,
+      if (nickname != null && nickname!.isNotEmpty) 'nickname': nickname,
     };
   }
 }

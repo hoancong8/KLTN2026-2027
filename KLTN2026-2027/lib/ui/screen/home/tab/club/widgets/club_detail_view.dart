@@ -214,6 +214,7 @@ class _ClubDetailViewState extends ConsumerState<ClubDetailView> with SingleTick
       ),
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.base, vertical: AppSpacing.md),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
@@ -245,6 +246,7 @@ class _ClubDetailViewState extends ConsumerState<ClubDetailView> with SingleTick
               // Name + Role Badge
               Expanded(
                 child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(

@@ -98,15 +98,18 @@ class MyClubsMobile extends StatelessWidget {
           ),
           AppSpacing.gapW8,
         ],
-        bottom: PreferredSize(
-          preferredSize: Size.fromHeight(clubs.length > 1 ? 64 : 1),
-          child: Column(
-            children: [
-              if (clubs.length > 1) _buildHorizontalClubStrip(context, clubs, activeId),
-              Container(height: 1, color: colors.cardBorder),
-            ],
-          ),
-        ),
+        bottom: clubs.length > 1
+            ? PreferredSize(
+                preferredSize: const Size.fromHeight(64),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _buildHorizontalClubStrip(context, clubs, activeId),
+                    Container(height: 1, color: colors.cardBorder),
+                  ],
+                ),
+              )
+            : null,
       ),
       body: state.isLoading && clubs.isEmpty
           ? Center(child: CircularProgressIndicator(color: colors.primary))

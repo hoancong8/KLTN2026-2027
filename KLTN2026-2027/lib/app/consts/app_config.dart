@@ -45,6 +45,7 @@ class AppConfig {
   // ===== [API] 2. Clubs Management APIs (/api/v1/clubs) =====
   static const clubsPath = '/api/v1/clubs';
   static const myClubsPath = '$clubsPath/my-clubs';
+  static const clubJoinPath = '$clubsPath/join';
   static const clubsExplorePath = '$clubsPath/explore';
   static String clubDetailPath(String id) => '$clubsPath/$id';
   static String clubInfoPath(String id) => '$clubsPath/$id/info';
@@ -52,6 +53,8 @@ class AppConfig {
   static String clubMembersPath(String id) => '$clubsPath/$id/members';
   static String clubMemberRolePath(String id, String userId) =>
       '$clubsPath/$id/members/$userId/role';
+  static String clubMemberDetailPath(String id, String userId) =>
+      '$clubsPath/$id/members/$userId';
   static const clubPermissionsPath = '$clubsPath/permissions';
   static String clubRolesPath(String id) => '$clubsPath/$id/roles';
   static String clubRolePermissionsPath(String id, String roleId) =>

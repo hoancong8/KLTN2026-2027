@@ -175,7 +175,7 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
         child: state.sessions.isEmpty
             ? _buildEmptyState(context)
             : ListView(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.only(left: 16, right: 16, top: 12, bottom: 80),
                 children: [
                   // 1. Buổi tập gần nhất (Đưa lên trên cùng để nhận biết lịch tiếp theo)
                   if (nearestSession != null)

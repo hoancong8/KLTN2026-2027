@@ -28,7 +28,7 @@ class ClubRemoteDatasourceImpl extends BaseRemoteDatasource implements ClubRemot
   @override
   Future<List<MyClubResponseDto>> getMyClubs() async {
     try {
-      final response = await dio.get('${AppConfig.clubsPath}/my-clubs');
+      final response = await dio.get(AppConfig.myClubsPath);
       return handleListResponse(response, (item) => MyClubResponseDto.fromJson(item));
     } catch (e) {
       throw handleError(e);
@@ -38,7 +38,7 @@ class ClubRemoteDatasourceImpl extends BaseRemoteDatasource implements ClubRemot
   @override
   Future<ClubResponseDto> getClubById(String id) async {
     try {
-      final response = await dio.get('${AppConfig.clubsPath}/$id');
+      final response = await dio.get(AppConfig.clubDetailPath(id));
       return handleResponse(response, (data) => ClubResponseDto.fromJson(data));
     } catch (e) {
       throw handleError(e);
@@ -68,7 +68,7 @@ class ClubRemoteDatasourceImpl extends BaseRemoteDatasource implements ClubRemot
   Future<String> joinClub(JoinClubRequestDto request) async {
     try {
       final response = await dio.post(
-        '${AppConfig.clubsPath}/join',
+        AppConfig.clubJoinPath,
         data: request.toJson(),
       );
       // BE returns Results.Ok(new { MemberId = memberId })
@@ -86,7 +86,10 @@ class ClubRemoteDatasourceImpl extends BaseRemoteDatasource implements ClubRemot
   @override
   Future<List<ClubMemberResponseDto>> getClubMembers(String clubId) async {
     try {
-      final response = await dio.get('${AppConfig.clubsPath}/$clubId/members');
+      final response = await dio.get(
+        AppConfig.clubMembersPath(clubId),
+        options: Options(headers: {'X-Group-Id': clubId}),
+      );
       return handleListResponse(response, (item) => ClubMemberResponseDto.fromJson(item));
     } catch (e) {
       throw handleError(e);
@@ -101,8 +104,9 @@ class ClubRemoteDatasourceImpl extends BaseRemoteDatasource implements ClubRemot
   ) async {
     try {
       final response = await dio.put(
-        '${AppConfig.clubsPath}/$clubId/members/$userId/role',
+        AppConfig.clubMemberRolePath(clubId, userId),
         data: request.toJson(),
+        options: Options(headers: {'X-Group-Id': clubId}),
       );
       return handleResponse(response, (data) {
         if (data is Map && data.containsKey('success')) {
@@ -119,7 +123,8 @@ class ClubRemoteDatasourceImpl extends BaseRemoteDatasource implements ClubRemot
   Future<bool> removeMember(String clubId, String userId) async {
     try {
       final response = await dio.delete(
-        '${AppConfig.clubsPath}/$clubId/members/$userId',
+        AppConfig.clubMemberDetailPath(clubId, userId),
+        options: Options(headers: {'X-Group-Id': clubId}),
       );
       return handleResponse(response, (data) {
         if (data is Map && data.containsKey('success')) {
@@ -328,6 +333,7 @@ class ClubRemoteDatasourceImpl extends BaseRemoteDatasource implements ClubRemot
       await dio.put(
         AppConfig.clubSchedulesPath(clubId),
         data: request.toJson(),
+        options: Options(headers: {'X-Group-Id': clubId}),
       );
     } catch (e) {
       throw handleError(e);

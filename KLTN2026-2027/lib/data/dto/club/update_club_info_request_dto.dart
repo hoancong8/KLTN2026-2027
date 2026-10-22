@@ -1,3 +1,5 @@
+// lib/data/dto/club/update_club_info_request_dto.dart
+
 class UpdateClubInfoRequestDto {
   final String groupName;
   final String? description;

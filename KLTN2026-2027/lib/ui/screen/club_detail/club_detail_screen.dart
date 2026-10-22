@@ -8,6 +8,7 @@ import '../../../app/l10n_gen/app_localizations.dart';
 import '../../../app/utils/exception_ext.dart';
 import '../../../domain/entities/club/club_detail.dart';
 import '../../../domain/enums/session_enums.dart';
+import '../home/tab/club/widgets/club_qr_dialog.dart';
 import '../home/tab/club/widgets/club_schedule_planner.dart';
 import '../home/tab/club/widgets/club_sessions_tab.dart';
 import 'club_detail_vm/club_detail_vm.dart';
@@ -502,12 +503,12 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(48),
           child: Container(
-            color: AppColors.white,
+            color: colors.surface,
             child: TabBar(
               controller: _tabController,
-              labelColor: AppColors.primary,
+              labelColor: colors.primary,
               unselectedLabelColor: colors.textMuted,
-              indicatorColor: AppColors.primary,
+              indicatorColor: colors.primary,
               indicatorWeight: 3,
               tabs: const [
                 Tab(
@@ -556,8 +557,11 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
                     ],
                   ),
                 )
-              : TabBarView(
-                  controller: _tabController,
+              : Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 800),
+                    child: TabBarView(
+                      controller: _tabController,
                   children: [
                     // Tab 1: Danh sách các buổi tập 14 ngày tới (tự động khởi tạo)
                     ClubSessionsTab(
@@ -588,6 +592,8 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
                     ),
                   ],
                 ),
+              ),
+            ),
       bottomNavigationBar: club != null ? _buildBottomActionBar(club, vm, state.isSubmitting) : null,
     );
   }
@@ -643,28 +649,61 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
                       ),
                     ),
                     const SizedBox(height: 4),
-                    // Code chip with copy button
-                    InkWell(
-                      onTap: () => _copyToClipboard(club.code, 'Đã sao chép mã nhóm: ${club.code}'),
-                      borderRadius: BorderRadius.circular(6),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                        decoration: BoxDecoration(
-                          color: colors.surfaceSubtle,
+                    // Code chip with copy & QR button
+                    Row(
+                      children: [
+                        InkWell(
+                          onTap: () => _copyToClipboard(club.code, 'Đã sao chép mã nhóm: ${club.code}'),
                           borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              'Mã: ${club.code}',
-                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: colors.textMuted),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: colors.surfaceSubtle,
+                              borderRadius: BorderRadius.circular(6),
                             ),
-                            const SizedBox(width: 4),
-                            Icon(Icons.copy_rounded, size: 12, color: colors.textMuted),
-                          ],
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  'Mã: ${club.code}',
+                                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: colors.textMuted),
+                                ),
+                                const SizedBox(width: 4),
+                                Icon(Icons.copy_rounded, size: 12, color: colors.textMuted),
+                              ],
+                            ),
+                          ),
                         ),
-                      ),
+                        const SizedBox(width: 8),
+                        InkWell(
+                          onTap: () => ClubQrDialog.show(
+                            context: context,
+                            clubName: club.groupName,
+                            clubCode: club.code,
+                            avatarUrl: club.avatarUrl,
+                          ),
+                          borderRadius: BorderRadius.circular(6),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: colors.primary.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(color: colors.primary.withValues(alpha: 0.3)),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.qr_code_rounded, size: 12, color: colors.primary),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'Mã QR',
+                                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: colors.primary),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                     if (club.currentUserStatus.isHost) ...[
                       const SizedBox(height: 6),
@@ -781,13 +820,13 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             children: [
-              Icon(Icons.stadium_rounded, color: AppColors.primary, size: 20),
+              const Icon(Icons.stadium_rounded, color: AppColors.primary, size: 20),
               SizedBox(width: 8),
               Text(
                 'Sân sinh hoạt cố định',
-                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.neutral900),
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: colors.textPrimary),
               ),
             ],
           ),
@@ -811,6 +850,27 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
                     ),
                   ),
                 ],
+              ),
+            ],
+            if (club.lat != null && club.lng != null) ...[
+              const SizedBox(height: 6),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: colors.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.gps_fixed_rounded, size: 12, color: colors.primary),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Tọa độ GPS: ${club.lat!.toStringAsFixed(4)}, ${club.lng!.toStringAsFixed(4)}',
+                      style: TextStyle(fontSize: 11.5, color: colors.primary),
+                    ),
+                  ],
+                ),
               ),
             ],
             const SizedBox(height: 12),
@@ -872,9 +932,9 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
             children: [
               const Icon(Icons.calendar_month_rounded, color: AppColors.primary, size: 20),
               const SizedBox(width: 8),
-              const Text(
+              Text(
                 'Lịch sinh hoạt định kỳ hàng tuần',
-                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.neutral900),
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: colors.textPrimary),
               ),
               const Spacer(),
               if (club.currentUserStatus.isMember)
@@ -975,13 +1035,13 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             children: [
-              Icon(Icons.person_pin_rounded, color: AppColors.primary, size: 20),
+              const Icon(Icons.person_pin_rounded, color: AppColors.primary, size: 20),
               SizedBox(width: 8),
               Text(
                 'Thông tin Chủ nhiệm / Host',
-                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.neutral900),
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: colors.textPrimary),
               ),
             ],
           ),
@@ -1008,7 +1068,7 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
                   children: [
                     Text(
                       club.host.fullName,
-                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.neutral900),
+                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: colors.textPrimary),
                     ),
                     const SizedBox(height: 2),
                     Text(
@@ -1048,13 +1108,13 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             children: [
-              Icon(Icons.notes_rounded, color: AppColors.primary, size: 20),
+              const Icon(Icons.notes_rounded, color: AppColors.primary, size: 20),
               SizedBox(width: 8),
               Text(
                 'Giới thiệu & Tiêu chuẩn',
-                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.neutral900),
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: colors.textPrimary),
               ),
             ],
           ),
