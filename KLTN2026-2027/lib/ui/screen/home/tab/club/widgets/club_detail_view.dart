@@ -12,6 +12,7 @@ import '../../../../club/club_vm/club_context_vm.dart';
 import 'club_join_requests_tab.dart';
 import 'club_member_section.dart';
 import 'club_overview_tab.dart';
+import 'club_qr_dialog.dart';
 import 'club_sessions_tab.dart';
 
 class ClubDetailView extends ConsumerStatefulWidget {
@@ -301,7 +302,7 @@ class _ClubDetailViewState extends ConsumerState<ClubDetailView> with SingleTick
             ],
           ),
 
-          // Action Row: Copy Club Code
+          // Action Row: Copy Club Code & View QR
           if (widget.club.clubCode.isNotEmpty) ...[
             AppSpacing.gapH12,
             Row(
@@ -317,6 +318,23 @@ class _ClubDetailViewState extends ConsumerState<ClubDetailView> with SingleTick
                     icon: Icon(Icons.copy_rounded, size: AppSpacing.iconXs, color: colors.textSecondary),
                     label: Text('Mã nhóm: ${widget.club.clubCode}', style: AppTypography.bodySmall.colored(colors.textPrimary)),
                     onPressed: () => _copyClubCode(context),
+                  ),
+                ),
+                AppSpacing.gapW8,
+                OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: colors.primary,
+                    side: BorderSide(color: colors.primary.withValues(alpha: 0.4)),
+                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+                    shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                  ),
+                  icon: const Icon(Icons.qr_code_rounded, size: AppSpacing.iconXs),
+                  label: Text('Mã QR', style: AppTypography.bodySmall.bold.colored(colors.primary)),
+                  onPressed: () => ClubQrDialog.show(
+                    context: context,
+                    clubName: widget.club.clubName,
+                    clubCode: widget.club.clubCode,
+                    avatarUrl: widget.club.avatarUrl,
                   ),
                 ),
               ],

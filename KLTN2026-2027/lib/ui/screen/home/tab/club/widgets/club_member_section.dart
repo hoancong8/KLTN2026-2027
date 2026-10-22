@@ -8,6 +8,7 @@ import '../../../../../../domain/entities/club/club_member.dart';
 import '../../../../../../domain/entities/user_profile.dart';
 import '../../../../../../domain/enums/club_role.dart';
 import '../../../../club/club_management_vm/club_members_vm.dart';
+import '../../../../club/club_vm/club_context_vm.dart';
 import '../../../../club/role_management/club_role_management_screen.dart';
 
 class ClubMemberSection extends ConsumerStatefulWidget {
@@ -404,6 +405,30 @@ class _ClubMemberSectionState extends ConsumerState<ClubMemberSection> {
                 ),
               ],
             ),
+
+          // Actions for current user (Rời nhóm nếu không phải Host)
+          if (isMe && m.role != ClubRole.host)
+            PopupMenuButton<String>(
+              color: colors.cardBackground,
+              icon: Icon(Icons.more_vert, size: AppSpacing.iconSm, color: colors.textMuted),
+              onSelected: (val) {
+                if (val == 'leave') {
+                  _showLeaveDialog(m);
+                }
+              },
+              itemBuilder: (context) => [
+                PopupMenuItem(
+                  value: 'leave',
+                  child: Row(
+                    children: [
+                      Icon(Icons.exit_to_app_rounded, size: 16, color: colors.error),
+                      AppSpacing.gapW8,
+                      Text('Rời câu lạc bộ', style: AppTypography.bodyMedium.colored(colors.error)),
+                    ],
+                  ),
+                ),
+              ],
+            ),
         ],
       ),
     );
@@ -491,6 +516,43 @@ class _ClubMemberSectionState extends ConsumerState<ClubMemberSection> {
               await widget.vm.removeMember(m.userId);
             },
             child: Text('Xóa', style: AppTypography.labelLarge.bold.colored(AppColors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showLeaveDialog(ClubMember m) {
+    final colors = context.colors;
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: colors.cardBackground,
+        shape: const RoundedRectangleBorder(borderRadius: AppRadius.dialog),
+        title: Text('Xác nhận rời câu lạc bộ', style: AppTypography.titleMedium.bold.colored(colors.textPrimary)),
+        content: Text(
+          'Bạn có chắc chắn muốn rời khỏi câu lạc bộ này? Bạn sẽ mất quyền truy cập vào các buổi tập và thông tin nội bộ của nhóm.',
+          style: AppTypography.bodyMedium.colored(colors.textSecondary),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text('Hủy', style: AppTypography.labelLarge.colored(colors.textMuted)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: colors.error,
+              foregroundColor: AppColors.white,
+              shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+            ),
+            onPressed: () async {
+              Navigator.of(ctx).pop();
+              final ok = await widget.vm.removeMember(m.userId);
+              if (ok && mounted) {
+                ref.read(clubContextViewModelProvider.notifier).loadMyClubs();
+              }
+            },
+            child: Text('Rời nhóm', style: AppTypography.labelLarge.bold.colored(AppColors.white)),
           ),
         ],
       ),

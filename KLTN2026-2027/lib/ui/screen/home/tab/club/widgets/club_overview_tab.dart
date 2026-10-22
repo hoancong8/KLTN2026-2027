@@ -12,8 +12,11 @@ import '../../../../../../app/l10n_gen/app_localizations.dart';
 import '../../../../../../domain/entities/club/club_detail.dart';
 import '../../../../../../domain/enums/club_role.dart';
 import '../../../../../../domain/enums/session_enums.dart';
+import '../../../../club/club_management_vm/club_members_vm.dart';
+import '../../../../club/club_vm/club_context_vm.dart';
 import '../../../../club/role_management/club_role_management_screen.dart';
 import '../../../../club_detail/club_detail_vm/club_detail_vm.dart';
+import 'club_qr_dialog.dart';
 import 'club_schedule_planner.dart';
 
 class ClubOverviewTab extends ConsumerStatefulWidget {
@@ -365,6 +368,23 @@ class _ClubOverviewTabState extends ConsumerState<ClubOverviewTab> {
                         label: Text('Sao chép', style: AppTypography.labelMedium.colored(AppColors.onPrimary)),
                         onPressed: () => _copyToClipboard(code, 'Đã sao chép mã nhóm: $code'),
                       ),
+                      AppSpacing.gapW8,
+                      OutlinedButton.icon(
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: colors.primary,
+                          side: BorderSide(color: colors.primary.withValues(alpha: 0.4)),
+                          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+                          shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                        ),
+                        icon: const Icon(Icons.qr_code_rounded, size: AppSpacing.iconXs),
+                        label: Text('Mã QR', style: AppTypography.labelMedium.bold.colored(colors.primary)),
+                        onPressed: () => ClubQrDialog.show(
+                          context: context,
+                          clubName: club?.groupName ?? 'Câu Lạc Bộ',
+                          clubCode: code,
+                          avatarUrl: club?.avatarUrl,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -415,6 +435,7 @@ class _ClubOverviewTabState extends ConsumerState<ClubOverviewTab> {
                 ),
                 AppSpacing.gapH4,
                 Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Icon(Icons.location_on_outlined, size: AppSpacing.iconXs, color: colors.textMuted),
                     AppSpacing.gapW4,
@@ -426,8 +447,38 @@ class _ClubOverviewTabState extends ConsumerState<ClubOverviewTab> {
                         style: AppTypography.bodySmall.colored(colors.textMuted),
                       ),
                     ),
+                    if (club?.fixedAddress != null && club!.fixedAddress!.isNotEmpty)
+                      IconButton(
+                        icon: Icon(Icons.content_copy_rounded, size: 16, color: colors.primary),
+                        tooltip: 'Sao chép địa chỉ',
+                        visualDensity: VisualDensity.compact,
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+                        onPressed: () => _copyToClipboard(club.fixedAddress!, 'Đã sao chép địa chỉ sân'),
+                      ),
                   ],
                 ),
+                if (club?.lat != null && club?.lng != null) ...[
+                  AppSpacing.gapH4,
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: colors.primary.withValues(alpha: 0.1),
+                      borderRadius: AppRadius.tag,
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.gps_fixed_rounded, size: 12, color: colors.primary),
+                        AppSpacing.gapW4,
+                        Text(
+                          'Tọa độ GPS: ${club!.lat!.toStringAsFixed(4)}, ${club.lng!.toStringAsFixed(4)}',
+                          style: AppTypography.labelSmall.colored(colors.primary),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
@@ -572,7 +623,63 @@ class _ClubOverviewTabState extends ConsumerState<ClubOverviewTab> {
 
           AppSpacing.gapH16,
 
-          // 5. Host Quick Action Shortcuts
+          // 5. Club Finance & Treasury Card (FR22, UC19)
+          Container(
+            padding: AppSpacing.allBase,
+            decoration: BoxDecoration(
+              color: colors.cardBackground,
+              borderRadius: AppRadius.card,
+              border: Border.all(color: colors.cardBorder),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(Icons.account_balance_wallet_rounded, color: AppColors.primary, size: 20),
+                        AppSpacing.gapW8,
+                        Text(
+                          'Sổ quỹ & Tài chính CLB (FR22)',
+                          style: AppTypography.titleSmall.bold.colored(colors.textPrimary),
+                        ),
+                      ],
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: AppColors.success.withValues(alpha: 0.12),
+                        borderRadius: AppRadius.tag,
+                        border: Border.all(color: AppColors.success.withValues(alpha: 0.3)),
+                      ),
+                      child: Text(
+                        'Minh bạch',
+                        style: AppTypography.labelSmall.bold.colored(AppColors.success),
+                      ),
+                    ),
+                  ],
+                ),
+                AppSpacing.gapH12,
+                _buildInfoRow(
+                  'Nguyên tắc thu chi',
+                  'Công khai theo từng buổi chơi & định kỳ tháng',
+                  icon: Icons.receipt_long_rounded,
+                ),
+                Divider(height: AppSpacing.base, color: colors.cardBorder),
+                _buildInfoRow(
+                  'Quy chế quỹ nhóm',
+                  'Tự động đối soát chuyển khoản VietQR',
+                  icon: Icons.qr_code_scanner_rounded,
+                ),
+              ],
+            ),
+          ),
+
+          AppSpacing.gapH16,
+
+          // 6. Host Quick Action Shortcuts
           if (canManageRoles) ...[
             Container(
               padding: AppSpacing.allBase,
@@ -611,7 +718,7 @@ class _ClubOverviewTabState extends ConsumerState<ClubOverviewTab> {
             AppSpacing.gapH16,
           ],
 
-          // 6. My Bookings Button
+          // 7. My Bookings Button
           OutlinedButton.icon(
             style: OutlinedButton.styleFrom(
               foregroundColor: AppColors.primary,
@@ -626,7 +733,73 @@ class _ClubOverviewTabState extends ConsumerState<ClubOverviewTab> {
             ),
             onPressed: () => context.push(AppConfig.myBookingsRoutePath),
           ),
+
+          // 8. Leave Club Button (Only for non-Host members)
+          if (!isHost) ...[
+            AppSpacing.gapH16,
+            OutlinedButton.icon(
+              style: OutlinedButton.styleFrom(
+                foregroundColor: colors.error,
+                side: BorderSide(color: colors.error.withValues(alpha: 0.5)),
+                padding: AppSpacing.verticalMd,
+                shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+              ),
+              icon: const Icon(Icons.exit_to_app_rounded, size: AppSpacing.iconSm),
+              label: Text(
+                'Rời khỏi câu lạc bộ',
+                style: AppTypography.labelLarge.bold.colored(colors.error),
+              ),
+              onPressed: () => _confirmLeaveClub(context),
+            ),
+          ],
           AppSpacing.gapH24,
+        ],
+      ),
+    );
+  }
+
+  void _confirmLeaveClub(BuildContext context) {
+    final currentProfile = ref.read(currentUserProfileProvider);
+    if (currentProfile == null) return;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: colors.cardBackground,
+        shape: const RoundedRectangleBorder(borderRadius: AppRadius.dialog),
+        title: Text('Xác nhận rời câu lạc bộ', style: AppTypography.titleMedium.bold.colored(colors.textPrimary)),
+        content: Text(
+          'Bạn có chắc chắn muốn rời khỏi câu lạc bộ này? Bạn sẽ mất quyền truy cập vào các buổi tập và thông tin nội bộ của nhóm.',
+          style: AppTypography.bodyMedium.colored(colors.textSecondary),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text('Hủy', style: AppTypography.labelLarge.colored(colors.textMuted)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: colors.error,
+              foregroundColor: AppColors.white,
+              shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+            ),
+            onPressed: () async {
+              Navigator.of(ctx).pop();
+              final ok = await ref.read(clubMembersViewModelProvider.notifier).removeMember(currentProfile.id);
+              if (ok && context.mounted) {
+                await ref.read(clubContextViewModelProvider.notifier).loadMyClubs();
+                if (!context.mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Đã rời khỏi câu lạc bộ thành công.'),
+                    backgroundColor: AppColors.primary,
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              }
+            },
+            child: Text('Rời nhóm', style: AppTypography.labelLarge.bold.colored(AppColors.white)),
+          ),
         ],
       ),
     );
