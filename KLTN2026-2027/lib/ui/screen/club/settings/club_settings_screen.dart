@@ -34,7 +34,9 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
   late final TextEditingController _addressController;
 
   String _feeMode = 'DYNAMIC';
+  int _roundRule = 1000;
   late final TextEditingController _monthlyFeeController;
+  late final TextEditingController _femaleDiscountMonthlyController;
   late final TextEditingController _dailyMemberFeeController;
   late final TextEditingController _femaleDiscountController;
   late final TextEditingController _guestFeeController;
@@ -65,9 +67,22 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
     _addressController = TextEditingController();
 
     _monthlyFeeController = TextEditingController(text: '500000');
+    _femaleDiscountMonthlyController = TextEditingController(text: '50000');
     _dailyMemberFeeController = TextEditingController(text: '50000');
     _femaleDiscountController = TextEditingController(text: '10000');
     _guestFeeController = TextEditingController(text: '70000');
+
+    for (final c in [
+      _monthlyFeeController,
+      _femaleDiscountMonthlyController,
+      _dailyMemberFeeController,
+      _femaleDiscountController,
+      _guestFeeController,
+    ]) {
+      c.addListener(() {
+        if (mounted) setState(() {});
+      });
+    }
 
     _bankAccountController = TextEditingController(text: '1029384756');
     _bankHolderController = TextEditingController(text: 'CLB CAU LONG CHIEN BINH');
@@ -85,6 +100,7 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
     _venueController.dispose();
     _addressController.dispose();
     _monthlyFeeController.dispose();
+    _femaleDiscountMonthlyController.dispose();
     _dailyMemberFeeController.dispose();
     _femaleDiscountController.dispose();
     _guestFeeController.dispose();
@@ -818,13 +834,13 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                         ),
                         AppSpacing.gapH16,
 
-                        // Section: Cấu hình biểu phí
+                        // Section: Cấu hình biểu phí đa hệ số
                         _buildSectionCard(
                           title: 'Biểu Phí & Quy Tắc Phân Bổ Chi Phí',
                           icon: Icons.account_balance_wallet_outlined,
                           children: [
                             Text(
-                              'Chế độ tính phí buổi sinh hoạt',
+                              '1. Phương thức hạch toán & Làm tròn tiền lẻ',
                               style: AppTypography.labelMedium.bold.colored(colors.textPrimary),
                             ),
                             AppSpacing.gapH8,
@@ -864,106 +880,294 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                             AppSpacing.gapH8,
                             Text(
                               _feeMode == 'DYNAMIC'
-                                  ? 'Tiền sân + Tiền cầu bóc mới thực tế chia đều cho các tay vợt tham gia.'
-                                  : 'Thu tiền theo định mức cố định đã đặt trước cho từng buổi chơi.',
+                                  ? 'Tổng tiền sân + (Số quả cầu bóc mới × Đơn giá) + Phụ phí chia cho người tham gia.'
+                                  : 'Thu theo đơn giá buổi cố định đã thiết lập cho từng nhóm đối tượng.',
                               style: AppTypography.labelSmall.colored(colors.textMuted),
-                            ),
-                            AppSpacing.gapH16,
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text('Quỹ hội viên tháng', style: AppTypography.labelMedium.colored(colors.textPrimary)),
-                                      AppSpacing.gapH4,
-                                      TextFormField(
-                                        controller: _monthlyFeeController,
-                                        keyboardType: TextInputType.number,
-                                        style: AppTypography.bodyMedium.colored(colors.textPrimary),
-                                        decoration: InputDecoration(
-                                          suffixText: 'đ',
-                                          filled: true,
-                                          fillColor: colors.inputFill,
-                                          border: OutlineInputBorder(borderRadius: AppRadius.input, borderSide: BorderSide(color: colors.inputBorder)),
-                                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                AppSpacing.gapW12,
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text('Phí hội viên ngày', style: AppTypography.labelMedium.colored(colors.textPrimary)),
-                                      AppSpacing.gapH4,
-                                      TextFormField(
-                                        controller: _dailyMemberFeeController,
-                                        keyboardType: TextInputType.number,
-                                        style: AppTypography.bodyMedium.colored(colors.textPrimary),
-                                        decoration: InputDecoration(
-                                          suffixText: 'đ',
-                                          filled: true,
-                                          fillColor: colors.inputFill,
-                                          border: OutlineInputBorder(borderRadius: AppRadius.input, borderSide: BorderSide(color: colors.inputBorder)),
-                                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
                             ),
                             AppSpacing.gapH12,
                             Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text('Ưu đãi giảm giá Nữ', style: AppTypography.labelMedium.colored(colors.textPrimary)),
-                                      AppSpacing.gapH4,
-                                      TextFormField(
-                                        controller: _femaleDiscountController,
-                                        keyboardType: TextInputType.number,
-                                        style: AppTypography.bodyMedium.colored(colors.textPrimary),
-                                        decoration: InputDecoration(
-                                          suffixText: 'đ',
-                                          filled: true,
-                                          fillColor: colors.inputFill,
-                                          border: OutlineInputBorder(borderRadius: AppRadius.input, borderSide: BorderSide(color: colors.inputBorder)),
-                                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
+                                Text(
+                                  'Làm tròn hóa đơn VietQR:',
+                                  style: AppTypography.labelSmall.bold.colored(colors.textSecondary),
                                 ),
-                                AppSpacing.gapW12,
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text('Phí khách vãng lai', style: AppTypography.labelMedium.colored(colors.textPrimary)),
-                                      AppSpacing.gapH4,
-                                      TextFormField(
-                                        controller: _guestFeeController,
-                                        keyboardType: TextInputType.number,
-                                        style: AppTypography.bodyMedium.colored(colors.textPrimary),
-                                        decoration: InputDecoration(
-                                          suffixText: 'đ',
-                                          filled: true,
-                                          fillColor: colors.inputFill,
-                                          border: OutlineInputBorder(borderRadius: AppRadius.input, borderSide: BorderSide(color: colors.inputBorder)),
-                                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                                        ),
+                                Wrap(
+                                  spacing: 6,
+                                  children: [1000, 2000, 5000].map((rule) {
+                                    final isSelected = _roundRule == rule;
+                                    return ChoiceChip(
+                                      label: Text('${rule ~/ 1000}.000đ'),
+                                      selected: isSelected,
+                                      selectedColor: colors.primary,
+                                      visualDensity: VisualDensity.compact,
+                                      labelStyle: AppTypography.labelSmall.copyWith(
+                                        color: isSelected ? AppColors.white : colors.textPrimary,
+                                        fontWeight: FontWeight.bold,
                                       ),
-                                    ],
-                                  ),
+                                      backgroundColor: colors.surfaceSubtle,
+                                      onSelected: (_) => setState(() => _roundRule = rule),
+                                    );
+                                  }).toList(),
                                 ),
                               ],
                             ),
+                            AppSpacing.gapH16,
+                            Divider(color: colors.cardBorder, height: 1),
+                            AppSpacing.gapH16,
+
+                            Text(
+                              '2. Biểu phí theo 3 nhóm đối tượng & Ưu đãi giới tính',
+                              style: AppTypography.labelMedium.bold.colored(colors.textPrimary),
+                            ),
+                            AppSpacing.gapH12,
+
+                            // Nhóm 1: Hội viên cố định theo tháng (MONTHLY)
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: colors.surfaceSubtle,
+                                borderRadius: AppRadius.borderMd,
+                                border: Border.all(color: colors.cardBorder),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Icon(Icons.calendar_month_rounded, size: 17, color: colors.success),
+                                          AppSpacing.gapW8,
+                                          Text(
+                                            'Hội viên Cố định (Gói Tháng)',
+                                            style: AppTypography.labelMedium.bold.colored(colors.textPrimary),
+                                          ),
+                                        ],
+                                      ),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
+                                        decoration: BoxDecoration(
+                                          color: colors.success.withValues(alpha: 0.14),
+                                          borderRadius: AppRadius.tag,
+                                        ),
+                                        child: Text(
+                                          '0đ / buổi chơi',
+                                          style: AppTypography.labelSmall.bold.colored(colors.success),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  AppSpacing.gapH4,
+                                  Text(
+                                    'Đóng quỹ đầu tháng, miễn phí tiền sân & cầu trong các buổi sinh hoạt định kỳ.',
+                                    style: AppTypography.labelSmall.colored(colors.textMuted),
+                                  ),
+                                  AppSpacing.gapH12,
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text('Quỹ tháng chuẩn (Nam)', style: AppTypography.labelSmall.bold.colored(colors.textSecondary)),
+                                            AppSpacing.gapH4,
+                                            TextFormField(
+                                              controller: _monthlyFeeController,
+                                              keyboardType: TextInputType.number,
+                                              style: AppTypography.bodyMedium.colored(colors.textPrimary),
+                                              decoration: InputDecoration(
+                                                suffixText: 'đ/tháng',
+                                                filled: true,
+                                                fillColor: colors.inputFill,
+                                                border: OutlineInputBorder(borderRadius: AppRadius.input, borderSide: BorderSide(color: colors.inputBorder)),
+                                                contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      AppSpacing.gapW12,
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text('Giảm trừ Nữ / tháng', style: AppTypography.labelSmall.bold.colored(colors.textSecondary)),
+                                            AppSpacing.gapH4,
+                                            TextFormField(
+                                              controller: _femaleDiscountMonthlyController,
+                                              keyboardType: TextInputType.number,
+                                              style: AppTypography.bodyMedium.colored(colors.textPrimary),
+                                              decoration: InputDecoration(
+                                                prefixText: '- ',
+                                                suffixText: 'đ',
+                                                filled: true,
+                                                fillColor: colors.inputFill,
+                                                border: OutlineInputBorder(borderRadius: AppRadius.input, borderSide: BorderSide(color: colors.inputBorder)),
+                                                contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                            AppSpacing.gapH12,
+
+                            // Nhóm 2: Hội viên theo buổi (DAILY)
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: colors.surfaceSubtle,
+                                borderRadius: AppRadius.borderMd,
+                                border: Border.all(color: colors.cardBorder),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Icon(Icons.sports_tennis_rounded, size: 17, color: colors.primary),
+                                          AppSpacing.gapW8,
+                                          Text(
+                                            'Hội viên Đóng theo buổi (DAILY)',
+                                            style: AppTypography.labelMedium.bold.colored(colors.textPrimary),
+                                          ),
+                                        ],
+                                      ),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
+                                        decoration: BoxDecoration(
+                                          color: colors.primary.withValues(alpha: 0.14),
+                                          borderRadius: AppRadius.tag,
+                                        ),
+                                        child: Text(
+                                          'Đi buổi nào tính buổi đó',
+                                          style: AppTypography.labelSmall.bold.colored(colors.primary),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  AppSpacing.gapH12,
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text('Phí buổi chuẩn (Nam)', style: AppTypography.labelSmall.bold.colored(colors.textSecondary)),
+                                            AppSpacing.gapH4,
+                                            TextFormField(
+                                              controller: _dailyMemberFeeController,
+                                              keyboardType: TextInputType.number,
+                                              style: AppTypography.bodyMedium.colored(colors.textPrimary),
+                                              decoration: InputDecoration(
+                                                suffixText: 'đ/buổi',
+                                                filled: true,
+                                                fillColor: colors.inputFill,
+                                                border: OutlineInputBorder(borderRadius: AppRadius.input, borderSide: BorderSide(color: colors.inputBorder)),
+                                                contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      AppSpacing.gapW12,
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text('Giảm trừ Nữ / buổi', style: AppTypography.labelSmall.bold.colored(colors.textSecondary)),
+                                            AppSpacing.gapH4,
+                                            TextFormField(
+                                              controller: _femaleDiscountController,
+                                              keyboardType: TextInputType.number,
+                                              style: AppTypography.bodyMedium.colored(colors.textPrimary),
+                                              decoration: InputDecoration(
+                                                prefixText: '- ',
+                                                suffixText: 'đ',
+                                                filled: true,
+                                                fillColor: colors.inputFill,
+                                                border: OutlineInputBorder(borderRadius: AppRadius.input, borderSide: BorderSide(color: colors.inputBorder)),
+                                                contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                            AppSpacing.gapH12,
+
+                            // Nhóm 3: Khách vãng lai (GUEST)
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: colors.surfaceSubtle,
+                                borderRadius: AppRadius.borderMd,
+                                border: Border.all(color: colors.cardBorder),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Icon(Icons.person_pin_circle_outlined, size: 18, color: colors.warning),
+                                          AppSpacing.gapW8,
+                                          Text(
+                                            'Khách vãng lai / Giao lưu (GUEST)',
+                                            style: AppTypography.labelMedium.bold.colored(colors.textPrimary),
+                                          ),
+                                        ],
+                                      ),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
+                                        decoration: BoxDecoration(
+                                          color: colors.warning.withValues(alpha: 0.15),
+                                          borderRadius: AppRadius.tag,
+                                        ),
+                                        child: Text(
+                                          'Vé giao lưu',
+                                          style: AppTypography.labelSmall.bold.colored(colors.warning),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  AppSpacing.gapH8,
+                                  TextFormField(
+                                    controller: _guestFeeController,
+                                    keyboardType: TextInputType.number,
+                                    style: AppTypography.bodyMedium.colored(colors.textPrimary),
+                                    decoration: InputDecoration(
+                                      labelText: 'Đơn giá vé khách vãng lai / buổi',
+                                      labelStyle: AppTypography.labelSmall.colored(colors.textMuted),
+                                      suffixText: 'đ/buổi',
+                                      filled: true,
+                                      fillColor: colors.inputFill,
+                                      border: OutlineInputBorder(borderRadius: AppRadius.input, borderSide: BorderSide(color: colors.inputBorder)),
+                                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            AppSpacing.gapH16,
+
+                            // Khối 3: Bảng mô phỏng nhanh (Live Fee Preview)
+                            _buildLiveFeeSimulationPreview(),
                           ],
                         ),
                         AppSpacing.gapH16,
@@ -1250,6 +1454,81 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
           ...children,
         ],
       ),
+    );
+  }
+
+  Widget _buildLiveFeeSimulationPreview() {
+    final monthlyMale = int.tryParse(_monthlyFeeController.text.trim()) ?? 500000;
+    final monthlyDisc = int.tryParse(_femaleDiscountMonthlyController.text.trim()) ?? 50000;
+    final monthlyFemale = (monthlyMale - monthlyDisc).clamp(0, 99999999);
+
+    final dailyMale = int.tryParse(_dailyMemberFeeController.text.trim()) ?? 50000;
+    final dailyDisc = int.tryParse(_femaleDiscountController.text.trim()) ?? 10000;
+    final dailyFemale = (dailyMale - dailyDisc).clamp(0, 99999999);
+
+    final guestFee = int.tryParse(_guestFeeController.text.trim()) ?? 70000;
+    final guestFemale = (guestFee - dailyDisc).clamp(0, 99999999);
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: colors.primary.withValues(alpha: 0.06),
+        borderRadius: AppRadius.borderMd,
+        border: Border.all(color: colors.primary.withValues(alpha: 0.25)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.calculate_outlined, size: 17, color: colors.primary),
+              AppSpacing.gapW8,
+              Text(
+                'Bảng Tóm Tắt Áp Dụng Khi Chốt Sổ Buổi Chơi',
+                style: AppTypography.labelMedium.bold.colored(colors.primary),
+              ),
+            ],
+          ),
+          AppSpacing.gapH8,
+          _buildPreviewRow(
+            label: 'Hội viên Gói Tháng (Nam / Nữ)',
+            value: '$monthlyMale đ / $monthlyFemale đ (Ra sân: 0 đ/buổi)',
+          ),
+          AppSpacing.gapH4,
+          _buildPreviewRow(
+            label: 'Hội viên Theo buổi (Nam / Nữ)',
+            value: '$dailyMale đ / $dailyFemale đ mỗi buổi',
+          ),
+          AppSpacing.gapH4,
+          _buildPreviewRow(
+            label: 'Khách vãng lai (Nam / Nữ)',
+            value: '$guestFee đ / $guestFemale đ mỗi buổi',
+          ),
+          AppSpacing.gapH4,
+          _buildPreviewRow(
+            label: 'Quy tắc làm tròn VietQR',
+            value: 'Làm tròn chẵn ${_roundRule ~/ 1000}.000đ',
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPreviewRow({required String label, required String value}) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Flexible(
+          child: Text(
+            label,
+            style: AppTypography.labelSmall.colored(colors.textSecondary),
+          ),
+        ),
+        Text(
+          value,
+          style: AppTypography.labelSmall.bold.colored(colors.textPrimary),
+        ),
+      ],
     );
   }
 }

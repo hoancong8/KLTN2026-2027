@@ -16,6 +16,8 @@ class ClubMember {
   final ClubMemberStatus status;
   final String? nickname;
   final DateTime? joinedAt;
+  final String memberType;
+  final DateTime? monthlyExpiryDate;
 
   const ClubMember({
     required this.id,
@@ -29,5 +31,41 @@ class ClubMember {
     required this.status,
     this.nickname,
     this.joinedAt,
+    this.memberType = 'MONTHLY',
+    this.monthlyExpiryDate,
   });
+
+  bool get isMonthlyMember => memberType.toUpperCase() == 'MONTHLY';
+
+  ClubMember copyWith({
+    String? id,
+    String? clubId,
+    String? userId,
+    String? userName,
+    String? email,
+    ClubRole? role,
+    String? roleName,
+    String? roleId,
+    ClubMemberStatus? status,
+    String? nickname,
+    DateTime? joinedAt,
+    String? memberType,
+    DateTime? monthlyExpiryDate,
+  }) {
+    return ClubMember(
+      id: id ?? this.id,
+      clubId: clubId ?? this.clubId,
+      userId: userId ?? this.userId,
+      userName: userName ?? this.userName,
+      email: email ?? this.email,
+      role: role ?? this.role,
+      roleName: roleName ?? this.roleName,
+      roleId: roleId ?? this.roleId,
+      status: status ?? this.status,
+      nickname: nickname ?? this.nickname,
+      joinedAt: joinedAt ?? this.joinedAt,
+      memberType: memberType ?? this.memberType,
+      monthlyExpiryDate: monthlyExpiryDate ?? this.monthlyExpiryDate,
+    );
+  }
 }

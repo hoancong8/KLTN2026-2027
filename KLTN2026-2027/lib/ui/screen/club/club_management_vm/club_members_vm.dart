@@ -204,6 +204,40 @@ class ClubMembersViewModel extends StateNotifier<ClubMembersState> {
     }
   }
 
+  Future<bool> updateMemberFeePlan(
+    String memberUserId, {
+    required String memberType,
+    DateTime? monthlyExpiryDate,
+  }) async {
+    state = state.copyWith(isActionLoading: true, clearError: true, clearSuccess: true);
+    try {
+      final updatedMembers = state.members.map((m) {
+        if (m.userId == memberUserId || m.id == memberUserId) {
+          return m.copyWith(
+            memberType: memberType,
+            monthlyExpiryDate: monthlyExpiryDate,
+          );
+        }
+        return m;
+      }).toList();
+
+      state = state.copyWith(
+        isActionLoading: false,
+        members: updatedMembers,
+        successMessage: memberType == 'MONTHLY'
+            ? 'Đã chuyển sang gói Hội viên Tháng!'
+            : 'Đã chuyển sang gói Đóng theo buổi!',
+      );
+      return true;
+    } catch (e) {
+      state = state.copyWith(
+        isActionLoading: false,
+        error: AppException(message: 'Không thể cập nhật gói hội viên: $e'),
+      );
+      return false;
+    }
+  }
+
   /// Tạo vai trò mới cho câu lạc bộ (FR03)
   Future<bool> createRole({
     required String roleName,

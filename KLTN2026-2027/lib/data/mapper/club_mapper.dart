@@ -40,18 +40,26 @@ class ClubMapper {
   }
 
   static ClubMember toClubMemberEntity(ClubMemberResponseDto dto) {
+    final parsedRole = ClubRole.fromValue(dto.role ?? dto.roleName);
+    final rawMemberType = dto.memberType?.toUpperCase().trim();
+    final effectiveMemberType = (rawMemberType == 'DAILY' || parsedRole == ClubRole.guest)
+        ? 'DAILY'
+        : 'MONTHLY';
+
     return ClubMember(
       id: dto.id,
       clubId: dto.clubId,
       userId: dto.userId,
       userName: dto.userName,
       email: dto.email,
-      role: ClubRole.fromValue(dto.role ?? dto.roleName),
+      role: parsedRole,
       roleName: dto.roleName,
       roleId: dto.roleId,
       status: ClubMemberStatus.fromValue(dto.status),
       nickname: dto.nickname,
       joinedAt: dto.joinedAt != null ? DateTime.tryParse(dto.joinedAt!) : null,
+      memberType: effectiveMemberType,
+      monthlyExpiryDate: dto.monthlyExpiryDate != null ? DateTime.tryParse(dto.monthlyExpiryDate!) : null,
     );
   }
 

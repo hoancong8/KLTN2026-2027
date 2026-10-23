@@ -12,6 +12,8 @@ class ClubMemberResponseDto {
   final dynamic status;
   final String? nickname;
   final String? joinedAt;
+  final String? memberType;
+  final String? monthlyExpiryDate;
 
   const ClubMemberResponseDto({
     required this.id,
@@ -25,6 +27,8 @@ class ClubMemberResponseDto {
     required this.status,
     this.nickname,
     this.joinedAt,
+    this.memberType,
+    this.monthlyExpiryDate,
   });
 
   factory ClubMemberResponseDto.fromJson(dynamic rawJson) {
@@ -41,6 +45,8 @@ class ClubMemberResponseDto {
         status: 1,
         nickname: null,
         joinedAt: null,
+        memberType: 'MONTHLY',
+        monthlyExpiryDate: null,
       );
     }
 
@@ -60,6 +66,8 @@ class ClubMemberResponseDto {
       status: rawJson['status'],
       nickname: rawJson['nickname']?.toString(),
       joinedAt: rawJson['joinedAt']?.toString(),
+      memberType: (rawJson['memberType'] ?? rawJson['member_type'])?.toString(),
+      monthlyExpiryDate: (rawJson['monthlyExpiryDate'] ?? rawJson['monthly_expiry_date'])?.toString(),
     );
   }
 }

@@ -376,7 +376,7 @@ class _ClubMemberSectionState extends ConsumerState<ClubMemberSection> {
                 ),
                 const SizedBox(height: 1.5),
                 Text(
-                  isMe ? '${m.email ?? "Thành viên"} • (Tài khoản của bạn)' : (m.email ?? 'Thành viên nhóm'),
+                  '${m.role == ClubRole.guest ? "Khách vãng lai" : (m.isMonthlyMember ? "Gói Tháng (Cố định)" : "Đóng theo buổi")} • ${isMe ? "Tài khoản của bạn" : (m.email ?? "Thành viên")}',
                   style: AppTypography.bodySmall.colored(
                     isMe ? colors.primary : colors.textMuted,
                   ).copyWith(fontWeight: isMe ? FontWeight.w500 : FontWeight.normal),
@@ -517,6 +517,26 @@ class _ClubMemberSectionState extends ConsumerState<ClubMemberSection> {
                     _showUpdateRoleDialog(m);
                   },
                 ),
+              if (canManageRoles && m.role != ClubRole.guest)
+                ListTile(
+                  dense: true,
+                  leading: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(color: colors.success.withValues(alpha: 0.1), borderRadius: AppRadius.borderSm),
+                    child: Icon(Icons.card_membership_rounded, color: colors.success, size: 20),
+                  ),
+                  title: Text('Chuyển gói sinh hoạt (Tháng / Ngày)', style: AppTypography.bodyMedium.bold.colored(colors.textPrimary)),
+                  subtitle: Text(
+                    m.isMonthlyMember
+                        ? 'Hiện tại: Hội viên Cố định (Gói Tháng - 0đ/buổi)'
+                        : 'Hiện tại: Hội viên Đóng theo buổi (DAILY)',
+                    style: AppTypography.labelSmall.colored(colors.textMuted),
+                  ),
+                  onTap: () {
+                    Navigator.of(ctx).pop();
+                    _showUpdateMemberFeePlanDialog(m);
+                  },
+                ),
               if (canRemoveMember && m.role != ClubRole.host && !isMe)
                 ListTile(
                   dense: true,
@@ -621,6 +641,80 @@ class _ClubMemberSectionState extends ConsumerState<ClubMemberSection> {
                 await widget.vm.updateRole(m.userId, selected);
               },
               child: Text('Lưu thay đổi', style: AppTypography.labelLarge.bold.colored(AppColors.white)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showUpdateMemberFeePlanDialog(ClubMember m) {
+    final colors = context.colors;
+    String selectedType = m.isMonthlyMember ? 'MONTHLY' : 'DAILY';
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          backgroundColor: colors.cardBackground,
+          shape: const RoundedRectangleBorder(borderRadius: AppRadius.dialog),
+          title: Text(
+            'Gói sinh hoạt: ${m.userName ?? "Thành viên"}',
+            style: AppTypography.titleMedium.bold.colored(colors.textPrimary),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: Icon(
+                  selectedType == 'MONTHLY' ? Icons.radio_button_checked : Icons.radio_button_off,
+                  color: selectedType == 'MONTHLY' ? colors.primary : colors.textMuted,
+                ),
+                title: Text('Hội viên Cố định (Gói Tháng)', style: AppTypography.bodyMedium.bold.colored(colors.textPrimary)),
+                subtitle: Text(
+                  'Đóng quỹ cố định đầu tháng. Khi tham gia các buổi sinh hoạt sẽ được tính 0đ/buổi.',
+                  style: AppTypography.labelSmall.colored(colors.textMuted),
+                ),
+                onTap: () => setDialogState(() => selectedType = 'MONTHLY'),
+              ),
+              const Divider(height: 12),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: Icon(
+                  selectedType == 'DAILY' ? Icons.radio_button_checked : Icons.radio_button_off,
+                  color: selectedType == 'DAILY' ? colors.primary : colors.textMuted,
+                ),
+                title: Text('Hội viên Đóng theo buổi (DAILY)', style: AppTypography.bodyMedium.bold.colored(colors.textPrimary)),
+                subtitle: Text(
+                  'Tham gia buổi nào tính phí buổi đó theo biểu phí thành viên ngày (có áp dụng ưu đãi Nữ).',
+                  style: AppTypography.labelSmall.colored(colors.textMuted),
+                ),
+                onTap: () => setDialogState(() => selectedType = 'DAILY'),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: Text('Hủy', style: AppTypography.labelLarge.colored(colors.textMuted)),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: colors.primary,
+                foregroundColor: AppColors.white,
+                shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+              ),
+              onPressed: () async {
+                Navigator.of(ctx).pop();
+                await widget.vm.updateMemberFeePlan(
+                  m.userId,
+                  memberType: selectedType,
+                  monthlyExpiryDate: selectedType == 'MONTHLY'
+                      ? DateTime.now().add(const Duration(days: 30))
+                      : null,
+                );
+              },
+              child: Text('Lưu gói', style: AppTypography.labelLarge.bold.colored(AppColors.white)),
             ),
           ],
         ),
