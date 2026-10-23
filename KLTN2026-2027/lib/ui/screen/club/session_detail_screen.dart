@@ -610,60 +610,57 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
         ],
       ),
       bottomNavigationBar: _buildBottomActionBar(context, session, state.isSubmitting),
-      body: Align(
-        alignment: Alignment.topCenter,
+      body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 800),
-          child: Column(
-            children: [
-              // 1. Session Detailed Overview Card
-              _buildSessionHeaderCard(session, detail.activeRecruitment, canManageSession, canRecruit),
-
-              // 2. Tab Bar: Confirmed vs Waiting Queue
-              Container(
-                color: colors.cardBackground,
-                child: TabBar(
-                  controller: _tabController,
-                  labelColor: colors.primary,
-                  unselectedLabelColor: colors.textMuted,
-                  indicatorColor: colors.primary,
-                  indicatorWeight: 3,
-                  tabs: [
-                    Tab(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(Icons.check_circle_rounded, size: 18),
-                          AppSpacing.gapW4,
-                          Text('Chính thức ($confirmedCount/${session.maxPlayers})'),
-                        ],
-                      ),
-                    ),
-                    Tab(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(Icons.hourglass_empty_rounded, size: 18),
-                          AppSpacing.gapW4,
-                          Text('Hàng đợi ($waitingCount)'),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
+          child: NestedScrollView(
+            headerSliverBuilder: (context, innerBoxIsScrolled) => [
+              SliverToBoxAdapter(
+                child: _buildSessionHeaderCard(session, detail.activeRecruitment, canManageSession, canRecruit),
               ),
-
-              // 3. Tab Views: Confirmed and Waiting Players List
-              Expanded(
-                child: TabBarView(
-                  controller: _tabController,
-                  children: [
-                    _buildPlayersList(detail.confirmedPlayers, isWaiting: false),
-                    _buildPlayersList(detail.waitingQueue, isWaiting: true),
-                  ],
+              SliverPersistentHeader(
+                pinned: true,
+                delegate: _SessionTabBarDelegate(
+                  TabBar(
+                    controller: _tabController,
+                    labelColor: colors.primary,
+                    unselectedLabelColor: colors.textMuted,
+                    indicatorColor: colors.primary,
+                    indicatorWeight: 3,
+                    tabs: [
+                      Tab(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.check_circle_rounded, size: 18),
+                            AppSpacing.gapW4,
+                            Text('Chính thức ($confirmedCount/${session.maxPlayers})'),
+                          ],
+                        ),
+                      ),
+                      Tab(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.hourglass_empty_rounded, size: 18),
+                            AppSpacing.gapW4,
+                            Text('Hàng đợi ($waitingCount)'),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  backgroundColor: colors.cardBackground,
                 ),
               ),
             ],
+            body: TabBarView(
+              controller: _tabController,
+              children: [
+                _buildPlayersList(detail.confirmedPlayers, isWaiting: false),
+                _buildPlayersList(detail.waitingQueue, isWaiting: true),
+              ],
+            ),
           ),
         ),
       ),
@@ -857,36 +854,66 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                   ),
                 ),
               ),
+              if (session.courtRentalCost > 0) ...[
+                AppSpacing.gapW8,
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: colors.surfaceSubtle,
+                      borderRadius: AppRadius.borderSm,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Tổng tiền sân', style: AppTypography.labelSmall.copyWith(color: colors.textMuted)),
+                        AppSpacing.gapH4,
+                        Text(
+                          '${NumberFormat('#,###').format(session.courtRentalCost)} đ',
+                          style: AppTypography.bodySmall.copyWith(fontWeight: FontWeight.bold, color: colors.textPrimary),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ],
           ),
           AppSpacing.gapH12,
 
           // Booking Deadline Warning
-          Row(
-            children: [
-              Icon(
-                session.isExpired ? Icons.timer_off_outlined : Icons.timer_outlined,
-                size: 15,
-                color: session.isExpired ? colors.error : colors.textMuted,
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+            decoration: BoxDecoration(
+              color: session.isExpired ? colors.error.withValues(alpha: 0.08) : colors.surfaceSubtle,
+              borderRadius: AppRadius.borderSm,
+              border: Border.all(
+                color: session.isExpired ? colors.error.withValues(alpha: 0.25) : colors.cardBorder,
               ),
-              AppSpacing.gapW4,
-              Expanded(
-                child: Text(
-                  session.isExpired
-                      ? 'Đã hết hạn giữ chỗ: ${DateFormat('HH:mm, dd/MM').format(session.deadlineBooking)}'
-                      : 'Hạn chốt giữ chỗ: ${DateFormat('HH:mm, dd/MM').format(session.deadlineBooking)}',
-                  style: AppTypography.labelSmall.copyWith(
-                    color: session.isExpired ? colors.error : colors.textMuted,
-                    fontWeight: session.isExpired ? FontWeight.bold : FontWeight.normal,
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  session.isExpired ? Icons.timer_off_outlined : Icons.timer_outlined,
+                  size: 15,
+                  color: session.isExpired ? colors.error : colors.textMuted,
+                ),
+                AppSpacing.gapW8,
+                Expanded(
+                  child: Text(
+                    session.isExpired
+                        ? 'Đã hết hạn giữ chỗ: ${DateFormat('HH:mm, dd/MM').format(session.deadlineBooking)}'
+                        : 'Hạn chốt giữ chỗ: ${DateFormat('HH:mm, dd/MM').format(session.deadlineBooking)}',
+                    style: AppTypography.labelSmall.copyWith(
+                      color: session.isExpired ? colors.error : colors.textMuted,
+                      fontWeight: session.isExpired ? FontWeight.bold : FontWeight.normal,
+                    ),
                   ),
                 ),
-              ),
-              if (session.courtRentalCost > 0)
-                Text(
-                  'Tổng tiền sân: ${NumberFormat('#,###').format(session.courtRentalCost)} đ',
-                  style: AppTypography.labelSmall.copyWith(color: colors.textMuted),
-                ),
-            ],
+              ],
+            ),
           ),
           AppSpacing.gapH12,
 
@@ -1268,29 +1295,38 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
     // 1. Buổi chơi đã kết thúc
     if (isEnded) {
       return Container(
-        padding: AppSpacing.screen,
+        width: double.infinity,
         decoration: BoxDecoration(
           color: colors.cardBackground,
           border: Border(top: BorderSide(color: colors.divider)),
         ),
         child: SafeArea(
-          child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 12),
-            decoration: BoxDecoration(
-              color: colors.surfaceSubtle,
-              borderRadius: AppRadius.button,
-              border: Border.all(color: colors.cardBorder),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.history_rounded, size: 18, color: colors.textMuted),
-                AppSpacing.gapW8,
-                Text(
-                  'Buổi chơi này đã kết thúc',
-                  style: AppTypography.bodyMedium.bold.colored(colors.textMuted),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 800),
+              child: Padding(
+                padding: AppSpacing.screen,
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  decoration: BoxDecoration(
+                    color: colors.surfaceSubtle,
+                    borderRadius: AppRadius.button,
+                    border: Border.all(color: colors.cardBorder),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.history_rounded, size: 18, color: colors.textMuted),
+                      AppSpacing.gapW8,
+                      Text(
+                        'Buổi chơi này đã kết thúc',
+                        style: AppTypography.bodyMedium.bold.colored(colors.textMuted),
+                      ),
+                    ],
+                  ),
                 ),
-              ],
+              ),
             ),
           ),
         ),
@@ -1298,96 +1334,113 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
     }
 
     return Container(
-      padding: AppSpacing.screen,
+      width: double.infinity,
       decoration: BoxDecoration(
         color: colors.cardBackground,
         border: Border(top: BorderSide(color: colors.divider)),
         boxShadow: context.isDark ? AppShadows.none : AppShadows.bottomBar,
       ),
       child: SafeArea(
-        child: isBooked
-            ? Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 800),
+            child: Padding(
+              padding: AppSpacing.screen,
+              child: isBooked
+                  ? Row(
                       children: [
-                        Row(
-                          children: [
-                            Icon(
-                              isConfirmed ? Icons.check_circle_rounded : Icons.schedule_rounded,
-                              size: 16,
-                              color: isConfirmed ? colors.primary : colors.warning,
-                            ),
-                            AppSpacing.gapW8,
-                            Text(
-                              isConfirmed ? 'Bạn đã có slot chính thức' : 'Đang ở hàng đợi số #$waitingOrder',
-                              style: AppTypography.titleSmall.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: isConfirmed ? colors.primary : colors.warning,
+                        Expanded(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(
+                                    isConfirmed ? Icons.check_circle_rounded : Icons.schedule_rounded,
+                                    size: 16,
+                                    color: isConfirmed ? colors.primary : colors.warning,
+                                  ),
+                                  AppSpacing.gapW8,
+                                  Expanded(
+                                    child: Text(
+                                      isConfirmed ? 'Bạn đã có slot chính thức' : 'Đang ở hàng đợi số #$waitingOrder',
+                                      style: AppTypography.titleSmall.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                        color: isConfirmed ? colors.primary : colors.warning,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ),
-                          ],
+                              AppSpacing.gapH4,
+                              Text(
+                                'Báo vắng để tự động nhường slot cho hàng đợi',
+                                style: AppTypography.bodySmall.copyWith(color: colors.textMuted),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ),
                         ),
-                        AppSpacing.gapH4,
-                        Text(
-                          'Báo vắng để tự động nhường slot cho hàng đợi',
-                          style: AppTypography.bodySmall.copyWith(color: colors.textMuted),
+                        AppSpacing.gapW12,
+                        ElevatedButton.icon(
+                          onPressed: isSubmitting ? null : _handleCancelBooking,
+                          icon: const Icon(Icons.cancel_outlined, size: 18),
+                          label: Text(isConfirmed ? 'Báo Vắng' : 'Rút Hàng Đợi'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: colors.error,
+                            foregroundColor: AppColors.white,
+                            shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          ),
                         ),
                       ],
-                    ),
-                  ),
-                  AppSpacing.gapW12,
-                  ElevatedButton.icon(
-                    onPressed: isSubmitting ? null : _handleCancelBooking,
-                    icon: const Icon(Icons.cancel_outlined, size: 18),
-                    label: Text(isConfirmed ? 'Báo Vắng' : 'Rút Hàng Đợi'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: colors.error,
-                      foregroundColor: AppColors.white,
-                      shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    ),
-                  ),
-                ],
-              )
-            : ElevatedButton(
-                onPressed: (!isOpen || isSubmitting) ? null : _handleVote,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: session.isFull ? colors.warning : colors.primary,
-                  foregroundColor: AppColors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
-                  elevation: 0,
-                ),
-                child: isSubmitting
-                    ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.white))
-                    : Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            !isOpen
-                                ? Icons.lock_outline_rounded
-                                : (session.isFull ? Icons.queue_rounded : Icons.sports_tennis_rounded),
-                            size: 18,
-                            color: AppColors.white,
-                          ),
-                          AppSpacing.gapW8,
-                          Text(
-                            !isOpen
-                                ? 'Buổi chơi đã đóng biểu quyết'
-                                : (session.isFull
-                                    ? 'Xếp Vào Hàng Đợi Chờ (Slot #${session.waitingCount + 1})'
-                                    : 'Biểu Quyết Tham Gia (Vote YES)'),
-                            style: AppTypography.titleSmall.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.white,
-                            ),
-                          ),
-                        ],
+                    )
+                  : SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: (!isOpen || isSubmitting) ? null : _handleVote,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: session.isFull ? colors.warning : colors.primary,
+                          foregroundColor: AppColors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                          elevation: 0,
+                        ),
+                        child: isSubmitting
+                            ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.white))
+                            : Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    !isOpen
+                                        ? Icons.lock_outline_rounded
+                                        : (session.isFull ? Icons.queue_rounded : Icons.sports_tennis_rounded),
+                                    size: 18,
+                                    color: AppColors.white,
+                                  ),
+                                  AppSpacing.gapW8,
+                                  Text(
+                                    !isOpen
+                                        ? 'Buổi chơi đã đóng biểu quyết'
+                                        : (session.isFull
+                                            ? 'Xếp Vào Hàng Đợi Chờ (Slot #${session.waitingCount + 1})'
+                                            : 'Biểu Quyết Tham Gia (Vote YES)'),
+                                    style: AppTypography.titleSmall.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      color: AppColors.white,
+                                    ),
+                                  ),
+                                ],
+                              ),
                       ),
-              ),
+                    ),
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -1470,5 +1523,31 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
         style: AppTypography.labelSmall.copyWith(fontWeight: FontWeight.bold, color: fg),
       ),
     );
+  }
+}
+
+class _SessionTabBarDelegate extends SliverPersistentHeaderDelegate {
+  final TabBar tabBar;
+  final Color backgroundColor;
+
+  const _SessionTabBarDelegate(this.tabBar, {required this.backgroundColor});
+
+  @override
+  double get minExtent => tabBar.preferredSize.height;
+
+  @override
+  double get maxExtent => tabBar.preferredSize.height;
+
+  @override
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return Container(
+      color: backgroundColor,
+      child: tabBar,
+    );
+  }
+
+  @override
+  bool shouldRebuild(_SessionTabBarDelegate oldDelegate) {
+    return tabBar != oldDelegate.tabBar || backgroundColor != oldDelegate.backgroundColor;
   }
 }
