@@ -36,254 +36,262 @@ class ClubExploreCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
-    return Container(
+    return Card(
+      elevation: 0,
       margin: const EdgeInsets.only(bottom: 14),
-      decoration: BoxDecoration(
-        color: colors.cardBackground,
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: colors.cardBorder),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.black.withValues(alpha: 0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
-          ),
-        ],
+        side: BorderSide(color: colors.cardBorder, width: 1),
       ),
-      child: Material(
-        color: AppColors.transparent,
+      color: colors.cardBackground,
+      child: InkWell(
+        onTap: onTap,
         borderRadius: BorderRadius.circular(16),
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(16),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Top row: Avatar, Name, Code, Distance
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Club Logo
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: Container(
-                        width: 52,
-                        height: 52,
-                        color: AppColors.primary.withValues(alpha: 0.1),
-                        child: club.avatarUrl != null && club.avatarUrl!.isNotEmpty
-                            ? Image.network(
-                                club.avatarUrl!,
-                                fit: BoxFit.cover,
-                                errorBuilder: (_, _, _) => const Icon(
-                                  Icons.sports_tennis_rounded,
-                                  color: AppColors.primary,
-                                  size: 26,
-                                ),
-                              )
-                            : const Icon(
-                                Icons.sports_tennis_rounded,
-                                color: AppColors.primary,
-                                size: 26,
-                              ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-
-                    // Name & Code
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            club.groupName,
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                              color: colors.textPrimary,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: 3),
-                          Row(
-                            children: [
-                              Text(
-                                club.code,
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                  color: colors.textMuted,
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              // Rating
-                              Row(
-                                children: [
-                                  const Icon(Icons.star_rounded, size: 14, color: AppColors.warning),
-                                  const SizedBox(width: 2),
-                                  Text(
-                                    club.qualityScore.toStringAsFixed(1),
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w700,
-                                      color: AppColors.roleTreasurer,
-                                    ),
+        child: Padding(
+          padding: const EdgeInsets.all(15),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Top row: Avatar, Name, Code, Distance
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  // Club Logo
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Container(
+                      width: 44,
+                      height: 44,
+                      color: colors.primaryContainer,
+                      child: club.avatarUrl != null && club.avatarUrl!.isNotEmpty
+                          ? Image.network(
+                              club.avatarUrl!,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, _, _) => Center(
+                                child: Text(
+                                  club.groupName.isNotEmpty ? club.groupName[0].toUpperCase() : 'C',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: colors.primary,
                                   ),
-                                ],
+                                ),
                               ),
-                            ],
+                            )
+                          : Center(
+                              child: Text(
+                                club.groupName.isNotEmpty ? club.groupName[0].toUpperCase() : 'C',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: colors.primary,
+                                ),
+                              ),
+                            ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+
+                  // Name & Code
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          club.groupName,
+                          style: TextStyle(
+                            fontSize: 15.5,
+                            fontWeight: FontWeight.bold,
+                            color: colors.textPrimary,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 3),
+                        Row(
+                          children: [
+                            Text(
+                              club.code,
+                              style: TextStyle(
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w600,
+                                color: colors.textMuted,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            // Rating
+                            Row(
+                              children: [
+                                const Icon(Icons.star_rounded, size: 14, color: AppColors.warning),
+                                const SizedBox(width: 2),
+                                Text(
+                                  club.qualityScore.toStringAsFixed(1),
+                                  style: const TextStyle(
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.roleTreasurer,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Distance Chip (if GPS available)
+                  if (club.distanceKm != null)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: colors.primaryContainer,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.near_me_rounded, size: 11, color: colors.primary),
+                          const SizedBox(width: 3),
+                          Text(
+                            'Cách ${club.distanceKm!.toStringAsFixed(1)} km',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              color: colors.primary,
+                            ),
                           ),
                         ],
                       ),
                     ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Divider(height: 1, color: colors.cardBorder),
+              const SizedBox(height: 10),
 
-                    // Distance Chip (if GPS available)
-                    if (club.distanceKm != null)
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: AppColors.infoLight,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: AppColors.infoBorder),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(Icons.near_me_rounded, size: 12, color: AppColors.roleDeputy),
-                            const SizedBox(width: 4),
-                            Text(
-                              '${club.distanceKm!.toStringAsFixed(1)} km',
-                              style: const TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w700,
-                                color: AppColors.roleDeputy,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-
-                // Venue & Address
-                if (club.fixedVenueName != null && club.fixedVenueName!.isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 6),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Icon(Icons.location_on_rounded, size: 15, color: AppColors.error),
-                        const SizedBox(width: 6),
-                        Expanded(
-                          child: Text(
-                            club.fixedAddress != null && club.fixedAddress!.isNotEmpty
-                                ? '${club.fixedVenueName!} - ${club.fixedAddress!}'
-                                : club.fixedVenueName!,
-                            style: const TextStyle(
-                              fontSize: 13,
-                              color: AppColors.neutral700,
-                              fontWeight: FontWeight.w500,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                // Schedules summary
-                if (club.schedulesSummary != null && club.schedulesSummary!.isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.access_time_rounded, size: 15, color: AppColors.roleSky),
-                        const SizedBox(width: 6),
-                        Expanded(
-                          child: Text(
-                            club.schedulesSummary!,
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: AppColors.roleSky,
-                              fontWeight: FontWeight.w600,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                const Divider(height: 14),
-
-                // Bottom row: Skill range, Recruitment badge, Members count
-                Row(
-                  children: [
-                    // Skill range badge
-                    if (club.minSkillLevel != null || club.maxSkillLevel != null)
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                        decoration: BoxDecoration(
-                          color: _getSkillColor(club.minSkillLevel).withValues(alpha: 0.12),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
+              // Venue & Address
+              if (club.fixedVenueName != null && club.fixedVenueName!.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 6),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Icon(Icons.location_on_rounded, size: 15, color: AppColors.error),
+                      const SizedBox(width: 6),
+                      Expanded(
                         child: Text(
-                          'Trình độ: ${club.minSkillLevel?.code ?? "NB"} - ${club.maxSkillLevel?.code ?? "G"}',
+                          club.fixedAddress != null && club.fixedAddress!.isNotEmpty
+                              ? '${club.fixedVenueName!} - ${club.fixedAddress!}'
+                              : club.fixedVenueName!,
                           style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                            color: _getSkillColor(club.minSkillLevel),
+                            fontSize: 13,
+                            color: colors.textPrimary,
+                            fontWeight: FontWeight.w500,
                           ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                    const SizedBox(width: 8),
+                    ],
+                  ),
+                ),
 
-                    // Recruiting badge
+              // Schedules summary
+              if (club.schedulesSummary != null && club.schedulesSummary!.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 6),
+                  child: Row(
+                    children: [
+                      Icon(Icons.access_time_filled_rounded, size: 15, color: colors.textMuted),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          club.schedulesSummary!,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: colors.textPrimary,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+              const SizedBox(height: 6),
+              Divider(height: 1, color: colors.cardBorder),
+              const SizedBox(height: 10),
+
+              // Bottom row: Skill range, Recruitment badge, Members count
+              Row(
+                children: [
+                  // Skill range badge
+                  if (club.minSkillLevel != null || club.maxSkillLevel != null)
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
                       decoration: BoxDecoration(
-                        color: club.isRecruiting
-                            ? AppColors.successLight
-                            : colors.surfaceSubtle,
+                        color: _getSkillColor(club.minSkillLevel).withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
-                        club.isRecruiting ? 'Đang tuyển quân' : 'Đủ thành viên',
+                        'Trình độ: ${club.minSkillLevel?.code ?? "NB"} - ${club.maxSkillLevel?.code ?? "G"}',
                         style: TextStyle(
                           fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                          color: club.isRecruiting
-                              ? AppColors.roleMember
-                              : colors.textMuted,
+                          fontWeight: FontWeight.bold,
+                          color: _getSkillColor(club.minSkillLevel),
                         ),
                       ),
                     ),
-                    const Spacer(),
+                  const SizedBox(width: 8),
 
-                    // Member count
-                    Row(
-                      children: [
-                        Icon(Icons.group_outlined, size: 14, color: colors.textMuted),
-                        const SizedBox(width: 4),
-                        Text(
-                          '${club.memberCount} TV',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: colors.textMuted,
-                          ),
-                        ),
-                      ],
+                  // Recruiting badge
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+                    decoration: BoxDecoration(
+                      color: club.isRecruiting
+                          ? AppColors.successLight
+                          : colors.surface,
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(
+                        color: club.isRecruiting ? AppColors.success.withValues(alpha: 0.3) : colors.cardBorder,
+                      ),
                     ),
-                  ],
-                ),
-              ],
-            ),
+                    child: Text(
+                      club.isRecruiting ? 'Đang tuyển quân' : 'Đủ thành viên',
+                      style: TextStyle(
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.bold,
+                        color: club.isRecruiting
+                            ? AppColors.success
+                            : colors.textMuted,
+                      ),
+                    ),
+                  ),
+                  const Spacer(),
+
+                  // Member count
+                  Row(
+                    children: [
+                      Icon(Icons.group_outlined, size: 14, color: colors.textMuted),
+                      const SizedBox(width: 4),
+                      Text(
+                        '${club.memberCount} TV',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: colors.textMuted,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Icon(Icons.chevron_right_rounded, size: 18, color: colors.textMuted),
+                    ],
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
       ),

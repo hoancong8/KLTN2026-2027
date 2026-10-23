@@ -1,4 +1,4 @@
-// lib/ui/screen/home/tab/explore/explore_recruitments_page.dart
+﻿// lib/ui/screen/home/tab/explore/explore_recruitments_page.dart
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -544,7 +544,7 @@ class _ExploreRecruitmentsPageState extends ConsumerState<ExploreRecruitmentsPag
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
                       icon: const Icon(Icons.check_circle_rounded, size: 18),
-                      label: const Text('Xác Nhận Nhận Suất', style: TextStyle(fontWeight: FontWeight.bold)),
+                      label: const Text('Xác Nhận Tham Gia', style: TextStyle(fontWeight: FontWeight.bold)),
                       onPressed: () async {
                         Navigator.of(ctx).pop();
                         final ok = await vm.joinRecruitment(match.id);
@@ -936,29 +936,17 @@ class _RecruitmentMatchCard extends StatelessWidget {
                     ],
                   ),
                   const Spacer(),
-                  OutlinedButton(
-                    onPressed: () => context.push(AppConfig.sessionDetailRoutePath(match.sessionId)),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: colors.textPrimary,
-                      side: BorderSide(color: colors.cardBorder),
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                      visualDensity: VisualDensity.compact,
-                    ),
-                    child: const Text('Chi tiết', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                  ),
-                  const SizedBox(width: 8),
                   ElevatedButton.icon(
                     onPressed: isJoining ? null : onJoin,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: colors.primary,
                       foregroundColor: AppColors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                       visualDensity: VisualDensity.compact,
                     ),
                     icon: const Icon(Icons.sports_tennis_rounded, size: 14),
-                    label: const Text('Nhận Suất', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5)),
+                    label: const Text('Nhận Suất Giao Lưu', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
                   ),
                 ],
               ),

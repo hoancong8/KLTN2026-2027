@@ -1,4 +1,4 @@
-// test/session_detail_screen_test.dart
+﻿// test/session_detail_screen_test.dart
 
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -99,10 +99,10 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Buổi sinh hoạt Thứ 2 (19:00 - 22:00)'), findsWidgets);
-    expect(find.text('Xác Nhận Tham Gia'), findsOneWidget);
+    expect(find.text('Biểu Quyết Giữ Chỗ'), findsOneWidget);
     expect(tester.getRect(find.byType(AppBar)).bottom, 56.0);
     expect(tester.getRect(find.byType(NestedScrollView)).height, greaterThan(200.0));
-    expect(tester.getRect(find.text('Xác Nhận Tham Gia')).top, greaterThan(400.0));
+    expect(tester.getRect(find.text('Biểu Quyết Giữ Chỗ')).top, greaterThan(400.0));
   });
 
   testWidgets('Renders SessionDetailScreen with cancel confirmation button when booked', (tester) async {
@@ -174,7 +174,7 @@ void main() {
 
     await tester.pumpAndSettle();
 
-    expect(find.text('Hủy Xác Nhận'), findsOneWidget);
+    expect(find.text('Hủy Giữ Chỗ'), findsOneWidget);
     expect(find.text('Bạn đã có slot chính thức'), findsOneWidget);
   });
 }

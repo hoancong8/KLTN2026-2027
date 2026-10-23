@@ -1,4 +1,4 @@
-// lib/ui/screen/club/session_detail_screen.dart
+﻿// lib/ui/screen/club/session_detail_screen.dart
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -117,11 +117,11 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
     final colors = context.colors;
     final detail = ref.read(sessionDetailViewModelProvider(widget.sessionId)).detail;
     final isOpen = detail?.session.status == SessionStatus.open;
-    final dialogTitle = isOpen ? 'Hủy xác nhận tham gia' : context.l10n.session_cancel_join;
+    final dialogTitle = isOpen ? 'Hủy giữ chỗ tham gia' : context.l10n.session_cancel_join;
     final dialogContent = isOpen
         ? 'Bạn có chắc chắn muốn hủy xác nhận tham gia buổi chơi này? Suất của bạn sẽ tự động được nhường cho người tiếp theo trong hàng đợi (FR10).'
         : context.l10n.session_cancel_confirm;
-    final confirmBtnLabel = isOpen ? 'Hủy xác nhận' : context.l10n.session_cancel_join;
+    final confirmBtnLabel = isOpen ? 'Hủy giữ chỗ' : context.l10n.session_cancel_join;
 
     final confirm = await showDialog<bool>(
       context: context,
@@ -1214,7 +1214,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                       const Icon(Icons.radar_rounded, size: 12, color: AppColors.roleViolet),
                       AppSpacing.gapW4,
                       Text(
-                        'Tuyển vãng lai',
+                        'Tuyển khách vãng lai',
                         style: AppTypography.labelSmall.bold.colored(AppColors.roleViolet),
                       ),
                     ],
@@ -1776,7 +1776,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                         Row(
                           children: [
                             Text(
-                              'ĐANG TUYỂN VÃNG LAI',
+                              'ĐANG TUYỂN KHÁCH VÃNG LAI',
                               style: AppTypography.labelSmall.bold.colored(AppColors.roleViolet),
                             ),
                             AppSpacing.gapW8,
@@ -1841,13 +1841,13 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'NỘI BỘ CLB • KHÔNG TUYỂN VÃNG LAI',
+                          'NỘI BỘ CLB • KHÔNG TUYỂN KHÁCH',
                           style: AppTypography.labelSmall.bold.colored(colors.textMuted),
                         ),
                         AppSpacing.gapH4,
                         Text(
                           canRecruit
-                              ? 'Chưa mở tuyển vãng lai. Bấm "Tuyển khách" nếu cần bù slot thiếu.'
+                              ? 'Chưa mở tuyển khách vãng lai. Bấm "Tuyển khách" nếu cần bù slot thiếu.'
                               : 'Buổi chơi dành riêng cho thành viên nội bộ CLB.',
                           style: AppTypography.labelSmall.colored(colors.textMuted),
                         ),
@@ -2050,7 +2050,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                     onPressed: isSubmitting ? null : _handleCancelBooking,
                     icon: Icon(Icons.cancel_outlined, size: 14, color: colors.error),
                     label: Text(
-                      isWaiting ? 'Hủy chờ' : 'Hủy xác nhận',
+                      isWaiting ? 'Hủy chờ' : 'Hủy giữ chỗ',
                       style: AppTypography.labelSmall.bold.colored(colors.error),
                     ),
                     style: OutlinedButton.styleFrom(
@@ -2234,7 +2234,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                               Text(
                                 isOpen
                                     ? (isConfirmed
-                                        ? 'Hủy xác nhận để nhường slot cho hàng đợi'
+                                        ? 'Hủy giữ chỗ để nhường slot cho hàng đợi'
                                         : 'Hủy để rút khỏi danh sách chờ')
                                     : 'Báo vắng để tự động nhường slot cho hàng đợi',
                                 style: AppTypography.bodySmall.copyWith(color: colors.textMuted),
@@ -2250,7 +2250,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                           icon: const Icon(Icons.cancel_outlined, size: 18),
                           label: Text(
                             isOpen
-                                ? (isConfirmed ? 'Hủy Xác Nhận' : 'Hủy Hàng Đợi')
+                                ? (isConfirmed ? 'Hủy Giữ Chỗ' : 'Hủy Hàng Đợi')
                                 : (isConfirmed ? 'Báo Vắng' : 'Rút Hàng Đợi'),
                           ),
                           style: ElevatedButton.styleFrom(
@@ -2290,8 +2290,8 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                                     !isOpen
                                         ? 'Buổi chơi đã đóng đăng ký'
                                         : (session.isFull
-                                            ? 'Xếp Vào Hàng Đợi Chờ (Slot #${session.waitingCount + 1})'
-                                            : 'Xác Nhận Tham Gia'),
+                                            ? 'Vào Hàng Đợi Chờ (Slot #${session.waitingCount + 1})'
+                                            : 'Biểu Quyết Giữ Chỗ'),
                                     style: AppTypography.titleSmall.copyWith(
                                       fontWeight: FontWeight.bold,
                                       color: AppColors.white,
