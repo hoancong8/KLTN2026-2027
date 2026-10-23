@@ -11,27 +11,7 @@ plugins {
 android {
     namespace = "com.sipm.sipm_mobile"
     compileSdk = flutter.compileSdkVersion
-    val localProps = java.util.Properties()
-    val localPropertiesFile = rootProject.file("local.properties")
-    if (localPropertiesFile.exists()) {
-        localPropertiesFile.inputStream().use { localProps.load(it) }
-    }
-    val sdkDirPath = localProps.getProperty("sdk.dir")
-        ?: System.getenv("ANDROID_HOME")
-        ?: System.getenv("ANDROID_SDK_ROOT")
-        ?: ""
-    val preinstalledNdk = if (sdkDirPath.isNotEmpty()) {
-        val ndkDir = File(sdkDirPath, "ndk")
-        if (ndkDir.exists()) {
-            ndkDir.listFiles()
-                ?.filter { it.isDirectory && (it.name.startsWith("27.") || it.name.startsWith("26.")) }
-                ?.map { it.name }
-                ?.sortedDescending()
-                ?.firstOrNull()
-        } else null
-    } else null
-
-    ndkVersion = preinstalledNdk ?: "27.0.12077973"
+    ndkVersion = "27.0.12077973"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -40,7 +20,7 @@ android {
     }
 
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_17.toString()
+        jvmTarget = "17"
     }
 
     defaultConfig {
