@@ -115,6 +115,14 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
 
   Future<void> _handleCancelBooking() async {
     final colors = context.colors;
+    final detail = ref.read(sessionDetailViewModelProvider(widget.sessionId)).detail;
+    final isOpen = detail?.session.status == SessionStatus.open;
+    final dialogTitle = isOpen ? 'Hủy xác nhận tham gia' : context.l10n.session_cancel_join;
+    final dialogContent = isOpen
+        ? 'Bạn có chắc chắn muốn hủy xác nhận tham gia buổi chơi này? Suất của bạn sẽ tự động được nhường cho người tiếp theo trong hàng đợi (FR10).'
+        : context.l10n.session_cancel_confirm;
+    final confirmBtnLabel = isOpen ? 'Hủy xác nhận' : context.l10n.session_cancel_join;
+
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -125,13 +133,13 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
             Icon(Icons.warning_amber_rounded, color: colors.error),
             AppSpacing.gapW8,
             Text(
-              context.l10n.session_cancel_join,
+              dialogTitle,
               style: AppTypography.titleMedium.copyWith(color: colors.textPrimary),
             ),
           ],
         ),
         content: Text(
-          context.l10n.session_cancel_confirm,
+          dialogContent,
           style: AppTypography.bodyMedium.copyWith(color: colors.textSecondary),
         ),
         actions: [
@@ -146,7 +154,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
               shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
             ),
             onPressed: () => Navigator.of(ctx).pop(true),
-            child: Text(context.l10n.session_cancel_join),
+            child: Text(confirmBtnLabel),
           ),
         ],
       ),
@@ -158,7 +166,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
       if (ok && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(context.l10n.com_success),
+            content: Text(isOpen ? 'Đã hủy xác nhận tham gia thành công' : context.l10n.com_success),
             backgroundColor: colors.error,
             behavior: SnackBarBehavior.floating,
           ),
@@ -1754,6 +1762,14 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
   Widget _buildPlayersList(List<SessionBooking> players, {required bool isWaiting}) {
     final colors = context.colors;
     final currentUserId = ref.watch(currentUserProfileProvider)?.id ?? ref.watch(authTokenProvider)?.userId;
+    final detail = ref.watch(sessionDetailViewModelProvider(widget.sessionId)).detail;
+    final session = detail?.session;
+    final isOpen = session?.status == SessionStatus.open;
+    final now = DateTime.now();
+    final isEnded = session?.status == SessionStatus.completed ||
+        session?.status == SessionStatus.calculated ||
+        (session != null && session.endTime.isBefore(now));
+    final isSubmitting = ref.watch(sessionDetailViewModelProvider(widget.sessionId)).isSubmitting;
 
     if (players.isEmpty) {
       return Center(
@@ -1778,8 +1794,8 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
               AppSpacing.gapH4,
               Text(
                 isWaiting
-                    ? 'Khi slot chính thức đã đủ, các biểu quyết tiếp theo sẽ tự động vào đây.'
-                    : 'Hãy là người đầu tiên biểu quyết giữ chỗ cho buổi chơi này!',
+                    ? 'Khi slot chính thức đã đủ, các đăng ký tiếp theo sẽ tự động vào đây.'
+                    : 'Hãy là người đầu tiên xác nhận tham gia buổi chơi này!',
                 style: AppTypography.bodySmall.copyWith(color: colors.textMuted),
                 textAlign: TextAlign.center,
               ),
@@ -1908,20 +1924,44 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                 ],
               ],
             ),
-            trailing: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-              decoration: BoxDecoration(
-                color: colors.surfaceSubtle,
-                borderRadius: AppRadius.tag,
-                border: Border.all(color: colors.cardBorder),
-              ),
-              child: Text(
-                player.skillLevel,
-                style: AppTypography.labelSmall.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: colors.textPrimary,
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (isMe && isOpen && !isEnded) ...[
+                  OutlinedButton.icon(
+                    onPressed: isSubmitting ? null : _handleCancelBooking,
+                    icon: Icon(Icons.cancel_outlined, size: 14, color: colors.error),
+                    label: Text(
+                      isWaiting ? 'Hủy chờ' : 'Hủy xác nhận',
+                      style: AppTypography.labelSmall.bold.colored(colors.error),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: colors.error,
+                      side: BorderSide(color: colors.error.withValues(alpha: 0.5)),
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      minimumSize: Size.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                    ),
+                  ),
+                  AppSpacing.gapW8,
+                ],
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: colors.surfaceSubtle,
+                    borderRadius: AppRadius.tag,
+                    border: Border.all(color: colors.cardBorder),
+                  ),
+                  child: Text(
+                    player.skillLevel,
+                    style: AppTypography.labelSmall.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: colors.textPrimary,
+                    ),
+                  ),
                 ),
-              ),
+              ],
             ),
           ),
         );
@@ -1945,7 +1985,9 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
         detail.waitingQueue.any((p) => p.userId.toLowerCase() == currentUserId.toLowerCase());
 
     final isBooked = session.isBookedByCurrentUser || isUserInConfirmed || isUserInWaiting;
-    final isConfirmed = session.currentUserBookingStatus == BookingStatus.confirmed || isUserInConfirmed;
+    final isConfirmed = session.currentUserBookingStatus == BookingStatus.confirmed ||
+        session.currentUserBookingStatus == BookingStatus.checkedIn ||
+        isUserInConfirmed;
     final waitingOrder = session.currentUserQueueOrder > 0
         ? session.currentUserQueueOrder
         : (detail?.waitingQueue.where((p) => p.userId.toLowerCase() == currentUserId?.toLowerCase()).firstOrNull?.queueOrder ?? 1);
@@ -2072,7 +2114,11 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                               ),
                               AppSpacing.gapH4,
                               Text(
-                                'Báo vắng để tự động nhường slot cho hàng đợi',
+                                isOpen
+                                    ? (isConfirmed
+                                        ? 'Hủy xác nhận để nhường slot cho hàng đợi'
+                                        : 'Hủy để rút khỏi danh sách chờ')
+                                    : 'Báo vắng để tự động nhường slot cho hàng đợi',
                                 style: AppTypography.bodySmall.copyWith(color: colors.textMuted),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
@@ -2084,7 +2130,11 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                         ElevatedButton.icon(
                           onPressed: isSubmitting ? null : _handleCancelBooking,
                           icon: const Icon(Icons.cancel_outlined, size: 18),
-                          label: Text(isConfirmed ? 'Báo Vắng' : 'Rút Hàng Đợi'),
+                          label: Text(
+                            isOpen
+                                ? (isConfirmed ? 'Hủy Xác Nhận' : 'Hủy Hàng Đợi')
+                                : (isConfirmed ? 'Báo Vắng' : 'Rút Hàng Đợi'),
+                          ),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: colors.error,
                             foregroundColor: AppColors.white,
@@ -2120,10 +2170,10 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                                   AppSpacing.gapW8,
                                   Text(
                                     !isOpen
-                                        ? 'Buổi chơi đã đóng biểu quyết'
+                                        ? 'Buổi chơi đã đóng đăng ký'
                                         : (session.isFull
                                             ? 'Xếp Vào Hàng Đợi Chờ (Slot #${session.waitingCount + 1})'
-                                            : 'Biểu Quyết Tham Gia'),
+                                            : 'Xác Nhận Tham Gia'),
                                     style: AppTypography.titleSmall.copyWith(
                                       fontWeight: FontWeight.bold,
                                       color: AppColors.white,
