@@ -26,7 +26,7 @@ class FakeClubDetailNotifier extends StateNotifier<ClubDetailState> implements C
 
 void main() {
   testWidgets('Renders ClubSettingsScreen without errors on mobile and tablet', (tester) async {
-    tester.view.physicalSize = const Size(400, 800);
+    tester.view.physicalSize = const Size(1024, 768);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(() {
       tester.view.resetPhysicalSize();
@@ -110,5 +110,9 @@ void main() {
 
     await tester.pumpAndSettle();
     expect(find.text('Cài Đặt Câu Lạc Bộ'), findsOneWidget);
+    final btn = tester.getRect(find.text('Lưu Thay Đổi Cài Đặt'));
+    final form = tester.getRect(find.byType(Form));
+    expect(form.height, greaterThan(400));
+    expect(btn.bottom, greaterThan(700));
   });
 }

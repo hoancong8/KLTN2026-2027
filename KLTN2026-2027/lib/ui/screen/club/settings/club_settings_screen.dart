@@ -573,8 +573,8 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                     ),
                   ],
                 ),
-                child: Align(
-                  alignment: Alignment.center,
+                child: Center(
+                  heightFactor: 1.0,
                   child: ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: 768),
                     child: SizedBox(
