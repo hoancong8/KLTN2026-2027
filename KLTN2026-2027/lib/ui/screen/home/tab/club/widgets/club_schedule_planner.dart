@@ -759,9 +759,9 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
                     padding: const EdgeInsets.symmetric(vertical: 6),
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      color: AppColors.surfaceSubtle,
+                      color: colors.surfaceSubtle,
                       borderRadius: BorderRadius.circular(6),
-                      border: Border.all(color: AppColors.borderStrong),
+                      border: Border.all(color: colors.cardBorder),
                     ),
                     child: FittedBox(
                       fit: BoxFit.scaleDown,

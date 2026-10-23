@@ -110,9 +110,33 @@ void main() {
 
     await tester.pumpAndSettle();
     expect(find.text('Cài Đặt Câu Lạc Bộ'), findsOneWidget);
+    expect(find.text('500.000'), findsOneWidget);
     final btn = tester.getRect(find.text('Lưu Thay Đổi Cài Đặt'));
     final form = tester.getRect(find.byType(Form));
     expect(form.height, greaterThan(400));
     expect(btn.bottom, greaterThan(700));
+  });
+
+  test('CurrencyThousandsFormatter formats numbers with thousands dot', () {
+    const formatter = CurrencyThousandsFormatter();
+
+    final result1 = formatter.formatEditUpdate(
+      const TextEditingValue(text: ''),
+      const TextEditingValue(text: '10000', selection: TextSelection.collapsed(offset: 5)),
+    );
+    expect(result1.text, '10.000');
+    expect(result1.selection.baseOffset, 6);
+
+    final result2 = formatter.formatEditUpdate(
+      const TextEditingValue(text: '10.000'),
+      const TextEditingValue(text: '500000', selection: TextSelection.collapsed(offset: 6)),
+    );
+    expect(result2.text, '500.000');
+
+    final result3 = formatter.formatEditUpdate(
+      const TextEditingValue(text: '50.000'),
+      const TextEditingValue(text: '', selection: TextSelection.collapsed(offset: 0)),
+    );
+    expect(result3.text, '');
   });
 }

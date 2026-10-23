@@ -1,6 +1,7 @@
 // lib/ui/screen/club/settings/club_settings_screen.dart
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kltn2026_2027/app/provider.dart';
@@ -66,11 +67,11 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
     _venueController = TextEditingController();
     _addressController = TextEditingController();
 
-    _monthlyFeeController = TextEditingController(text: '500000');
-    _femaleDiscountMonthlyController = TextEditingController(text: '50000');
-    _dailyMemberFeeController = TextEditingController(text: '50000');
-    _femaleDiscountController = TextEditingController(text: '10000');
-    _guestFeeController = TextEditingController(text: '70000');
+    _monthlyFeeController = TextEditingController(text: '500.000');
+    _femaleDiscountMonthlyController = TextEditingController(text: '50.000');
+    _dailyMemberFeeController = TextEditingController(text: '50.000');
+    _femaleDiscountController = TextEditingController(text: '10.000');
+    _guestFeeController = TextEditingController(text: '70.000');
 
     for (final c in [
       _monthlyFeeController,
@@ -794,6 +795,8 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                                   OutlinedButton.icon(
                                     style: OutlinedButton.styleFrom(
                                       foregroundColor: colors.primary,
+                                      minimumSize: const Size(0, 36),
+                                      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
                                       side: BorderSide(color: colors.primary.withValues(alpha: 0.4)),
                                       shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
                                     ),
@@ -986,6 +989,7 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                                             TextFormField(
                                               controller: _monthlyFeeController,
                                               keyboardType: TextInputType.number,
+                                              inputFormatters: const [CurrencyThousandsFormatter()],
                                               style: AppTypography.bodyMedium.colored(colors.textPrimary),
                                               decoration: InputDecoration(
                                                 suffixText: 'đ/tháng',
@@ -1008,6 +1012,7 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                                             TextFormField(
                                               controller: _femaleDiscountMonthlyController,
                                               keyboardType: TextInputType.number,
+                                              inputFormatters: const [CurrencyThousandsFormatter()],
                                               style: AppTypography.bodyMedium.colored(colors.textPrimary),
                                               decoration: InputDecoration(
                                                 prefixText: '- ',
@@ -1083,6 +1088,7 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                                             TextFormField(
                                               controller: _dailyMemberFeeController,
                                               keyboardType: TextInputType.number,
+                                              inputFormatters: const [CurrencyThousandsFormatter()],
                                               style: AppTypography.bodyMedium.colored(colors.textPrimary),
                                               decoration: InputDecoration(
                                                 suffixText: 'đ/buổi',
@@ -1105,6 +1111,7 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                                             TextFormField(
                                               controller: _femaleDiscountController,
                                               keyboardType: TextInputType.number,
+                                              inputFormatters: const [CurrencyThousandsFormatter()],
                                               style: AppTypography.bodyMedium.colored(colors.textPrimary),
                                               decoration: InputDecoration(
                                                 prefixText: '- ',
@@ -1172,6 +1179,7 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                                   TextFormField(
                                     controller: _guestFeeController,
                                     keyboardType: TextInputType.number,
+                                    inputFormatters: const [CurrencyThousandsFormatter()],
                                     style: AppTypography.bodyMedium.colored(colors.textPrimary),
                                     decoration: InputDecoration(
                                       labelText: 'Đơn giá vé khách vãng lai / buổi',
@@ -1482,16 +1490,28 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
     );
   }
 
+  String _formatCurrency(int amount) {
+    final str = amount.toString();
+    final buffer = StringBuffer();
+    for (int i = 0; i < str.length; i++) {
+      if (i > 0 && (str.length - i) % 3 == 0) {
+        buffer.write('.');
+      }
+      buffer.write(str[i]);
+    }
+    return buffer.toString();
+  }
+
   Widget _buildLiveFeeSimulationPreview() {
-    final monthlyMale = int.tryParse(_monthlyFeeController.text.trim()) ?? 500000;
-    final monthlyDisc = int.tryParse(_femaleDiscountMonthlyController.text.trim()) ?? 50000;
+    final monthlyMale = int.tryParse(_monthlyFeeController.text.replaceAll('.', '').trim()) ?? 500000;
+    final monthlyDisc = int.tryParse(_femaleDiscountMonthlyController.text.replaceAll('.', '').trim()) ?? 50000;
     final monthlyFemale = (monthlyMale - monthlyDisc).clamp(0, 99999999);
 
-    final dailyMale = int.tryParse(_dailyMemberFeeController.text.trim()) ?? 50000;
-    final dailyDisc = int.tryParse(_femaleDiscountController.text.trim()) ?? 10000;
+    final dailyMale = int.tryParse(_dailyMemberFeeController.text.replaceAll('.', '').trim()) ?? 50000;
+    final dailyDisc = int.tryParse(_femaleDiscountController.text.replaceAll('.', '').trim()) ?? 10000;
     final dailyFemale = (dailyMale - dailyDisc).clamp(0, 99999999);
 
-    final guestFee = int.tryParse(_guestFeeController.text.trim()) ?? 70000;
+    final guestFee = int.tryParse(_guestFeeController.text.replaceAll('.', '').trim()) ?? 70000;
     final guestFemale = (guestFee - dailyDisc).clamp(0, 99999999);
 
     return Container(
@@ -1520,17 +1540,17 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
           AppSpacing.gapH8,
           _buildPreviewRow(
             label: 'Hội viên Gói Tháng (Nam / Nữ)',
-            value: '$monthlyMale đ / $monthlyFemale đ (Ra sân: 0 đ/buổi)',
+            value: '${_formatCurrency(monthlyMale)} đ / ${_formatCurrency(monthlyFemale)} đ (Ra sân: 0 đ/buổi)',
           ),
           AppSpacing.gapH4,
           _buildPreviewRow(
             label: 'Hội viên Theo buổi (Nam / Nữ)',
-            value: '$dailyMale đ / $dailyFemale đ mỗi buổi',
+            value: '${_formatCurrency(dailyMale)} đ / ${_formatCurrency(dailyFemale)} đ mỗi buổi',
           ),
           AppSpacing.gapH4,
           _buildPreviewRow(
             label: 'Khách vãng lai (Nam / Nữ)',
-            value: '$guestFee đ / $guestFemale đ mỗi buổi',
+            value: '${_formatCurrency(guestFee)} đ / ${_formatCurrency(guestFemale)} đ mỗi buổi',
           ),
           AppSpacing.gapH4,
           _buildPreviewRow(
@@ -1565,6 +1585,66 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class CurrencyThousandsFormatter extends TextInputFormatter {
+  const CurrencyThousandsFormatter();
+
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    if (newValue.text.isEmpty) {
+      return newValue;
+    }
+
+    final cleanDigits = newValue.text.replaceAll(RegExp(r'\D'), '');
+    if (cleanDigits.isEmpty) {
+      return const TextEditingValue(
+        text: '',
+        selection: TextSelection.collapsed(offset: 0),
+      );
+    }
+
+    final buffer = StringBuffer();
+    for (int i = 0; i < cleanDigits.length; i++) {
+      if (i > 0 && (cleanDigits.length - i) % 3 == 0) {
+        buffer.write('.');
+      }
+      buffer.write(cleanDigits[i]);
+    }
+    final formatted = buffer.toString();
+
+    final digitsBeforeCursor = newValue.selection.baseOffset >= 0
+        ? newValue.text
+            .substring(0, newValue.selection.baseOffset.clamp(0, newValue.text.length))
+            .replaceAll(RegExp(r'\D'), '')
+            .length
+        : cleanDigits.length;
+
+    int newCursorOffset = 0;
+    int digitsSeen = 0;
+    for (int i = 0; i < formatted.length; i++) {
+      if (formatted[i] != '.') {
+        digitsSeen++;
+      }
+      if (digitsSeen == digitsBeforeCursor) {
+        newCursorOffset = i + 1;
+        break;
+      }
+    }
+    if (digitsSeen < digitsBeforeCursor) {
+      newCursorOffset = formatted.length;
+    }
+
+    return TextEditingValue(
+      text: formatted,
+      selection: TextSelection.collapsed(
+        offset: newCursorOffset.clamp(0, formatted.length),
       ),
     );
   }
