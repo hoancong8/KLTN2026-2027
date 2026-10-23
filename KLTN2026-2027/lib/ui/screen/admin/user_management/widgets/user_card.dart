@@ -34,6 +34,7 @@ class UserCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final colors = context.colors;
     final initials = _getInitials(user.userName, user.email);
     final rolesDisplay = user.roles.isNotEmpty ? user.roles.join(', ') : 'Nhân viên';
 
@@ -44,9 +45,9 @@ class UserCard extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColor.white,
+        color: colors.cardBackground,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColor.cDivider.withAlpha(150)),
+        border: Border.all(color: colors.cardBorder),
         boxShadow: [
           BoxShadow(
             color: AppColors.black.withAlpha(8),
@@ -69,8 +70,8 @@ class UserCard extends ConsumerWidget {
             alignment: Alignment.center,
             child: Text(
               initials,
-              style: const TextStyle(
-                color: AppColor.white,
+              style: TextStyle(
+                color: colors.cardBackground,
                 fontWeight: FontWeight.bold,
                 fontSize: 16,
                 letterSpacing: 0.5,
@@ -91,10 +92,10 @@ class UserCard extends ConsumerWidget {
                     Flexible(
                       child: Text(
                         user.userName,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w700,
-                          color: AppColor.cTitle,
+                          color: colors.textPrimary,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -105,9 +106,9 @@ class UserCard extends ConsumerWidget {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
-                          color: AppColors.errorContainer,
+                          color: colors.errorContainer,
                           borderRadius: BorderRadius.circular(6),
-                          border: Border.all(color: AppColors.errorBorder),
+                          border: Border.all(color: colors.error.withValues(alpha: 0.3)),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
@@ -119,7 +120,7 @@ class UserCard extends ConsumerWidget {
                               style: TextStyle(
                                 fontSize: 10,
                                 fontWeight: FontWeight.bold,
-                                color: AppColors.error,
+                                color: colors.error,
                               ),
                             ),
                           ],
@@ -133,9 +134,9 @@ class UserCard extends ConsumerWidget {
                 // Hàng 2: Email
                 Text(
                   user.email,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12.5,
-                    color: AppColor.cMuted,
+                    color: colors.textMuted,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -145,7 +146,7 @@ class UserCard extends ConsumerWidget {
                 // Hàng 3: Chip hiển thị Vai trò (Roles)
                 Row(
                   children: [
-                    const Icon(Icons.badge_outlined, size: 13, color: AppColor.cMuted),
+                    Icon(Icons.badge_outlined, size: 13, color: colors.textMuted),
                     const SizedBox(width: 4),
                     Expanded(
                       child: Text(
@@ -153,7 +154,7 @@ class UserCard extends ConsumerWidget {
                         style: TextStyle(
                           fontSize: 11.5,
                           fontWeight: FontWeight.w500,
-                          color: user.roles.contains('Admin') ? AppColor.cMain : AppColor.cMuted,
+                          color: user.roles.contains('Admin') ? colors.primary : colors.textMuted,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -223,7 +224,7 @@ class UserCard extends ConsumerWidget {
               // Menu phụ (Khóa / Mở khóa / Đặt lại mật khẩu)
               if (hasAnyMenuAction)
                 PopupMenuButton<String>(
-                  icon: const Icon(Icons.more_vert_rounded, size: 18, color: AppColor.cMuted),
+                  icon: Icon(Icons.more_vert_rounded, size: 18, color: colors.textMuted),
                   padding: EdgeInsets.zero,
                   tooltip: 'Thao tác khác',
                   onSelected: (value) {

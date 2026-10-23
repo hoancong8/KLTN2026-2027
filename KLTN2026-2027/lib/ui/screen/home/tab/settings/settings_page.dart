@@ -32,10 +32,11 @@ class SettingsPage extends ConsumerWidget {
   }
 
   PreferredSizeWidget _buildSettingsAppBar(BuildContext context) {
+    final colors = context.colors;
     return PreferredSize(
       preferredSize: const Size.fromHeight(72),
       child: Container(
-        color: AppColor.white,
+        color: colors.surface,
         child: Column(
           children: [
             // Safe area top padding
@@ -46,7 +47,7 @@ class SettingsPage extends ConsumerWidget {
                 child: buildSettingsHeader(context),
               ),
             ),
-            Divider(height: 1, color: AppColor.cDivider),
+            Divider(height: 1, color: colors.divider),
           ],
         ),
       ),

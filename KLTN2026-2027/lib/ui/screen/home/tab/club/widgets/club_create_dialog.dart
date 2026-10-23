@@ -238,10 +238,10 @@ class _ClubCreateDialogState extends ConsumerState<ClubCreateDialog> {
                     width: 40,
                     height: 40,
                     decoration: BoxDecoration(
-                      color: AppColors.primaryContainer,
+                      color: colors.primaryContainer,
                       borderRadius: AppRadius.borderSm,
                     ),
-                    child: const Icon(Icons.add_business_rounded, color: AppColors.primary, size: 22),
+                    child: Icon(Icons.add_business_rounded, color: colors.primary, size: 22),
                   ),
                   AppSpacing.gapW12,
                   Expanded(
@@ -282,13 +282,13 @@ class _ClubCreateDialogState extends ConsumerState<ClubCreateDialog> {
                         Container(
                           padding: AppSpacing.allMd,
                           decoration: BoxDecoration(
-                            color: AppColors.errorContainer,
+                            color: colors.errorContainer,
                             borderRadius: AppRadius.borderSm,
-                            border: Border.all(color: AppColors.errorBorder),
+                            border: Border.all(color: colors.error.withValues(alpha: 0.3)),
                           ),
                           child: Row(
                             children: [
-                              const Icon(Icons.error_outline_rounded, color: AppColors.error, size: 20),
+                              Icon(Icons.error_outline_rounded, color: colors.error, size: 20),
                               AppSpacing.gapW12,
                               Expanded(
                                 child: Text(
@@ -581,12 +581,12 @@ class _ClubCreateDialogState extends ConsumerState<ClubCreateDialog> {
                       Container(
                         decoration: BoxDecoration(
                           color: _hasSchedule
-                              ? AppColors.primaryContainer
+                              ? colors.primaryContainer
                               : colors.surfaceSubtle,
                           borderRadius: AppRadius.borderMd,
                           border: Border.all(
                             color: _hasSchedule
-                                ? AppColors.primary.withValues(alpha: 0.3)
+                                ? colors.primary.withValues(alpha: 0.3)
                                 : colors.cardBorder,
                           ),
                         ),

@@ -54,8 +54,8 @@ class ClubManagementTablet extends ConsumerWidget {
       backgroundColor: colors.background,
       appBar: AppBar(
         title: const Text('Quản lý Câu lạc bộ & Thành viên', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-        backgroundColor: AppColors.white,
-        foregroundColor: AppColors.textPrimary,
+        backgroundColor: colors.surface,
+        foregroundColor: colors.textPrimary,
         elevation: 0.5,
         actions: [
           OutlinedButton.icon(
@@ -83,7 +83,7 @@ class ClubManagementTablet extends ConsumerWidget {
                     child: Card(
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                       elevation: 0,
-                      color: AppColors.white,
+                      color: colors.cardBackground,
                       child: Padding(
                         padding: const EdgeInsets.all(20),
                         child: Column(
@@ -106,7 +106,7 @@ class ClubManagementTablet extends ConsumerWidget {
                             const SizedBox(height: 4),
                             Row(
                               children: [
-                                Text('Mã nhóm: ${club?.code ?? ""}', style: const TextStyle(fontSize: 13, color: AppColors.textMuted)),
+                                Text('Mã nhóm: ${club?.code ?? ""}', style: TextStyle(fontSize: 13, color: colors.textMuted)),
                                 const SizedBox(width: 6),
                                 InkWell(
                                   onTap: () {
@@ -122,7 +122,7 @@ class ClubManagementTablet extends ConsumerWidget {
                               ],
                             ),
                             const SizedBox(height: 16),
-                            const Divider(color: AppColors.border),
+                            Divider(color: colors.cardBorder),
                             const SizedBox(height: 12),
                             Text('Vai trò của bạn trong nhóm:', style: TextStyle(fontSize: 12, color: colors.textMuted)),
                             const SizedBox(height: 6),
@@ -208,7 +208,7 @@ class ClubManagementTablet extends ConsumerWidget {
                     child: Card(
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                       elevation: 0,
-                      color: AppColors.white,
+                      color: colors.cardBackground,
                       child: Padding(
                         padding: const EdgeInsets.all(20),
                         child: Column(
@@ -233,19 +233,19 @@ class ClubManagementTablet extends ConsumerWidget {
                                       filled: true,
                                       fillColor: colors.inputFill,
                                       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppColors.border)),
-                                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppColors.border)),
+                                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: colors.inputBorder)),
+                                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: colors.inputBorder)),
                                     ),
                                   ),
                                 ),
                               ],
                             ),
                             const SizedBox(height: 16),
-                            const Divider(color: AppColors.border),
+                            Divider(color: colors.cardBorder),
                             const SizedBox(height: 8),
                             Expanded(
                               child: members.isEmpty
-                                  ? const Center(child: Text('Không tìm thấy thành viên nào', style: TextStyle(color: AppColors.textMuted)))
+                                  ? Center(child: Text('Không tìm thấy thành viên nào', style: TextStyle(color: colors.textMuted)))
                                   : ListView.separated(
                                       itemCount: members.length,
                                       separatorBuilder: (_, _) => const SizedBox(height: 10),

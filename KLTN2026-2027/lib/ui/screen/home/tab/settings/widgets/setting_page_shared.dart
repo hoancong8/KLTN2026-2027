@@ -180,14 +180,14 @@ Widget buildSettingsHeader(BuildContext context) {
               context.l10n.set_title,
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.w800,
-                color: AppColor.cTitle,
+                color: context.colors.textPrimary,
               ),
             ),
             Text(
               context.l10n.set_system_config,
               style: Theme.of(
                 context,
-              ).textTheme.bodyMedium?.copyWith(color: AppColor.cMuted),
+              ).textTheme.bodyMedium?.copyWith(color: context.colors.textMuted),
             ),
           ],
         ),
@@ -213,7 +213,7 @@ Widget buildSectionTitle(BuildContext context, String title, IconData icon) {
         title,
         style: Theme.of(context).textTheme.titleMedium?.copyWith(
           fontWeight: FontWeight.w700,
-          color: AppColor.cTitle,
+          color: context.colors.textPrimary,
         ),
       ),
     ],
@@ -221,14 +221,19 @@ Widget buildSectionTitle(BuildContext context, String title, IconData icon) {
 }
 
 /// Card container
-Widget buildSettingsCard({required List<Widget> children}) {
-  return Container(
-    decoration: BoxDecoration(
-      color: AppColor.white,
-      borderRadius: BorderRadius.circular(16),
-      border: Border.all(color: AppColor.cDivider),
-    ),
-    child: Column(children: children),
+Widget buildSettingsCard({BuildContext? context, required List<Widget> children}) {
+  return Builder(
+    builder: (ctx) {
+      final colors = ctx.colors;
+      return Container(
+        decoration: BoxDecoration(
+          color: colors.cardBackground,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: colors.cardBorder),
+        ),
+        child: Column(children: children),
+      );
+    },
   );
 }
 
@@ -244,7 +249,8 @@ Widget buildSettingsItem({
   bool isLoading = false,
   bool isDestructive = false,
 }) {
-  final titleColor = isDestructive ? AppColor.cError : AppColor.cTitle;
+  final colors = context.colors;
+  final titleColor = isDestructive ? colors.error : colors.textPrimary;
 
   return Material(
     color: AppColors.transparent,
@@ -279,7 +285,7 @@ Widget buildSettingsItem({
                   const SizedBox(height: 2),
                   Text(
                     subtitle,
-                    style: TextStyle(fontSize: 13, color: AppColor.cMuted),
+                    style: TextStyle(fontSize: 13, color: context.colors.textMuted),
                   ),
                 ],
               ),
@@ -295,7 +301,7 @@ Widget buildSettingsItem({
               )
             else
               customTrailing ??
-                  Icon(Icons.chevron_right, color: AppColor.cMuted),
+                  Icon(Icons.chevron_right, color: context.colors.textMuted),
           ],
         ),
       ),
@@ -391,8 +397,8 @@ void showLanguageBottomSheet(
         builder: (context, setState) {
           return Container(
             padding: const EdgeInsets.all(24),
-            decoration: const BoxDecoration(
-              color: AppColor.white,
+            decoration: BoxDecoration(
+              color: context.colors.surface,
               borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
             ),
             child: Column(
@@ -416,21 +422,22 @@ void showLanguageBottomSheet(
                     const SizedBox(width: 16),
                     Text(
                       context.l10n.set_language,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.w800,
-                        color: AppColor.cTitle,
+                        color: context.colors.textPrimary,
                       ),
                     ),
                     const Spacer(),
                     IconButton(
                       onPressed: () => Navigator.pop(context),
-                      icon: const Icon(Icons.close, color: AppColor.cMuted),
+                      icon: Icon(Icons.close, color: context.colors.textMuted),
                     ),
                   ],
                 ),
                 const SizedBox(height: 24),
                 _buildLanguageOption(
+                  context: context,
                   label: context.l10n.set_vietnamese,
                   flag: 'VI',
                   isSelected: selectedLocale == 'vi',
@@ -438,6 +445,7 @@ void showLanguageBottomSheet(
                 ),
                 const SizedBox(height: 12),
                 _buildLanguageOption(
+                  context: context,
                   label: context.l10n.set_english,
                   flag: 'EN',
                   isSelected: selectedLocale == 'en',
@@ -458,8 +466,8 @@ void showLanguageBottomSheet(
                         ),
                         child: Text(
                           context.l10n.com_cancel,
-                          style: const TextStyle(
-                            color: AppColor.cTitle,
+                          style: TextStyle(
+                            color: context.colors.textPrimary,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -504,6 +512,7 @@ void showLanguageBottomSheet(
 }
 
 Widget _buildLanguageOption({
+  required BuildContext context,
   required String label,
   required String flag,
   required bool isSelected,
@@ -517,7 +526,7 @@ Widget _buildLanguageOption({
       decoration: BoxDecoration(
         color: isSelected
             ? AppColor.cMain.withValues(alpha: 0.05)
-            : AppColors.neutral50,
+            : context.colors.surfaceSubtle,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: isSelected ? AppColor.cMain : AppColor.cDivider,
@@ -537,7 +546,7 @@ Widget _buildLanguageOption({
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.bold,
-                color: isSelected ? AppColor.cMain : AppColor.cTitle,
+                color: isSelected ? context.colors.primary : context.colors.textPrimary,
               ),
             ),
           ),
@@ -548,7 +557,7 @@ Widget _buildLanguageOption({
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
-                color: isSelected ? AppColor.cMain : AppColor.cTitle,
+                color: isSelected ? context.colors.primary : context.colors.textPrimary,
               ),
             ),
           ),

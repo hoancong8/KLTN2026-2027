@@ -39,14 +39,15 @@ class RoleCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     final isSysRole = _isSystemRole;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
-        color: AppColor.white,
+        color: colors.cardBackground,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColor.cDivider.withAlpha(140)),
+        border: Border.all(color: colors.cardBorder),
         boxShadow: [
           BoxShadow(
             color: AppColors.black.withAlpha(8),
@@ -82,10 +83,10 @@ class RoleCard extends StatelessWidget {
               children: [
                 Text(
                   role.name,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
-                    color: AppColor.cTitle,
+                    color: colors.textPrimary,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -99,16 +100,16 @@ class RoleCard extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                         decoration: BoxDecoration(
-                          color: AppColors.successLight,
+                          color: colors.successContainer,
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: AppColors.successBorder),
+                          border: Border.all(color: colors.success.withValues(alpha: 0.3)),
                         ),
-                        child: const Text(
+                        child: Text(
                           'Mặc định',
                           style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w600,
-                            color: AppColors.roleMember,
+                            color: colors.success,
                           ),
                         ),
                       ),
@@ -116,7 +117,7 @@ class RoleCard extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                         decoration: BoxDecoration(
-                          color: AppColors.accentLight,
+                          color: colors.warningContainer,
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(color: AppColors.warningBorder),
                         ),

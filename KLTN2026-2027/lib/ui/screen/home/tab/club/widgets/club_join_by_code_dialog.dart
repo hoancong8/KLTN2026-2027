@@ -95,18 +95,18 @@ class _ClubJoinByCodeDialogState extends ConsumerState<ClubJoinByCodeDialog> {
             Container(
               padding: AppSpacing.allMd,
               decoration: BoxDecoration(
-                color: AppColors.successContainer,
+                color: colors.primaryContainer,
                 borderRadius: AppRadius.borderMd,
-                border: Border.all(color: AppColors.successBorder),
+                border: Border.all(color: colors.primary.withValues(alpha: 0.25)),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.info_outline_rounded, color: AppColors.roleTeal, size: AppSpacing.iconSm),
+                  Icon(Icons.info_outline_rounded, color: colors.onPrimaryContainer, size: AppSpacing.iconSm),
                   AppSpacing.gapW8,
                   Expanded(
                     child: Text(
                       'Nhập mã bí mật do Chủ nhiệm nhóm chia sẻ để vào CLB ngay mà không cần chờ duyệt.',
-                      style: AppTypography.bodySmall.colored(AppColors.roleTeal),
+                      style: AppTypography.bodySmall.colored(colors.onPrimaryContainer),
                     ),
                   ),
                 ],

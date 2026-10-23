@@ -158,10 +158,10 @@ class _CreateSessionDialogState extends ConsumerState<CreateSessionDialog> {
                       child: const Icon(Icons.sports_tennis_rounded, color: AppColors.primary, size: 24),
                     ),
                     const SizedBox(width: 12),
-                    const Expanded(
+                    Expanded(
                       child: Text(
                         'Khởi Tạo Buổi Chơi',
-                        style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                        style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: colors.textPrimary),
                       ),
                     ),
                     IconButton(
@@ -207,7 +207,7 @@ class _CreateSessionDialogState extends ConsumerState<CreateSessionDialog> {
                             child: Container(
                               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
                               decoration: BoxDecoration(
-                                border: Border.all(color: AppColors.border),
+                                border: Border.all(color: colors.inputBorder),
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: Row(
@@ -239,7 +239,7 @@ class _CreateSessionDialogState extends ConsumerState<CreateSessionDialog> {
                             child: Container(
                               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
                               decoration: BoxDecoration(
-                                border: Border.all(color: AppColors.border),
+                                border: Border.all(color: colors.inputBorder),
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: Row(
@@ -377,8 +377,8 @@ class _CreateSessionDialogState extends ConsumerState<CreateSessionDialog> {
       hintStyle: TextStyle(color: colors.textMuted, fontSize: 13),
       prefixIcon: prefixIcon != null ? Icon(prefixIcon, size: 18, color: colors.textMuted) : null,
       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppColors.border)),
-      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppColors.border)),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: colors.inputBorder)),
+      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: colors.inputBorder)),
       focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppColors.primary, width: 1.5)),
     );
   }

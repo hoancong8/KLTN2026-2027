@@ -557,7 +557,7 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
             }),
           ),
 
-          const Divider(height: 12, color: AppColors.border),
+          Divider(height: 12, color: colors.cardBorder),
 
           // Calendar Grid (Dates: 1..30/31)
           GridView.builder(
@@ -1004,8 +1004,8 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
                   color: isValid
-                      ? AppColors.successContainer
-                      : AppColors.errorContainer,
+                      ? colors.successContainer
+                      : colors.errorContainer,
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
@@ -1013,7 +1013,7 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.bold,
-                    color: isValid ? AppColors.success : AppColors.error,
+                    color: isValid ? colors.success : colors.error,
                   ),
                 ),
               ),
@@ -1264,8 +1264,8 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
                       ),
                       decoration: BoxDecoration(
                         color: isValid
-                            ? AppColors.successContainer
-                            : AppColors.errorContainer,
+                            ? colors.successContainer
+                            : colors.errorContainer,
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(

@@ -57,7 +57,7 @@ class ClubActionSheet extends StatelessWidget {
               context: context,
               icon: Icons.add_business_rounded,
               iconColor: AppColors.primary,
-              iconBgColor: AppColors.primaryContainer,
+              iconBgColor: colors.primaryContainer,
               title: 'Tạo câu lạc bộ mới',
               subtitle: 'Bạn sẽ là Chủ nhóm (Host) quản lý lịch chơi, thu quỹ và duyệt đơn',
               onTap: () {
@@ -72,7 +72,7 @@ class ClubActionSheet extends StatelessWidget {
               context: context,
               icon: Icons.tag_rounded,
               iconColor: AppColors.roleSky,
-              iconBgColor: AppColors.secondaryContainer,
+              iconBgColor: colors.secondaryContainer,
               title: 'Tham gia bằng mã Code',
               subtitle: 'Nhập mã Code được Host chia sẻ để vào nhóm ngay',
               onTap: () {
@@ -87,7 +87,7 @@ class ClubActionSheet extends StatelessWidget {
               context: context,
               icon: Icons.radar_rounded,
               iconColor: AppColors.roleViolet,
-              iconBgColor: AppColors.violetLight,
+              iconBgColor: colors.primaryContainer,
               title: 'Quét tìm CLB quanh đây (Radar GPS)',
               subtitle: 'Tìm các câu lạc bộ cầu lông đang hoạt động trong khu vực của bạn',
               onTap: () {

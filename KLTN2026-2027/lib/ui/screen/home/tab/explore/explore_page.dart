@@ -53,12 +53,12 @@ class _ExplorePageState extends ConsumerState<ExplorePage>
             Container(
               padding: const EdgeInsets.all(AppSpacing.xs),
               decoration: BoxDecoration(
-                color: AppColors.primaryContainer,
+                color: colors.primaryContainer,
                 borderRadius: BorderRadius.circular(AppRadius.sm),
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.explore_rounded,
-                color: AppColors.primary,
+                color: colors.primary,
                 size: 22,
               ),
             ),

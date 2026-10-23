@@ -361,7 +361,7 @@ class _CreateClubScreenState extends ConsumerState<CreateClubScreen> {
             decoration: BoxDecoration(
               color: isDone
                   ? AppColors.success.withValues(alpha: 0.15)
-                  : (isActive ? AppColors.primaryContainer : colors.cardBackground),
+                  : (isActive ? colors.primaryContainer : colors.cardBackground),
               shape: BoxShape.circle,
               border: Border.all(color: itemColor, width: isActive ? 2 : 1),
             ),
@@ -588,8 +588,8 @@ class _CreateClubScreenState extends ConsumerState<CreateClubScreen> {
                 ),
                 ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryContainer,
-                    foregroundColor: AppColors.primary,
+                    backgroundColor: colors.primaryContainer,
+                    foregroundColor: colors.primary,
                     elevation: 0,
                   ),
                   icon: _isGettingLocation

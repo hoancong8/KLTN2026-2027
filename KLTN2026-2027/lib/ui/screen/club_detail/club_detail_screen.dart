@@ -441,13 +441,13 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
               width: double.infinity,
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
-                color: AppColors.primaryContainer,
+                color: colors.primaryContainer,
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(color: AppColors.primary.withValues(alpha: 0.25)),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.event_repeat_rounded, size: 16, color: AppColors.primary),
+                  Icon(Icons.event_repeat_rounded, size: 16, color: colors.primary),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
@@ -455,7 +455,7 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
                       style: TextStyle(
                         fontSize: 12.5,
                         fontWeight: FontWeight.bold,
-                        color: colors.textPrimary,
+                        color: colors.onPrimaryContainer,
                       ),
                     ),
                   ),
@@ -573,27 +573,27 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
-                  color: AppColors.infoContainer,
+                  color: colors.infoContainer,
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: AppColors.infoBorder),
+                  border: Border.all(color: colors.info.withValues(alpha: 0.3)),
                 ),
-                child: const Row(
+                child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.directions_rounded, size: 16, color: AppColors.roleDeputy),
-                    SizedBox(width: 6),
+                    Icon(Icons.directions_rounded, size: 16, color: colors.info),
+                    const SizedBox(width: 6),
                     Text(
                       'Sao chép link Google Maps chỉ đường',
-                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.roleDeputy),
+                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: colors.info),
                     ),
                   ],
                 ),
               ),
             ),
           ] else ...[
-            const Text(
+            Text(
               'CLB chưa thiết lập sân cố định',
-              style: TextStyle(fontSize: 13, color: AppColors.textMuted),
+              style: TextStyle(fontSize: 13, color: colors.textMuted),
             ),
           ],
         ],
@@ -650,9 +650,9 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
           ),
           const SizedBox(height: 12),
           if (club.schedules.isEmpty)
-            const Text(
+            Text(
               'Chưa có lịch sinh hoạt cố định trong tuần.',
-              style: TextStyle(fontSize: 13, color: AppColors.textMuted),
+              style: TextStyle(fontSize: 13, color: colors.textMuted),
             )
           else
             ...club.schedules.where((s) => s.isActive).map((s) {
@@ -871,16 +871,16 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
               : status.hasPendingJoinRequest
                   ? ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.warningContainer,
-                        foregroundColor: AppColors.tierBronze,
+                        backgroundColor: colors.warningContainer,
+                        foregroundColor: colors.warning,
                         elevation: 0,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
                       onPressed: null,
-                      icon: const Icon(Icons.hourglass_top_rounded, color: AppColors.tierBronze),
-                      label: const Text(
+                      icon: Icon(Icons.hourglass_top_rounded, color: colors.warning),
+                      label: Text(
                         'Đơn xin gia nhập đang chờ duyệt [WAITING]',
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.tierBronze),
+                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: colors.warning),
                       ),
                     )
                   : !club.isRecruiting

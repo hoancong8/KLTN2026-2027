@@ -194,9 +194,9 @@ class ClubManagementMobile extends ConsumerWidget {
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                           decoration: BoxDecoration(
-                            color: AppColors.white,
+                            color: colors.cardBackground,
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: AppColors.border),
+                            border: Border.all(color: colors.cardBorder),
                             boxShadow: [
                               BoxShadow(
                                 color: AppColors.black.withValues(alpha: 0.03),
@@ -272,11 +272,11 @@ class ClubManagementMobile extends ConsumerWidget {
                       contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: AppColors.border),
+                        borderSide: BorderSide(color: colors.inputBorder),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: AppColors.border),
+                        borderSide: BorderSide(color: colors.inputBorder),
                       ),
                     ),
                   ),

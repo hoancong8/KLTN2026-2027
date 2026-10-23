@@ -85,22 +85,22 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       appBar: AppBar(
         backgroundColor: colors.surface,
         elevation: 0,
-        title: const Text(
+        title: Text(
           'Hồ sơ & Trình độ cá nhân',
           style: TextStyle(
-            color: AppColor.cDark,
+            color: colors.textPrimary,
             fontSize: 18,
             fontWeight: FontWeight.w700,
           ),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: AppColor.cDark),
+          icon: Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: colors.textPrimary),
           onPressed: () => context.pop(),
         ),
         actions: [
           if (profile != null)
             IconButton(
-              icon: const Icon(Icons.edit_note_rounded, color: AppColor.cMain, size: 26),
+              icon: Icon(Icons.edit_note_rounded, color: AppColor.cMain, size: 26),
               tooltip: 'Chỉnh sửa hồ sơ',
               onPressed: () => _showEditProfileBottomSheet(context, profile),
             ),
@@ -113,11 +113,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.person_off_outlined, size: 64, color: AppColor.cMuted),
+                      Icon(Icons.person_off_outlined, size: 64, color: colors.textMuted),
                       const SizedBox(height: 12),
-                      const Text(
+                      Text(
                         'Không thể tải thông tin hồ sơ',
-                        style: TextStyle(fontSize: 15, color: AppColor.cDark, fontWeight: FontWeight.w600),
+                        style: TextStyle(fontSize: 15, color: colors.textPrimary, fontWeight: FontWeight.w600),
                       ),
                       const SizedBox(height: 16),
                       ElevatedButton.icon(
@@ -127,8 +127,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                         ),
                         onPressed: () => ref.read(profileViewModelProvider.notifier).reloadProfile(),
-                        icon: const Icon(Icons.refresh_rounded),
-                        label: const Text('Thử lại'),
+                        icon: Icon(Icons.refresh_rounded),
+                        label: Text('Thử lại'),
                       ),
                     ],
                   ),
@@ -168,8 +168,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                           ),
                           onPressed: () => _showEditProfileBottomSheet(context, profile),
-                          icon: const Icon(Icons.edit_rounded, size: 20),
-                          label: const Text(
+                          icon: Icon(Icons.edit_rounded, size: 20),
+                          label: Text(
                             'Chỉnh sửa hồ sơ & Trình độ',
                             style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
                           ),
@@ -188,7 +188,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColor.white,
+        color: colors.cardBackground,
+        border: Border.all(color: colors.cardBorder),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -216,7 +217,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                             : profile.userName.isNotEmpty
                                 ? profile.userName[0].toUpperCase()
                                 : 'U',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 28,
                           fontWeight: FontWeight.bold,
                           color: AppColor.cMain,
@@ -233,18 +234,18 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   children: [
                     Text(
                       profile.fullName.isNotEmpty ? profile.fullName : profile.userName,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
-                        color: AppColor.cDark,
+                        color: colors.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       '@${profile.userName}',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 13,
-                        color: AppColor.cMuted,
+                        color: colors.textMuted,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -257,10 +258,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                           decoration: BoxDecoration(
                             color: profile.gender == 1
-                                ? AppColors.infoLight
+                                ? colors.infoContainer
                                 : profile.gender == 2
-                                    ? AppColors.pinkLight
-                                    : AppColors.neutral100,
+                                    ? colors.errorContainer
+                                    : colors.surfaceSubtle,
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Row(
@@ -330,7 +331,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         ),
                         child: Text(
                           profile.skillLevel.code,
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: AppColors.white,
                             fontSize: 11,
                             fontWeight: FontWeight.w800,
@@ -365,18 +366,18 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.star_rounded, size: 18, color: AppColors.roleTreasurer),
+                    Icon(Icons.star_rounded, size: 18, color: AppColors.roleTreasurer),
                     const SizedBox(width: 4),
                     Text(
                       profile.reputationScore.toStringAsFixed(1),
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w800,
                         color: AppColors.amberText,
                       ),
                     ),
                     const SizedBox(width: 4),
-                    const Text(
+                    Text(
                       'Uy tín',
                       style: TextStyle(fontSize: 12, color: AppColors.amberText),
                     ),
@@ -393,7 +394,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   Widget _buildGuestToggleCard(PlayerProfile profile) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColor.white,
+        color: colors.cardBackground,
+        border: Border.all(color: colors.cardBorder),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -406,7 +408,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       child: SwitchListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         activeThumbColor: AppColor.cMain,
-        title: const Row(
+        title: Row(
           children: [
             Icon(Icons.radar_rounded, color: AppColor.cMain, size: 20),
             SizedBox(width: 8),
@@ -415,16 +417,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               style: TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w700,
-                color: AppColor.cDark,
+                color: colors.textPrimary,
               ),
             ),
           ],
         ),
-        subtitle: const Padding(
+        subtitle: Padding(
           padding: EdgeInsets.only(top: 4),
           child: Text(
             'Bật tùy chọn này để các CLB và nhóm vãng lai xung quanh có thể tìm thấy bạn qua Radar tuyển khách.',
-            style: TextStyle(fontSize: 12, color: AppColor.cMuted),
+            style: TextStyle(fontSize: 12, color: colors.textMuted),
           ),
         ),
         value: profile.isOpenForGuest,
@@ -445,7 +447,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColor.white,
+        color: colors.cardBackground,
+        border: Border.all(color: colors.cardBorder),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -458,7 +461,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             children: [
               Icon(Icons.sports_tennis_rounded, color: AppColor.cMain, size: 20),
               SizedBox(width: 8),
@@ -467,15 +470,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
-                  color: AppColor.cDark,
+                  color: colors.textPrimary,
                 ),
               ),
             ],
           ),
           const SizedBox(height: 8),
-          const Text(
+          Text(
             'Hệ thống ghép kèo tự động dựa trên trình độ bạn khai báo để phân chia sân cân bằng nhất.',
-            style: TextStyle(fontSize: 12, color: AppColor.cMuted),
+            style: TextStyle(fontSize: 12, color: colors.textMuted),
           ),
           const SizedBox(height: 12),
 
@@ -507,7 +510,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     ),
                     child: Text(
                       level.code,
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: AppColors.white,
                         fontSize: 11,
                         fontWeight: FontWeight.bold,
@@ -524,12 +527,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           style: TextStyle(
                             fontSize: 13,
                             fontWeight: isCurrent ? FontWeight.bold : FontWeight.w600,
-                            color: AppColor.cDark,
+                            color: colors.textPrimary,
                           ),
                         ),
                         Text(
                           level.description,
-                          style: const TextStyle(fontSize: 11, color: AppColor.cMuted),
+                          style: TextStyle(fontSize: 11, color: colors.textMuted),
                         ),
                       ],
                     ),
@@ -549,7 +552,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColor.white,
+        color: colors.cardBackground,
+        border: Border.all(color: colors.cardBorder),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -562,7 +566,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             children: [
               Icon(Icons.info_outline_rounded, color: AppColor.cMain, size: 20),
               SizedBox(width: 8),
@@ -571,7 +575,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
-                  color: AppColor.cDark,
+                  color: colors.textPrimary,
                 ),
               ),
             ],
@@ -596,19 +600,19 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   Widget _buildInfoRow(String label, String value, IconData icon) {
     return Row(
       children: [
-        Icon(icon, size: 18, color: AppColor.cMuted),
+        Icon(icon, size: 18, color: colors.textMuted),
         const SizedBox(width: 10),
         Text(
           label,
-          style: const TextStyle(fontSize: 13, color: AppColor.cMuted),
+          style: TextStyle(fontSize: 13, color: colors.textMuted),
         ),
         const Spacer(),
         Text(
           value,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 13,
             fontWeight: FontWeight.w600,
-            color: AppColor.cDark,
+            color: colors.textPrimary,
           ),
         ),
       ],
@@ -677,9 +681,9 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
         right: 20,
         bottom: MediaQuery.of(context).viewInsets.bottom + 20,
       ),
-      decoration: const BoxDecoration(
-        color: AppColor.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      decoration: BoxDecoration(
+        color: colors.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: SingleChildScrollView(
         child: Form(
@@ -692,12 +696,12 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
+                  Text(
                     'Chỉnh sửa hồ sơ',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: AppColor.cDark),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: colors.textPrimary),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.close_rounded, color: AppColor.cMuted),
+                    icon: Icon(Icons.close_rounded, color: colors.textMuted),
                     onPressed: () => Navigator.of(context).pop(),
                   ),
                 ],
@@ -705,9 +709,9 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
               const Divider(height: 16),
 
               // Full Name
-              const Text(
+              Text(
                 'Họ và tên',
-                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColor.cDark),
+                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: colors.textPrimary),
               ),
               const SizedBox(height: 6),
               TextFormField(
@@ -730,9 +734,9 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
               const SizedBox(height: 16),
 
               // Gender Selector
-              const Text(
+              Text(
                 'Giới tính',
-                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColor.cDark),
+                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: colors.textPrimary),
               ),
               const SizedBox(height: 8),
               Row(
@@ -747,9 +751,9 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
               const SizedBox(height: 16),
 
               // Skill Level Selector
-              const Text(
+              Text(
                 'Trình độ tự đánh giá',
-                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColor.cDark),
+                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: colors.textPrimary),
               ),
               const SizedBox(height: 8),
               Wrap(
@@ -785,13 +789,13 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
                 activeThumbColor: AppColor.cMain,
-                title: const Text(
+                title: Text(
                   'Nhận kèo giao lưu khách vãng lai',
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColor.cDark),
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: colors.textPrimary),
                 ),
-                subtitle: const Text(
+                subtitle: Text(
                   'Cho phép các nhóm quanh vị trí GPS quét tìm bạn',
-                  style: TextStyle(fontSize: 12, color: AppColor.cMuted),
+                  style: TextStyle(fontSize: 12, color: colors.textMuted),
                 ),
                 value: _isOpenForGuest,
                 onChanged: (val) => setState(() => _isOpenForGuest = val),
@@ -807,12 +811,12 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.error_outline_rounded, color: AppColor.cError, size: 20),
+                      Icon(Icons.error_outline_rounded, color: AppColor.cError, size: 20),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           state.error!.getDisplayMessage(context.l10n),
-                          style: const TextStyle(color: AppColor.cError, fontSize: 13, fontWeight: FontWeight.w500),
+                          style: TextStyle(color: AppColor.cError, fontSize: 13, fontWeight: FontWeight.w500),
                         ),
                       ),
                     ],
@@ -838,7 +842,7 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
                           height: 20,
                           child: CircularProgressIndicator(color: AppColors.white, strokeWidth: 2),
                         )
-                      : const Text(
+                      : Text(
                           'Lưu thay đổi',
                           style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                         ),
@@ -872,7 +876,7 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
               Icon(
                 icon,
                 size: 16,
-                color: isSelected ? AppColor.cMain : AppColor.cMuted,
+                color: isSelected ? AppColor.cMain : colors.textMuted,
               ),
               const SizedBox(width: 4),
               Text(
