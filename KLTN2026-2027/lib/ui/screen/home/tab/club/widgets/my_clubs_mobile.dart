@@ -2,7 +2,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../../../app/consts/app_config.dart';
 import '../../../../../../app/theme/theme.dart';
 import '../../../../../../domain/entities/club/my_club.dart';
 import '../../../../club/club_vm/club_context_state.dart';
@@ -71,18 +70,6 @@ class MyClubsMobile extends StatelessWidget {
                 ),
               ),
         actions: [
-          IconButton(
-            tooltip: 'Lịch tôi đã đăng ký',
-            icon: Container(
-              padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                color: colors.surfaceSubtle,
-                shape: BoxShape.circle,
-              ),
-              child: Icon(Icons.event_available_rounded, color: colors.primary, size: 20),
-            ),
-            onPressed: () => context.push(AppConfig.myBookingsRoutePath),
-          ),
           IconButton(
             tooltip: 'Thêm / Tham gia nhóm',
             icon: Container(

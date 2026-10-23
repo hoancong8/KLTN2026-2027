@@ -117,7 +117,6 @@ class AppConfig {
   static const registerPath = '/register';
   static const logoutPath = '/logOut';
   static const homePath = '/home';
-  static const myBookingsRoutePath = '/my-bookings';
   static const profilePath = '/profile';
   static const changePasswordPath = '/change-password';
   static const adminUsersPath = '/admin/users';

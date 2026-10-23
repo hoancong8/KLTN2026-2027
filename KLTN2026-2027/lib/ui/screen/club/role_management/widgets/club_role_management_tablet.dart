@@ -97,7 +97,7 @@ class _ClubRoleManagementTabletState extends State<ClubRoleManagementTablet> {
             : null,
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh_rounded, color: AppColors.primary),
+            icon: Icon(Icons.refresh_rounded, color: colors.primary),
             tooltip: 'Tải lại',
             onPressed: widget.onRefresh,
           ),
@@ -109,9 +109,9 @@ class _ClubRoleManagementTabletState extends State<ClubRoleManagementTablet> {
           // Left Sidebar: Role List (Discord style side column)
           Container(
             width: 320,
-            decoration: const BoxDecoration(
-              color: AppColors.white,
-              border: Border(right: BorderSide(color: AppColors.border)),
+            decoration: BoxDecoration(
+              color: colors.cardBackground,
+              border: Border(right: BorderSide(color: colors.cardBorder)),
             ),
             child: ClubRoleListView(
               roles: widget.roles,

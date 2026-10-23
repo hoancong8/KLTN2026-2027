@@ -133,7 +133,7 @@ class _ClubCreateRoleDialogState extends State<ClubCreateRoleDialog> {
                   ],
                 ),
                 const SizedBox(height: 18),
-                const Divider(height: 1, color: AppColors.border),
+                Divider(height: 1, color: colors.cardBorder),
                 const SizedBox(height: 18),
 
                 // Role Name
@@ -163,15 +163,15 @@ class _ClubCreateRoleDialogState extends State<ClubCreateRoleDialog> {
                     ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
-                      borderSide: const BorderSide(color: AppColors.border),
+                      borderSide: BorderSide(color: colors.inputBorder),
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
-                      borderSide: const BorderSide(color: AppColors.border),
+                      borderSide: BorderSide(color: colors.inputBorder),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
-                      borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+                      borderSide: BorderSide(color: colors.primary, width: 1.5),
                     ),
                   ),
                   validator: (v) {
@@ -196,15 +196,15 @@ class _ClubCreateRoleDialogState extends State<ClubCreateRoleDialog> {
                     contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
-                      borderSide: const BorderSide(color: AppColors.border),
+                      borderSide: BorderSide(color: colors.inputBorder),
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
-                      borderSide: const BorderSide(color: AppColors.border),
+                      borderSide: BorderSide(color: colors.inputBorder),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
-                      borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+                      borderSide: BorderSide(color: colors.primary, width: 1.5),
                     ),
                   ),
                 ),
@@ -214,9 +214,9 @@ class _ClubCreateRoleDialogState extends State<ClubCreateRoleDialog> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   decoration: BoxDecoration(
-                    color: AppColors.neutral50,
+                    color: colors.surfaceSubtle,
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: AppColors.border),
+                    border: Border.all(color: colors.cardBorder),
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -238,8 +238,8 @@ class _ClubCreateRoleDialogState extends State<ClubCreateRoleDialog> {
                       ),
                       Switch(
                         value: _isDefault,
-                        activeThumbColor: AppColors.primary,
-                        activeTrackColor: AppColors.primary.withValues(alpha: 0.3),
+                        activeThumbColor: colors.primary,
+                        activeTrackColor: colors.primary.withValues(alpha: 0.3),
                         onChanged: (val) => setState(() => _isDefault = val),
                       ),
                     ],
@@ -258,7 +258,7 @@ class _ClubCreateRoleDialogState extends State<ClubCreateRoleDialog> {
                     const SizedBox(width: 8),
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
+                        backgroundColor: colors.primary,
                         foregroundColor: AppColors.white,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),

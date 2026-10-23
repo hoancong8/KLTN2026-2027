@@ -97,19 +97,6 @@ class ClubActionSheet extends StatelessWidget {
             ),
             AppSpacing.gapH12,
 
-            // 4. My Bookings
-            _buildActionTile(
-              context: context,
-              icon: Icons.event_available_rounded,
-              iconColor: AppColors.primaryDark,
-              iconBgColor: AppColors.primaryContainer,
-              title: 'Lịch chơi tôi đã đăng ký',
-              subtitle: 'Xem toàn bộ vé tham gia, buổi tập và trạng thái điểm danh',
-              onTap: () {
-                Navigator.of(context).pop();
-                context.push(AppConfig.myBookingsRoutePath);
-              },
-            ),
             AppSpacing.gapH8,
           ],
         ),

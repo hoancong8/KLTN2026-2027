@@ -176,28 +176,42 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
                 onPressed: widget.onBack,
               )
             : null,
-        title: Row(
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              width: 12,
-              height: 12,
-              decoration: BoxDecoration(
-                color: roleColor,
-                shape: BoxShape.circle,
-              ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                '${l10n.role_edit_title.toUpperCase()} - ${widget.role.roleName.toUpperCase()}',
-                style: TextStyle(
-                  fontSize: 14.5,
-                  fontWeight: FontWeight.bold,
-                  color: colors.textPrimary,
-                  letterSpacing: 0.5,
+            Row(
+              children: [
+                Container(
+                  width: 10,
+                  height: 10,
+                  decoration: BoxDecoration(
+                    color: roleColor,
+                    shape: BoxShape.circle,
+                  ),
                 ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+                const SizedBox(width: 8),
+                Flexible(
+                  child: Text(
+                    widget.role.roleName,
+                    style: TextStyle(
+                      fontSize: 15.5,
+                      fontWeight: FontWeight.bold,
+                      color: colors.textPrimary,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 1),
+            Text(
+              l10n.role_edit_title,
+              style: TextStyle(
+                fontSize: 11.5,
+                color: colors.textMuted,
+                fontWeight: FontWeight.w500,
               ),
             ),
           ],
@@ -350,14 +364,16 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
               TextFormField(
                 controller: _nameController,
                 enabled: !widget.role.isHostRole && widget.isHost,
+                style: TextStyle(color: colors.textPrimary, fontSize: 14),
                 decoration: InputDecoration(
                   hintText: l10n.role_name_hint,
                   hintStyle: TextStyle(color: colors.textMuted),
                   filled: true,
                   fillColor: colors.inputFill,
                   enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: colors.inputBorder)),
+                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: colors.primary, width: 1.5)),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: colors.inputBorder)),
                 ),
               ),
               const SizedBox(height: 16),
@@ -368,14 +384,16 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
                 controller: _descController,
                 enabled: !widget.role.isHostRole && widget.isHost,
                 maxLines: 2,
+                style: TextStyle(color: colors.textPrimary, fontSize: 14),
                 decoration: InputDecoration(
                   hintText: l10n.role_description_hint,
                   hintStyle: TextStyle(color: colors.textMuted),
                   filled: true,
                   fillColor: colors.inputFill,
                   enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: colors.inputBorder)),
+                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: colors.primary, width: 1.5)),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: colors.inputBorder)),
                 ),
               ),
               const SizedBox(height: 16),
@@ -508,6 +526,7 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
         TextField(
           controller: _permSearchController,
           onChanged: (val) => setState(() => _permSearchQuery = val.trim()),
+          style: TextStyle(color: colors.textPrimary, fontSize: 13.5),
           decoration: InputDecoration(
             hintText: l10n.role_search_permissions,
             hintStyle: TextStyle(fontSize: 13, color: colors.textMuted),
@@ -531,6 +550,10 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(color: colors.inputBorder),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: colors.primary, width: 1.5),
             ),
           ),
         ),
@@ -609,7 +632,7 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
               default:
                 title = entry.key;
                 icon = Icons.tune_rounded;
-                color = colors.textMuted;
+                color = colors.primary;
             }
 
             return Container(
@@ -658,16 +681,16 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
                         title: Text(
                           perm.name.isNotEmpty ? perm.name : perm.code,
                           style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: isChecked ? colors.textPrimary : colors.textMuted,
+                            fontSize: 13.5,
+                            fontWeight: isChecked ? FontWeight.w700 : FontWeight.w500,
+                            color: colors.textPrimary,
                           ),
                         ),
                         subtitle: Padding(
                           padding: const EdgeInsets.only(top: 3),
                           child: Text(
                             perm.displayDescription,
-                            style: TextStyle(fontSize: 12, color: colors.textMuted, height: 1.3),
+                            style: TextStyle(fontSize: 12, color: colors.textSecondary, height: 1.3),
                           ),
                         ),
                         value: isChecked,
@@ -721,6 +744,7 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
                 child: TextField(
                   controller: _memberSearchController,
                   onChanged: (val) => setState(() => _memberSearchQuery = val.trim()),
+                  style: TextStyle(color: colors.textPrimary, fontSize: 13.5),
                   decoration: InputDecoration(
                     hintText: l10n.role_search_members,
                     hintStyle: TextStyle(fontSize: 13, color: colors.textMuted),
@@ -735,6 +759,10 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
                       borderSide: BorderSide(color: colors.inputBorder),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide(color: colors.primary, width: 1.5),
                     ),
                   ),
                 ),

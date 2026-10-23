@@ -263,13 +263,6 @@ class DashboardPage extends ConsumerWidget {
 
     final actions = [
       _QuickActionData(
-        title: l10n.home_my_schedule,
-        icon: Icons.calendar_month_rounded,
-        bgColor: colors.primary.withValues(alpha: 0.12),
-        iconColor: colors.primary,
-        onTap: () => context.push(AppConfig.myBookingsRoutePath),
-      ),
-      _QuickActionData(
         title: l10n.home_find_match,
         icon: Icons.radar_rounded,
         bgColor: colors.accent.withValues(alpha: 0.15),

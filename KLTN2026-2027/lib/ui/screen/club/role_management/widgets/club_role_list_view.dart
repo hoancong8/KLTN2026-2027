@@ -90,7 +90,7 @@ class _ClubRoleListViewState extends State<ClubRoleListView> {
                   icon: const Icon(Icons.add_rounded, size: 16),
                   label: const Text('Thêm vai trò', style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold)),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
+                    backgroundColor: colors.primary,
                     foregroundColor: AppColors.white,
                     elevation: 0,
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
@@ -131,7 +131,7 @@ class _ClubRoleListViewState extends State<ClubRoleListView> {
           ),
         ),
 
-        const Divider(height: 12, color: AppColors.border),
+        Divider(height: 12, color: colors.cardBorder),
 
         // Role List
         Expanded(
@@ -157,8 +157,8 @@ class _ClubRoleListViewState extends State<ClubRoleListView> {
 
                     return Material(
                       color: isSelected
-                          ? AppColors.primary.withValues(alpha: 0.10)
-                          : AppColors.white,
+                          ? colors.primary.withValues(alpha: 0.12)
+                          : colors.cardBackground,
                       borderRadius: BorderRadius.circular(12),
                       child: InkWell(
                         onTap: () => widget.onRoleSelected(role),
@@ -169,8 +169,8 @@ class _ClubRoleListViewState extends State<ClubRoleListView> {
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
                               color: isSelected
-                                  ? AppColors.primary
-                                  : AppColors.border,
+                                  ? colors.primary
+                                  : colors.cardBorder,
                               width: isSelected ? 1.5 : 1.0,
                             ),
                           ),
@@ -261,7 +261,7 @@ class _ClubRoleListViewState extends State<ClubRoleListView> {
                               Icon(
                                 Icons.chevron_right_rounded,
                                 size: 20,
-                                color: isSelected ? AppColors.primary : colors.textMuted,
+                                color: isSelected ? colors.primary : colors.textMuted,
                               ),
                             ],
                           ),

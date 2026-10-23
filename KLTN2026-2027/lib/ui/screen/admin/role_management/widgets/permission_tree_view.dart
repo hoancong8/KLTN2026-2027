@@ -127,11 +127,11 @@ class _PermissionTreeViewState extends State<PermissionTreeView> {
           },
           decoration: InputDecoration(
             hintText: 'Tìm quyền...',
-            hintStyle: const TextStyle(fontSize: 13, color: AppColor.cMuted),
-            prefixIcon: const Icon(Icons.search_rounded, size: 18, color: AppColor.cMuted),
+            hintStyle: TextStyle(fontSize: 13, color: colors.textMuted),
+            prefixIcon: Icon(Icons.search_rounded, size: 18, color: colors.textMuted),
             suffixIcon: _searchController.text.isNotEmpty
                 ? IconButton(
-                    icon: const Icon(Icons.clear_rounded, size: 16, color: AppColor.cMuted),
+                    icon: Icon(Icons.clear_rounded, size: 16, color: colors.textMuted),
                     onPressed: () {
                       _searchController.clear();
                       setState(() => _searchQuery = '');
@@ -143,11 +143,15 @@ class _PermissionTreeViewState extends State<PermissionTreeView> {
             contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: AppColor.cDivider),
+              borderSide: BorderSide(color: colors.inputBorder),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: AppColor.cDivider),
+              borderSide: BorderSide(color: colors.inputBorder),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide(color: colors.primary, width: 1.5),
             ),
           ),
         ),
@@ -165,14 +169,14 @@ class _PermissionTreeViewState extends State<PermissionTreeView> {
           ],
         ),
         const SizedBox(height: 14),
-        const Divider(height: 1, color: AppColor.cDivider),
+        Divider(height: 1, color: colors.cardBorder),
         const SizedBox(height: 10),
 
         // 3. Cây phân quyền Tree View
         Expanded(
           child: widget.allGroups.isEmpty
-              ? const Center(
-                  child: Text('Đang tải danh sách quyền...', style: TextStyle(color: AppColor.cMuted)),
+              ? Center(
+                  child: Text('Đang tải danh sách quyền...', style: TextStyle(color: colors.textMuted)),
                 )
               : ListView(
                   padding: const EdgeInsets.symmetric(vertical: 6),
@@ -195,7 +199,7 @@ class _PermissionTreeViewState extends State<PermissionTreeView> {
         decoration: BoxDecoration(
           color: colors.surfaceSubtle,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: AppColor.cDivider),
+          border: Border.all(color: colors.cardBorder),
         ),
         child: Text(
           label,
@@ -260,10 +264,10 @@ class _PermissionTreeViewState extends State<PermissionTreeView> {
               Expanded(
                 child: Text(
                   group.displayName.isNotEmpty ? group.displayName : group.name,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
-                    color: AppColor.cTitle,
+                    color: colors.textPrimary,
                   ),
                 ),
               ),
@@ -335,10 +339,10 @@ class _PermissionTreeViewState extends State<PermissionTreeView> {
         width: 18,
         height: 18,
         decoration: BoxDecoration(
-          color: (value == true || value == null) ? AppColor.cMain : AppColors.transparent,
+          color: (value == true || value == null) ? colors.primary : AppColors.transparent,
           borderRadius: BorderRadius.circular(4),
           border: Border.all(
-            color: (value == true || value == null) ? AppColor.cMain : colors.cardBorder,
+            color: (value == true || value == null) ? colors.primary : colors.cardBorder,
             width: 1.5,
           ),
         ),

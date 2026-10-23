@@ -771,17 +771,6 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 18),
-            OutlinedButton.icon(
-              onPressed: () => context.push(AppConfig.myBookingsRoutePath),
-              icon: const Icon(Icons.event_available_rounded, size: 18),
-              label: const Text('Xem Lịch Tôi Đã Đăng Ký'),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: colors.primary,
-                side: BorderSide(color: colors.primary, width: 1.2),
-                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 11),
-                shape: RoundedRectangleBorder(borderRadius: AppRadius.button),
-              ),
-            ),
             if (canCreateSession) ...[
               const SizedBox(height: 12),
               ElevatedButton.icon(

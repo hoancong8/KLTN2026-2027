@@ -73,7 +73,7 @@ class _RoleFormDialogState extends State<RoleFormDialog> with SingleTickerProvid
 
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      backgroundColor: AppColor.white,
+      backgroundColor: context.colors.cardBackground,
       insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 580, maxHeight: 680),
@@ -94,10 +94,10 @@ class _RoleFormDialogState extends State<RoleFormDialog> with SingleTickerProvid
                     child: Center(
                       child: Text(
                         isEditing ? 'Sửa vai trò' : 'Thêm vai trò',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 17,
                           fontWeight: FontWeight.w700,
-                          color: AppColor.cTitle,
+                          color: context.colors.textPrimary,
                         ),
                       ),
                     ),
@@ -105,8 +105,8 @@ class _RoleFormDialogState extends State<RoleFormDialog> with SingleTickerProvid
                   ElevatedButton(
                     onPressed: _handleSave,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.navyDark, // Navy button như ảnh mẫu
-                      foregroundColor: AppColor.white,
+                      backgroundColor: context.colors.primary,
+                      foregroundColor: AppColors.white,
                       elevation: 0,
                       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                       minimumSize: Size.zero,
@@ -120,15 +120,15 @@ class _RoleFormDialogState extends State<RoleFormDialog> with SingleTickerProvid
                 ],
               ),
             ),
-            const Divider(height: 1, color: AppColor.cDivider),
+            Divider(height: 1, color: context.colors.cardBorder),
 
             // 2. Tab Bar: Thông tin & Quyền hạn
             TabBar(
               controller: _tabController,
-              indicatorColor: AppColor.cMain,
+              indicatorColor: context.colors.primary,
               indicatorWeight: 2.5,
-              labelColor: AppColor.cTitle,
-              unselectedLabelColor: AppColor.cMuted,
+              labelColor: context.colors.primary,
+              unselectedLabelColor: context.colors.textMuted,
               labelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
               unselectedLabelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
               tabs: const [
@@ -154,7 +154,7 @@ class _RoleFormDialogState extends State<RoleFormDialog> with SingleTickerProvid
                 ),
               ],
             ),
-            const Divider(height: 1, color: AppColor.cDivider),
+            Divider(height: 1, color: context.colors.cardBorder),
 
             // 3. Tab Bar View Content
             Expanded(
@@ -170,29 +170,32 @@ class _RoleFormDialogState extends State<RoleFormDialog> with SingleTickerProvid
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
+                            Text(
                               'Tên vai trò *',
-                              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColor.cTitle),
+                              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: context.colors.textPrimary),
                             ),
                             const SizedBox(height: 6),
                             TextFormField(
                               controller: _nameController,
                               enabled: !isStatic,
+                              style: TextStyle(color: context.colors.textPrimary, fontSize: 14),
                               decoration: InputDecoration(
                                 hintText: 'Nhập tên vai trò',
-                                hintStyle: const TextStyle(fontSize: 13, color: AppColor.cMuted),
+                                hintStyle: TextStyle(fontSize: 13, color: context.colors.textMuted),
+                                filled: true,
+                                fillColor: context.colors.inputFill,
                                 contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(10),
-                                  borderSide: const BorderSide(color: AppColor.cDivider),
+                                  borderSide: BorderSide(color: context.colors.inputBorder),
                                 ),
                                 enabledBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(10),
-                                  borderSide: const BorderSide(color: AppColor.cDivider),
+                                  borderSide: BorderSide(color: context.colors.inputBorder),
                                 ),
                                 focusedBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(10),
-                                  borderSide: const BorderSide(color: AppColor.cMain, width: 1.5),
+                                  borderSide: BorderSide(color: context.colors.primary, width: 1.5),
                                 ),
                               ),
                               validator: (v) {
@@ -202,84 +205,91 @@ class _RoleFormDialogState extends State<RoleFormDialog> with SingleTickerProvid
                             ),
                             const SizedBox(height: 18),
 
-                            const Text(
+                            Text(
                               'Mô tả',
-                              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColor.cTitle),
+                              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: context.colors.textPrimary),
                             ),
                             const SizedBox(height: 6),
                             TextFormField(
                               controller: _descController,
                               maxLines: 2,
+                              style: TextStyle(color: context.colors.textPrimary, fontSize: 14),
                               decoration: InputDecoration(
                                 hintText: 'Nhập mô tả vai trò (tùy chọn)',
-                                hintStyle: const TextStyle(fontSize: 13, color: AppColor.cMuted),
+                                hintStyle: TextStyle(fontSize: 13, color: context.colors.textMuted),
+                                filled: true,
+                                fillColor: context.colors.inputFill,
                                 contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(10),
-                                  borderSide: const BorderSide(color: AppColor.cDivider),
+                                  borderSide: BorderSide(color: context.colors.inputBorder),
                                 ),
                                 enabledBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(10),
-                                  borderSide: const BorderSide(color: AppColor.cDivider),
+                                  borderSide: BorderSide(color: context.colors.inputBorder),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                  borderSide: BorderSide(color: context.colors.primary, width: 1.5),
                                 ),
                               ),
                             ),
                             const SizedBox(height: 24),
-                            const Divider(height: 1, color: AppColor.cDivider),
+                            Divider(height: 1, color: context.colors.cardBorder),
                             const SizedBox(height: 16),
 
                             // Switch: Vai trò mặc định
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                const Column(
+                                Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
                                       'Vai trò mặc định',
-                                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColor.cTitle),
+                                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: context.colors.textPrimary),
                                     ),
-                                    SizedBox(height: 2),
+                                    const SizedBox(height: 2),
                                     Text(
                                       'Tự động gán cho người dùng mới',
-                                      style: TextStyle(fontSize: 12, color: AppColor.cMuted),
+                                      style: TextStyle(fontSize: 12, color: context.colors.textMuted),
                                     ),
                                   ],
                                 ),
                                 Switch(
                                   value: _isDefaultRole,
-                                  activeThumbColor: AppColor.cMain,
-                                  activeTrackColor: AppColor.cMain.withAlpha(120),
+                                  activeThumbColor: context.colors.primary,
+                                  activeTrackColor: context.colors.primary.withValues(alpha: 0.35),
                                   onChanged: (val) => setState(() => _isDefaultRole = val),
                                 ),
                               ],
                             ),
                             const SizedBox(height: 16),
-                            const Divider(height: 1, color: AppColor.cDivider),
+                            Divider(height: 1, color: context.colors.cardBorder),
                             const SizedBox(height: 16),
 
                             // Switch: Thành viên mặc định
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                const Column(
+                                Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
                                       'Thành viên mặc định',
-                                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColor.cTitle),
+                                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: context.colors.textPrimary),
                                     ),
-                                    SizedBox(height: 2),
+                                    const SizedBox(height: 2),
                                     Text(
                                       'Vai trò thành viên mặc định của hệ thống',
-                                      style: TextStyle(fontSize: 12, color: AppColor.cMuted),
+                                      style: TextStyle(fontSize: 12, color: context.colors.textMuted),
                                     ),
                                   ],
                                 ),
                                 Switch(
                                   value: _isDefaultMember,
-                                  activeThumbColor: AppColor.cMain,
-                                  activeTrackColor: AppColor.cMain.withAlpha(120),
+                                  activeThumbColor: context.colors.primary,
+                                  activeTrackColor: context.colors.primary.withValues(alpha: 0.35),
                                   onChanged: (val) => setState(() => _isDefaultMember = val),
                                 ),
                               ],

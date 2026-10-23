@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../../../app/consts/app_config.dart';
 import '../../../../../../app/provider.dart';
 import '../../../../../../app/theme/theme.dart';
 import '../../../../../../app/provider/localization_provider.dart';
@@ -510,21 +509,6 @@ class _ClubOverviewTabState extends ConsumerState<ClubOverviewTab> {
             AppSpacing.gapH16,
           ],
 
-          // 7. My Bookings Button
-          OutlinedButton.icon(
-            style: OutlinedButton.styleFrom(
-              foregroundColor: AppColors.primary,
-              side: const BorderSide(color: AppColors.primary, width: 1.3),
-              padding: AppSpacing.verticalMd,
-              shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
-            ),
-            icon: const Icon(Icons.event_available_rounded, size: AppSpacing.iconSm),
-            label: Text(
-              'Lịch Tôi Đã Đăng Ký (Vé & Điểm Danh)',
-              style: AppTypography.labelLarge.bold.colored(AppColors.primary),
-            ),
-            onPressed: () => context.push(AppConfig.myBookingsRoutePath),
-          ),
 
           // 8. Leave Club Button (Only for non-Host members)
           if (!isHost) ...[
