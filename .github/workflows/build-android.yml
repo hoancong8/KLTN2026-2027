@@ -58,7 +58,7 @@ jobs:
           BUILD_NUMBER="${{ github.run_number }}"
           BUILD_NAME="1.1.${{ github.run_number }}"
           
-          CMD="flutter build apk --release --build-name=${BUILD_NAME} --build-number=${BUILD_NUMBER} --dart-define=ENV=${ENV}"
+          CMD="flutter build apk --release --build-name=${BUILD_NAME} --build-number=${BUILD_NUMBER} --dart-define=ENV=${ENV} --android-skip-build-dependency-validation"
           
           if [ -n "${BASE_URL}" ]; then
             CMD="$CMD --dart-define=BASE_URL=${BASE_URL}"

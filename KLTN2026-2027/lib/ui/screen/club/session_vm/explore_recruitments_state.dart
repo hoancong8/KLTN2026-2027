@@ -8,6 +8,7 @@ class ExploreRecruitmentsState {
   final List<GuestRecruitment> recruitments;
   final double radiusKm;
   final String? selectedSkillLevel;
+  final String searchTerm;
   final double? latitude;
   final double? longitude;
   final bool isLocating;
@@ -20,12 +21,22 @@ class ExploreRecruitmentsState {
     this.recruitments = const [],
     this.radiusKm = 10.0,
     this.selectedSkillLevel,
+    this.searchTerm = '',
     this.latitude,
     this.longitude,
     this.isLocating = false,
     this.errorMessage,
     this.successMessage,
   });
+
+  List<GuestRecruitment> get filteredRecruitments {
+    if (searchTerm.trim().isEmpty) return recruitments;
+    final q = searchTerm.trim().toLowerCase();
+    return recruitments.where((r) {
+      return r.clubName.toLowerCase().contains(q) ||
+          r.courtLocation.toLowerCase().contains(q);
+    }).toList();
+  }
 
   ExploreRecruitmentsState copyWith({
     bool? isLoading,
@@ -34,6 +45,7 @@ class ExploreRecruitmentsState {
     double? radiusKm,
     String? selectedSkillLevel,
     bool clearSkillLevel = false,
+    String? searchTerm,
     double? latitude,
     double? longitude,
     bool? isLocating,
@@ -48,6 +60,7 @@ class ExploreRecruitmentsState {
       recruitments: recruitments ?? this.recruitments,
       radiusKm: radiusKm ?? this.radiusKm,
       selectedSkillLevel: clearSkillLevel ? null : (selectedSkillLevel ?? this.selectedSkillLevel),
+      searchTerm: searchTerm ?? this.searchTerm,
       latitude: latitude ?? this.latitude,
       longitude: longitude ?? this.longitude,
       isLocating: isLocating ?? this.isLocating,

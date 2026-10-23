@@ -77,6 +77,10 @@ class ExploreRecruitmentsViewModel extends StateNotifier<ExploreRecruitmentsStat
     }
   }
 
+  void setSearchTerm(String term) {
+    state = state.copyWith(searchTerm: term);
+  }
+
   void setRadius(double radiusKm) {
     state = state.copyWith(radiusKm: radiusKm);
     explore();
