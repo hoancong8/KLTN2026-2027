@@ -71,6 +71,13 @@ class _ClubMemberSectionState extends ConsumerState<ClubMemberSection> {
   Widget build(BuildContext context) {
     final colors = context.colors;
     final currentProfile = ref.watch(currentUserProfileProvider);
+    final activeContext = ref.watch(activeClubContextProvider);
+
+    // Dynamic RBAC with strict Context Isolation
+    final isSameClub = activeContext?.clubId == widget.vm.clubId;
+    final isHost = widget.isHost || (isSameClub && activeContext?.role == ClubRole.host);
+    final canManageRoles = isHost || (isSameClub && ref.hasClubPermission('MEMBER.ROLE.MANAGE'));
+    final canRemoveMember = isHost || (isSameClub && ref.hasClubPermission('MEMBER.REMOVE'));
 
     final filtered = widget.members.where((m) {
       if (_searchQuery.isEmpty) return true;
@@ -143,7 +150,7 @@ class _ClubMemberSectionState extends ConsumerState<ClubMemberSection> {
         ),
 
         // Role & Permissions Management Card (Host & Manager)
-        if (widget.isHost || ref.hasClubPermission('MEMBER.ROLE.MANAGE'))
+        if (canManageRoles)
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.base, vertical: AppSpacing.xs),
             child: InkWell(
@@ -198,14 +205,14 @@ class _ClubMemberSectionState extends ConsumerState<ClubMemberSection> {
               : ListView(
                   padding: const EdgeInsets.symmetric(horizontal: AppSpacing.base, vertical: AppSpacing.xs),
                   children: [
-                    if (hosts.isNotEmpty) _buildRoleGroup(context, 'CHỦ CÂU LẠC BỘ', hosts, AppColors.roleHost, currentProfile),
-                    if (deputies.isNotEmpty) _buildRoleGroup(context, 'PHÓ NHÓM', deputies, AppColors.roleDeputy, currentProfile),
-                    if (treasurers.isNotEmpty) _buildRoleGroup(context, 'THỦ QUỸ', treasurers, AppColors.roleTreasurer, currentProfile),
+                    if (hosts.isNotEmpty) _buildRoleGroup(context, 'CHỦ CÂU LẠC BỘ', hosts, AppColors.roleHost, currentProfile, canManageRoles: canManageRoles, canRemoveMember: canRemoveMember),
+                    if (deputies.isNotEmpty) _buildRoleGroup(context, 'PHÓ NHÓM', deputies, AppColors.roleDeputy, currentProfile, canManageRoles: canManageRoles, canRemoveMember: canRemoveMember),
+                    if (treasurers.isNotEmpty) _buildRoleGroup(context, 'THỦ QUỸ', treasurers, AppColors.roleTreasurer, currentProfile, canManageRoles: canManageRoles, canRemoveMember: canRemoveMember),
                     ...customGroups.entries.map(
-                      (e) => _buildRoleGroup(context, e.key.toUpperCase(), e.value, AppColors.roleTeal, currentProfile),
+                      (e) => _buildRoleGroup(context, e.key.toUpperCase(), e.value, AppColors.roleTeal, currentProfile, canManageRoles: canManageRoles, canRemoveMember: canRemoveMember),
                     ),
-                    if (regularMembers.isNotEmpty) _buildRoleGroup(context, 'THÀNH VIÊN CHÍNH THỨC', regularMembers, colors.primary, currentProfile),
-                    if (guests.isNotEmpty) _buildRoleGroup(context, 'KHÁCH VÃNG LAI', guests, AppColors.roleGuest, currentProfile),
+                    if (regularMembers.isNotEmpty) _buildRoleGroup(context, 'THÀNH VIÊN CHÍNH THỨC', regularMembers, colors.primary, currentProfile, canManageRoles: canManageRoles, canRemoveMember: canRemoveMember),
+                    if (guests.isNotEmpty) _buildRoleGroup(context, 'KHÁCH VÃNG LAI', guests, AppColors.roleGuest, currentProfile, canManageRoles: canManageRoles, canRemoveMember: canRemoveMember),
                     AppSpacing.gapH16,
                   ],
                 ),
@@ -214,7 +221,15 @@ class _ClubMemberSectionState extends ConsumerState<ClubMemberSection> {
     );
   }
 
-  Widget _buildRoleGroup(BuildContext context, String title, List<ClubMember> groupMembers, Color roleColor, UserProfile? currentProfile) {
+  Widget _buildRoleGroup(
+    BuildContext context,
+    String title,
+    List<ClubMember> groupMembers,
+    Color roleColor,
+    UserProfile? currentProfile, {
+    required bool canManageRoles,
+    required bool canRemoveMember,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -225,12 +240,26 @@ class _ClubMemberSectionState extends ConsumerState<ClubMemberSection> {
             style: AppTypography.labelSmall.bold.colored(roleColor).copyWith(letterSpacing: 0.6),
           ),
         ),
-        ...groupMembers.map((m) => _buildMemberTile(context, m, roleColor, currentProfile)),
+        ...groupMembers.map((m) => _buildMemberTile(
+              context,
+              m,
+              roleColor,
+              currentProfile,
+              canManageRoles: canManageRoles,
+              canRemoveMember: canRemoveMember,
+            )),
       ],
     );
   }
 
-  Widget _buildMemberTile(BuildContext context, ClubMember m, Color roleColor, UserProfile? currentProfile) {
+  Widget _buildMemberTile(
+    BuildContext context,
+    ClubMember m,
+    Color roleColor,
+    UserProfile? currentProfile, {
+    required bool canManageRoles,
+    required bool canRemoveMember,
+  }) {
     final colors = context.colors;
     final isMe = _checkIsMe(m, currentProfile);
 
@@ -370,8 +399,8 @@ class _ClubMemberSectionState extends ConsumerState<ClubMemberSection> {
             ),
           ),
 
-          // Actions for Host (chỉ hiện cho thành viên khác, không hiện cho chính mình)
-          if (widget.isHost && m.role != ClubRole.host && !isMe)
+          // Actions for Host & Managers (chỉ hiện khi có quyền, và không hiện cho chính mình)
+          if ((canManageRoles || canRemoveMember) && m.role != ClubRole.host && !isMe)
             PopupMenuButton<String>(
               color: colors.cardBackground,
               icon: Icon(Icons.more_vert, size: AppSpacing.iconSm, color: colors.textMuted),
@@ -383,26 +412,28 @@ class _ClubMemberSectionState extends ConsumerState<ClubMemberSection> {
                 }
               },
               itemBuilder: (context) => [
-                PopupMenuItem(
-                  value: 'role',
-                  child: Row(
-                    children: [
-                      Icon(Icons.edit_outlined, size: 16, color: colors.primary),
-                      AppSpacing.gapW8,
-                      Text('Đổi vai trò', style: AppTypography.bodyMedium.colored(colors.textPrimary)),
-                    ],
+                if (canManageRoles)
+                  PopupMenuItem(
+                    value: 'role',
+                    child: Row(
+                      children: [
+                        Icon(Icons.edit_outlined, size: 16, color: colors.primary),
+                        AppSpacing.gapW8,
+                        Text('Đổi vai trò', style: AppTypography.bodyMedium.colored(colors.textPrimary)),
+                      ],
+                    ),
                   ),
-                ),
-                PopupMenuItem(
-                  value: 'remove',
-                  child: Row(
-                    children: [
-                      Icon(Icons.person_remove_outlined, size: 16, color: colors.error),
-                      AppSpacing.gapW8,
-                      Text('Xóa khỏi nhóm', style: AppTypography.bodyMedium.colored(colors.error)),
-                    ],
+                if (canRemoveMember)
+                  PopupMenuItem(
+                    value: 'remove',
+                    child: Row(
+                      children: [
+                        Icon(Icons.person_remove_outlined, size: 16, color: colors.error),
+                        AppSpacing.gapW8,
+                        Text('Xóa khỏi nhóm', style: AppTypography.bodyMedium.colored(colors.error)),
+                      ],
+                    ),
                   ),
-                ),
               ],
             ),
 

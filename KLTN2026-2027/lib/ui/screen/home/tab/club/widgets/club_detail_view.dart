@@ -86,9 +86,15 @@ class _ClubDetailViewState extends ConsumerState<ClubDetailView> with SingleTick
     final contextVm = ref.read(clubContextViewModelProvider.notifier);
     final activeContext = ref.watch(activeClubContextProvider);
 
-    // Dynamic RBAC without hardcoded Vietnamese role strings
-    final isHost = activeContext?.role == ClubRole.host || widget.club.role == ClubRole.host;
-    final canManageJoinRequests = isHost || ref.hasClubPermission('MEMBER.JOIN_REQUEST.MANAGE');
+    // Dynamic RBAC with strict Context Isolation
+    final isSameClub = activeContext?.clubId == widget.club.clubId;
+    final isHost = (isSameClub && activeContext?.role == ClubRole.host) || widget.club.role == ClubRole.host;
+    final canManageJoinRequests = isHost || (isSameClub && ref.hasClubPermission('MEMBER.JOIN_REQUEST.MANAGE'));
+    final canManageClub = isHost ||
+        (isSameClub &&
+            (ref.hasClubPermission('MEMBER.INFO.UPDATE') ||
+                ref.hasClubPermission('OPERATIONS.SCHEDULE.MANAGE') ||
+                ref.hasClubPermission('MEMBER.ROLE.MANAGE')));
     _canManageJoinRequests = canManageJoinRequests;
 
     final expectedLength = canManageJoinRequests ? 4 : 3;
@@ -102,7 +108,7 @@ class _ClubDetailViewState extends ConsumerState<ClubDetailView> with SingleTick
     return Column(
       children: [
         // 1. Club Header Banner (Avatar, Name, Role, Switch Context, Copy Code, QR)
-        _buildClubHeader(context, contextVm, isHost),
+        _buildClubHeader(context, contextVm, isHost, canManageClub),
 
         // 2. Navigation Tabs
         Container(
@@ -205,7 +211,7 @@ class _ClubDetailViewState extends ConsumerState<ClubDetailView> with SingleTick
     );
   }
 
-  Widget _buildClubHeader(BuildContext context, ClubContextViewModel contextVm, bool isHost) {
+  Widget _buildClubHeader(BuildContext context, ClubContextViewModel contextVm, bool isHost, bool canManageClub) {
     final colors = context.colors;
     final roleColor = _getRoleColor(widget.club.role);
 
@@ -214,152 +220,143 @@ class _ClubDetailViewState extends ConsumerState<ClubDetailView> with SingleTick
       decoration: BoxDecoration(
         color: context.isDark ? colors.surface : colors.primaryContainer.withValues(alpha: 0.35),
         border: Border(bottom: BorderSide(color: colors.cardBorder)),
-        boxShadow: context.isDark ? AppShadows.none : AppShadows.sm,
       ),
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.base, vertical: AppSpacing.md),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.base, vertical: AppSpacing.sm),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Avatar
-              Container(
-                width: 52,
-                height: 52,
-                decoration: BoxDecoration(
-                  color: colors.primary.withValues(alpha: 0.2),
-                  borderRadius: AppRadius.borderMd,
-                  border: Border.all(color: colors.primary.withValues(alpha: 0.3), width: 1.5),
-                  image: widget.club.avatarUrl != null && widget.club.avatarUrl!.isNotEmpty
-                      ? DecorationImage(
-                          image: NetworkImage(widget.club.avatarUrl!),
-                          fit: BoxFit.cover,
-                        )
-                      : null,
-                ),
-                child: widget.club.avatarUrl == null || widget.club.avatarUrl!.isEmpty
-                    ? Center(
-                        child: Icon(Icons.sports_tennis_rounded, color: colors.primary, size: 28),
-                      )
-                    : null,
-              ),
-              AppSpacing.gapW12,
+          // Avatar
+          Container(
+            width: 42,
+            height: 42,
+            decoration: BoxDecoration(
+              color: colors.primary.withValues(alpha: 0.2),
+              borderRadius: AppRadius.borderMd,
+              border: Border.all(color: colors.primary.withValues(alpha: 0.3), width: 1.5),
+              image: widget.club.avatarUrl != null && widget.club.avatarUrl!.isNotEmpty
+                  ? DecorationImage(
+                      image: NetworkImage(widget.club.avatarUrl!),
+                      fit: BoxFit.cover,
+                    )
+                  : null,
+            ),
+            child: widget.club.avatarUrl == null || widget.club.avatarUrl!.isEmpty
+                ? Center(
+                    child: Icon(Icons.sports_tennis_rounded, color: colors.primary, size: 22),
+                  )
+                : null,
+          ),
+          AppSpacing.gapW12,
 
-              // Name + Role Badge
-              Expanded(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
+          // Name + Badges + Code Chip
+          Expanded(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  widget.club.clubName,
+                  style: AppTypography.titleMedium.bold.colored(colors.textPrimary),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                AppSpacing.gapH4,
+                Wrap(
+                  spacing: AppSpacing.xs,
+                  runSpacing: AppSpacing.xs,
+                  crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
-                    Text(
-                      widget.club.clubName,
-                      style: AppTypography.titleMedium.bold.colored(colors.textPrimary),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                    // Role Badge
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: roleColor.withValues(alpha: 0.2),
+                        borderRadius: AppRadius.tag,
+                        border: Border.all(color: roleColor.withValues(alpha: 0.4), width: 1),
+                      ),
+                      child: Text(
+                        (widget.club.roleName != null && widget.club.roleName!.isNotEmpty)
+                            ? widget.club.roleName!
+                            : widget.club.role.displayName,
+                        style: AppTypography.labelSmall.bold.colored(roleColor),
+                      ),
                     ),
-                    AppSpacing.gapH4,
-                    Wrap(
-                      spacing: AppSpacing.sm,
-                      runSpacing: AppSpacing.xs,
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      children: [
-                        // Role Badge
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: 2),
+
+                    // Active Context Pill
+                    if (widget.isActiveContext)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: colors.primary.withValues(alpha: 0.15),
+                          borderRadius: AppRadius.tag,
+                          border: Border.all(color: colors.primary.withValues(alpha: 0.3)),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.check_circle_rounded, color: colors.primary, size: 12),
+                            AppSpacing.gapW4,
+                            Text(
+                              'Đang kích hoạt',
+                              style: AppTypography.labelSmall.bold.colored(colors.primary),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                    // Compact Club Code Chip
+                    if (widget.club.clubCode.isNotEmpty)
+                      InkWell(
+                        onTap: () => _copyClubCode(context),
+                        borderRadius: AppRadius.tag,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                           decoration: BoxDecoration(
-                            color: roleColor.withValues(alpha: 0.2),
+                            color: colors.surfaceSubtle,
                             borderRadius: AppRadius.tag,
-                            border: Border.all(color: roleColor.withValues(alpha: 0.4), width: 1),
+                            border: Border.all(color: colors.cardBorder),
                           ),
-                          child: Text(
-                            (widget.club.roleName != null && widget.club.roleName!.isNotEmpty)
-                                ? widget.club.roleName!
-                                : widget.club.role.displayName,
-                            style: AppTypography.labelSmall.bold.colored(roleColor),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.copy_rounded, size: 11, color: colors.textSecondary),
+                              AppSpacing.gapW4,
+                              Text(
+                                widget.club.clubCode,
+                                style: AppTypography.labelSmall.colored(colors.textSecondary),
+                              ),
+                            ],
                           ),
                         ),
-
-                        // Active Context Pill
-                        if (widget.isActiveContext)
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: colors.primary.withValues(alpha: 0.15),
-                              borderRadius: AppRadius.tag,
-                              border: Border.all(color: colors.primary.withValues(alpha: 0.3)),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(Icons.check_circle_rounded, color: colors.primary, size: 12),
-                                AppSpacing.gapW4,
-                                Text(
-                                  'Đang kích hoạt',
-                                  style: AppTypography.labelSmall.bold.colored(colors.primary),
-                                ),
-                              ],
-                            ),
-                          ),
-                      ],
-                    ),
+                      ),
                   ],
-                ),
-              ),
-
-              // Settings button for Host
-              if (isHost)
-                IconButton(
-                  style: IconButton.styleFrom(
-                    backgroundColor: colors.cardBackground,
-                    side: BorderSide(color: colors.cardBorder),
-                  ),
-                  icon: Icon(Icons.settings_outlined, color: colors.textPrimary, size: 20),
-                  tooltip: 'Cài đặt câu lạc bộ',
-                  onPressed: () => context.push('/club/${widget.club.clubId}/settings'),
-                ),
-            ],
-          ),
-
-          // Action Row: Copy Club Code & View QR
-          if (widget.club.clubCode.isNotEmpty) ...[
-            AppSpacing.gapH12,
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton.icon(
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: colors.textPrimary,
-                      side: BorderSide(color: colors.cardBorder),
-                      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
-                      shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
-                    ),
-                    icon: Icon(Icons.copy_rounded, size: AppSpacing.iconXs, color: colors.textSecondary),
-                    label: Text('Mã nhóm: ${widget.club.clubCode}', style: AppTypography.bodySmall.colored(colors.textPrimary)),
-                    onPressed: () => _copyClubCode(context),
-                  ),
-                ),
-                AppSpacing.gapW8,
-                OutlinedButton.icon(
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: colors.primary,
-                    side: BorderSide(color: colors.primary.withValues(alpha: 0.4)),
-                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
-                    shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
-                  ),
-                  icon: const Icon(Icons.qr_code_rounded, size: AppSpacing.iconXs),
-                  label: Text('Mã QR', style: AppTypography.bodySmall.bold.colored(colors.primary)),
-                  onPressed: () => ClubQrDialog.show(
-                    context: context,
-                    clubName: widget.club.clubName,
-                    clubCode: widget.club.clubCode,
-                    avatarUrl: widget.club.avatarUrl,
-                  ),
                 ),
               ],
             ),
-          ],
+          ),
+
+          // Actions: QR Code + Settings
+          if (widget.club.clubCode.isNotEmpty)
+            IconButton(
+              icon: Icon(Icons.qr_code_rounded, color: colors.primary, size: 20),
+              tooltip: 'Mã QR nhóm',
+              onPressed: () => ClubQrDialog.show(
+                context: context,
+                clubName: widget.club.clubName,
+                clubCode: widget.club.clubCode,
+                avatarUrl: widget.club.avatarUrl,
+              ),
+            ),
+          if (canManageClub)
+            IconButton(
+              style: IconButton.styleFrom(
+                backgroundColor: colors.cardBackground,
+                side: BorderSide(color: colors.cardBorder),
+              ),
+              icon: Icon(Icons.settings_outlined, color: colors.textPrimary, size: 20),
+              tooltip: 'Cài đặt câu lạc bộ',
+              onPressed: () => context.push('/club/${widget.club.clubId}/settings'),
+            ),
         ],
       ),
     );

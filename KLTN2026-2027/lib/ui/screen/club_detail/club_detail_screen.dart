@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../app/provider.dart';
 import '../../../app/theme/theme.dart';
+import '../../../domain/enums/club_role.dart';
 import '../../../app/provider/localization_provider.dart';
 import '../../../app/l10n_gen/app_localizations.dart';
 import '../../../app/utils/exception_ext.dart';
@@ -139,6 +141,15 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
     });
 
     final club = state.club;
+    final activeContext = ref.watch(activeClubContextProvider);
+    final isSameClub = activeContext?.clubId == widget.clubId;
+    final isHost = (club?.currentUserStatus.isHost ?? false) || (isSameClub && activeContext?.role == ClubRole.host);
+    final canManageRoles = isHost || (isSameClub && ref.hasClubPermission('MEMBER.ROLE.MANAGE'));
+    final canManageClub = isHost ||
+        (isSameClub &&
+            (ref.hasClubPermission('MEMBER.INFO.UPDATE') ||
+                ref.hasClubPermission('OPERATIONS.SCHEDULE.MANAGE') ||
+                ref.hasClubPermission('MEMBER.ROLE.MANAGE')));
 
     return Scaffold(
       backgroundColor: colors.background,
@@ -158,22 +169,17 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
           onPressed: () => context.pop(),
         ),
         actions: [
-          if (club != null && club.currentUserStatus.isHost) ...[
+          if (club != null && canManageClub)
             IconButton(
               icon: Icon(Icons.settings_outlined, color: colors.textPrimary, size: 22),
               tooltip: 'Cài đặt CLB',
               onPressed: () => context.push('/club/${widget.clubId}/settings'),
             ),
+          if (club != null && canManageRoles)
             IconButton(
               icon: Icon(Icons.people_outline_rounded, color: colors.textPrimary, size: 22),
               tooltip: 'Quản lý thành viên',
               onPressed: () => context.push('/club/${widget.clubId}/roles'),
-            ),
-          ] else if (club != null && club.currentUserStatus.isMember)
-            IconButton(
-              icon: Icon(Icons.settings_outlined, color: colors.textPrimary, size: 22),
-              tooltip: 'Cài đặt & Tùy chọn',
-              onPressed: () => context.push('/club/${widget.clubId}/settings'),
             ),
         ],
         bottom: PreferredSize(

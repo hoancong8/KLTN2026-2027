@@ -55,10 +55,12 @@ class _ClubOverviewTabState extends ConsumerState<ClubOverviewTab> {
     final vm = ref.read(clubDetailViewModelProvider(widget.clubId).notifier);
     final activeContext = ref.watch(activeClubContextProvider);
 
-    final isHost = activeContext?.role == ClubRole.host || widget.userRole == ClubRole.host;
-    final canManageSchedule = isHost || ref.hasClubPermission('OPERATIONS.SCHEDULE.MANAGE');
-    final canManageInfo = isHost || ref.hasClubPermission('MEMBER.INFO.UPDATE');
-    final canManageRoles = isHost || ref.hasClubPermission('MEMBER.ROLE.MANAGE');
+    // Dynamic RBAC with strict Context Isolation
+    final isSameClub = activeContext?.clubId == widget.clubId;
+    final isHost = (isSameClub && activeContext?.role == ClubRole.host) || widget.userRole == ClubRole.host;
+    final canManageSchedule = isHost || (isSameClub && ref.hasClubPermission('OPERATIONS.SCHEDULE.MANAGE'));
+    final canManageInfo = isHost || (isSameClub && ref.hasClubPermission('MEMBER.INFO.UPDATE'));
+    final canManageRoles = isHost || (isSameClub && ref.hasClubPermission('MEMBER.ROLE.MANAGE'));
 
     if (state.isLoading && state.club == null) {
       return const Center(child: CircularProgressIndicator(color: AppColors.primary));

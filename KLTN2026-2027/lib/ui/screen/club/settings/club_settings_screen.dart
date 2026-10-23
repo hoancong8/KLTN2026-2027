@@ -303,7 +303,13 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
       _populateData(club);
     }
 
-    final isHost = club?.currentUserStatus.isHost ?? false;
+    final isHost = (club?.currentUserStatus.isHost ?? false);
+    final activeContext = ref.watch(activeClubContextProvider);
+    final isSameClub = activeContext?.clubId == widget.clubId;
+    final canManageInfo = isHost || (isSameClub && ref.hasClubPermission('MEMBER.INFO.UPDATE'));
+    final canManageSchedule = isHost || (isSameClub && ref.hasClubPermission('OPERATIONS.SCHEDULE.MANAGE'));
+    final canManageRoles = isHost || (isSameClub && ref.hasClubPermission('MEMBER.ROLE.MANAGE'));
+    final canSave = canManageInfo || canManageSchedule;
 
     return Scaffold(
       backgroundColor: colors.background,
@@ -316,7 +322,7 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
         foregroundColor: colors.textPrimary,
         elevation: 0.5,
         actions: [
-          if (club != null)
+          if (club != null && canSave)
             TextButton.icon(
               icon: _isSaving
                   ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2))
@@ -361,6 +367,7 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                         AppSpacing.gapH8,
                         TextFormField(
                           controller: _avatarUrlController,
+                          enabled: canManageInfo,
                           decoration: InputDecoration(
                             hintText: 'https://...',
                             filled: true,
@@ -374,6 +381,7 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                         AppSpacing.gapH8,
                         TextFormField(
                           controller: _descController,
+                          enabled: canManageInfo,
                           maxLines: 3,
                           decoration: InputDecoration(
                             hintText: 'Giới thiệu về hoạt động của câu lạc bộ',
@@ -389,7 +397,7 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                           title: Text('Mở tuyển thành viên mới', style: AppTypography.titleSmall.bold.colored(colors.textPrimary)),
                           subtitle: Text('Cho phép người chơi khác tìm thấy và nộp đơn gia nhập', style: AppTypography.bodySmall.colored(colors.textMuted)),
                           value: _isRecruiting,
-                          onChanged: (val) => setState(() => _isRecruiting = val),
+                          onChanged: canManageInfo ? (val) => setState(() => _isRecruiting = val) : null,
                         ),
                       ],
                     ),
@@ -404,6 +412,7 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                         AppSpacing.gapH8,
                         TextFormField(
                           controller: _venueController,
+                          enabled: canManageInfo,
                           decoration: InputDecoration(
                             hintText: 'Ví dụ: Sân Cầu Lông Kỳ Hòa Q10',
                             filled: true,
@@ -416,6 +425,7 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                         AppSpacing.gapH8,
                         TextFormField(
                           controller: _addressController,
+                          enabled: canManageInfo,
                           decoration: InputDecoration(
                             hintText: 'Ví dụ: 238 Ba Tháng Hai, P.12, Q.10',
                             filled: true,
@@ -450,7 +460,7 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                                   ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2))
                                   : const Icon(Icons.my_location_rounded, size: 16),
                               label: const Text('Cập nhật GPS'),
-                              onPressed: _isGettingLocation ? null : _getCurrentLocation,
+                              onPressed: (_isGettingLocation || !canManageInfo) ? null : _getCurrentLocation,
                             ),
                           ],
                         ),
@@ -463,19 +473,25 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                       title: 'Lịch Sinh Hoạt Cố Định Hàng Tuần',
                       icon: Icons.calendar_month_outlined,
                       children: [
-                        ClubSchedulePlanner(
-                          initialSchedules: _schedules,
-                          onChanged: (list) {
-                            _schedules.clear();
-                            _schedules.addAll(list);
-                          },
+                        IgnorePointer(
+                          ignoring: !canManageSchedule,
+                          child: Opacity(
+                            opacity: canManageSchedule ? 1.0 : 0.75,
+                            child: ClubSchedulePlanner(
+                              initialSchedules: _schedules,
+                              onChanged: (list) {
+                                _schedules.clear();
+                                _schedules.addAll(list);
+                              },
+                            ),
+                          ),
                         ),
                       ],
                     ),
                     AppSpacing.gapH16,
 
-                    // Section 4: Quản lý vai trò (Nếu là Host)
-                    if (isHost) ...[
+                    // Section 4: Quản lý vai trò (Nếu là Host hoặc có quyền quản lý vai trò)
+                    if (isHost || canManageRoles) ...[
                       _buildSectionCard(
                         title: 'Phân Quyền Vai Trò (Discord-Style)',
                         icon: Icons.shield_outlined,
@@ -534,26 +550,28 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                           ),
                           AppSpacing.gapH16,
                         ],
-                        Text(
-                          'Rời khỏi câu lạc bộ',
-                          style: AppTypography.titleSmall.bold.colored(colors.textPrimary),
-                        ),
-                        AppSpacing.gapH4,
-                        Text(
-                          'Hủy tư cách thành viên của bạn tại câu lạc bộ này.',
-                          style: AppTypography.bodySmall.colored(colors.textMuted),
-                        ),
-                        AppSpacing.gapH12,
-                        OutlinedButton.icon(
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: AppColors.error,
-                            side: const BorderSide(color: AppColors.error),
-                            padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+                        if (!isHost) ...[
+                          Text(
+                            'Rời khỏi câu lạc bộ',
+                            style: AppTypography.titleSmall.bold.colored(colors.textPrimary),
                           ),
-                          icon: const Icon(Icons.exit_to_app_rounded, size: 18),
-                          label: const Text('Rời câu lạc bộ'),
-                          onPressed: _showLeaveClubDialog,
-                        ),
+                          AppSpacing.gapH4,
+                          Text(
+                            'Hủy tư cách thành viên của bạn tại câu lạc bộ này.',
+                            style: AppTypography.bodySmall.colored(colors.textMuted),
+                          ),
+                          AppSpacing.gapH12,
+                          OutlinedButton.icon(
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: AppColors.error,
+                              side: const BorderSide(color: AppColors.error),
+                              padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+                            ),
+                            icon: const Icon(Icons.exit_to_app_rounded, size: 18),
+                            label: const Text('Rời câu lạc bộ'),
+                            onPressed: _showLeaveClubDialog,
+                          ),
+                        ],
                       ],
                     ),
                     AppSpacing.gapH32,

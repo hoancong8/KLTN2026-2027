@@ -10,6 +10,7 @@ import 'package:kltn2026_2027/app/provider/localization_provider.dart';
 import 'package:kltn2026_2027/app/l10n_gen/app_localizations.dart';
 import '../../../../../../app/consts/app_config.dart';
 import '../../../../../../domain/entities/session/session.dart';
+import '../../../../../../domain/enums/club_role.dart';
 import '../../../../../../domain/enums/session_enums.dart';
 import '../../../../club/session_vm/club_sessions_vm.dart';
 import '../../../../club/widgets/create_session_dialog.dart';
@@ -147,7 +148,10 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
       displaySessions = sortedSessions;
     }
 
-    final canCreateSession = widget.isHost || ref.hasClubPermission('OPERATIONS.SESSION.CREATE');
+    final activeContext = ref.watch(activeClubContextProvider);
+    final isSameClub = activeContext?.clubId == widget.clubId;
+    final isHost = widget.isHost || (isSameClub && activeContext?.role == ClubRole.host);
+    final canCreateSession = isHost || (isSameClub && ref.hasClubPermission('OPERATIONS.SESSION.CREATE'));
 
     return Scaffold(
       backgroundColor: colors.background,
@@ -156,7 +160,7 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
               backgroundColor: colors.primary,
               foregroundColor: AppColors.white,
               icon: const Icon(Icons.add_rounded),
-              label: const Text('Tạo buổi chơi', style: TextStyle(fontWeight: FontWeight.bold)),
+              label: Text('Tạo buổi chơi', style: AppTypography.labelLarge.bold.colored(AppColors.white)),
               onPressed: () async {
                 final sessionId = await CreateSessionDialog.show(
                   context,
@@ -171,11 +175,11 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
           : null,
       body: RefreshIndicator(
         onRefresh: vm.loadSessions,
-        color: AppColors.primary,
+        color: colors.primary,
         child: state.sessions.isEmpty
-            ? _buildEmptyState(context)
+            ? _buildEmptyState(context, canCreateSession)
             : ListView(
-                padding: const EdgeInsets.only(left: 16, right: 16, top: 12, bottom: 80),
+                padding: const EdgeInsets.only(left: 16, right: 16, top: 12, bottom: 110),
                 children: [
                   // 1. Buổi tập gần nhất (Đưa lên trên cùng để nhận biết lịch tiếp theo)
                   if (nearestSession != null)
@@ -190,30 +194,27 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
                       margin: const EdgeInsets.only(bottom: 12),
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                       decoration: BoxDecoration(
-                        color: AppColors.primaryContainer,
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: AppColors.primary.withValues(alpha: 0.25)),
+                        color: colors.primaryContainer,
+                        borderRadius: AppRadius.borderSm,
+                        border: Border.all(color: colors.primary.withValues(alpha: 0.25)),
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.filter_alt_rounded, size: 16, color: AppColors.primary),
+                          Icon(Icons.filter_alt_rounded, size: 16, color: colors.primary),
                           const SizedBox(width: 6),
                           Expanded(
                             child: Text(
                               'Lịch ngày ${DateFormat('dd/MM/yyyy').format(_selectedDate!)} (${displaySessions.length} buổi)',
-                              style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold, color: colors.textPrimary),
+                              style: AppTypography.bodySmall.bold.colored(colors.textPrimary),
                             ),
                           ),
                           InkWell(
                             onTap: () => setState(() => _selectedDate = null),
-                            child: const Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                               child: Text(
                                 'Xem tất cả',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.primary,
+                                style: AppTypography.labelSmall.bold.colored(colors.primary).copyWith(
                                   decoration: TextDecoration.underline,
                                 ),
                               ),
@@ -231,7 +232,7 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
                       margin: const EdgeInsets.only(bottom: 16),
                       decoration: BoxDecoration(
                         color: colors.cardBackground,
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: AppRadius.card,
                         border: Border.all(color: colors.cardBorder),
                       ),
                       child: Center(
@@ -241,12 +242,15 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
                             const SizedBox(height: 8),
                             Text(
                               'Không có buổi tập nào vào ngày ${DateFormat('dd/MM/yyyy').format(_selectedDate!)}',
-                              style: TextStyle(fontSize: 13, color: colors.textMuted),
+                              style: AppTypography.bodySmall.colored(colors.textMuted),
                             ),
                             const SizedBox(height: 8),
                             TextButton(
                               onPressed: () => setState(() => _selectedDate = null),
-                              child: const Text('Xem tất cả các buổi tập'),
+                              child: Text(
+                                'Xem tất cả các buổi tập',
+                                style: AppTypography.bodySmall.bold.colored(colors.primary),
+                              ),
                             ),
                           ],
                         ),
@@ -282,17 +286,17 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            AppColors.primary.withValues(alpha: 0.08),
-            AppColors.primaryContainer.withValues(alpha: 0.5),
+            colors.primary.withValues(alpha: 0.08),
+            colors.primaryContainer.withValues(alpha: 0.5),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.primary.withValues(alpha: 0.35), width: 1.5),
+        borderRadius: AppRadius.card,
+        border: Border.all(color: colors.primary.withValues(alpha: 0.35), width: 1.5),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primary.withValues(alpha: 0.05),
+            color: colors.primary.withValues(alpha: 0.05),
             blurRadius: 8,
             offset: const Offset(0, 3),
           ),
@@ -300,7 +304,7 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
       ),
       child: InkWell(
         onTap: () => context.push(AppConfig.sessionDetailRoutePath(session.id)),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: AppRadius.card,
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -312,22 +316,17 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
                     decoration: BoxDecoration(
-                      color: AppColors.primary,
-                      borderRadius: BorderRadius.circular(8),
+                      color: colors.primary,
+                      borderRadius: AppRadius.borderSm,
                     ),
-                    child: const Row(
+                    child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.bolt_rounded, size: 14, color: AppColors.white),
-                        SizedBox(width: 4),
+                        const Icon(Icons.bolt_rounded, size: 14, color: AppColors.white),
+                        const SizedBox(width: 4),
                         Text(
                           'BUỔI TẬP GẦN NHẤT',
-                          style: TextStyle(
-                            color: AppColors.white,
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 0.3,
-                          ),
+                          style: AppTypography.labelSmall.bold.colored(AppColors.white),
                         ),
                       ],
                     ),
@@ -337,21 +336,19 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
                       color: isToday
-                          ? AppColors.accentOrange.withValues(alpha: 0.15)
-                          : AppColors.roleSky.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(8),
+                          ? colors.warning.withValues(alpha: 0.15)
+                          : colors.info.withValues(alpha: 0.15),
+                      borderRadius: AppRadius.borderSm,
                       border: Border.all(
                         color: isToday
-                            ? AppColors.accentOrange.withValues(alpha: 0.4)
-                            : AppColors.roleSky.withValues(alpha: 0.3),
+                            ? colors.warning.withValues(alpha: 0.4)
+                            : colors.info.withValues(alpha: 0.4),
                       ),
                     ),
                     child: Text(
                       remainingLabel,
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
-                        color: isToday ? AppColors.accentOrange : AppColors.roleSky,
+                      style: AppTypography.labelSmall.bold.colored(
+                        isToday ? colors.warning : colors.info,
                       ),
                     ),
                   ),
@@ -365,11 +362,7 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
               // Title
               Text(
                 session.title,
-                style: TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.bold,
-                  color: colors.textPrimary,
-                ),
+                style: AppTypography.titleMedium.bold.colored(colors.textPrimary),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -378,18 +371,18 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
               // Date & Time Row
               Row(
                 children: [
-                  const Icon(Icons.calendar_today_rounded, size: 14, color: AppColors.primary),
+                  Icon(Icons.calendar_today_rounded, size: 14, color: colors.primary),
                   const SizedBox(width: 6),
                   Text(
                     dateStr,
-                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: colors.textPrimary),
+                    style: AppTypography.bodySmall.semiBold.colored(colors.textPrimary),
                   ),
                   const SizedBox(width: 8),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     decoration: BoxDecoration(
                       color: colors.cardBackground,
-                      borderRadius: BorderRadius.circular(6),
+                      borderRadius: AppRadius.borderXs,
                       border: Border.all(color: colors.cardBorder),
                     ),
                     child: Row(
@@ -398,7 +391,7 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
                         const SizedBox(width: 4),
                         Text(
                           timeRange,
-                          style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold, color: colors.textPrimary),
+                          style: AppTypography.labelSmall.bold.colored(colors.textPrimary),
                         ),
                       ],
                     ),
@@ -415,7 +408,7 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
                   Expanded(
                     child: Text(
                       session.courtLocation,
-                      style: TextStyle(fontSize: 13, color: colors.textMuted),
+                      style: AppTypography.bodySmall.colored(colors.textMuted),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -443,10 +436,8 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
                   const SizedBox(width: 10),
                   Text(
                     '${session.confirmedCount}/${session.maxPlayers} slot',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: isFull ? colors.warning : colors.primary,
+                    style: AppTypography.labelMedium.bold.colored(
+                      isFull ? colors.warning : colors.primary,
                     ),
                   ),
                   if (session.waitingCount > 0) ...[
@@ -454,12 +445,12 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
-                        color: AppColors.warningLight,
-                        borderRadius: BorderRadius.circular(4),
+                        color: colors.warning.withValues(alpha: 0.15),
+                        borderRadius: AppRadius.borderXs,
                       ),
                       child: Text(
                         '${session.waitingCount} chờ',
-                        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.warning),
+                        style: AppTypography.labelSmall.semiBold.colored(colors.warning),
                       ),
                     ),
                   ],
@@ -476,12 +467,12 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
                     foregroundColor: AppColors.white,
                     elevation: 0,
                     padding: const EdgeInsets.symmetric(vertical: 11),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
                   ),
                   icon: const Icon(Icons.sports_tennis_rounded, size: 18),
                   label: Text(
                     session.isBookedByCurrentUser ? 'Xem chi tiết & Điểm danh' : 'Xem chi tiết & Giữ chỗ',
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                    style: AppTypography.bodyMedium.bold.colored(AppColors.white),
                   ),
                   onPressed: () => context.push(AppConfig.sessionDetailRoutePath(session.id)),
                 ),
@@ -543,15 +534,11 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
                 children: [
                   Text(
                     'Lịch Tập Tháng ${DateFormat('MM/yyyy').format(_focusedMonth)}',
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                      color: colors.textPrimary,
-                    ),
+                    style: AppTypography.titleSmall.bold.colored(colors.textPrimary),
                   ),
                   Text(
                     '${sessionsInMonth.length} buổi tập dự kiến',
-                    style: TextStyle(fontSize: 11, color: colors.textMuted),
+                    style: AppTypography.labelSmall.colored(colors.textMuted),
                   ),
                 ],
               ),
@@ -589,10 +576,8 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
                 child: Center(
                   child: Text(
                     label,
-                    style: TextStyle(
-                      fontSize: 11.5,
-                      fontWeight: FontWeight.bold,
-                      color: isWeekend ? AppColors.accentOrange : colors.textMuted,
+                    style: AppTypography.labelSmall.bold.colored(
+                      isWeekend ? colors.warning : colors.textMuted,
                     ),
                   ),
                 ),
@@ -601,117 +586,125 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
           ),
           const SizedBox(height: 8),
 
-          // Calendar Days Grid
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: leadingBlanks + totalDaysInMonth,
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 7,
-              mainAxisSpacing: 6,
-              crossAxisSpacing: 6,
-              childAspectRatio: 1.05,
-            ),
-            itemBuilder: (context, index) {
-              if (index < leadingBlanks) {
-                return const SizedBox.shrink();
-              }
+          // Calendar Days Grid (Adaptive aspect ratio for mobile & tablet/web)
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final availableWidth = constraints.maxWidth;
+              final cellWidth = (availableWidth - 36) / 7;
+              final targetHeight = availableWidth > 500 ? 44.0 : 42.0;
+              final aspectRatio = (cellWidth / targetHeight).clamp(0.9, 3.5);
 
-              final day = index - leadingBlanks + 1;
-              final date = DateTime(_focusedMonth.year, _focusedMonth.month, day);
-              final daySessions = sessionsByDay[day] ?? [];
-              final hasSessions = daySessions.isNotEmpty;
-
-              final isToday = date.year == now.year && date.month == now.month && date.day == now.day;
-              final isSelected = _selectedDate != null &&
-                  date.year == _selectedDate!.year &&
-                  date.month == _selectedDate!.month &&
-                  date.day == _selectedDate!.day;
-              final isNearest = nearestSession != null &&
-                  date.year == nearestSession.startTime.year &&
-                  date.month == nearestSession.startTime.month &&
-                  date.day == nearestSession.startTime.day;
-
-              // Visual styling
-              Color bgColor = AppColors.transparent;
-              Color textColor = colors.textPrimary;
-              Border? border;
-
-              if (isSelected) {
-                bgColor = AppColors.primary;
-                textColor = AppColors.white;
-              } else if (hasSessions) {
-                if (isNearest) {
-                  bgColor = AppColors.primary.withValues(alpha: 0.18);
-                  border = Border.all(color: AppColors.primary, width: 1.5);
-                  textColor = AppColors.primary;
-                } else {
-                  bgColor = AppColors.primary.withValues(alpha: 0.08);
-                  textColor = AppColors.primary;
-                }
-              } else if (isToday) {
-                border = Border.all(color: AppColors.neutral400, width: 1);
-              }
-
-              return InkWell(
-                onTap: () {
-                  setState(() {
-                    if (isSelected) {
-                      _selectedDate = null;
-                    } else {
-                      _selectedDate = date;
-                    }
-                  });
-                },
-                borderRadius: BorderRadius.circular(10),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 180),
-                  decoration: BoxDecoration(
-                    color: bgColor,
-                    borderRadius: BorderRadius.circular(10),
-                    border: border,
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        '$day',
-                        style: TextStyle(
-                          fontSize: 12.5,
-                          fontWeight: (hasSessions || isSelected || isToday) ? FontWeight.bold : FontWeight.w500,
-                          color: textColor,
-                        ),
-                      ),
-                      if (hasSessions) ...[
-                        const SizedBox(height: 2),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Container(
-                              width: 5,
-                              height: 5,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: isSelected ? AppColors.white : colors.primary,
-                              ),
-                            ),
-                            if (daySessions.length > 1) ...[
-                              const SizedBox(width: 2),
-                              Container(
-                                width: 3,
-                                height: 3,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: isSelected ? AppColors.white.withValues(alpha: 0.7) : AppColors.accentOrange,
-                                ),
-                              ),
-                            ],
-                          ],
-                        ),
-                      ],
-                    ],
-                  ),
+              return GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: leadingBlanks + totalDaysInMonth,
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 7,
+                  mainAxisSpacing: 6,
+                  crossAxisSpacing: 6,
+                  childAspectRatio: aspectRatio,
                 ),
+                itemBuilder: (context, index) {
+                  if (index < leadingBlanks) {
+                    return const SizedBox.shrink();
+                  }
+
+                  final day = index - leadingBlanks + 1;
+                  final date = DateTime(_focusedMonth.year, _focusedMonth.month, day);
+                  final daySessions = sessionsByDay[day] ?? [];
+                  final hasSessions = daySessions.isNotEmpty;
+
+                  final isToday = date.year == now.year && date.month == now.month && date.day == now.day;
+                  final isSelected = _selectedDate != null &&
+                      date.year == _selectedDate!.year &&
+                      date.month == _selectedDate!.month &&
+                      date.day == _selectedDate!.day;
+                  final isNearest = nearestSession != null &&
+                      date.year == nearestSession.startTime.year &&
+                      date.month == nearestSession.startTime.month &&
+                      date.day == nearestSession.startTime.day;
+
+                  // Visual styling
+                  Color bgColor = AppColors.transparent;
+                  Color textColor = colors.textPrimary;
+                  Border? border;
+
+                  if (isSelected) {
+                    bgColor = colors.primary;
+                    textColor = AppColors.white;
+                  } else if (hasSessions) {
+                    if (isNearest) {
+                      bgColor = colors.primary.withValues(alpha: 0.18);
+                      border = Border.all(color: colors.primary, width: 1.5);
+                      textColor = colors.primary;
+                    } else {
+                      bgColor = colors.primary.withValues(alpha: 0.08);
+                      textColor = colors.primary;
+                    }
+                  } else if (isToday) {
+                    border = Border.all(color: colors.border, width: 1);
+                  }
+
+                  return InkWell(
+                    onTap: () {
+                      setState(() {
+                        if (isSelected) {
+                          _selectedDate = null;
+                        } else {
+                          _selectedDate = date;
+                        }
+                      });
+                    },
+                    borderRadius: AppRadius.borderSm,
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 180),
+                      decoration: BoxDecoration(
+                        color: bgColor,
+                        borderRadius: AppRadius.borderSm,
+                        border: border,
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            '$day',
+                            style: AppTypography.labelSmall.copyWith(
+                              fontWeight: (hasSessions || isSelected || isToday) ? FontWeight.bold : FontWeight.w500,
+                              color: textColor,
+                            ),
+                          ),
+                          if (hasSessions) ...[
+                            const SizedBox(height: 2),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Container(
+                                  width: 5,
+                                  height: 5,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: isSelected ? AppColors.white : colors.primary,
+                                  ),
+                                ),
+                                if (daySessions.length > 1) ...[
+                                  const SizedBox(width: 2),
+                                  Container(
+                                    width: 3,
+                                    height: 3,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: isSelected ? AppColors.white.withValues(alpha: 0.7) : colors.warning,
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  );
+                },
               );
             },
           ),
@@ -724,25 +717,25 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
               Container(
                 width: 8,
                 height: 8,
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: AppColors.primary,
+                  color: colors.primary,
                 ),
               ),
               const SizedBox(width: 5),
-              Text('Ngày có buổi tập', style: TextStyle(fontSize: 11, color: colors.textMuted)),
+              Text('Ngày có buổi tập', style: AppTypography.labelSmall.colored(colors.textMuted)),
               const SizedBox(width: 14),
               Container(
                 width: 12,
                 height: 12,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(3),
-                  color: AppColors.primary.withValues(alpha: 0.18),
-                  border: Border.all(color: AppColors.primary, width: 1),
+                  color: colors.primary.withValues(alpha: 0.18),
+                  border: Border.all(color: colors.primary, width: 1),
                 ),
               ),
               const SizedBox(width: 5),
-              Text('Buổi gần nhất', style: TextStyle(fontSize: 11, color: colors.textMuted)),
+              Text('Buổi gần nhất', style: AppTypography.labelSmall.colored(colors.textMuted)),
             ],
           ),
         ],
@@ -750,7 +743,7 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
     );
   }
 
-  Widget _buildEmptyState(BuildContext context) {
+  Widget _buildEmptyState(BuildContext context, bool canCreateSession) {
     return Center(
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
@@ -761,20 +754,20 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: 0.08),
+                color: colors.primary.withValues(alpha: 0.08),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.calendar_month_rounded, size: 54, color: AppColors.primary),
+              child: Icon(Icons.calendar_month_rounded, size: 54, color: colors.primary),
             ),
             const SizedBox(height: 16),
             Text(
               'Chưa Có Buổi Sinh Hoạt Mới',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: colors.textPrimary),
+              style: AppTypography.titleMedium.bold.colored(colors.textPrimary),
             ),
             const SizedBox(height: 8),
             Text(
               'Các buổi giao lưu sắp tới của câu lạc bộ sẽ hiển thị ở đây để bạn biểu quyết giữ chỗ.',
-              style: TextStyle(fontSize: 13, color: colors.textMuted),
+              style: AppTypography.bodySmall.colored(colors.textMuted),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 18),
@@ -783,23 +776,32 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
               icon: const Icon(Icons.event_available_rounded, size: 18),
               label: const Text('Xem Lịch Tôi Đã Đăng Ký'),
               style: OutlinedButton.styleFrom(
-                foregroundColor: AppColors.primary,
-                side: const BorderSide(color: AppColors.primary, width: 1.2),
+                foregroundColor: colors.primary,
+                side: BorderSide(color: colors.primary, width: 1.2),
                 padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 11),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                shape: RoundedRectangleBorder(borderRadius: AppRadius.button),
               ),
             ),
-            if (widget.isHost) ...[
+            if (canCreateSession) ...[
               const SizedBox(height: 12),
               ElevatedButton.icon(
-                onPressed: () => ref.read(clubSessionsViewModelProvider(widget.clubId).notifier).loadSessions(),
-                icon: const Icon(Icons.refresh_rounded, size: 18),
-                label: const Text('Tải lại lịch tập tự động'),
+                onPressed: () async {
+                  final sessionId = await CreateSessionDialog.show(
+                    context,
+                    clubId: widget.clubId,
+                    clubName: widget.clubName,
+                  );
+                  if (sessionId != null && context.mounted) {
+                    ref.read(clubSessionsViewModelProvider(widget.clubId).notifier).loadSessions();
+                  }
+                },
+                icon: const Icon(Icons.add_rounded, size: 18),
+                label: const Text('Tạo buổi chơi đầu tiên'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
+                  backgroundColor: colors.primary,
                   foregroundColor: AppColors.white,
                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  shape: RoundedRectangleBorder(borderRadius: AppRadius.button),
                 ),
               ),
             ],
@@ -820,11 +822,11 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.schedule_rounded, size: 12, color: AppColors.warning),
+            Icon(Icons.schedule_rounded, size: 12, color: colors.warning),
             const SizedBox(width: 4),
             Text(
               'Hàng đợi #$queueOrder',
-              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.warning),
+              style: AppTypography.labelSmall.bold.colored(colors.warning),
             ),
           ],
         ),
@@ -834,17 +836,18 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
-        color: AppColors.primary.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(6),
+        color: colors.primary.withValues(alpha: 0.15),
+        borderRadius: AppRadius.tag,
+        border: Border.all(color: colors.primary.withValues(alpha: 0.3)),
       ),
-      child: const Row(
+      child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.check_circle_rounded, size: 12, color: AppColors.primary),
-          SizedBox(width: 4),
+          Icon(Icons.check_circle_rounded, size: 12, color: colors.primary),
+          const SizedBox(width: 4),
           Text(
             'Đã giữ chỗ',
-            style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.primary),
+            style: AppTypography.labelSmall.bold.colored(colors.primary),
           ),
         ],
       ),
@@ -870,7 +873,7 @@ class _SessionCard extends StatelessWidget {
       elevation: 0.8,
       margin: EdgeInsets.zero,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: AppRadius.card,
         side: BorderSide(
           color: session.isBookedByCurrentUser ? colors.primary : colors.cardBorder,
           width: session.isBookedByCurrentUser ? 1.5 : 1,
@@ -878,7 +881,7 @@ class _SessionCard extends StatelessWidget {
       ),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: AppRadius.card,
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -890,7 +893,7 @@ class _SessionCard extends StatelessWidget {
                   _buildStatusBadge(session.status, colors),
                   const Spacer(),
                   if (session.isBookedByCurrentUser)
-                    _buildUserTicketBadge(session.currentUserBookingStatus, session.currentUserQueueOrder),
+                    _buildUserTicketBadge(session.currentUserBookingStatus, session.currentUserQueueOrder, colors),
                 ],
               ),
               const SizedBox(height: 10),
@@ -898,7 +901,7 @@ class _SessionCard extends StatelessWidget {
               // Title
               Text(
                 session.title,
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: colors.textPrimary),
+                style: AppTypography.titleMedium.bold.colored(colors.textPrimary),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -912,7 +915,7 @@ class _SessionCard extends StatelessWidget {
                   Expanded(
                     child: Text(
                       session.courtLocation,
-                      style: TextStyle(fontSize: 13, color: colors.textSecondary),
+                      style: AppTypography.bodySmall.colored(colors.textSecondary),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -928,7 +931,7 @@ class _SessionCard extends StatelessWidget {
                   const SizedBox(width: 4),
                   Text(
                     timeStr,
-                    style: TextStyle(fontSize: 13, color: colors.textPrimary, fontWeight: FontWeight.w500),
+                    style: AppTypography.bodySmall.medium.colored(colors.textPrimary),
                   ),
                 ],
               ),
@@ -953,23 +956,21 @@ class _SessionCard extends StatelessWidget {
                   const SizedBox(width: 10),
                   Text(
                     '${session.confirmedCount}/${session.maxPlayers} slot',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: isFull ? colors.warning : colors.primary,
+                    style: AppTypography.labelMedium.bold.colored(
+                      isFull ? colors.warning : colors.primary,
                     ),
                   ),
                   if (session.waitingCount > 0) ...[
                     const SizedBox(width: 6),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: const BoxDecoration(
-                        color: AppColors.accentLight,
+                      decoration: BoxDecoration(
+                        color: colors.warning.withValues(alpha: 0.15),
                         borderRadius: AppRadius.borderXs,
                       ),
                       child: Text(
                         '${session.waitingCount} chờ',
-                        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.accentDark),
+                        style: AppTypography.labelSmall.semiBold.colored(colors.warning),
                       ),
                     ),
                   ],
@@ -987,16 +988,16 @@ class _SessionCard extends StatelessWidget {
     Color fg;
     switch (status) {
       case SessionStatus.open:
-        bg = AppColors.successLight;
-        fg = AppColors.roleMember;
+        bg = colors.success.withValues(alpha: 0.15);
+        fg = colors.success;
         break;
       case SessionStatus.locked:
-        bg = AppColors.warningLight;
-        fg = AppColors.roleTreasurer;
+        bg = colors.warning.withValues(alpha: 0.15);
+        fg = colors.warning;
         break;
       case SessionStatus.playing:
-        bg = AppColors.infoLight;
-        fg = AppColors.indigo;
+        bg = colors.info.withValues(alpha: 0.15);
+        fg = colors.info;
         break;
       default:
         bg = colors.surfaceSubtle;
@@ -1005,30 +1006,30 @@ class _SessionCard extends StatelessWidget {
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(6)),
+      decoration: BoxDecoration(color: bg, borderRadius: AppRadius.tag),
       child: Text(
         status.displayName,
-        style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: fg),
+        style: AppTypography.labelSmall.bold.colored(fg),
       ),
     );
   }
 
-  Widget _buildUserTicketBadge(BookingStatus? status, int queueOrder) {
+  Widget _buildUserTicketBadge(BookingStatus? status, int queueOrder, AppThemeColors colors) {
     if (status == BookingStatus.waiting) {
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
         decoration: BoxDecoration(
-          color: AppColors.warning.withValues(alpha: 0.12),
+          color: colors.warning.withValues(alpha: 0.15),
           borderRadius: AppRadius.tag,
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.schedule_rounded, size: 12, color: AppColors.warning),
+            Icon(Icons.schedule_rounded, size: 12, color: colors.warning),
             const SizedBox(width: 4),
             Text(
               'Hàng đợi #$queueOrder',
-              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.warning),
+              style: AppTypography.labelSmall.bold.colored(colors.warning),
             ),
           ],
         ),
@@ -1038,17 +1039,18 @@ class _SessionCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
-        color: AppColors.primary.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(6),
+        color: colors.primary.withValues(alpha: 0.15),
+        borderRadius: AppRadius.tag,
+        border: Border.all(color: colors.primary.withValues(alpha: 0.3)),
       ),
-      child: const Row(
+      child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.check_circle_rounded, size: 12, color: AppColors.primary),
-          SizedBox(width: 4),
+          Icon(Icons.check_circle_rounded, size: 12, color: colors.primary),
+          const SizedBox(width: 4),
           Text(
             'Đã giữ chỗ',
-            style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.primary),
+            style: AppTypography.labelSmall.bold.colored(colors.primary),
           ),
         ],
       ),

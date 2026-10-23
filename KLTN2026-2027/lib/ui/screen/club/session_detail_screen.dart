@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:kltn2026_2027/app/provider/localization_provider.dart';
 import 'package:kltn2026_2027/app/theme/theme.dart';
 import '../../../app/provider.dart';
+import '../../../domain/enums/club_role.dart';
 import '../../../domain/entities/session/guest_recruitment.dart';
 import '../../../domain/entities/session/session.dart';
 import '../../../domain/entities/session/session_booking.dart';
@@ -412,6 +413,15 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
     final confirmedCount = detail.confirmedPlayers.length;
     final waitingCount = detail.waitingQueue.length;
 
+    // RBAC: Check management rights in session's club context
+    final activeContext = ref.watch(activeClubContextProvider);
+    final isSameClub = activeContext?.clubId == session.groupId;
+    final isHost = isSameClub && activeContext?.role == ClubRole.host;
+    final canManageSession = isHost || (isSameClub && ref.hasClubPermission('OPERATIONS.SESSION.UPDATE'));
+    final canDeleteSession = isHost || (isSameClub && ref.hasClubPermission('OPERATIONS.SESSION.DELETE'));
+    final canRecruit = isHost || (isSameClub && (ref.hasClubPermission('OPERATIONS.RECRUIT.MANAGE') || ref.hasClubPermission('OPERATIONS.SESSION.UPDATE')));
+    final hasAnySessionManagePerm = canManageSession || canDeleteSession || canRecruit;
+
     return Scaffold(
       backgroundColor: colors.background,
       appBar: AppBar(
@@ -431,126 +441,132 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
             onPressed: vm.loadDetail,
             tooltip: context.l10n.com_refresh,
           ),
-          PopupMenuButton<String>(
-            icon: const Icon(Icons.more_vert_rounded),
-            color: colors.cardBackground,
-            onSelected: (val) async {
-              if (val == 'recruit') {
-                _showRecruitmentModal(context, session);
-              } else if (val == 'lock') {
-                await vm.updateStatus('LOCKED');
-              } else if (val == 'open') {
-                await vm.updateStatus('OPEN');
-              } else if (val == 'play') {
-                await vm.updateStatus('PLAYING');
-              } else if (val == 'delete') {
-                final ok = await showDialog<bool>(
-                  context: context,
-                  builder: (ctx) => AlertDialog(
-                    backgroundColor: colors.cardBackground,
-                    shape: const RoundedRectangleBorder(borderRadius: AppRadius.dialog),
-                    title: Text(
-                      context.l10n.session_status_cancelled,
-                      style: AppTypography.titleMedium.copyWith(color: colors.textPrimary),
-                    ),
-                    content: Text(
-                      'Hành động này sẽ hủy buổi chơi vĩnh viễn và gửi thông báo tới người đã vote.',
-                      style: AppTypography.bodyMedium.copyWith(color: colors.textSecondary),
-                    ),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.of(ctx).pop(false),
-                        child: Text(context.l10n.com_cancel, style: TextStyle(color: colors.textMuted)),
+          if (hasAnySessionManagePerm)
+            PopupMenuButton<String>(
+              icon: const Icon(Icons.more_vert_rounded),
+              color: colors.cardBackground,
+              onSelected: (val) async {
+                if (val == 'recruit') {
+                  _showRecruitmentModal(context, session);
+                } else if (val == 'lock') {
+                  await vm.updateStatus('LOCKED');
+                } else if (val == 'open') {
+                  await vm.updateStatus('OPEN');
+                } else if (val == 'play') {
+                  await vm.updateStatus('PLAYING');
+                } else if (val == 'delete') {
+                  final ok = await showDialog<bool>(
+                    context: context,
+                    builder: (ctx) => AlertDialog(
+                      backgroundColor: colors.cardBackground,
+                      shape: const RoundedRectangleBorder(borderRadius: AppRadius.dialog),
+                      title: Text(
+                        context.l10n.session_status_cancelled,
+                        style: AppTypography.titleMedium.copyWith(color: colors.textPrimary),
                       ),
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: colors.error,
-                          foregroundColor: AppColors.white,
-                          shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                      content: Text(
+                        'Hành động này sẽ hủy buổi chơi vĩnh viễn và gửi thông báo tới người đã vote.',
+                        style: AppTypography.bodyMedium.copyWith(color: colors.textSecondary),
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.of(ctx).pop(false),
+                          child: Text(context.l10n.com_cancel, style: TextStyle(color: colors.textMuted)),
                         ),
-                        onPressed: () => Navigator.of(ctx).pop(true),
-                        child: Text(context.l10n.com_delete),
-                      ),
-                    ],
-                  ),
-                );
-                if (ok == true && mounted) {
-                  await vm.deleteSession();
-                  if (context.mounted) Navigator.of(context).pop();
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: colors.error,
+                            foregroundColor: AppColors.white,
+                            shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                          ),
+                          onPressed: () => Navigator.of(ctx).pop(true),
+                          child: Text(context.l10n.com_delete),
+                        ),
+                      ],
+                    ),
+                  );
+                  if (ok == true && mounted) {
+                    await vm.deleteSession();
+                    if (context.mounted) Navigator.of(context).pop();
+                  }
                 }
-              }
-            },
-            itemBuilder: (ctx) => [
-              PopupMenuItem(
-                value: 'recruit',
-                child: Row(
-                  children: [
-                    const Icon(Icons.radar_rounded, color: AppColors.roleViolet, size: 18),
-                    AppSpacing.gapW8,
-                    Text(
-                      context.l10n.explore_tab_recruitments,
-                      style: AppTypography.bodyMedium.copyWith(color: colors.textPrimary),
+              },
+              itemBuilder: (ctx) => [
+                if (canRecruit)
+                  PopupMenuItem(
+                    value: 'recruit',
+                    child: Row(
+                      children: [
+                        const Icon(Icons.radar_rounded, color: AppColors.roleViolet, size: 18),
+                        AppSpacing.gapW8,
+                        Text(
+                          context.l10n.explore_tab_recruitments,
+                          style: AppTypography.bodyMedium.copyWith(color: colors.textPrimary),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              ),
-              if (session.status == SessionStatus.open)
-                PopupMenuItem(
-                  value: 'lock',
-                  child: Row(
-                    children: [
-                      const Icon(Icons.lock_outline, size: 18),
-                      AppSpacing.gapW8,
-                      Text(
-                        'Khóa sổ biểu quyết',
-                        style: AppTypography.bodyMedium.copyWith(color: colors.textPrimary),
-                      ),
-                    ],
                   ),
-                )
-              else
-                PopupMenuItem(
-                  value: 'open',
-                  child: Row(
-                    children: [
-                      const Icon(Icons.lock_open, size: 18),
-                      AppSpacing.gapW8,
-                      Text(
-                        'Mở lại biểu quyết',
-                        style: AppTypography.bodyMedium.copyWith(color: colors.textPrimary),
+                if (canManageSession) ...[
+                  if (session.status == SessionStatus.open)
+                    PopupMenuItem(
+                      value: 'lock',
+                      child: Row(
+                        children: [
+                          const Icon(Icons.lock_outline, size: 18),
+                          AppSpacing.gapW8,
+                          Text(
+                            'Khóa sổ biểu quyết',
+                            style: AppTypography.bodyMedium.copyWith(color: colors.textPrimary),
+                          ),
+                        ],
                       ),
-                    ],
+                    )
+                  else
+                    PopupMenuItem(
+                      value: 'open',
+                      child: Row(
+                        children: [
+                          const Icon(Icons.lock_open, size: 18),
+                          AppSpacing.gapW8,
+                          Text(
+                            'Mở lại biểu quyết',
+                            style: AppTypography.bodyMedium.copyWith(color: colors.textPrimary),
+                          ),
+                        ],
+                      ),
+                    ),
+                  PopupMenuItem(
+                    value: 'play',
+                    child: Row(
+                      children: [
+                        const Icon(Icons.sports_tennis, size: 18),
+                        AppSpacing.gapW8,
+                        Text(
+                          'Bắt đầu thi đấu',
+                          style: AppTypography.bodyMedium.copyWith(color: colors.textPrimary),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              PopupMenuItem(
-                value: 'play',
-                child: Row(
-                  children: [
-                    const Icon(Icons.sports_tennis, size: 18),
-                    AppSpacing.gapW8,
-                    Text(
-                      'Bắt đầu thi đấu',
-                      style: AppTypography.bodyMedium.copyWith(color: colors.textPrimary),
+                ],
+                if (canDeleteSession) ...[
+                  const PopupMenuDivider(),
+                  PopupMenuItem(
+                    value: 'delete',
+                    child: Row(
+                      children: [
+                        Icon(Icons.delete_outline, color: colors.error, size: 18),
+                        AppSpacing.gapW8,
+                        Text(
+                          context.l10n.com_delete,
+                          style: AppTypography.bodyMedium.copyWith(color: colors.error),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              ),
-              const PopupMenuDivider(),
-              PopupMenuItem(
-                value: 'delete',
-                child: Row(
-                  children: [
-                    Icon(Icons.delete_outline, color: colors.error, size: 18),
-                    AppSpacing.gapW8,
-                    Text(
-                      context.l10n.com_delete,
-                      style: AppTypography.bodyMedium.copyWith(color: colors.error),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
+                  ),
+                ],
+              ],
+            ),
         ],
       ),
       bottomNavigationBar: _buildBottomActionBar(context, session, state.isSubmitting),

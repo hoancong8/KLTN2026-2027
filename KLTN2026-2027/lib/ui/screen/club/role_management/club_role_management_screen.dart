@@ -2,6 +2,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import '../../../../app/provider.dart';
 import 'package:kltn2026_2027/app/theme/theme.dart';
 import '../../../../domain/enums/club_role.dart';
 import '../../../../widget/responsive_layout.dart';
@@ -55,8 +57,54 @@ class _ClubRoleManagementScreenState extends ConsumerState<ClubRoleManagementScr
     final vm = ref.read(clubMembersViewModelProvider.notifier);
 
     final activeContext = clubContext.activeContext;
-    final isHost = activeContext?.role == ClubRole.host ||
-        (activeContext?.role.displayName.toLowerCase().contains('host') ?? false);
+    final isSameClub = widget.clubId == null || widget.clubId!.isEmpty || activeContext?.clubId == widget.clubId;
+    final isHost = isSameClub && activeContext?.role == ClubRole.host;
+    final canManageRoles = isHost || (isSameClub && ref.hasClubPermission('MEMBER.ROLE.MANAGE'));
+
+    if (!canManageRoles) {
+      return Scaffold(
+        backgroundColor: colors.background,
+        appBar: AppBar(
+          title: const Text('Vai trò & Phân quyền', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17)),
+          backgroundColor: colors.surface,
+          foregroundColor: colors.textPrimary,
+          elevation: 0.5,
+        ),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.lock_person_rounded, size: 54, color: colors.error),
+                const SizedBox(height: 16),
+                Text(
+                  'Không Có Quyền Truy Cập',
+                  style: AppTypography.titleMedium.bold.colored(colors.textPrimary),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Bạn không có quyền quản lý vai trò và phân quyền trong câu lạc bộ này.',
+                  style: AppTypography.bodySmall.colored(colors.textMuted),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 20),
+                ElevatedButton.icon(
+                  onPressed: () => context.pop(),
+                  icon: const Icon(Icons.arrow_back_rounded, size: 18),
+                  label: const Text('Quay lại'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: colors.primary,
+                    foregroundColor: AppColors.white,
+                    shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
 
     if (membersState.isLoadingRoles && membersState.roles.isEmpty) {
       return Scaffold(
