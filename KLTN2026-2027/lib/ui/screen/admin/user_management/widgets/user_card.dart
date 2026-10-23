@@ -257,11 +257,11 @@ class UserCard extends ConsumerWidget {
                         ),
                       ),
                     if (canResetPassword)
-                      const PopupMenuItem(
+                      PopupMenuItem(
                         value: 'reset_password',
                         child: Row(
                           children: [
-                            Icon(Icons.key_rounded, size: 18, color: AppColor.cMain),
+                            Icon(Icons.key_rounded, size: 18, color: colors.primary),
                             SizedBox(width: 10),
                             Text('Đặt lại mật khẩu', style: TextStyle(fontSize: 13)),
                           ],

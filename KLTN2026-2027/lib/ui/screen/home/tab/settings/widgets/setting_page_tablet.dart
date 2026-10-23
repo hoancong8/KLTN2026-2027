@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kltn2026_2027/app/consts/app_color.dart';
 import 'package:kltn2026_2027/app/theme/theme.dart';
 import 'package:kltn2026_2027/widget/biometric_settings/biometric_settings_item.dart';
 import '../../../../../../app/provider/localization_provider.dart';
@@ -52,7 +51,7 @@ class _SettingsPageTabletState extends ConsumerState<SettingsPageTablet> {
           },
         ),
 
-        VerticalDivider(width: 1, color: AppColor.cDivider),
+        VerticalDivider(width: 1, color: context.colors.divider),
 
         // ── RIGHT: Detail panel ────────────────────────────────
         Expanded(child: _buildDetailPanel(context, sections, state.isLoading)),
@@ -124,9 +123,9 @@ class _SettingsSidebar extends StatelessWidget {
           final item = items[index];
 
           if (item.isDivider) {
-            return const Padding(
-              padding: EdgeInsets.symmetric(vertical: 8),
-              child: Divider(height: 1, color: AppColor.cDivider),
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Divider(height: 1, color: context.colors.divider),
             );
           }
 
@@ -148,14 +147,14 @@ class _SettingsSidebar extends StatelessWidget {
                   color: isSelected
                       ? (item.isDestructive
                           ? AppColors.error.withAlpha(25)
-                          : AppColor.cMain.withAlpha(25))
+                          : context.colors.primary.withAlpha(25))
                       : AppColors.transparent,
                   borderRadius: BorderRadius.circular(10),
                   border: isSelected
                       ? Border.all(
                           color: item.isDestructive
                               ? AppColors.error.withAlpha(70)
-                              : AppColor.cMain.withAlpha(70),
+                              : context.colors.primary.withAlpha(70),
                         )
                       : null,
                 ),
@@ -167,8 +166,8 @@ class _SettingsSidebar extends StatelessWidget {
                       color: item.isDestructive
                           ? AppColors.error
                           : isSelected
-                              ? AppColor.cMain
-                              : AppColor.cMuted,
+                              ? context.colors.primary
+                              : context.colors.textMuted,
                     ),
                     const SizedBox(width: 12),
                     Expanded(
@@ -181,8 +180,8 @@ class _SettingsSidebar extends StatelessWidget {
                           color: item.isDestructive
                               ? AppColors.error
                               : isSelected
-                                  ? AppColor.cMain
-                                  : AppColor.cTitle,
+                                  ? context.colors.primary
+                                  : context.colors.textPrimary,
                         ),
                       ),
                     ),
@@ -190,7 +189,7 @@ class _SettingsSidebar extends StatelessWidget {
                       Icon(
                         Icons.chevron_right,
                         size: 16,
-                        color: item.isDestructive ? AppColors.error : AppColor.cMain,
+                        color: item.isDestructive ? AppColors.error : context.colors.primary,
                       ),
                   ],
                 ),

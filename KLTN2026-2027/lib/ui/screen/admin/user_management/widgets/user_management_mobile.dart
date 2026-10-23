@@ -33,6 +33,7 @@ class _UserManagementMobileState extends ConsumerState<UserManagementMobile> {
   }
 
   void _showCreateUserDialog(BuildContext context, UserManagementState state) {
+    final colors = context.colors;
     showDialog(
       context: context,
       builder: (ctx) => UserFormDialog(
@@ -52,9 +53,9 @@ class _UserManagementMobileState extends ConsumerState<UserManagementMobile> {
               );
           if (success) {
             messenger.showSnackBar(
-              const SnackBar(
+              SnackBar(
                 content: Text('Tạo tài khoản thành công'),
-                backgroundColor: AppColor.cMain,
+                backgroundColor: colors.primary,
               ),
             );
           }
@@ -64,6 +65,7 @@ class _UserManagementMobileState extends ConsumerState<UserManagementMobile> {
   }
 
   void _showEditUserDialog(BuildContext context, UserProfile user, UserManagementState state) {
+    final colors = context.colors;
     showDialog(
       context: context,
       builder: (ctx) => UserFormDialog(
@@ -86,9 +88,9 @@ class _UserManagementMobileState extends ConsumerState<UserManagementMobile> {
               );
           if (success) {
             messenger.showSnackBar(
-              const SnackBar(
+              SnackBar(
                 content: Text('Cập nhật tài khoản thành công'),
-                backgroundColor: AppColor.cMain,
+                backgroundColor: colors.primary,
               ),
             );
           }
@@ -98,23 +100,24 @@ class _UserManagementMobileState extends ConsumerState<UserManagementMobile> {
   }
 
   void _showDeleteConfirmDialog(BuildContext context, UserProfile user) {
+    final colors = context.colors;
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        backgroundColor: AppColor.white,
-        title: const Text(
+        backgroundColor: colors.surface,
+        title: Text(
           'Xác nhận xóa tài khoản',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColor.cTitle),
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: colors.textPrimary),
         ),
         content: Text(
           'Bạn có chắc chắn muốn xóa tài khoản "${user.userName.isNotEmpty ? user.userName : user.email}"? Hành động này không thể hoàn tác.',
-          style: const TextStyle(fontSize: 13.5, color: AppColor.cMuted),
+          style: TextStyle(fontSize: 13.5, color: colors.textMuted),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Hủy', style: TextStyle(color: AppColor.cMuted)),
+            child: Text('Hủy', style: TextStyle(color: colors.textMuted)),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -125,16 +128,16 @@ class _UserManagementMobileState extends ConsumerState<UserManagementMobile> {
                   .deleteUser(user.id);
               if (success) {
                 messenger.showSnackBar(
-                  const SnackBar(
+                  SnackBar(
                     content: Text('Đã xóa tài khoản thành công'),
-                    backgroundColor: AppColor.cMain,
+                    backgroundColor: colors.primary,
                   ),
                 );
               }
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.error,
-              foregroundColor: AppColor.white,
+              foregroundColor: AppColors.white,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             ),
             child: const Text('Xóa'),
@@ -145,6 +148,7 @@ class _UserManagementMobileState extends ConsumerState<UserManagementMobile> {
   }
 
   void _showResetPasswordDialog(BuildContext context, UserProfile user) {
+    final colors = context.colors;
     showDialog(
       context: context,
       builder: (ctx) => UserResetPasswordDialog(
@@ -156,9 +160,9 @@ class _UserManagementMobileState extends ConsumerState<UserManagementMobile> {
               .resetPassword(user.id, newPassword);
           if (success) {
             messenger.showSnackBar(
-              const SnackBar(
+              SnackBar(
                 content: Text('Đặt lại mật khẩu thành công'),
-                backgroundColor: AppColor.cMain,
+                backgroundColor: colors.primary,
               ),
             );
           }
@@ -177,22 +181,22 @@ class _UserManagementMobileState extends ConsumerState<UserManagementMobile> {
     return Scaffold(
       backgroundColor: colors.background,
       appBar: AppBar(
-        backgroundColor: AppColor.white,
+        backgroundColor: colors.surface,
         elevation: 0,
         scrolledUnderElevation: 0,
         titleSpacing: 0,
         leading: Navigator.of(context).canPop()
             ? IconButton(
-                icon: const Icon(Icons.arrow_back_rounded, color: AppColor.cTitle),
+                icon: Icon(Icons.arrow_back_rounded, color: colors.textPrimary),
                 onPressed: () => Navigator.of(context).pop(),
               )
             : null,
-        title: const Text(
+        title: Text(
           'Quản lý nhân viên',
           style: TextStyle(
             fontSize: 17,
             fontWeight: FontWeight.w700,
-            color: AppColor.cTitle,
+            color: colors.textPrimary,
           ),
         ),
         actions: [
@@ -205,8 +209,8 @@ class _UserManagementMobileState extends ConsumerState<UserManagementMobile> {
                 icon: const Icon(Icons.add_rounded, size: 16),
                 label: const Text('Thêm', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColor.cMain,
-                  foregroundColor: AppColor.white,
+                  backgroundColor: colors.primary,
+                  foregroundColor: AppColors.white,
                   elevation: 0,
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                   minimumSize: Size.zero,
@@ -222,7 +226,7 @@ class _UserManagementMobileState extends ConsumerState<UserManagementMobile> {
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(104),
           child: Container(
-            color: AppColor.white,
+            color: colors.surface,
             padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
             child: Column(
               children: [
@@ -232,11 +236,11 @@ class _UserManagementMobileState extends ConsumerState<UserManagementMobile> {
                   onChanged: (val) => vm.setSearchQuery(val),
                   decoration: InputDecoration(
                     hintText: 'Tìm nhân viên...',
-                    hintStyle: const TextStyle(fontSize: 13, color: AppColor.cMuted),
-                    prefixIcon: const Icon(Icons.search_rounded, size: 18, color: AppColor.cMuted),
+                    hintStyle: TextStyle(fontSize: 13, color: colors.textMuted),
+                    prefixIcon: Icon(Icons.search_rounded, size: 18, color: colors.textMuted),
                     suffixIcon: _searchController.text.isNotEmpty
                         ? IconButton(
-                            icon: const Icon(Icons.clear_rounded, size: 16, color: AppColor.cMuted),
+                            icon: Icon(Icons.clear_rounded, size: 16, color: colors.textMuted),
                             onPressed: () {
                               _searchController.clear();
                               vm.setSearchQuery('');
@@ -266,17 +270,17 @@ class _UserManagementMobileState extends ConsumerState<UserManagementMobile> {
                           label: Text(_filterTabs[idx]),
                           selected: isSelected,
                           onSelected: (_) => vm.setFilter(idx),
-                          selectedColor: AppColor.cMain,
+                          selectedColor: colors.primary,
                           backgroundColor: colors.surfaceSubtle,
                           labelStyle: TextStyle(
                             fontSize: 12,
                             fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                            color: isSelected ? AppColor.white : colors.textMuted,
+                            color: isSelected ? AppColors.white : colors.textMuted,
                           ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16),
                             side: BorderSide(
-                              color: isSelected ? AppColor.cMain : AppColors.transparent,
+                              color: isSelected ? colors.primary : AppColors.transparent,
                             ),
                           ),
                           showCheckmark: false,
@@ -293,9 +297,9 @@ class _UserManagementMobileState extends ConsumerState<UserManagementMobile> {
       ),
       body: RefreshIndicator(
         onRefresh: () => vm.loadUsers(),
-        color: AppColor.cMain,
+        color: colors.primary,
         child: state.isLoading && state.users.isEmpty
-            ? const Center(child: CircularProgressIndicator(color: AppColor.cMain))
+            ? Center(child: CircularProgressIndicator(color: colors.primary))
             : state.errorMessage != null && state.users.isEmpty
                 ? ListView(
                     children: [
@@ -323,8 +327,8 @@ class _UserManagementMobileState extends ConsumerState<UserManagementMobile> {
                                 icon: const Icon(Icons.refresh_rounded, size: 16),
                                 label: const Text('Thử lại'),
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppColor.cMain,
-                                  foregroundColor: AppColor.white,
+                                  backgroundColor: colors.primary,
+                                  foregroundColor: AppColors.white,
                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                                 ),
                               ),
@@ -344,18 +348,18 @@ class _UserManagementMobileState extends ConsumerState<UserManagementMobile> {
                               children: [
                                 Icon(Icons.people_outline_rounded, size: 52, color: AppColors.neutral300),
                                 const SizedBox(height: 12),
-                                const Text(
+                                Text(
                                   'Không tìm thấy nhân viên nào',
                                   style: TextStyle(
                                     fontSize: 15,
                                     fontWeight: FontWeight.w700,
-                                    color: AppColor.cTitle,
+                                    color: colors.textPrimary,
                                   ),
                                 ),
                                 const SizedBox(height: 4),
-                                const Text(
+                                Text(
                                   'Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm',
-                                  style: TextStyle(fontSize: 12.5, color: AppColor.cMuted),
+                                  style: TextStyle(fontSize: 12.5, color: colors.textMuted),
                                 ),
                               ],
                             ),

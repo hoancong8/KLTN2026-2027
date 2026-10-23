@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:kltn2026_2027/app/consts/app_color.dart';
+import '../../../../../../app/theme/theme.dart';
 import 'package:kltn2026_2027/domain/entities/app_role.dart';
 import 'package:kltn2026_2027/domain/entities/user_profile.dart';
 
@@ -68,11 +68,12 @@ class _UserFormDialogState extends State<UserFormDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     final isEditing = widget.user != null;
 
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      backgroundColor: AppColor.white,
+      backgroundColor: colors.surface,
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 500),
         child: Padding(
@@ -90,15 +91,15 @@ class _UserFormDialogState extends State<UserFormDialog> {
                     children: [
                       Text(
                         isEditing ? 'Chỉnh sửa tài khoản' : 'Thêm tài khoản mới',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w700,
-                          color: AppColor.cTitle,
+                          color: colors.textPrimary,
                         ),
                       ),
                       IconButton(
                         onPressed: () => Navigator.of(context).pop(),
-                        icon: const Icon(Icons.close_rounded, size: 20, color: AppColor.cMuted),
+                        icon: Icon(Icons.close_rounded, size: 20, color: colors.textMuted),
                         padding: EdgeInsets.zero,
                         constraints: const BoxConstraints(),
                       ),
@@ -107,29 +108,29 @@ class _UserFormDialogState extends State<UserFormDialog> {
                   const SizedBox(height: 20),
 
                   // Email Input
-                  const Text(
+                  Text(
                     'Email / Tên tài khoản *',
-                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColor.cTitle),
+                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: colors.textPrimary),
                   ),
                   const SizedBox(height: 6),
                   TextFormField(
                     controller: _emailController,
                     decoration: InputDecoration(
                       hintText: 'Nhập email hoặc tên tài khoản',
-                      hintStyle: const TextStyle(fontSize: 13, color: AppColor.cMuted),
-                      prefixIcon: const Icon(Icons.email_outlined, size: 18, color: AppColor.cMuted),
+                      hintStyle: TextStyle(fontSize: 13, color: colors.textMuted),
+                      prefixIcon: Icon(Icons.email_outlined, size: 18, color: colors.textMuted),
                       contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: AppColor.cDivider),
+                        borderSide: BorderSide(color: colors.cardBorder),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: AppColor.cDivider),
+                        borderSide: BorderSide(color: colors.cardBorder),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: AppColor.cMain, width: 1.5),
+                        borderSide: BorderSide(color: colors.primary, width: 1.5),
                       ),
                     ),
                     validator: (v) {
@@ -140,29 +141,29 @@ class _UserFormDialogState extends State<UserFormDialog> {
                   const SizedBox(height: 16),
 
                   // Họ tên / Username
-                  const Text(
+                  Text(
                     'Họ và tên *',
-                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColor.cTitle),
+                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: colors.textPrimary),
                   ),
                   const SizedBox(height: 6),
                   TextFormField(
                     controller: _userNameController,
                     decoration: InputDecoration(
                       hintText: 'Nhập họ và tên hiển thị',
-                      hintStyle: const TextStyle(fontSize: 13, color: AppColor.cMuted),
-                      prefixIcon: const Icon(Icons.person_outline_rounded, size: 18, color: AppColor.cMuted),
+                      hintStyle: TextStyle(fontSize: 13, color: colors.textMuted),
+                      prefixIcon: Icon(Icons.person_outline_rounded, size: 18, color: colors.textMuted),
                       contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: AppColor.cDivider),
+                        borderSide: BorderSide(color: colors.cardBorder),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: AppColor.cDivider),
+                        borderSide: BorderSide(color: colors.cardBorder),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: AppColor.cMain, width: 1.5),
+                        borderSide: BorderSide(color: colors.primary, width: 1.5),
                       ),
                     ),
                     validator: (v) {
@@ -173,9 +174,9 @@ class _UserFormDialogState extends State<UserFormDialog> {
                   const SizedBox(height: 16),
 
                   // Số điện thoại
-                  const Text(
+                  Text(
                     'Số điện thoại',
-                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColor.cTitle),
+                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: colors.textPrimary),
                   ),
                   const SizedBox(height: 6),
                   TextFormField(
@@ -183,20 +184,20 @@ class _UserFormDialogState extends State<UserFormDialog> {
                     keyboardType: TextInputType.phone,
                     decoration: InputDecoration(
                       hintText: 'Nhập số điện thoại (tùy chọn)',
-                      hintStyle: const TextStyle(fontSize: 13, color: AppColor.cMuted),
-                      prefixIcon: const Icon(Icons.phone_outlined, size: 18, color: AppColor.cMuted),
+                      hintStyle: TextStyle(fontSize: 13, color: colors.textMuted),
+                      prefixIcon: Icon(Icons.phone_outlined, size: 18, color: colors.textMuted),
                       contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: AppColor.cDivider),
+                        borderSide: BorderSide(color: colors.cardBorder),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: AppColor.cDivider),
+                        borderSide: BorderSide(color: colors.cardBorder),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: AppColor.cMain, width: 1.5),
+                        borderSide: BorderSide(color: colors.primary, width: 1.5),
                       ),
                     ),
                   ),
@@ -204,9 +205,9 @@ class _UserFormDialogState extends State<UserFormDialog> {
 
                   // Mật khẩu (chỉ bắt buộc khi tạo mới)
                   if (!isEditing) ...[
-                    const Text(
+                    Text(
                       'Mật khẩu khởi tạo *',
-                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColor.cTitle),
+                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: colors.textPrimary),
                     ),
                     const SizedBox(height: 6),
                     TextFormField(
@@ -214,28 +215,28 @@ class _UserFormDialogState extends State<UserFormDialog> {
                       obscureText: _obscurePassword,
                       decoration: InputDecoration(
                         hintText: 'Nhập mật khẩu tài khoản',
-                        hintStyle: const TextStyle(fontSize: 13, color: AppColor.cMuted),
-                        prefixIcon: const Icon(Icons.lock_outline_rounded, size: 18, color: AppColor.cMuted),
+                        hintStyle: TextStyle(fontSize: 13, color: colors.textMuted),
+                        prefixIcon: Icon(Icons.lock_outline_rounded, size: 18, color: colors.textMuted),
                         suffixIcon: IconButton(
                           icon: Icon(
                             _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
                             size: 18,
-                            color: AppColor.cMuted,
+                            color: colors.textMuted,
                           ),
                           onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                         ),
                         contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: AppColor.cDivider),
+                          borderSide: BorderSide(color: colors.cardBorder),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: AppColor.cDivider),
+                          borderSide: BorderSide(color: colors.cardBorder),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: AppColor.cMain, width: 1.5),
+                          borderSide: BorderSide(color: colors.primary, width: 1.5),
                         ),
                       ),
                       validator: (v) {
@@ -249,9 +250,9 @@ class _UserFormDialogState extends State<UserFormDialog> {
                   ],
 
                   // Chọn Vai trò (Roles)
-                  const Text(
+                  Text(
                     'Vai trò / Quyền hạn',
-                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColor.cTitle),
+                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: colors.textPrimary),
                   ),
                   const SizedBox(height: 8),
                   Wrap(
@@ -274,16 +275,16 @@ class _UserFormDialogState extends State<UserFormDialog> {
                             }
                           });
                         },
-                        selectedColor: AppColor.cMain.withAlpha(40),
-                        checkmarkColor: AppColor.cMain,
+                        selectedColor: colors.primary.withAlpha(40),
+                        checkmarkColor: colors.primary,
                         labelStyle: TextStyle(
                           fontSize: 12,
                           fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                          color: isSelected ? AppColor.cMain : AppColor.cTitle,
+                          color: isSelected ? colors.primary : colors.textPrimary,
                         ),
-                        backgroundColor: AppColor.cChip,
+                        backgroundColor: colors.surfaceSubtle,
                         side: BorderSide(
-                          color: isSelected ? AppColor.cMain : AppColor.cDivider,
+                          color: isSelected ? colors.primary : colors.cardBorder,
                         ),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                       );
@@ -297,14 +298,14 @@ class _UserFormDialogState extends State<UserFormDialog> {
                     children: [
                       TextButton(
                         onPressed: () => Navigator.of(context).pop(),
-                        child: const Text('Hủy', style: TextStyle(color: AppColor.cMuted)),
+                        child: Text('Hủy', style: TextStyle(color: colors.textMuted)),
                       ),
                       const SizedBox(width: 10),
                       ElevatedButton(
                         onPressed: _handleSubmit,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColor.cMain,
-                          foregroundColor: AppColor.white,
+                          backgroundColor: colors.primary,
+                          foregroundColor: AppColors.white,
                           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                         ),

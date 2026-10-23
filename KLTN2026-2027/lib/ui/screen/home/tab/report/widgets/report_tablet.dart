@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:kltn2026_2027/app/consts/app_color.dart';
 import 'package:kltn2026_2027/app/theme/theme.dart';
 import 'package:kltn2026_2027/app/provider/localization_provider.dart';
 import 'package:kltn2026_2027/ui/screen/home/tab/report/report_vm/report_state.dart';
@@ -15,13 +14,14 @@ class ReportTablet extends StatefulWidget {
 }
 
 class _ReportTabletState extends State<ReportTablet> {
+  AppThemeColors get colors => context.colors;
   int _selectedIndex = 0;
 
   @override
   Widget build(BuildContext context) {
     if (widget.state.isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(color: AppColor.cMain),
+      return Center(
+        child: CircularProgressIndicator(color: colors.primary),
       );
     }
 
@@ -30,15 +30,15 @@ class _ReportTabletState extends State<ReportTablet> {
     }
 
     return Scaffold(
-      backgroundColor: AppColor.cBgr,
+      backgroundColor: colors.background,
       body: Row(
         children: [
           // 2. Sub-menu (Danh sách các loại báo cáo)
           Container(
             width: 280,
-            decoration: const BoxDecoration(
-              color: AppColor.white,
-              border: Border(right: BorderSide(color: AppColor.cDivider)),
+            decoration: BoxDecoration(
+              color: colors.cardBackground,
+              border: Border(right: BorderSide(color: colors.cardBorder)),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -99,10 +99,10 @@ class _ReportTabletState extends State<ReportTablet> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: AppColor.cMain.withValues(alpha: 0.1),
+                  color: colors.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Icon(Icons.bar_chart, color: AppColor.cMain, size: 20),
+                child: Icon(Icons.bar_chart, color: colors.primary, size: 20),
               ),
               const SizedBox(width: 12),
               Text(
@@ -110,7 +110,7 @@ class _ReportTabletState extends State<ReportTablet> {
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  color: AppColor.cTitle,
+                  color: colors.textPrimary,
                 ),
               ),
             ],
@@ -118,7 +118,7 @@ class _ReportTabletState extends State<ReportTablet> {
           const SizedBox(height: 8),
           Text(
             context.l10n.rep_data_analysis,
-            style: TextStyle(fontSize: 13, color: AppColor.cMuted),
+            style: TextStyle(fontSize: 13, color: colors.textMuted),
           ),
         ],
       ),
@@ -134,7 +134,7 @@ class _ReportTabletState extends State<ReportTablet> {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
           color: isActive
-              ? AppColor.cMain.withValues(alpha: 0.1)
+              ? colors.primary.withValues(alpha: 0.1)
               : AppColors.transparent,
           borderRadius: BorderRadius.circular(12),
         ),
@@ -142,14 +142,14 @@ class _ReportTabletState extends State<ReportTablet> {
           children: [
             Icon(
               icon,
-              color: isActive ? AppColor.cMain : AppColor.cMuted,
+              color: isActive ? colors.primary : colors.textMuted,
               size: 22,
             ),
             const SizedBox(width: 16),
             Text(
               title,
               style: TextStyle(
-                color: isActive ? AppColor.cMain : AppColor.cTitle,
+                color: isActive ? colors.primary : colors.textPrimary,
                 fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
                 fontSize: 15,
               ),
@@ -168,14 +168,14 @@ class _ReportTabletState extends State<ReportTablet> {
 
     return Row(
       children: [
-        Icon(Icons.dashboard_outlined, color: AppColor.cMuted, size: 20),
+        Icon(Icons.dashboard_outlined, color: colors.textMuted, size: 20),
         const SizedBox(width: 12),
         Text(
           title,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 28,
             fontWeight: FontWeight.bold,
-            color: AppColor.cBlack,
+            color: colors.textPrimary,
           ),
         ),
       ],
@@ -199,25 +199,25 @@ class _ReportTabletState extends State<ReportTablet> {
                 Icons.trending_up,
                 '0',
                 context.l10n.rep_revenue,
-                AppColor.cMain,
+                colors.primary,
               ),
               _buildStatCard(
                 Icons.receipt_long,
                 '0',
                 context.l10n.rep_orders,
-                AppColor.cBlue,
+                colors.secondary,
               ),
               _buildStatCard(
                 Icons.people_alt,
                 '0',
                 context.l10n.rep_client,
-                AppColor.cYanPrimary,
+                colors.primaryLight,
               ),
               _buildStatCard(
                 Icons.inventory_2,
                 '0',
                 context.l10n.rep_products,
-                AppColor.cMainApp,
+                colors.accent,
               ),
             ],
           ),
@@ -228,9 +228,9 @@ class _ReportTabletState extends State<ReportTablet> {
       child: Container(
         padding: const EdgeInsets.all(30),
         decoration: BoxDecoration(
-          color: AppColor.white,
+          color: colors.cardBackground,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: AppColor.cDivider),
+          border: Border.all(color: colors.cardBorder),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.max,
@@ -238,12 +238,12 @@ class _ReportTabletState extends State<ReportTablet> {
             Icon(
               Icons.hourglass_empty,
               size: 24,
-              color: AppColor.cMuted.withValues(alpha: 0.5),
+              color: colors.textMuted.withValues(alpha: 0.5),
             ),
             const SizedBox(height: 20),
             Text(
               context.l10n.com_feature_under_dev,
-              style: TextStyle(fontSize: 18, color: AppColor.cMuted),
+              style: TextStyle(fontSize: 18, color: colors.textMuted),
             ),
           ],
         ),
@@ -260,9 +260,9 @@ class _ReportTabletState extends State<ReportTablet> {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: AppColor.white,
+        color: colors.cardBackground,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColor.cDivider),
+        border: Border.all(color: colors.cardBorder),
         boxShadow: [
           BoxShadow(
             color: AppColors.black.withValues(alpha: 0.02),
@@ -288,20 +288,20 @@ class _ReportTabletState extends State<ReportTablet> {
             children: [
               Text(
                 value,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 32,
                   fontWeight: FontWeight.bold,
-                  color: AppColor.cTitle,
+                  color: colors.textPrimary,
                 ),
               ),
               Text(
                 label,
-                style: const TextStyle(fontSize: 15, color: AppColor.cMuted),
+                style: TextStyle(fontSize: 15, color: colors.textMuted),
               ),
             ],
           ),
           const Spacer(),
-          Icon(Icons.arrow_forward_ios, color: AppColor.cDivider, size: 16),
+          Icon(Icons.arrow_forward_ios, color: colors.cardBorder, size: 16),
         ],
       ),
     );
@@ -312,9 +312,9 @@ class _ReportTabletState extends State<ReportTablet> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.error_outline, color: AppColor.cError, size: 48),
+          Icon(Icons.error_outline, color: colors.error, size: 48),
           const SizedBox(height: 16),
-          Text(error, style: const TextStyle(color: AppColor.cError)),
+          Text(error, style: TextStyle(color: colors.error)),
           const SizedBox(height: 16),
           ElevatedButton(
             onPressed: () => widget.onRefresh,

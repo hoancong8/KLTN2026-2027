@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kltn2026_2027/app/consts/app_color.dart';
 import 'package:kltn2026_2027/app/theme/theme.dart';
 import 'package:kltn2026_2027/app/provider/localization_provider.dart';
 import 'change_password_shared.dart';
@@ -20,7 +19,7 @@ class ChangePasswordTablet extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
-      backgroundColor: AppColor.cGray_50,
+      backgroundColor: context.colors.background,
       appBar: ChangePasswordShared(context.l10n.auth_change_password),
       body: Center(
         child: SingleChildScrollView(
@@ -32,7 +31,7 @@ class ChangePasswordTablet extends ConsumerWidget {
             child: Container(
               padding: const EdgeInsets.all(32),
               decoration: BoxDecoration(
-                color: AppColor.white,
+                color: context.colors.cardBackground,
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(

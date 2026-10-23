@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:kltn2026_2027/app/consts/app_color.dart';
+import '../../../../app/theme/theme.dart';
 import 'package:kltn2026_2027/app/provider/localization_provider.dart';
 import 'package:kltn2026_2027/ui/screen/change_password/widgets/change_password_mobile.dart';
 import 'package:kltn2026_2027/ui/screen/change_password/widgets/change_password_shared.dart';
@@ -19,6 +19,7 @@ class ChangePasswordScreen extends ConsumerStatefulWidget {
 }
 
 class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
+  AppThemeColors get colors => context.colors;
   final _formKey = GlobalKey<FormState>();
 
   final _currentPasswordCtl = TextEditingController();
@@ -57,7 +58,7 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(context.l10n.auth_change_password_success),
-            backgroundColor: AppColor.cMain,
+            backgroundColor: colors.primary,
           ),
         );
         context.pop();
@@ -67,7 +68,7 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(next.error!),
-            backgroundColor: AppColor.cError,
+            backgroundColor: colors.error,
           ),
         );
       }
@@ -148,9 +149,9 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
       child: ElevatedButton(
         onPressed: isLoading ? null : _submit,
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColor.cMain,
-          foregroundColor: AppColor.white,
-          disabledBackgroundColor: AppColor.cMain.withValues(alpha: 0.5),
+          backgroundColor: colors.primary,
+          foregroundColor: AppColors.white,
+          disabledBackgroundColor: colors.primary.withValues(alpha: 0.5),
           elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
@@ -162,7 +163,7 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
                 height: 22,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(AppColor.white),
+                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.white),
                 ),
               )
             : Row(

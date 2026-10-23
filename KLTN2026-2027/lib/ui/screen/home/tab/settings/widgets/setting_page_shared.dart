@@ -88,7 +88,7 @@ List<SettingsSection> buildSettingsSections(
       items: [
         SettingsItemData(
           icon: Icons.person_outline,
-          color: AppColor.cMain,
+          color: context.colors.primary,
           title: context.l10n.set_account,
           subtitle: context.l10n.set_account_subtitle,
           onTap: () => context.push(AppConfig.profilePath),
@@ -125,7 +125,7 @@ List<SettingsSection> buildSettingsSections(
       items: [
         SettingsItemData(
           icon: Icons.lock_outline,
-          color: AppColor.cYanPrimary,
+          color: context.colors.primaryLight,
           title: context.l10n.auth_change_password,
           subtitle: context.l10n.set_password_subtitle,
           onTap: () => context.push(AppConfig.changePasswordPath),
@@ -162,12 +162,12 @@ Widget buildSettingsHeader(BuildContext context) {
       Container(
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: AppColor.cMain.withValues(alpha: 0.1),
+          color: context.colors.primary.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(12),
         ),
-        child: const Icon(
+        child: Icon(
           Icons.settings_outlined,
-          color: AppColor.cMain,
+          color: context.colors.primary,
           size: 24,
         ),
       ),
@@ -203,10 +203,10 @@ Widget buildSectionTitle(BuildContext context, String title, IconData icon) {
       Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: AppColor.cMain.withValues(alpha: 0.1),
+          color: context.colors.primary.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(8),
         ),
-        child: Icon(icon, color: AppColor.cMain, size: 18),
+        child: Icon(icon, color: context.colors.primary, size: 18),
       ),
       const SizedBox(width: 10),
       Text(
@@ -310,9 +310,11 @@ Widget buildSettingsItem({
 }
 
 Widget buildDivider() {
-  return Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 16),
-    child: Divider(height: 1, color: AppColor.cDivider),
+  return Builder(
+    builder: (context) => Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Divider(height: 1, color: context.colors.divider),
+    ),
   );
 }
 
@@ -323,7 +325,7 @@ Widget buildLogoutCard(BuildContext context, WidgetRef ref, bool isLoading) {
       buildSettingsItem(
         context: context,
         icon: Icons.logout,
-        color: AppColor.cError,
+        color: context.colors.error,
         title: isLoading
             ? context.l10n.auth_logging_out
             : context.l10n.auth_logout,
@@ -351,8 +353,8 @@ Widget buildLogoutCard(BuildContext context, WidgetRef ref, bool isLoading) {
                 ElevatedButton(
                   onPressed: () => Navigator.of(ctx).pop(true),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColor.cError,
-                    foregroundColor: AppColor.white,
+                    backgroundColor: context.colors.error,
+                    foregroundColor: AppColors.white,
                     elevation: 0,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
@@ -462,7 +464,7 @@ void showLanguageBottomSheet(
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          side: const BorderSide(color: AppColor.cDivider),
+                          side: BorderSide(color: context.colors.divider),
                         ),
                         child: Text(
                           context.l10n.com_cancel,
@@ -483,7 +485,7 @@ void showLanguageBottomSheet(
                           if (context.mounted) Navigator.pop(context);
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColor.cMain,
+                          backgroundColor: context.colors.primary,
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -493,7 +495,7 @@ void showLanguageBottomSheet(
                         child: Text(
                           context.l10n.com_save,
                           style: const TextStyle(
-                            color: AppColor.white,
+                            color: AppColors.white,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -525,11 +527,11 @@ Widget _buildLanguageOption({
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: isSelected
-            ? AppColor.cMain.withValues(alpha: 0.05)
+            ? context.colors.primary.withValues(alpha: 0.05)
             : context.colors.surfaceSubtle,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isSelected ? AppColor.cMain : AppColor.cDivider,
+          color: isSelected ? context.colors.primary : context.colors.divider,
           width: 1.5,
         ),
       ),
@@ -538,7 +540,7 @@ Widget _buildLanguageOption({
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
             decoration: BoxDecoration(
-              color: isSelected ? AppColor.cMain.withValues(alpha: 0.1) : AppColors.neutral200,
+              color: isSelected ? context.colors.primary.withValues(alpha: 0.1) : context.colors.surfaceSubtle,
               borderRadius: BorderRadius.circular(6),
             ),
             child: Text(
@@ -562,11 +564,11 @@ Widget _buildLanguageOption({
             ),
           ),
           if (isSelected)
-            const Icon(Icons.check_circle, color: AppColor.cMain, size: 24)
+            Icon(Icons.check_circle, color: context.colors.primary, size: 24)
           else
-            const Icon(
+            Icon(
               Icons.circle_outlined,
-              color: AppColor.cDivider,
+              color: context.colors.divider,
               size: 24,
             ),
         ],

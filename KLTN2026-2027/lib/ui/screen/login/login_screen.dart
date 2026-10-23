@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:kltn2026_2027/app/consts/app_color.dart';
+import '../../../../app/theme/theme.dart';
 import 'package:kltn2026_2027/app/consts/app_config.dart';
 import 'package:kltn2026_2027/widget/loading_overlay.dart';
 import 'package:kltn2026_2027/widget/responsive_layout.dart'; // Đảm bảo import ResponsiveLayout
@@ -49,7 +49,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(next.biometricError!),
-            backgroundColor: AppColor.cNeedCheck, // Đảm bảo màu này có trong AppColor
+            backgroundColor: context.colors.warning,
           ),
         );
       }

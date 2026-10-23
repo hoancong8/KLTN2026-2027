@@ -33,6 +33,7 @@ class _UserManagementTabletState extends ConsumerState<UserManagementTablet> {
   }
 
   void _showCreateUserDialog(BuildContext context, UserManagementState state) {
+    final colors = context.colors;
     showDialog(
       context: context,
       builder: (ctx) => UserFormDialog(
@@ -52,9 +53,9 @@ class _UserManagementTabletState extends ConsumerState<UserManagementTablet> {
               );
           if (success) {
             messenger.showSnackBar(
-              const SnackBar(
+              SnackBar(
                 content: Text('Tạo tài khoản thành công'),
-                backgroundColor: AppColor.cMain,
+                backgroundColor: colors.primary,
               ),
             );
           }
@@ -64,6 +65,7 @@ class _UserManagementTabletState extends ConsumerState<UserManagementTablet> {
   }
 
   void _showEditUserDialog(BuildContext context, UserProfile user, UserManagementState state) {
+    final colors = context.colors;
     showDialog(
       context: context,
       builder: (ctx) => UserFormDialog(
@@ -86,9 +88,9 @@ class _UserManagementTabletState extends ConsumerState<UserManagementTablet> {
               );
           if (success) {
             messenger.showSnackBar(
-              const SnackBar(
+              SnackBar(
                 content: Text('Cập nhật tài khoản thành công'),
-                backgroundColor: AppColor.cMain,
+                backgroundColor: colors.primary,
               ),
             );
           }
@@ -98,23 +100,24 @@ class _UserManagementTabletState extends ConsumerState<UserManagementTablet> {
   }
 
   void _showDeleteConfirmDialog(BuildContext context, UserProfile user) {
+    final colors = context.colors;
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        backgroundColor: AppColor.white,
-        title: const Text(
+        backgroundColor: colors.surface,
+        title: Text(
           'Xác nhận xóa tài khoản',
-          style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: AppColor.cTitle),
+          style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: colors.textPrimary),
         ),
         content: Text(
           'Bạn có chắc chắn muốn xóa tài khoản "${user.userName.isNotEmpty ? user.userName : user.email}"? Hành động này không thể hoàn tác.',
-          style: const TextStyle(fontSize: 14, color: AppColor.cMuted),
+          style: TextStyle(fontSize: 14, color: colors.textMuted),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Hủy', style: TextStyle(color: AppColor.cMuted)),
+            child: Text('Hủy', style: TextStyle(color: colors.textMuted)),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -125,16 +128,16 @@ class _UserManagementTabletState extends ConsumerState<UserManagementTablet> {
                   .deleteUser(user.id);
               if (success) {
                 messenger.showSnackBar(
-                  const SnackBar(
+                  SnackBar(
                     content: Text('Đã xóa tài khoản thành công'),
-                    backgroundColor: AppColor.cMain,
+                    backgroundColor: colors.primary,
                   ),
                 );
               }
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.error,
-              foregroundColor: AppColor.white,
+              foregroundColor: AppColors.white,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             ),
             child: const Text('Xác nhận xóa'),
@@ -145,6 +148,7 @@ class _UserManagementTabletState extends ConsumerState<UserManagementTablet> {
   }
 
   void _showResetPasswordDialog(BuildContext context, UserProfile user) {
+    final colors = context.colors;
     showDialog(
       context: context,
       builder: (ctx) => UserResetPasswordDialog(
@@ -156,9 +160,9 @@ class _UserManagementTabletState extends ConsumerState<UserManagementTablet> {
               .resetPassword(user.id, newPassword);
           if (success) {
             messenger.showSnackBar(
-              const SnackBar(
+              SnackBar(
                 content: Text('Đặt lại mật khẩu thành công'),
-                backgroundColor: AppColor.cMain,
+                backgroundColor: colors.primary,
               ),
             );
           }
@@ -182,24 +186,24 @@ class _UserManagementTabletState extends ConsumerState<UserManagementTablet> {
             // 1. Top Header Bar (Tiêu đề + Nút Thêm)
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-              color: AppColor.white,
+              color: colors.surface,
               child: Row(
                 children: [
                   if (Navigator.of(context).canPop()) ...[
                     IconButton(
-                      icon: const Icon(Icons.arrow_back_rounded, color: AppColor.cTitle),
+                      icon: Icon(Icons.arrow_back_rounded, color: colors.textPrimary),
                       onPressed: () => Navigator.of(context).pop(),
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
                     ),
                     const SizedBox(width: 12),
                   ],
-                  const Text(
+                  Text(
                     'Quản lý nhân viên',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w700,
-                      color: AppColor.cTitle,
+                      color: colors.textPrimary,
                     ),
                   ),
                   const Spacer(),
@@ -210,8 +214,8 @@ class _UserManagementTabletState extends ConsumerState<UserManagementTablet> {
                       icon: const Icon(Icons.add_rounded, size: 18),
                       label: const Text('Thêm', style: TextStyle(fontWeight: FontWeight.w600)),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColor.cMain,
-                        foregroundColor: AppColor.white,
+                        backgroundColor: colors.primary,
+                        foregroundColor: AppColors.white,
                         elevation: 0,
                         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
                         shape: RoundedRectangleBorder(
@@ -223,22 +227,22 @@ class _UserManagementTabletState extends ConsumerState<UserManagementTablet> {
                 ],
               ),
             ),
-            const Divider(height: 1, color: AppColor.cDivider),
+            Divider(height: 1, color: colors.cardBorder),
 
             // 2. Thanh tìm kiếm
             Container(
               padding: const EdgeInsets.fromLTRB(20, 14, 20, 10),
-              color: AppColor.white,
+              color: colors.surface,
               child: TextField(
                 controller: _searchController,
                 onChanged: (val) => vm.setSearchQuery(val),
                 decoration: InputDecoration(
                   hintText: 'Tìm nhân viên...',
-                  hintStyle: const TextStyle(fontSize: 13, color: AppColor.cMuted),
-                  prefixIcon: const Icon(Icons.search_rounded, size: 20, color: AppColor.cMuted),
+                  hintStyle: TextStyle(fontSize: 13, color: colors.textMuted),
+                  prefixIcon: Icon(Icons.search_rounded, size: 20, color: colors.textMuted),
                   suffixIcon: _searchController.text.isNotEmpty
                       ? IconButton(
-                          icon: const Icon(Icons.clear_rounded, size: 18, color: AppColor.cMuted),
+                          icon: Icon(Icons.clear_rounded, size: 18, color: colors.textMuted),
                           onPressed: () {
                             _searchController.clear();
                             vm.setSearchQuery('');
@@ -258,7 +262,7 @@ class _UserManagementTabletState extends ConsumerState<UserManagementTablet> {
 
             // 3. Tab bộ lọc trạng thái
             Container(
-              color: AppColor.white,
+              color: colors.surface,
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
               child: Row(
                 children: List.generate(_filterTabs.length, (idx) {
@@ -269,17 +273,17 @@ class _UserManagementTabletState extends ConsumerState<UserManagementTablet> {
                       label: Text(_filterTabs[idx]),
                       selected: isSelected,
                       onSelected: (_) => vm.setFilter(idx),
-                      selectedColor: AppColor.cMain,
+                      selectedColor: colors.primary,
                       backgroundColor: colors.surfaceSubtle,
                       labelStyle: TextStyle(
                         fontSize: 13,
                         fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                        color: isSelected ? AppColor.white : colors.textMuted,
+                        color: isSelected ? AppColors.white : colors.textMuted,
                       ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20),
                         side: BorderSide(
-                          color: isSelected ? AppColor.cMain : AppColors.transparent,
+                          color: isSelected ? colors.primary : AppColors.transparent,
                         ),
                       ),
                       showCheckmark: false,
@@ -289,15 +293,15 @@ class _UserManagementTabletState extends ConsumerState<UserManagementTablet> {
                 }),
               ),
             ),
-            const Divider(height: 1, color: AppColor.cDivider),
+            Divider(height: 1, color: colors.cardBorder),
 
             // 4. Danh sách Grid trên Tablet
             Expanded(
               child: state.isLoading && state.users.isEmpty
-                  ? const Center(child: CircularProgressIndicator(color: AppColor.cMain))
+                  ? Center(child: CircularProgressIndicator(color: colors.primary))
                   : RefreshIndicator(
                       onRefresh: () => vm.loadUsers(),
-                      color: AppColor.cMain,
+                      color: colors.primary,
                       child: state.errorMessage != null && state.users.isEmpty
                           ? ListView(
                               children: [
@@ -325,8 +329,8 @@ class _UserManagementTabletState extends ConsumerState<UserManagementTablet> {
                                           icon: const Icon(Icons.refresh_rounded, size: 18),
                                           label: const Text('Thử lại'),
                                           style: ElevatedButton.styleFrom(
-                                            backgroundColor: AppColor.cMain,
-                                            foregroundColor: AppColor.white,
+                                            backgroundColor: colors.primary,
+                                            foregroundColor: AppColors.white,
                                             shape: RoundedRectangleBorder(
                                               borderRadius: BorderRadius.circular(10),
                                             ),
@@ -348,15 +352,15 @@ class _UserManagementTabletState extends ConsumerState<UserManagementTablet> {
                                         children: [
                                           Icon(Icons.people_outline_rounded, size: 56, color: AppColors.neutral300),
                                           const SizedBox(height: 12),
-                                          const Text(
+                                          Text(
                                             'Không tìm thấy nhân viên nào',
                                             style: TextStyle(
-                                                fontSize: 15, fontWeight: FontWeight.w700, color: AppColor.cTitle),
+                                                fontSize: 15, fontWeight: FontWeight.w700, color: colors.textPrimary),
                                           ),
                                           const SizedBox(height: 4),
-                                          const Text(
+                                          Text(
                                             'Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm',
-                                            style: TextStyle(fontSize: 13, color: AppColor.cMuted),
+                                            style: TextStyle(fontSize: 13, color: colors.textMuted),
                                           ),
                                         ],
                                       ),

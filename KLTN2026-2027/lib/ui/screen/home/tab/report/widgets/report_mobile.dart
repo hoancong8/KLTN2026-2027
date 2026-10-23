@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kltn2026_2027/app/consts/app_color.dart';
+import '../../../../../../app/theme/theme.dart';
 import 'package:kltn2026_2027/app/provider/localization_provider.dart';
 import 'package:kltn2026_2027/ui/screen/home/tab/report/report_vm/report_state.dart';
 import 'package:kltn2026_2027/ui/screen/home/tab/report/report_vm/report_vm.dart';
@@ -16,12 +16,14 @@ class ReportMobile extends ConsumerStatefulWidget {
 }
 
 class _ReportMobileState extends ConsumerState<ReportMobile> {
+  AppThemeColors get colors => context.colors;
+
   @override
   Widget build(BuildContext context) {
     if (widget.state.isLoading) {
       return Center(
         child: CircularProgressIndicator(
-          valueColor: AlwaysStoppedAnimation<Color>(AppColor.cMain),
+          valueColor: AlwaysStoppedAnimation<Color>(colors.primary),
         ),
       );
     }
@@ -34,19 +36,19 @@ class _ReportMobileState extends ConsumerState<ReportMobile> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppColor.cError.withValues(alpha: 0.1),
+                color: colors.error.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 Icons.error_outline,
-                color: AppColor.cError,
+                color: colors.error,
                 size: 48,
               ),
             ),
             const SizedBox(height: 16),
             Text(
               widget.state.error!,
-              style: TextStyle(color: AppColor.cError),
+              style: TextStyle(color: colors.error),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16),
@@ -54,8 +56,8 @@ class _ReportMobileState extends ConsumerState<ReportMobile> {
               onPressed: () =>
                   ref.read(reportViewModelProvider.notifier).loadData(),
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColor.cMain,
-                foregroundColor: AppColor.white,
+                backgroundColor: colors.primary,
+                foregroundColor: AppColors.white,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -69,8 +71,8 @@ class _ReportMobileState extends ConsumerState<ReportMobile> {
     }
 
     return RefreshIndicator(
-      color: AppColor.cMain,
-      backgroundColor: AppColor.white,
+      color: colors.primary,
+      backgroundColor: colors.surface,
       onRefresh: () async {
         await ref.read(reportViewModelProvider.notifier).loadData();
       },
@@ -93,7 +95,7 @@ class _ReportMobileState extends ConsumerState<ReportMobile> {
                   icon: Icons.trending_up,
                   value: '0',
                   label: context.l10n.rep_revenue_report,
-                  color: AppColor.cMain,
+                  color: colors.primary,
                   onTap: () => _showComingSoon(context),
                 ),
               ),
@@ -103,7 +105,7 @@ class _ReportMobileState extends ConsumerState<ReportMobile> {
                   icon: Icons.receipt_long_outlined,
                   value: '0',
                   label: context.l10n.rep_orders,
-                  color: AppColor.cBlue,
+                  color: colors.secondary,
                   onTap: () => _showComingSoon(context),
                 ),
               ),
@@ -117,7 +119,7 @@ class _ReportMobileState extends ConsumerState<ReportMobile> {
                   icon: Icons.people_outline,
                   value: '0',
                   label: context.l10n.rep_client,
-                  color: AppColor.cYanPrimary,
+                  color: colors.primaryLight,
                   onTap: () => _showComingSoon(context),
                 ),
               ),
@@ -127,7 +129,7 @@ class _ReportMobileState extends ConsumerState<ReportMobile> {
                   icon: Icons.inventory_2_outlined,
                   value: '0',
                   label: context.l10n.rep_products,
-                  color: AppColor.cMainApp,
+                  color: colors.accent,
                   onTap: () => _showComingSoon(context),
                 ),
               ),
@@ -144,7 +146,7 @@ class _ReportMobileState extends ConsumerState<ReportMobile> {
             icon: Icons.bar_chart,
             title: context.l10n.rep_revenue_report,
             subtitle: context.l10n.rep_revenue_over_time,
-            color: AppColor.cMain,
+            color: colors.primary,
             onTap: () => _showComingSoon(context),
           ),
           const SizedBox(height: 12),
@@ -152,7 +154,7 @@ class _ReportMobileState extends ConsumerState<ReportMobile> {
             icon: Icons.pie_chart_outline,
             title: context.l10n.rep_expense_report,
             subtitle: context.l10n.rep_operating_cost_analysis,
-            color: AppColor.cBlue,
+            color: colors.secondary,
             onTap: () => _showComingSoon(context),
           ),
           const SizedBox(height: 12),
@@ -160,7 +162,7 @@ class _ReportMobileState extends ConsumerState<ReportMobile> {
             icon: Icons.show_chart,
             title: context.l10n.rep_performance_report,
             subtitle: context.l10n.rep_performance_analysis,
-            color: AppColor.cYanPrimary,
+            color: colors.primaryLight,
             onTap: () => _showComingSoon(context),
           ),
           const SizedBox(height: 24),
@@ -173,7 +175,7 @@ class _ReportMobileState extends ConsumerState<ReportMobile> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(context.l10n.com_feature_under_dev),
-        backgroundColor: AppColor.cMain,
+        backgroundColor: colors.primary,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         duration: const Duration(seconds: 2),
@@ -187,10 +189,10 @@ class _ReportMobileState extends ConsumerState<ReportMobile> {
         Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: AppColor.cMain.withValues(alpha: 0.1),
+            color: colors.primary.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
           ),
-          child: Icon(Icons.bar_chart, color: AppColor.cMain, size: 24),
+          child: Icon(Icons.bar_chart, color: colors.primary, size: 24),
         ),
         const SizedBox(width: 12),
         Expanded(
@@ -201,14 +203,14 @@ class _ReportMobileState extends ConsumerState<ReportMobile> {
                 context.l10n.set_report,
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.w800,
-                  color: AppColor.cTitle,
+                  color: colors.textPrimary,
                 ),
               ),
               Text(
                 context.l10n.rep_data_analysis,
                 style: Theme.of(
                   context,
-                ).textTheme.bodyMedium?.copyWith(color: AppColor.cMuted),
+                ).textTheme.bodyMedium?.copyWith(color: colors.textMuted),
               ),
             ],
           ),
@@ -223,17 +225,17 @@ class _ReportMobileState extends ConsumerState<ReportMobile> {
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: AppColor.cMain.withValues(alpha: 0.1),
+            color: colors.primary.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8),
           ),
-          child: Icon(icon, color: AppColor.cMain, size: 18),
+          child: Icon(icon, color: colors.primary, size: 18),
         ),
         const SizedBox(width: 10),
         Text(
           title,
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
             fontWeight: FontWeight.w700,
-            color: AppColor.cTitle,
+            color: colors.textPrimary,
           ),
         ),
       ],
@@ -253,9 +255,9 @@ class _ReportMobileState extends ConsumerState<ReportMobile> {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: AppColor.white,
+          color: colors.cardBackground,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColor.cDivider),
+          border: Border.all(color: colors.cardBorder),
         ),
         child: Column(
           children: [
@@ -273,13 +275,13 @@ class _ReportMobileState extends ConsumerState<ReportMobile> {
               style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.w800,
-                color: AppColor.cTitle,
+                color: colors.textPrimary,
               ),
             ),
             const SizedBox(height: 4),
             Text(
               label,
-              style: TextStyle(fontSize: 13, color: AppColor.cMuted),
+              style: TextStyle(fontSize: 13, color: colors.textMuted),
               textAlign: TextAlign.center,
             ),
           ],
@@ -301,9 +303,9 @@ class _ReportMobileState extends ConsumerState<ReportMobile> {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: AppColor.white,
+          color: colors.cardBackground,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColor.cDivider),
+          border: Border.all(color: colors.cardBorder),
         ),
         child: Row(
           children: [
@@ -325,18 +327,18 @@ class _ReportMobileState extends ConsumerState<ReportMobile> {
                     style: TextStyle(
                       fontWeight: FontWeight.w700,
                       fontSize: 15,
-                      color: AppColor.cTitle,
+                      color: colors.textPrimary,
                     ),
                   ),
                   const SizedBox(height: 2),
                   Text(
                     subtitle,
-                    style: TextStyle(fontSize: 13, color: AppColor.cMuted),
+                    style: TextStyle(fontSize: 13, color: colors.textMuted),
                   ),
                 ],
               ),
             ),
-            Icon(Icons.chevron_right, color: AppColor.cMuted),
+            Icon(Icons.chevron_right, color: colors.textMuted),
           ],
         ),
       ),

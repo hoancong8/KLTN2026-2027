@@ -862,10 +862,10 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                           const Divider(height: 1),
                           ListTile(
                             dense: true,
-                            leading: const Icon(Icons.female_rounded, color: Colors.pinkAccent, size: 20),
+                            leading: const Icon(Icons.female_rounded, color: AppColors.pink, size: 20),
                             title: Text('Hội viên ngày (Nữ)', style: AppTypography.bodySmall.bold.colored(colors.textPrimary)),
                             subtitle: Text('Đã trừ ưu đãi ${NumberFormat('#,###').format(femaleDiscount)} đ', style: AppTypography.labelSmall.copyWith(color: colors.textMuted)),
-                            trailing: Text('${NumberFormat('#,###').format(femaleFee)} đ', style: AppTypography.bodySmall.bold.colored(Colors.pinkAccent)),
+                            trailing: Text('${NumberFormat('#,###').format(femaleFee)} đ', style: AppTypography.bodySmall.bold.colored(AppColors.pink)),
                           ),
                           const Divider(height: 1),
                           ListTile(
@@ -1200,6 +1200,49 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                 ),
               ),
               const Spacer(),
+              if (activeRecruitment != null) ...[
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: AppColors.roleViolet.withValues(alpha: 0.15),
+                    borderRadius: AppRadius.tag,
+                    border: Border.all(color: AppColors.roleViolet.withValues(alpha: 0.35)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.radar_rounded, size: 12, color: AppColors.roleViolet),
+                      AppSpacing.gapW4,
+                      Text(
+                        'Tuyển vãng lai',
+                        style: AppTypography.labelSmall.bold.colored(AppColors.roleViolet),
+                      ),
+                    ],
+                  ),
+                ),
+                AppSpacing.gapW8,
+              ] else ...[
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: colors.surfaceSubtle,
+                    borderRadius: AppRadius.tag,
+                    border: Border.all(color: colors.cardBorder),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.shield_outlined, size: 12, color: colors.textMuted),
+                      AppSpacing.gapW4,
+                      Text(
+                        'Nội bộ CLB',
+                        style: AppTypography.labelSmall.bold.colored(colors.textMuted),
+                      ),
+                    ],
+                  ),
+                ),
+                AppSpacing.gapW8,
+              ],
               _buildStatusBadge(session.status, isEnded, isPlaying),
             ],
           ),
@@ -1705,58 +1748,130 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
             ),
           ],
 
-          // Active recruitment banner (Tin tuyển khách vãng lai)
-          if (activeRecruitment != null) ...[
-            AppSpacing.gapH12,
+          // Recruitment status card (Phân định rõ: Đang tuyển vãng lai vs Không tuyển / Nội bộ)
+          AppSpacing.gapH12,
+          if (activeRecruitment != null)
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
               decoration: BoxDecoration(
-                color: colors.primary.withValues(alpha: 0.08),
-                borderRadius: AppRadius.borderSm,
-                border: Border.all(color: colors.primary.withValues(alpha: 0.3)),
+                color: AppColors.roleViolet.withValues(alpha: 0.08),
+                borderRadius: AppRadius.card,
+                border: Border.all(color: AppColors.roleViolet.withValues(alpha: 0.35)),
               ),
               child: Row(
                 children: [
-                  Icon(Icons.radar_rounded, size: 20, color: colors.primary),
+                  Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: AppColors.roleViolet.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: const Icon(Icons.radar_rounded, size: 20, color: AppColors.roleViolet),
+                  ),
+                  AppSpacing.gapW8,
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Text(
+                              'ĐANG TUYỂN VÃNG LAI',
+                              style: AppTypography.labelSmall.bold.colored(AppColors.roleViolet),
+                            ),
+                            AppSpacing.gapW8,
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                              decoration: BoxDecoration(
+                                color: AppColors.roleViolet,
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                'Còn ${activeRecruitment.slotsRemaining} slot',
+                                style: AppTypography.labelSmall.bold.colored(AppColors.white),
+                              ),
+                            ),
+                          ],
+                        ),
+                        AppSpacing.gapH4,
+                        Text(
+                          'Phí: ${NumberFormat('#,###').format(activeRecruitment.sharedCost)} đ • Yêu cầu: ${activeRecruitment.minSkillLevel.displayName}',
+                          style: AppTypography.bodySmall.copyWith(color: colors.textSecondary),
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (canRecruit)
+                    OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: colors.error,
+                        side: BorderSide(color: colors.error.withValues(alpha: 0.5)),
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        minimumSize: Size.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                      ),
+                      onPressed: () async {
+                        final ok = await ref.read(sessionDetailViewModelProvider(widget.sessionId).notifier).deleteRecruitment();
+                        if (ok && mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Đã đóng tin tuyển khách giao lưu')),
+                          );
+                        }
+                      },
+                      child: const Text('Đóng tuyển'),
+                    ),
+                ],
+              ),
+            )
+          else
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(
+                color: colors.surfaceSubtle,
+                borderRadius: AppRadius.card,
+                border: Border.all(color: colors.cardBorder),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.shield_outlined, size: 18, color: colors.textMuted),
                   AppSpacing.gapW8,
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Đang tuyển ${activeRecruitment.slotsRemaining} khách giao lưu',
-                          style: AppTypography.bodySmall.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: colors.primary,
-                          ),
+                          'NỘI BỘ CLB • KHÔNG TUYỂN VÃNG LAI',
+                          style: AppTypography.labelSmall.bold.colored(colors.textMuted),
                         ),
+                        AppSpacing.gapH4,
                         Text(
-                          'Mức phí: ${NumberFormat('#,###').format(activeRecruitment.sharedCost)} đ • Trình độ ${activeRecruitment.minSkillLevel}',
-                          style: AppTypography.labelSmall.copyWith(color: colors.textMuted),
+                          canRecruit
+                              ? 'Chưa mở tuyển vãng lai. Bấm "Tuyển khách" nếu cần bù slot thiếu.'
+                              : 'Buổi chơi dành riêng cho thành viên nội bộ CLB.',
+                          style: AppTypography.labelSmall.colored(colors.textMuted),
                         ),
                       ],
                     ),
                   ),
-                  if (canRecruit)
-                    TextButton(
-                      style: TextButton.styleFrom(
-                        visualDensity: VisualDensity.compact,
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                  if (canRecruit && session.status == SessionStatus.open)
+                    ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.roleViolet,
+                        foregroundColor: AppColors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        minimumSize: Size.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                        elevation: 0,
                       ),
-                      onPressed: () async {
-                        final ok = await ref.read(sessionDetailViewModelProvider(widget.sessionId).notifier).deleteRecruitment();
-                        if (ok && mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Đã hủy tin tuyển khách giao lưu')),
-                          );
-                        }
-                      },
-                      child: Text('Hủy tin', style: AppTypography.labelSmall.bold.colored(colors.error)),
+                      icon: const Icon(Icons.radar_rounded, size: 14),
+                      label: const Text('Mở tuyển', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                      onPressed: () => _showRecruitmentModal(context, session),
                     ),
                 ],
               ),
             ),
-          ],
         ],
       ),
     );

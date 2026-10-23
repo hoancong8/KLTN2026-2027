@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kltn2026_2027/app/consts/app_color.dart';
+import '../../../../../../app/theme/theme.dart';
 import 'package:kltn2026_2027/ui/screen/home/tab/settings/widgets/setting_page_shared.dart';
 import 'package:kltn2026_2027/widget/biometric_settings/biometric_settings_item.dart';
 import '../../../../../../app/provider/localization_provider.dart';
@@ -11,6 +11,7 @@ class SettingsPageMobile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final colors = context.colors;
     final state = ref.watch(settingsViewModelProvider);
     final sections = buildSettingsSections(
       context,
@@ -19,8 +20,8 @@ class SettingsPageMobile extends ConsumerWidget {
     );
 
     return RefreshIndicator(
-      color: AppColor.cMain,
-      backgroundColor: AppColor.white,
+      color: colors.primary,
+      backgroundColor: colors.surface,
       onRefresh: () async {
         await Future.delayed(const Duration(milliseconds: 500));
       },

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kltn2026_2027/app/consts/app_color.dart';
+import '../../../../../../app/theme/theme.dart';
 import 'package:kltn2026_2027/app/provider/localization_provider.dart';
 import 'change_password_shared.dart';
 
@@ -19,7 +19,7 @@ class ChangePasswordMobile extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
-      backgroundColor: AppColor.white,
+      backgroundColor: context.colors.background,
       appBar: ChangePasswordShared(context.l10n.auth_change_password),
       body: SafeArea(
         child: SingleChildScrollView(

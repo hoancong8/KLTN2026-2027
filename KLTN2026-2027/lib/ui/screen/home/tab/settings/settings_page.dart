@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kltn2026_2027/app/consts/app_color.dart';
+import '../../../../../app/theme/theme.dart';
 import 'package:kltn2026_2027/ui/screen/home/tab/settings/widgets/setting_page_mobile.dart';
 import 'package:kltn2026_2027/ui/screen/home/tab/settings/widgets/setting_page_tablet.dart';
 import 'package:kltn2026_2027/widget/responsive_layout.dart';
@@ -16,7 +16,7 @@ class SettingsPage extends ConsumerWidget {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(next.error!),
-            backgroundColor: AppColor.cError,
+            backgroundColor: context.colors.error,
           ),
         );
       }

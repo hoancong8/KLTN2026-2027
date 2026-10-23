@@ -62,7 +62,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(next.error!.getDisplayMessage(context.l10n)),
-            backgroundColor: AppColor.cError,
+            backgroundColor: colors.error,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -71,7 +71,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(next.successMessage!),
-            backgroundColor: AppColor.cMain,
+            backgroundColor: colors.primary,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -100,14 +100,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         actions: [
           if (profile != null)
             IconButton(
-              icon: Icon(Icons.edit_note_rounded, color: AppColor.cMain, size: 26),
+              icon: Icon(Icons.edit_note_rounded, color: colors.primary, size: 26),
               tooltip: 'Chỉnh sửa hồ sơ',
               onPressed: () => _showEditProfileBottomSheet(context, profile),
             ),
         ],
       ),
       body: state.isLoading && profile == null
-          ? const Center(child: CircularProgressIndicator(color: AppColor.cMain))
+          ? Center(child: CircularProgressIndicator(color: colors.primary))
           : profile == null
               ? Center(
                   child: Column(
@@ -122,8 +122,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       const SizedBox(height: 16),
                       ElevatedButton.icon(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColor.cMain,
-                          foregroundColor: AppColor.white,
+                          backgroundColor: colors.primary,
+                          foregroundColor: AppColors.white,
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                         ),
                         onPressed: () => ref.read(profileViewModelProvider.notifier).reloadProfile(),
@@ -134,7 +134,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   ),
                 )
               : RefreshIndicator(
-                  color: AppColor.cMain,
+                  color: colors.primary,
                   onRefresh: () => ref.read(profileViewModelProvider.notifier).reloadProfile(),
                   child: ListView(
                     physics: const AlwaysScrollableScrollPhysics(),
@@ -162,8 +162,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         height: 48,
                         child: ElevatedButton.icon(
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColor.cMain,
-                            foregroundColor: AppColor.white,
+                            backgroundColor: colors.primary,
+                            foregroundColor: AppColors.white,
                             elevation: 0,
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                           ),
@@ -206,7 +206,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               // Avatar
               CircleAvatar(
                 radius: 36,
-                backgroundColor: AppColor.cMain.withValues(alpha: 0.12),
+                backgroundColor: colors.primary.withValues(alpha: 0.12),
                 backgroundImage: profile.avatarUrl != null && profile.avatarUrl!.isNotEmpty
                     ? NetworkImage(profile.avatarUrl!)
                     : null,
@@ -220,7 +220,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         style: TextStyle(
                           fontSize: 28,
                           fontWeight: FontWeight.bold,
-                          color: AppColor.cMain,
+                          color: colors.primary,
                         ),
                       )
                     : null,
@@ -407,10 +407,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       ),
       child: SwitchListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        activeThumbColor: AppColor.cMain,
+        activeThumbColor: colors.primary,
         title: Row(
           children: [
-            Icon(Icons.radar_rounded, color: AppColor.cMain, size: 20),
+            Icon(Icons.radar_rounded, color: colors.primary, size: 20),
             SizedBox(width: 8),
             Text(
               'Sẵn sàng nhận kèo giao lưu',
@@ -463,7 +463,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         children: [
           Row(
             children: [
-              Icon(Icons.sports_tennis_rounded, color: AppColor.cMain, size: 20),
+              Icon(Icons.sports_tennis_rounded, color: colors.primary, size: 20),
               SizedBox(width: 8),
               Text(
                 'Thang đo trình độ chuẩn hóa (7 bậc)',
@@ -568,7 +568,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         children: [
           Row(
             children: [
-              Icon(Icons.info_outline_rounded, color: AppColor.cMain, size: 20),
+              Icon(Icons.info_outline_rounded, color: colors.primary, size: 20),
               SizedBox(width: 8),
               Text(
                 'Thông tin tài khoản',
@@ -764,17 +764,17 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
                   return ChoiceChip(
                     label: Text('${level.code} - ${level.displayName}'),
                     selected: isSelected,
-                    selectedColor: AppColor.cMain.withValues(alpha: 0.15),
+                    selectedColor: colors.primary.withValues(alpha: 0.15),
                     backgroundColor: colors.surfaceSubtle,
                     labelStyle: TextStyle(
                       fontSize: 12,
                       fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                      color: isSelected ? AppColor.cMain : colors.textPrimary,
+                      color: isSelected ? colors.primary : colors.textPrimary,
                     ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                       side: BorderSide(
-                        color: isSelected ? AppColor.cMain : AppColors.transparent,
+                        color: isSelected ? colors.primary : AppColors.transparent,
                       ),
                     ),
                     onSelected: (val) {
@@ -788,7 +788,7 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
               // Open for Guest Switch
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                activeThumbColor: AppColor.cMain,
+                activeThumbColor: colors.primary,
                 title: Text(
                   'Nhận kèo giao lưu khách vãng lai',
                   style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: colors.textPrimary),
@@ -805,18 +805,18 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
                   width: double.infinity,
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                   decoration: BoxDecoration(
-                    color: AppColor.cError.withValues(alpha: 0.1),
+                    color: colors.error.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: AppColor.cError.withValues(alpha: 0.3)),
+                    border: Border.all(color: colors.error.withValues(alpha: 0.3)),
                   ),
                   child: Row(
                     children: [
-                      Icon(Icons.error_outline_rounded, color: AppColor.cError, size: 20),
+                      Icon(Icons.error_outline_rounded, color: colors.error, size: 20),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           state.error!.getDisplayMessage(context.l10n),
-                          style: TextStyle(color: AppColor.cError, fontSize: 13, fontWeight: FontWeight.w500),
+                          style: TextStyle(color: colors.error, fontSize: 13, fontWeight: FontWeight.w500),
                         ),
                       ),
                     ],
@@ -831,8 +831,8 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
                 height: 48,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColor.cMain,
-                    foregroundColor: AppColor.white,
+                    backgroundColor: colors.primary,
+                    foregroundColor: AppColors.white,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                   ),
                   onPressed: state.isSaving ? null : _submit,
@@ -864,10 +864,10 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 10),
           decoration: BoxDecoration(
-            color: isSelected ? AppColor.cMain.withValues(alpha: 0.1) : colors.surfaceSubtle,
+            color: isSelected ? colors.primary.withValues(alpha: 0.1) : colors.surfaceSubtle,
             borderRadius: BorderRadius.circular(10),
             border: Border.all(
-              color: isSelected ? AppColor.cMain : colors.cardBorder,
+              color: isSelected ? colors.primary : colors.cardBorder,
             ),
           ),
           child: Row(
@@ -876,7 +876,7 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
               Icon(
                 icon,
                 size: 16,
-                color: isSelected ? AppColor.cMain : colors.textMuted,
+                color: isSelected ? colors.primary : colors.textMuted,
               ),
               const SizedBox(width: 4),
               Text(
@@ -884,7 +884,7 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                  color: isSelected ? AppColor.cMain : colors.textPrimary,
+                  color: isSelected ? colors.primary : colors.textPrimary,
                 ),
               ),
             ],

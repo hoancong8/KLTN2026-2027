@@ -17,6 +17,7 @@ class RegisterScreen extends ConsumerStatefulWidget {
 }
 
 class _RegisterScreenState extends ConsumerState<RegisterScreen> {
+  AppThemeColors get colors => context.colors;
   final _formKey = GlobalKey<FormState>();
   final _fullNameCtl = TextEditingController();
   final _emailCtl = TextEditingController();
@@ -45,9 +46,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
     if (_passwordCtl.text != _confirmPasswordCtl.text) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Mật khẩu xác nhận không khớp!'),
-          backgroundColor: AppColor.cRed,
+        SnackBar(
+          content: const Text('Mật khẩu xác nhận không khớp!'),
+          backgroundColor: colors.error,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -66,9 +67,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
     if (success && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Đăng ký thành công! Chào mừng bạn gia nhập hệ thống'),
-          backgroundColor: AppColor.cMain,
+        SnackBar(
+          content: const Text('Đăng ký thành công! Chào mừng bạn gia nhập hệ thống'),
+          backgroundColor: colors.primary,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -84,8 +85,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       backgroundColor: context.colors.background,
       appBar: AppBar(
         title: const Text('Đăng Ký Tài Khoản', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-        backgroundColor: AppColor.white,
-        foregroundColor: AppColor.cTitle,
+        backgroundColor: colors.surface,
+        foregroundColor: colors.textPrimary,
         elevation: 0.5,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
@@ -133,15 +134,15 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                             Container(
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
-                                color: AppColor.cMain.withValues(alpha: 0.2),
+                                color: colors.primary.withValues(alpha: 0.2),
                                 shape: BoxShape.circle,
                               ),
-                              child: const Icon(Icons.sports_tennis_rounded, color: AppColor.cMain, size: 36),
+                              child: Icon(Icons.sports_tennis_rounded, color: colors.primary, size: 36),
                             ),
                             const SizedBox(height: 12),
                             const Text(
                               'Cầu Lông Phong Trào Legends',
-                              style: TextStyle(color: AppColor.white, fontWeight: FontWeight.bold, fontSize: 18),
+                              style: TextStyle(color: AppColors.white, fontWeight: FontWeight.bold, fontSize: 18),
                             ),
                             const SizedBox(height: 4),
                             Text(
@@ -159,18 +160,18 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           padding: const EdgeInsets.all(12),
                           margin: const EdgeInsets.only(bottom: 16),
                           decoration: BoxDecoration(
-                            color: AppColor.cRed.withValues(alpha: 0.1),
+                            color: colors.error.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(10),
-                            border: Border.all(color: AppColor.cRed.withValues(alpha: 0.3)),
+                            border: Border.all(color: colors.error.withValues(alpha: 0.3)),
                           ),
                           child: Row(
                             children: [
-                              const Icon(Icons.error_outline, color: AppColor.cRed, size: 20),
+                              Icon(Icons.error_outline, color: colors.error, size: 20),
                               const SizedBox(width: 8),
                               Expanded(
                                 child: Text(
                                   state.errorMessage!,
-                                  style: const TextStyle(color: AppColor.cRed, fontSize: 13),
+                                  style: TextStyle(color: colors.error, fontSize: 13),
                                 ),
                               ),
                             ],
@@ -273,7 +274,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           suffixIcon: IconButton(
                             icon: Icon(
                               _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                              color: AppColor.cMuted,
+                              color: colors.textMuted,
                             ),
                             onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                           ),
@@ -297,7 +298,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           suffixIcon: IconButton(
                             icon: Icon(
                               _obscureConfirmPassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                              color: AppColor.cMuted,
+                              color: colors.textMuted,
                             ),
                             onPressed: () => setState(() => _obscureConfirmPassword = !_obscureConfirmPassword),
                           ),
@@ -314,8 +315,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       ElevatedButton(
                         onPressed: state.isLoading ? null : _handleRegister,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColor.cMain,
-                          foregroundColor: AppColor.white,
+                          backgroundColor: colors.primary,
+                          foregroundColor: AppColors.white,
                           padding: const EdgeInsets.symmetric(vertical: 15),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                           elevation: 2,
@@ -331,12 +332,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Text('Đã có tài khoản? ', style: TextStyle(color: AppColor.cMuted, fontSize: 14)),
+                          Text('Đã có tài khoản? ', style: TextStyle(color: colors.textMuted, fontSize: 14)),
                           GestureDetector(
                             onTap: () => context.go(AppConfig.loginPath),
-                            child: const Text(
+                            child: Text(
                               'Đăng nhập ngay',
-                              style: TextStyle(color: AppColor.cMain, fontWeight: FontWeight.bold, fontSize: 14),
+                              style: TextStyle(color: colors.primary, fontWeight: FontWeight.bold, fontSize: 14),
                             ),
                           ),
                         ],
@@ -358,7 +359,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       padding: const EdgeInsets.only(bottom: 6),
       child: Text(
         label,
-        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColor.cTitle),
+        style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: colors.textPrimary),
       ),
     );
   }
@@ -366,12 +367,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   InputDecoration _inputDecoration({String? hint, IconData? prefixIcon, Widget? suffixIcon}) {
     return InputDecoration(
       hintText: hint,
-      hintStyle: const TextStyle(color: AppColor.cMuted, fontSize: 13),
-      prefixIcon: prefixIcon != null ? Icon(prefixIcon, color: AppColor.cMuted, size: 20) : null,
+      hintStyle: TextStyle(color: colors.textMuted, fontSize: 13),
+      prefixIcon: prefixIcon != null ? Icon(prefixIcon, color: colors.textMuted, size: 20) : null,
       suffixIcon: suffixIcon,
       contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       filled: true,
-      fillColor: AppColor.white,
+      fillColor: colors.cardBackground,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
         borderSide: const BorderSide(color: AppColors.border),
@@ -382,7 +383,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: AppColor.cMain, width: 1.8),
+        borderSide: BorderSide(color: colors.primary, width: 1.8),
       ),
     );
   }

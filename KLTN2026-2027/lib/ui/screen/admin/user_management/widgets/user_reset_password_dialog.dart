@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:kltn2026_2027/app/consts/app_color.dart';
+import '../../../../../../app/theme/theme.dart';
 import 'package:kltn2026_2027/domain/entities/user_profile.dart';
 
 class UserResetPasswordDialog extends StatefulWidget {
@@ -38,9 +38,10 @@ class _UserResetPasswordDialogState extends State<UserResetPasswordDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      backgroundColor: AppColor.white,
+      backgroundColor: colors.surface,
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 420),
         child: Padding(
@@ -54,17 +55,17 @@ class _UserResetPasswordDialogState extends State<UserResetPasswordDialog> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
+                    Text(
                       'Đặt lại mật khẩu',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
-                        color: AppColor.cTitle,
+                        color: colors.textPrimary,
                       ),
                     ),
                     IconButton(
                       onPressed: () => Navigator.of(context).pop(),
-                      icon: const Icon(Icons.close_rounded, size: 20, color: AppColor.cMuted),
+                      icon: Icon(Icons.close_rounded, size: 20, color: colors.textMuted),
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
                     ),
@@ -73,14 +74,14 @@ class _UserResetPasswordDialogState extends State<UserResetPasswordDialog> {
                 const SizedBox(height: 8),
                 Text(
                   'Đặt lại mật khẩu cho tài khoản ${widget.user.userName.isNotEmpty ? widget.user.userName : widget.user.email}',
-                  style: const TextStyle(fontSize: 13, color: AppColor.cMuted),
+                  style: TextStyle(fontSize: 13, color: colors.textMuted),
                 ),
                 const SizedBox(height: 20),
 
                 // Mật khẩu mới
-                const Text(
+                Text(
                   'Mật khẩu mới *',
-                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColor.cTitle),
+                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: colors.textPrimary),
                 ),
                 const SizedBox(height: 6),
                 TextFormField(
@@ -88,28 +89,28 @@ class _UserResetPasswordDialogState extends State<UserResetPasswordDialog> {
                   obscureText: _obscurePassword,
                   decoration: InputDecoration(
                     hintText: 'Nhập mật khẩu mới',
-                    hintStyle: const TextStyle(fontSize: 13, color: AppColor.cMuted),
-                    prefixIcon: const Icon(Icons.lock_outline_rounded, size: 18, color: AppColor.cMuted),
+                    hintStyle: TextStyle(fontSize: 13, color: colors.textMuted),
+                    prefixIcon: Icon(Icons.lock_outline_rounded, size: 18, color: colors.textMuted),
                     suffixIcon: IconButton(
                       icon: Icon(
                         _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
                         size: 18,
-                        color: AppColor.cMuted,
+                        color: colors.textMuted,
                       ),
                       onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                     ),
                     contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: AppColor.cDivider),
+                      borderSide: BorderSide(color: colors.cardBorder),
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: AppColor.cDivider),
+                      borderSide: BorderSide(color: colors.cardBorder),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: AppColor.cMain, width: 1.5),
+                      borderSide: BorderSide(color: colors.primary, width: 1.5),
                     ),
                   ),
                   validator: (v) {
@@ -122,9 +123,9 @@ class _UserResetPasswordDialogState extends State<UserResetPasswordDialog> {
                 const SizedBox(height: 16),
 
                 // Xác nhận mật khẩu mới
-                const Text(
+                Text(
                   'Xác nhận mật khẩu mới *',
-                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColor.cTitle),
+                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: colors.textPrimary),
                 ),
                 const SizedBox(height: 6),
                 TextFormField(
@@ -132,20 +133,20 @@ class _UserResetPasswordDialogState extends State<UserResetPasswordDialog> {
                   obscureText: _obscurePassword,
                   decoration: InputDecoration(
                     hintText: 'Nhập lại mật khẩu mới',
-                    hintStyle: const TextStyle(fontSize: 13, color: AppColor.cMuted),
-                    prefixIcon: const Icon(Icons.lock_outline_rounded, size: 18, color: AppColor.cMuted),
+                    hintStyle: TextStyle(fontSize: 13, color: colors.textMuted),
+                    prefixIcon: Icon(Icons.lock_outline_rounded, size: 18, color: colors.textMuted),
                     contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: AppColor.cDivider),
+                      borderSide: BorderSide(color: colors.cardBorder),
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: AppColor.cDivider),
+                      borderSide: BorderSide(color: colors.cardBorder),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: AppColor.cMain, width: 1.5),
+                      borderSide: BorderSide(color: colors.primary, width: 1.5),
                     ),
                   ),
                   validator: (v) {
@@ -162,14 +163,14 @@ class _UserResetPasswordDialogState extends State<UserResetPasswordDialog> {
                   children: [
                     TextButton(
                       onPressed: () => Navigator.of(context).pop(),
-                      child: const Text('Hủy', style: TextStyle(color: AppColor.cMuted)),
+                      child: Text('Hủy', style: TextStyle(color: colors.textMuted)),
                     ),
                     const SizedBox(width: 10),
                     ElevatedButton(
                       onPressed: _handleSubmit,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColor.cMain,
-                        foregroundColor: AppColor.white,
+                        backgroundColor: colors.primary,
+                        foregroundColor: AppColors.white,
                         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                       ),

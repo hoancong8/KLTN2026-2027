@@ -318,9 +318,12 @@ class _RecruitmentCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(14),
         side: BorderSide(color: colors.cardBorder),
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
+      child: InkWell(
+        onTap: () => context.push(AppConfig.sessionDetailRoutePath(match.sessionId)),
+        borderRadius: BorderRadius.circular(14),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
@@ -416,21 +419,34 @@ class _RecruitmentCard extends StatelessWidget {
                   ],
                 ),
                 const Spacer(),
+                OutlinedButton.icon(
+                  onPressed: () => context.push(AppConfig.sessionDetailRoutePath(match.sessionId)),
+                  icon: const Icon(Icons.info_outline_rounded, size: 15),
+                  label: const Text('Chi tiết', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: colors.textPrimary,
+                    side: BorderSide(color: colors.cardBorder),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  ),
+                ),
+                const SizedBox(width: 8),
                 ElevatedButton(
                   onPressed: isJoining ? null : onJoin,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.roleViolet,
                     foregroundColor: AppColors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                   ),
-                  child: const Text('Nhận Suất Ngay', style: TextStyle(fontWeight: FontWeight.bold)),
+                  child: const Text('Nhận Suất', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
                 ),
               ],
             ),
           ],
         ),
       ),
-    );
+    ),
+  );
   }
 }

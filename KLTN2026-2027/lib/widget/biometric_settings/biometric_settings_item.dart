@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kltn2026_2027/app/consts/app_color.dart';
+import '../../app/theme/theme.dart';
 import 'package:kltn2026_2027/app/provider.dart';
 import 'package:kltn2026_2027/app/provider/localization_provider.dart';
 import 'package:kltn2026_2027/app/l10n/flutter_app_messages.dart';
@@ -14,6 +14,7 @@ class BiometricSettingsItem extends ConsumerStatefulWidget {
 }
 
 class _BiometricSettingsItemState extends ConsumerState<BiometricSettingsItem> {
+  AppThemeColors get colors => context.colors;
   bool _biometricEnabled = false;
   bool _loading = true;
 
@@ -43,7 +44,7 @@ class _BiometricSettingsItemState extends ConsumerState<BiometricSettingsItem> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(l10n.auth_biometric_login_required),
-          backgroundColor: AppColor.cNeedCheck,
+          backgroundColor: colors.warning,
         ),
       );
       return;
@@ -65,12 +66,12 @@ class _BiometricSettingsItemState extends ConsumerState<BiometricSettingsItem> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: AppColor.cMain.withValues(alpha: 0.1),
+                  color: colors.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(
                   Icons.pin_outlined,
-                  color: AppColor.cMain,
+                  color: colors.primary,
                   size: 20,
                 ),
               ),
@@ -80,7 +81,7 @@ class _BiometricSettingsItemState extends ConsumerState<BiometricSettingsItem> {
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
-                  color: AppColor.cTitle,
+                  color: colors.textPrimary,
                 ),
               ),
             ],
@@ -91,7 +92,7 @@ class _BiometricSettingsItemState extends ConsumerState<BiometricSettingsItem> {
             children: [
               Text(
                 l10n.auth_biometric_pin_subtitle,
-                style: TextStyle(color: AppColor.cMuted, fontSize: 14),
+                style: TextStyle(color: colors.textMuted, fontSize: 14),
               ),
               const SizedBox(height: 16),
               TextField(
@@ -99,24 +100,24 @@ class _BiometricSettingsItemState extends ConsumerState<BiometricSettingsItem> {
                 obscureText: true,
                 keyboardType: TextInputType.number,
                 maxLength: 6,
-                style: TextStyle(color: AppColor.cTitle, fontSize: 16),
+                style: TextStyle(color: colors.textPrimary, fontSize: 16),
                 decoration: InputDecoration(
                   labelText: l10n.auth_biometric_pin_label,
-                  labelStyle: TextStyle(color: AppColor.cMuted),
-                  prefixIcon: Icon(Icons.lock_outline, color: AppColor.cMuted),
+                  labelStyle: TextStyle(color: colors.textMuted),
+                  prefixIcon: Icon(Icons.lock_outline, color: colors.textMuted),
                   filled: true,
-                  fillColor: AppColor.cGray_50,
+                  fillColor: colors.surfaceSubtle,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide.none,
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: AppColor.cDivider),
+                    borderSide: BorderSide(color: colors.cardBorder),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: AppColor.cMain, width: 2),
+                    borderSide: BorderSide(color: colors.primary, width: 2),
                   ),
                 ),
               ),
@@ -128,7 +129,7 @@ class _BiometricSettingsItemState extends ConsumerState<BiometricSettingsItem> {
               child: Text(
                 l10n.com_cancel,
                 style: TextStyle(
-                  color: AppColor.cMuted,
+                  color: colors.textMuted,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -155,8 +156,8 @@ class _BiometricSettingsItemState extends ConsumerState<BiometricSettingsItem> {
                 }
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColor.cMain,
-                foregroundColor: AppColor.white,
+                backgroundColor: colors.primary,
+                foregroundColor: AppColors.white,
                 elevation: 0,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
@@ -179,7 +180,7 @@ class _BiometricSettingsItemState extends ConsumerState<BiometricSettingsItem> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(l10n.auth_biometric_setup_success),
-          backgroundColor: AppColor.cMain,
+          backgroundColor: colors.primary,
         ),
       );
     }
@@ -195,7 +196,7 @@ class _BiometricSettingsItemState extends ConsumerState<BiometricSettingsItem> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(l10n.auth_biometric_unavailable),
-            backgroundColor: AppColor.cError,
+            backgroundColor: colors.error,
           ),
         );
         return;
@@ -208,7 +209,7 @@ class _BiometricSettingsItemState extends ConsumerState<BiometricSettingsItem> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(l10n.auth_biometric_disabled_success),
-            backgroundColor: AppColor.cMuted,
+            backgroundColor: colors.textMuted,
           ),
         );
       }
@@ -227,10 +228,10 @@ class _BiometricSettingsItemState extends ConsumerState<BiometricSettingsItem> {
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: AppColor.cMain.withValues(alpha: 0.1),
+                color: colors.primary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: Icon(Icons.fingerprint, color: AppColor.cMain, size: 22),
+              child: Icon(Icons.fingerprint, color: colors.primary, size: 22),
             ),
             const SizedBox(width: 14),
             Expanded(
@@ -242,13 +243,13 @@ class _BiometricSettingsItemState extends ConsumerState<BiometricSettingsItem> {
                     style: TextStyle(
                       fontWeight: FontWeight.w700,
                       fontSize: 15,
-                      color: AppColor.cTitle,
+                      color: colors.textPrimary,
                     ),
                   ),
                   const SizedBox(height: 2),
                   Text(
                     l10n.auth_biometric_checking,
-                    style: TextStyle(fontSize: 13, color: AppColor.cMuted),
+                    style: TextStyle(fontSize: 13, color: colors.textMuted),
                   ),
                 ],
               ),
@@ -258,7 +259,7 @@ class _BiometricSettingsItemState extends ConsumerState<BiometricSettingsItem> {
               height: 20,
               child: CircularProgressIndicator(
                 strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation<Color>(AppColor.cMain),
+                valueColor: AlwaysStoppedAnimation<Color>(colors.primary),
               ),
             ),
           ],
@@ -273,10 +274,10 @@ class _BiometricSettingsItemState extends ConsumerState<BiometricSettingsItem> {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: AppColor.cMain.withValues(alpha: 0.1),
+              color: colors.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(Icons.fingerprint, color: AppColor.cMain, size: 22),
+            child: Icon(Icons.fingerprint, color: colors.primary, size: 22),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -288,7 +289,7 @@ class _BiometricSettingsItemState extends ConsumerState<BiometricSettingsItem> {
                   style: TextStyle(
                     fontWeight: FontWeight.w700,
                     fontSize: 15,
-                    color: AppColor.cTitle,
+                    color: colors.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -296,7 +297,7 @@ class _BiometricSettingsItemState extends ConsumerState<BiometricSettingsItem> {
                   _biometricEnabled
                       ? l10n.auth_biometric_subtitle_enabled
                       : l10n.auth_biometric_subtitle_disabled,
-                  style: TextStyle(fontSize: 13, color: AppColor.cMuted),
+                  style: TextStyle(fontSize: 13, color: colors.textMuted),
                 ),
               ],
             ),
@@ -304,10 +305,10 @@ class _BiometricSettingsItemState extends ConsumerState<BiometricSettingsItem> {
           Switch(
             value: _biometricEnabled,
             onChanged: _toggleBiometric,
-            activeThumbColor: AppColor.cMain,
-            activeTrackColor: AppColor.cMain.withValues(alpha: 0.3),
-            inactiveThumbColor: AppColor.cMuted,
-            inactiveTrackColor: AppColor.cDivider,
+            activeThumbColor: colors.primary,
+            activeTrackColor: colors.primary.withValues(alpha: 0.3),
+            inactiveThumbColor: colors.textMuted,
+            inactiveTrackColor: colors.cardBorder,
           ),
         ],
       ),

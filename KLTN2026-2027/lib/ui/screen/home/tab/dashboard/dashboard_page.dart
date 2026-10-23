@@ -807,177 +807,211 @@ class DashboardPage extends ConsumerWidget {
     final timeStr = _formatSessionDateTime(item.startTime, item.endTime);
 
     return Container(
-      padding: AppSpacing.card,
       decoration: BoxDecoration(
         color: colors.cardBackground,
         borderRadius: AppRadius.card,
         border: Border.all(color: colors.cardBorder),
         boxShadow: context.isDark ? AppShadows.none : AppShadows.sm,
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Row(
+      child: Material(
+        color: AppColors.transparent,
+        borderRadius: AppRadius.card,
+        child: InkWell(
+          borderRadius: AppRadius.card,
+          onTap: () => context.push(AppConfig.sessionDetailRoutePath(item.sessionId)),
+          child: Padding(
+            padding: AppSpacing.card,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    AppNetworkImage(
-                      imageUrl: null,
-                      width: 26,
-                      height: 26,
-                      borderRadius: BorderRadius.circular(6),
-                      defaultFallbackIcon: Icons.groups_rounded,
-                      backgroundColor: colors.surfaceSubtle,
+                    Expanded(
+                      child: Row(
+                        children: [
+                          AppNetworkImage(
+                            imageUrl: null,
+                            width: 26,
+                            height: 26,
+                            borderRadius: BorderRadius.circular(6),
+                            defaultFallbackIcon: Icons.groups_rounded,
+                            backgroundColor: colors.surfaceSubtle,
+                          ),
+                          AppSpacing.gapW8,
+                          Expanded(
+                            child: Text(
+                              item.clubName,
+                              style: AppTypography.titleSmall.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: colors.textPrimary,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                    AppSpacing.gapW8,
+                    if (item.distanceKm != null)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: colors.surfaceSubtle,
+                          borderRadius: AppRadius.chip,
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.near_me_outlined, size: 10, color: colors.textSecondary),
+                            AppSpacing.gapW4,
+                            Text(
+                              l10n.home_distance_km(item.distanceKm!.toStringAsFixed(1)),
+                              style: AppTypography.labelSmall.copyWith(
+                                fontSize: 10,
+                                color: colors.textSecondary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    Icon(Icons.location_on_outlined, size: 13, color: colors.textSecondary),
+                    AppSpacing.gapW4,
                     Expanded(
                       child: Text(
-                        item.clubName,
-                        style: AppTypography.titleSmall.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: colors.textPrimary,
-                        ),
+                        item.courtLocation,
+                        style: AppTypography.bodySmall.copyWith(color: colors.textSecondary),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],
                 ),
-              ),
-              if (item.distanceKm != null)
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: colors.surfaceSubtle,
-                    borderRadius: AppRadius.chip,
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.near_me_outlined, size: 10, color: colors.textSecondary),
-                      AppSpacing.gapW4,
-                      Text(
-                        l10n.home_distance_km(item.distanceKm!.toStringAsFixed(1)),
-                        style: AppTypography.labelSmall.copyWith(
-                          fontSize: 10,
-                          color: colors.textSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          Row(
-            children: [
-              Icon(Icons.location_on_outlined, size: 13, color: colors.textSecondary),
-              AppSpacing.gapW4,
-              Expanded(
-                child: Text(
-                  item.courtLocation,
-                  style: AppTypography.bodySmall.copyWith(color: colors.textSecondary),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
-          ),
-          AppSpacing.gapH4,
-          Row(
-            children: [
-              Icon(Icons.access_time_rounded, size: 13, color: colors.textSecondary),
-              AppSpacing.gapW4,
-              Expanded(
-                child: Text(
-                  timeStr,
-                  style: AppTypography.bodySmall.copyWith(color: colors.textSecondary),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: colors.primary.withValues(alpha: 0.12),
-                      borderRadius: AppRadius.tag,
-                    ),
-                    child: Text(
-                      l10n.home_slots_remaining(item.slotsRemaining),
-                      style: AppTypography.labelSmall.copyWith(
-                        color: colors.primary,
-                        fontWeight: FontWeight.bold,
+                AppSpacing.gapH4,
+                Row(
+                  children: [
+                    Icon(Icons.access_time_rounded, size: 13, color: colors.textSecondary),
+                    AppSpacing.gapW4,
+                    Expanded(
+                      child: Text(
+                        timeStr,
+                        style: AppTypography.bodySmall.copyWith(color: colors.textSecondary),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                  ),
-                  AppSpacing.gapW4,
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: colors.accent.withValues(alpha: 0.15),
-                      borderRadius: AppRadius.tag,
-                    ),
-                    child: Text(
-                      '${context.l10n.home_skill_level_label}: ${item.minSkillLevel.displayName}',
-                      style: AppTypography.labelSmall.copyWith(
-                        color: colors.accent,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 10,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              ElevatedButton(
-                onPressed: isJoining
-                    ? null
-                    : () async {
-                        final success = await vm.joinRecruitment(item.id);
-                        if (context.mounted && success) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(l10n.home_joined_match_success),
-                              backgroundColor: colors.success,
-                              behavior: SnackBarBehavior.floating,
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: colors.primary.withValues(alpha: 0.12),
+                            borderRadius: AppRadius.tag,
+                          ),
+                          child: Text(
+                            l10n.home_slots_remaining(item.slotsRemaining),
+                            style: AppTypography.labelSmall.copyWith(
+                              color: colors.primary,
+                              fontWeight: FontWeight.bold,
                             ),
-                          );
-                        }
-                      },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: colors.primary,
-                  foregroundColor: AppColors.white,
-                  elevation: 0,
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                  visualDensity: VisualDensity.compact,
-                  shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
-                ),
-                child: isJoining
-                    ? const SizedBox(
-                        width: 14,
-                        height: 14,
-                        child: CircularProgressIndicator(color: AppColors.white, strokeWidth: 2),
-                      )
-                    : Text(
-                        l10n.home_join_match,
-                        style: AppTypography.labelSmall.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.white,
+                          ),
                         ),
-                      ),
-              ),
-            ],
+                        AppSpacing.gapW4,
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: colors.accent.withValues(alpha: 0.15),
+                            borderRadius: AppRadius.tag,
+                          ),
+                          child: Text(
+                            '${context.l10n.home_skill_level_label}: ${item.minSkillLevel.displayName}',
+                            style: AppTypography.labelSmall.copyWith(
+                              color: colors.accent,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 10,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        OutlinedButton(
+                          onPressed: () => context.push(AppConfig.sessionDetailRoutePath(item.sessionId)),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: colors.textPrimary,
+                            side: BorderSide(color: colors.cardBorder),
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                            visualDensity: VisualDensity.compact,
+                            shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                          ),
+                          child: Text(
+                            l10n.com_view_detail,
+                            style: AppTypography.labelSmall.copyWith(
+                              fontWeight: FontWeight.w600,
+                              color: colors.textPrimary,
+                            ),
+                          ),
+                        ),
+                        AppSpacing.gapW8,
+                        ElevatedButton(
+                          onPressed: isJoining
+                              ? null
+                              : () async {
+                                  final success = await vm.joinRecruitment(item.id);
+                                  if (context.mounted && success) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(l10n.home_joined_match_success),
+                                        backgroundColor: colors.success,
+                                        behavior: SnackBarBehavior.floating,
+                                      ),
+                                    );
+                                    context.push(AppConfig.sessionDetailRoutePath(item.sessionId));
+                                  }
+                                },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: colors.primary,
+                            foregroundColor: AppColors.white,
+                            elevation: 0,
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                            visualDensity: VisualDensity.compact,
+                            shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                          ),
+                          child: isJoining
+                              ? const SizedBox(
+                                  width: 14,
+                                  height: 14,
+                                  child: CircularProgressIndicator(color: AppColors.white, strokeWidth: 2),
+                                )
+                              : Text(
+                                  l10n.home_join_match,
+                                  style: AppTypography.labelSmall.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.white,
+                                  ),
+                                ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
-        ],
+        ),
       ),
     );
   }

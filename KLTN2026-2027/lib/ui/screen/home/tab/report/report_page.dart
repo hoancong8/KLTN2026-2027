@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kltn2026_2027/app/consts/app_color.dart';
+import '../../../../../app/theme/theme.dart';
 import 'package:kltn2026_2027/ui/screen/home/tab/report/widgets/report_mobile.dart';
 import 'package:kltn2026_2027/ui/screen/home/tab/report/widgets/report_tablet.dart';
 import 'package:kltn2026_2027/widget/responsive_layout.dart';
@@ -24,12 +24,13 @@ class _ReportPageState extends ConsumerState<ReportPage> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     final state = ref.watch(reportViewModelProvider);
 
     if (state.isLoading) {
       return Center(
         child: CircularProgressIndicator(
-          valueColor: AlwaysStoppedAnimation<Color>(AppColor.cMain),
+          valueColor: AlwaysStoppedAnimation<Color>(colors.primary),
         ),
       );
     }
@@ -42,19 +43,19 @@ class _ReportPageState extends ConsumerState<ReportPage> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppColor.cError.withValues(alpha: 0.1),
+                color: colors.error.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 Icons.error_outline,
-                color: AppColor.cError,
+                color: colors.error,
                 size: 48,
               ),
             ),
             const SizedBox(height: 16),
             Text(
               state.error!,
-              style: TextStyle(color: AppColor.cError),
+              style: TextStyle(color: colors.error),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16),
@@ -62,8 +63,8 @@ class _ReportPageState extends ConsumerState<ReportPage> {
               onPressed: () =>
                   ref.read(reportViewModelProvider.notifier).loadData(),
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColor.cMain,
-                foregroundColor: AppColor.white,
+                backgroundColor: colors.primary,
+                foregroundColor: AppColors.white,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -77,8 +78,8 @@ class _ReportPageState extends ConsumerState<ReportPage> {
     }
 
     return RefreshIndicator(
-        color: AppColor.cMain,
-        backgroundColor: AppColor.white,
+        color: colors.primary,
+        backgroundColor: colors.surface,
         onRefresh: () async {
           await ref.read(reportViewModelProvider.notifier).loadData();
         },

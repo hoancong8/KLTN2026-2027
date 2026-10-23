@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:kltn2026_2027/app/consts/app_color.dart';
+import '../../../../../../app/theme/theme.dart';
 import 'package:kltn2026_2027/app/consts/app_config.dart';
 import 'package:kltn2026_2027/app/l10n_gen/app_localizations.dart';
 import 'package:kltn2026_2027/app/provider.dart';
@@ -28,11 +28,12 @@ class LoginTablet extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final colors = context.colors;
     final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(loginViewModelProvider);
 
     return Scaffold(
-      backgroundColor: AppColor.white,
+      backgroundColor: colors.surface,
       body: GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),
         child: Row(
@@ -46,8 +47,8 @@ class LoginTablet extends ConsumerWidget {
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [
-                      AppColor.cMain.withValues(alpha: 0.15),
-                      AppColor.white,
+                      colors.primary.withValues(alpha: 0.15),
+                      colors.surface,
                     ],
                   ),
                 ),
@@ -82,6 +83,7 @@ class LoginTablet extends ConsumerWidget {
     AppLocalizations l10n,
     state,
   ) {
+    final colors = context.colors;
     final validator = ref.read(appValidatorProvider);
     return Form(
       key: formKey,
@@ -92,20 +94,20 @@ class LoginTablet extends ConsumerWidget {
             controller: usernameCtl,
             labelText: l10n.auth_username,
             hintText: l10n.auth_enter_username_hint,
-            prefixIcon: const Icon(
+            prefixIcon: Icon(
               Icons.person_outline,
-              color: AppColor.cMuted,
+              color: colors.textMuted,
               size: 22,
             ),
             keyboardType: TextInputType.emailAddress,
-            fillColor: AppColor.cGray_50,
-            borderColor: AppColor.cDivider,
-            focusedBorderColor: AppColor.cMain,
-            errorBorderColor: AppColor.cError,
-            textStyle: const TextStyle(fontSize: 15, color: AppColor.cTitle),
+            fillColor: colors.inputFill,
+            borderColor: colors.cardBorder,
+            focusedBorderColor: colors.primary,
+            errorBorderColor: colors.error,
+            textStyle: TextStyle(fontSize: 15, color: colors.textPrimary),
             hintStyle: TextStyle(
               fontSize: 15,
-              color: AppColor.cMuted.withValues(alpha: 0.7),
+              color: colors.textMuted.withValues(alpha: 0.7),
             ),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 16,
@@ -120,20 +122,20 @@ class LoginTablet extends ConsumerWidget {
             controller: passwordCtl,
             labelText: l10n.auth_password,
             hintText: l10n.auth_enter_password_hint,
-            prefixIcon: const Icon(
+            prefixIcon: Icon(
               Icons.lock_outline,
-              color: AppColor.cMuted,
+              color: colors.textMuted,
               size: 22,
             ),
             obscureText: true,
-            fillColor: AppColor.cGray_50,
-            borderColor: AppColor.cDivider,
-            focusedBorderColor: AppColor.cMain,
-            errorBorderColor: AppColor.cError,
-            textStyle: const TextStyle(fontSize: 15, color: AppColor.cTitle),
+            fillColor: colors.inputFill,
+            borderColor: colors.cardBorder,
+            focusedBorderColor: colors.primary,
+            errorBorderColor: colors.error,
+            textStyle: TextStyle(fontSize: 15, color: colors.textPrimary),
             hintStyle: TextStyle(
               fontSize: 15,
-              color: AppColor.cMuted.withValues(alpha: 0.7),
+              color: colors.textMuted.withValues(alpha: 0.7),
             ),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 16,
@@ -153,7 +155,7 @@ class LoginTablet extends ConsumerWidget {
               onPressed: () {}, // Add logic forgot password
               child: Text(
                 l10n.auth_forgot_password,
-                style: TextStyle(color: AppColor.cMuted, fontSize: 14),
+                style: TextStyle(color: colors.textMuted, fontSize: 14),
               ),
             ),
           ),
@@ -167,12 +169,12 @@ class LoginTablet extends ConsumerWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text('Chưa có tài khoản? ', style: TextStyle(color: AppColor.cMuted, fontSize: 14)),
+              Text('Chưa có tài khoản? ', style: TextStyle(color: colors.textMuted, fontSize: 14)),
               GestureDetector(
                 onTap: () => context.push(AppConfig.registerPath),
-                child: const Text(
+                child: Text(
                   'Đăng ký ngay',
-                  style: TextStyle(color: AppColor.cMain, fontWeight: FontWeight.bold, fontSize: 14),
+                  style: TextStyle(color: colors.primary, fontWeight: FontWeight.bold, fontSize: 14),
                 ),
               ),
             ],
@@ -187,15 +189,15 @@ class LoginTablet extends ConsumerWidget {
             const SizedBox(height: 42),
             Row(
               children: [
-                const Expanded(child: Divider(color: AppColor.cDivider)),
+                Expanded(child: Divider(color: colors.cardBorder)),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   child: Text(
                     'hoặc',
-                    style: TextStyle(fontSize: 12, color: AppColor.cMuted),
+                    style: TextStyle(fontSize: 12, color: colors.textMuted),
                   ),
                 ),
-                const Expanded(child: Divider(color: AppColor.cDivider)),
+                Expanded(child: Divider(color: colors.cardBorder)),
               ],
             ),
             const SizedBox(height: 16),

@@ -26,6 +26,7 @@ class _RoleManagementTabletState extends ConsumerState<RoleManagementTablet> {
   }
 
   void _showCreateRoleDialog(BuildContext context, RoleManagementState state) {
+    final colors = context.colors;
     showDialog(
       context: context,
       builder: (ctx) => RoleFormDialog(
@@ -43,9 +44,9 @@ class _RoleManagementTabletState extends ConsumerState<RoleManagementTablet> {
               );
           if (success) {
             messenger.showSnackBar(
-              const SnackBar(
-                content: Text('Tạo vai trò thành công'),
-                backgroundColor: AppColor.cMain,
+              SnackBar(
+                content: const Text('Tạo vai trò thành công'),
+                backgroundColor: colors.primary,
               ),
             );
           }
@@ -55,6 +56,7 @@ class _RoleManagementTabletState extends ConsumerState<RoleManagementTablet> {
   }
 
   void _showEditRoleDialog(BuildContext context, AppRole role, RoleManagementState state) {
+    final colors = context.colors;
     showDialog(
       context: context,
       builder: (ctx) => RoleFormDialog(
@@ -74,9 +76,9 @@ class _RoleManagementTabletState extends ConsumerState<RoleManagementTablet> {
               );
           if (success) {
             messenger.showSnackBar(
-              const SnackBar(
-                content: Text('Cập nhật vai trò thành công'),
-                backgroundColor: AppColor.cMain,
+              SnackBar(
+                content: const Text('Cập nhật vai trò thành công'),
+                backgroundColor: colors.primary,
               ),
             );
           }
@@ -86,23 +88,24 @@ class _RoleManagementTabletState extends ConsumerState<RoleManagementTablet> {
   }
 
   void _showDeleteConfirmDialog(BuildContext context, AppRole role) {
+    final colors = context.colors;
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        backgroundColor: AppColor.white,
-        title: const Text(
+        backgroundColor: colors.surface,
+        title: Text(
           'Xác nhận xóa vai trò',
-          style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: AppColor.cTitle),
+          style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: colors.textPrimary),
         ),
         content: Text(
           'Bạn có chắc chắn muốn xóa vai trò "${role.name}"? Hành động này không thể hoàn tác.',
-          style: const TextStyle(fontSize: 14, color: AppColor.cMuted),
+          style: TextStyle(fontSize: 14, color: colors.textMuted),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Hủy', style: TextStyle(color: AppColor.cMuted)),
+            child: Text('Hủy', style: TextStyle(color: colors.textMuted)),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -113,16 +116,16 @@ class _RoleManagementTabletState extends ConsumerState<RoleManagementTablet> {
                   .deleteRole(role.id);
               if (success) {
                 messenger.showSnackBar(
-                  const SnackBar(
-                    content: Text('Đã xóa vai trò thành công'),
-                    backgroundColor: AppColor.cMain,
+                  SnackBar(
+                    content: const Text('Đã xóa vai trò thành công'),
+                    backgroundColor: colors.primary,
                   ),
                 );
               }
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.error,
-              foregroundColor: AppColor.white,
+              foregroundColor: AppColors.white,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             ),
             child: const Text('Xác nhận xóa'),
@@ -147,24 +150,24 @@ class _RoleManagementTabletState extends ConsumerState<RoleManagementTablet> {
             // 1. Top Header Bar (Tiêu đề + Nút Thêm)
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-              color: AppColor.white,
+              color: colors.surface,
               child: Row(
                 children: [
                   if (Navigator.of(context).canPop()) ...[
                     IconButton(
-                      icon: const Icon(Icons.arrow_back_rounded, color: AppColor.cTitle),
+                      icon: Icon(Icons.arrow_back_rounded, color: colors.textPrimary),
                       onPressed: () => Navigator.of(context).pop(),
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
                     ),
                     const SizedBox(width: 12),
                   ],
-                  const Text(
+                  Text(
                     'Quản lý vai trò',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w700,
-                      color: AppColor.cTitle,
+                      color: colors.textPrimary,
                     ),
                   ),
                   const Spacer(),
@@ -175,8 +178,8 @@ class _RoleManagementTabletState extends ConsumerState<RoleManagementTablet> {
                       icon: const Icon(Icons.add_rounded, size: 18),
                       label: const Text('Thêm', style: TextStyle(fontWeight: FontWeight.w600)),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColor.cMain,
-                        foregroundColor: AppColor.white,
+                        backgroundColor: colors.primary,
+                        foregroundColor: AppColors.white,
                         elevation: 0,
                         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
                         shape: RoundedRectangleBorder(
@@ -188,22 +191,22 @@ class _RoleManagementTabletState extends ConsumerState<RoleManagementTablet> {
                 ],
               ),
             ),
-            const Divider(height: 1, color: AppColor.cDivider),
+            Divider(height: 1, color: colors.cardBorder),
 
             // 2. Thanh tìm kiếm
             Container(
               padding: const EdgeInsets.fromLTRB(20, 14, 20, 14),
-              color: AppColor.white,
+              color: colors.surface,
               child: TextField(
                 controller: _searchController,
                 onChanged: (val) => vm.setSearchQuery(val),
                 decoration: InputDecoration(
                   hintText: 'Tìm vai trò...',
-                  hintStyle: const TextStyle(fontSize: 13, color: AppColor.cMuted),
-                  prefixIcon: const Icon(Icons.search_rounded, size: 20, color: AppColor.cMuted),
+                  hintStyle: TextStyle(fontSize: 13, color: colors.textMuted),
+                  prefixIcon: Icon(Icons.search_rounded, size: 20, color: colors.textMuted),
                   suffixIcon: _searchController.text.isNotEmpty
                       ? IconButton(
-                          icon: const Icon(Icons.clear_rounded, size: 18, color: AppColor.cMuted),
+                          icon: Icon(Icons.clear_rounded, size: 18, color: colors.textMuted),
                           onPressed: () {
                             _searchController.clear();
                             vm.setSearchQuery('');
@@ -220,15 +223,15 @@ class _RoleManagementTabletState extends ConsumerState<RoleManagementTablet> {
                 ),
               ),
             ),
-            const Divider(height: 1, color: AppColor.cDivider),
+            Divider(height: 1, color: colors.cardBorder),
 
             // 3. Danh sách Grid trên Tablet
             Expanded(
               child: state.isLoading && state.roles.isEmpty
-                  ? const Center(child: CircularProgressIndicator(color: AppColor.cMain))
+                  ? Center(child: CircularProgressIndicator(color: colors.primary))
                   : RefreshIndicator(
                       onRefresh: () => vm.loadRoles(),
-                      color: AppColor.cMain,
+                      color: colors.primary,
                       child: state.errorMessage != null && state.roles.isEmpty
                           ? ListView(
                               children: [
@@ -256,8 +259,8 @@ class _RoleManagementTabletState extends ConsumerState<RoleManagementTablet> {
                                           icon: const Icon(Icons.refresh_rounded, size: 18),
                                           label: const Text('Thử lại'),
                                           style: ElevatedButton.styleFrom(
-                                            backgroundColor: AppColor.cMain,
-                                            foregroundColor: AppColor.white,
+                                            backgroundColor: colors.primary,
+                                            foregroundColor: AppColors.white,
                                             shape: RoundedRectangleBorder(
                                               borderRadius: BorderRadius.circular(10),
                                             ),
@@ -279,15 +282,15 @@ class _RoleManagementTabletState extends ConsumerState<RoleManagementTablet> {
                                         children: [
                                           Icon(Icons.shield_outlined, size: 56, color: AppColors.neutral300),
                                           const SizedBox(height: 12),
-                                          const Text(
+                                          Text(
                                             'Không tìm thấy vai trò nào',
                                             style: TextStyle(
-                                                fontSize: 15, fontWeight: FontWeight.w700, color: AppColor.cTitle),
+                                                fontSize: 15, fontWeight: FontWeight.w700, color: colors.textPrimary),
                                           ),
                                           const SizedBox(height: 4),
-                                          const Text(
+                                          Text(
                                             'Thử thay đổi từ khóa tìm kiếm',
-                                            style: TextStyle(fontSize: 13, color: AppColor.cMuted),
+                                            style: TextStyle(fontSize: 13, color: colors.textMuted),
                                           ),
                                         ],
                                       ),
