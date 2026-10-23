@@ -469,39 +469,52 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
                 onPressed: isAtCurrentMonth ? null : _goToPreviousMonth,
                 splashRadius: 20,
               ),
-              Row(
-                children: [
-                  const Icon(
-                    Icons.calendar_month_rounded,
-                    size: 18,
-                    color: AppColors.primary,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Tháng ${_focusedMonth.month} / ${_focusedMonth.year}',
-                    style: TextStyle(
-                      fontSize: 14.5,
-                      fontWeight: FontWeight.bold,
-                      color: colors.textPrimary,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: AppColors.primary.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Text(
-                      '${_selectedDatesMap.length} ngày đã chọn',
-                      style: const TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.primary,
+              Expanded(
+                child: Wrap(
+                  alignment: WrapAlignment.center,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  spacing: 6,
+                  runSpacing: 4,
+                  children: [
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.calendar_month_rounded,
+                            size: 16,
+                            color: AppColors.primary,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            'Tháng ${_focusedMonth.month} / ${_focusedMonth.year}',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: colors.textPrimary,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  ),
-                ],
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        '${_selectedDatesMap.length} ngày đã chọn',
+                        style: const TextStyle(
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.primary,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
               IconButton(
                 icon: const Icon(Icons.chevron_right_rounded),
@@ -553,9 +566,9 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
             itemCount: leadingBlanks + totalDaysInMonth,
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 7,
-              crossAxisSpacing: 5,
-              mainAxisSpacing: 5,
-              childAspectRatio: 0.88,
+              crossAxisSpacing: 4,
+              mainAxisSpacing: 4,
+              childAspectRatio: 0.82,
             ),
             itemBuilder: (context, index) {
               if (index < leadingBlanks) {
@@ -578,22 +591,22 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
 
               return InkWell(
                 onTap: () => _toggleSpecificDate(date),
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(6),
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 150),
-                  padding: const EdgeInsets.all(2),
+                  padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
                   decoration: BoxDecoration(
                     color: isSelected
                         ? AppColors.primary.withValues(alpha: 0.12)
                         : colors.cardBackground,
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(6),
                     border: Border.all(
                       color: isSelected
                           ? AppColors.primary
                           : isToday
                               ? AppColors.primary
                               : colors.cardBorder,
-                      width: isSelected ? 1.8 : (isToday ? 1.5 : 1),
+                      width: isSelected ? 1.5 : (isToday ? 1.5 : 1),
                     ),
                     boxShadow: isSelected
                         ? [
@@ -605,61 +618,65 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
                           ]
                         : null,
                   ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      // Header o lich: Check icon & Date number
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 1),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(
-                            isSelected
-                                ? Icons.check_circle_rounded
-                                : Icons.radio_button_unchecked,
-                            size: 13,
-                            color: isSelected
-                                ? AppColors.primary
-                                : colors.cardBorder,
-                          ),
-                          Text(
-                            '$dayNumber',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: isSelected || isToday
-                                  ? FontWeight.bold
-                                  : FontWeight.w600,
-                              color: isSelected
-                                  ? AppColors.primary
-                                  : isToday
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (isSelected) ...[
+                                const Icon(
+                                  Icons.check_circle_rounded,
+                                  size: 11,
+                                  color: AppColors.primary,
+                                ),
+                                const SizedBox(width: 2),
+                              ],
+                              Text(
+                                '$dayNumber',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: isSelected || isToday
+                                      ? FontWeight.bold
+                                      : FontWeight.w600,
+                                  color: isSelected
                                       ? AppColors.primary
-                                      : colors.textPrimary,
-                            ),
+                                      : isToday
+                                          ? AppColors.primary
+                                          : colors.textPrimary,
+                                ),
+                              ),
+                            ],
                           ),
+                          if (isSelected && scheduleEntry != null) ...[
+                            const SizedBox(height: 2),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 3,
+                                vertical: 1,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppColors.primary,
+                                borderRadius: BorderRadius.circular(3),
+                              ),
+                              child: Text(
+                                _formatTime(scheduleEntry.startTime),
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.white,
+                                ),
+                              ),
+                            ),
+                          ],
                         ],
                       ),
-
-                      // Footer o lich: Gio bat dau neu duoc chon
-                      if (isSelected && scheduleEntry != null)
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.symmetric(vertical: 1.5),
-                          decoration: BoxDecoration(
-                            color: AppColors.primary,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Text(
-                            _formatTime(scheduleEntry.startTime),
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(
-                              fontSize: 9.5,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.white,
-                            ),
-                          ),
-                        )
-                      else
-                        const SizedBox(height: 12),
-                    ],
+                    ),
                   ),
                 ),
               );
@@ -669,16 +686,22 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
           const SizedBox(height: 8),
 
           // Chu thich duoi lich
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.touch_app_outlined, size: 14, color: colors.textMuted),
-              SizedBox(width: 4),
-              Text(
-                'Tích vào từng ngày bạn muốn đi chơi để chọn ngày đó',
-                style: TextStyle(fontSize: 11, color: colors.textMuted),
-              ),
-            ],
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.touch_app_outlined, size: 14, color: colors.textMuted),
+                const SizedBox(width: 4),
+                Flexible(
+                  child: Text(
+                    'Tích vào từng ngày bạn muốn đi chơi để chọn ngày đó',
+                    style: TextStyle(fontSize: 11, color: colors.textMuted),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -693,15 +716,18 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              'Chọn nhanh theo thứ trong tháng:',
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: colors.textPrimary,
+            Expanded(
+              child: Text(
+                'Chọn nhanh theo thứ trong tháng:',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: colors.textPrimary,
+                ),
               ),
             ),
-            if (_selectedDatesMap.isNotEmpty)
+            if (_selectedDatesMap.isNotEmpty) ...[
+              const SizedBox(width: 8),
               InkWell(
                 onTap: _clearAllSelectedDates,
                 child: const Text(
@@ -713,32 +739,41 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
                   ),
                 ),
               ),
+            ],
           ],
         ),
         const SizedBox(height: 6),
 
         // Cac nut thu T2 -> CN
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: _weekdayOrder.map((dow) {
             final dayName = _getDayName(dow);
 
-            return InkWell(
-              onTap: () => _toggleAllDatesOfWeekdayInFocusedMonth(dow),
-              borderRadius: BorderRadius.circular(8),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
-                decoration: BoxDecoration(
-                  color: AppColors.surfaceSubtle,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: AppColors.borderStrong),
-                ),
-                child: Text(
-                  dayName,
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                    color: colors.textPrimary,
+            return Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 1.5),
+                child: InkWell(
+                  onTap: () => _toggleAllDatesOfWeekdayInFocusedMonth(dow),
+                  borderRadius: BorderRadius.circular(6),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 6),
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: AppColors.surfaceSubtle,
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: AppColors.borderStrong),
+                    ),
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        dayName,
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: colors.textPrimary,
+                        ),
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -836,28 +871,31 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
                         ]
                       : null,
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.lock_clock_rounded,
-                      size: 15,
-                      color: _timeMode == ScheduleTimeMode.fixed
-                          ? AppColors.primary
-                          : colors.textMuted,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      'Giờ cố định ($selectedCount ngày)',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.lock_clock_rounded,
+                        size: 15,
                         color: _timeMode == ScheduleTimeMode.fixed
                             ? AppColors.primary
                             : colors.textMuted,
                       ),
-                    ),
-                  ],
+                      const SizedBox(width: 6),
+                      Text(
+                        'Giờ cố định ($selectedCount ngày)',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: _timeMode == ScheduleTimeMode.fixed
+                              ? AppColors.primary
+                              : colors.textMuted,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -888,28 +926,31 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
                         ]
                       : null,
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.tune_rounded,
-                      size: 15,
-                      color: _timeMode == ScheduleTimeMode.custom
-                          ? AppColors.primary
-                          : colors.textMuted,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      'Giờ tùy chỉnh từng ngày',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.tune_rounded,
+                        size: 15,
                         color: _timeMode == ScheduleTimeMode.custom
                             ? AppColors.primary
                             : colors.textMuted,
                       ),
-                    ),
-                  ],
+                      const SizedBox(width: 6),
+                      Text(
+                        'Giờ tùy chỉnh từng ngày',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: _timeMode == ScheduleTimeMode.custom
+                            ? AppColors.primary
+                            : colors.textMuted,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -935,19 +976,30 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
+          Wrap(
+            spacing: 8,
+            runSpacing: 4,
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
             children: [
-              const Icon(Icons.schedule_rounded, size: 16, color: AppColors.primary),
-              const SizedBox(width: 6),
-              Text(
-                'Khung giờ áp dụng chung:',
-                style: TextStyle(
-                  fontSize: 12.5,
-                  fontWeight: FontWeight.bold,
-                  color: colors.textPrimary,
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.schedule_rounded, size: 16, color: AppColors.primary),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Khung giờ áp dụng chung:',
+                      style: TextStyle(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.bold,
+                        color: colors.textPrimary,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              const Spacer(),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
@@ -1087,14 +1139,17 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              'Cài đặt giờ riêng cho ${sortedKeys.length} ngày đã tích:',
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-                color: colors.textPrimary,
+            Expanded(
+              child: Text(
+                'Cài đặt giờ riêng cho ${sortedKeys.length} ngày đã tích:',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: colors.textPrimary,
+                ),
               ),
             ),
+            const SizedBox(width: 8),
             Text(
               'Tháng ${_focusedMonth.month}/${_focusedMonth.year}',
               style: TextStyle(fontSize: 11, color: colors.textMuted),

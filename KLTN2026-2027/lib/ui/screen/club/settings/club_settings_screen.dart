@@ -685,26 +685,28 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                             AppSpacing.gapH16,
                             _buildSkillLevelSelector(canManageInfo),
                             AppSpacing.gapH16,
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                              decoration: BoxDecoration(
-                                color: colors.surfaceSubtle,
+                            Material(
+                              color: colors.surfaceSubtle,
+                              shape: RoundedRectangleBorder(
                                 borderRadius: AppRadius.borderMd,
-                                border: Border.all(color: colors.cardBorder),
+                                side: BorderSide(color: colors.cardBorder),
                               ),
-                              child: SwitchListTile(
-                                contentPadding: EdgeInsets.zero,
-                                activeThumbColor: colors.primary,
-                                title: Text(
-                                  'Mở tuyển thành viên mới',
-                                  style: AppTypography.titleSmall.bold.colored(colors.textPrimary),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                                child: SwitchListTile(
+                                  contentPadding: EdgeInsets.zero,
+                                  activeThumbColor: colors.primary,
+                                  title: Text(
+                                    'Mở tuyển thành viên mới',
+                                    style: AppTypography.titleSmall.bold.colored(colors.textPrimary),
+                                  ),
+                                  subtitle: Text(
+                                    'Cho phép người chơi khác tìm thấy và nộp đơn gia nhập CLB',
+                                    style: AppTypography.bodySmall.colored(colors.textMuted),
+                                  ),
+                                  value: _isRecruiting,
+                                  onChanged: canManageInfo ? (val) => setState(() => _isRecruiting = val) : null,
                                 ),
-                                subtitle: Text(
-                                  'Cho phép người chơi khác tìm thấy và nộp đơn gia nhập CLB',
-                                  style: AppTypography.bodySmall.colored(colors.textMuted),
-                                ),
-                                value: _isRecruiting,
-                                onChanged: canManageInfo ? (val) => setState(() => _isRecruiting = val) : null,
                               ),
                             ),
                           ],
@@ -885,15 +887,17 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                               style: AppTypography.labelSmall.colored(colors.textMuted),
                             ),
                             AppSpacing.gapH12,
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
                                   'Làm tròn hóa đơn VietQR:',
                                   style: AppTypography.labelSmall.bold.colored(colors.textSecondary),
                                 ),
+                                AppSpacing.gapH8,
                                 Wrap(
                                   spacing: 6,
+                                  runSpacing: 6,
                                   children: [1000, 2000, 5000].map((rule) {
                                     final isSelected = _roundRule == rule;
                                     return ChoiceChip(
@@ -936,16 +940,22 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                                   Row(
                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     children: [
-                                      Row(
-                                        children: [
-                                          Icon(Icons.calendar_month_rounded, size: 17, color: colors.success),
-                                          AppSpacing.gapW8,
-                                          Text(
-                                            'Hội viên Cố định (Gói Tháng)',
-                                            style: AppTypography.labelMedium.bold.colored(colors.textPrimary),
-                                          ),
-                                        ],
+                                      Expanded(
+                                        child: Row(
+                                          children: [
+                                            Icon(Icons.calendar_month_rounded, size: 17, color: colors.success),
+                                            AppSpacing.gapW8,
+                                            Flexible(
+                                              child: Text(
+                                                'Hội viên Cố định (Gói Tháng)',
+                                                style: AppTypography.labelMedium.bold.colored(colors.textPrimary),
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
                                       ),
+                                      AppSpacing.gapW8,
                                       Container(
                                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
                                         decoration: BoxDecoration(
@@ -1032,16 +1042,22 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                                   Row(
                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     children: [
-                                      Row(
-                                        children: [
-                                          Icon(Icons.sports_tennis_rounded, size: 17, color: colors.primary),
-                                          AppSpacing.gapW8,
-                                          Text(
-                                            'Hội viên Đóng theo buổi (DAILY)',
-                                            style: AppTypography.labelMedium.bold.colored(colors.textPrimary),
-                                          ),
-                                        ],
+                                      Expanded(
+                                        child: Row(
+                                          children: [
+                                            Icon(Icons.sports_tennis_rounded, size: 17, color: colors.primary),
+                                            AppSpacing.gapW8,
+                                            Flexible(
+                                              child: Text(
+                                                'Hội viên Đóng theo buổi (DAILY)',
+                                                style: AppTypography.labelMedium.bold.colored(colors.textPrimary),
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
                                       ),
+                                      AppSpacing.gapW8,
                                       Container(
                                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
                                         decoration: BoxDecoration(
@@ -1123,16 +1139,22 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                                   Row(
                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     children: [
-                                      Row(
-                                        children: [
-                                          Icon(Icons.person_pin_circle_outlined, size: 18, color: colors.warning),
-                                          AppSpacing.gapW8,
-                                          Text(
-                                            'Khách vãng lai / Giao lưu (GUEST)',
-                                            style: AppTypography.labelMedium.bold.colored(colors.textPrimary),
-                                          ),
-                                        ],
+                                      Expanded(
+                                        child: Row(
+                                          children: [
+                                            Icon(Icons.person_pin_circle_outlined, size: 18, color: colors.warning),
+                                            AppSpacing.gapW8,
+                                            Flexible(
+                                              child: Text(
+                                                'Khách vãng lai / Giao lưu (GUEST)',
+                                                style: AppTypography.labelMedium.bold.colored(colors.textPrimary),
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
                                       ),
+                                      AppSpacing.gapW8,
                                       Container(
                                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
                                         decoration: BoxDecoration(
@@ -1303,9 +1325,12 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                                           ),
                                         ),
                                         AppSpacing.gapW8,
-                                        Text(
-                                          'Quản trị đa vai trò',
-                                          style: AppTypography.labelSmall.semiBold.colored(colors.textMuted),
+                                        Expanded(
+                                          child: Text(
+                                            'Quản trị đa vai trò',
+                                            style: AppTypography.labelSmall.semiBold.colored(colors.textMuted),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
                                         ),
                                       ],
                                     ),
@@ -1483,9 +1508,12 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
             children: [
               Icon(Icons.calculate_outlined, size: 17, color: colors.primary),
               AppSpacing.gapW8,
-              Text(
-                'Bảng Tóm Tắt Áp Dụng Khi Chốt Sổ Buổi Chơi',
-                style: AppTypography.labelMedium.bold.colored(colors.primary),
+              Flexible(
+                child: Text(
+                  'Bảng Tóm Tắt Áp Dụng Khi Chốt Sổ Buổi Chơi',
+                  style: AppTypography.labelMedium.bold.colored(colors.primary),
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
             ],
           ),
@@ -1515,20 +1543,29 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
   }
 
   Widget _buildPreviewRow({required String label, required String value}) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Flexible(
-          child: Text(
-            label,
-            style: AppTypography.labelSmall.colored(colors.textSecondary),
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            flex: 5,
+            child: Text(
+              label,
+              style: AppTypography.labelSmall.colored(colors.textSecondary),
+            ),
           ),
-        ),
-        Text(
-          value,
-          style: AppTypography.labelSmall.bold.colored(colors.textPrimary),
-        ),
-      ],
+          AppSpacing.gapW8,
+          Expanded(
+            flex: 6,
+            child: Text(
+              value,
+              textAlign: TextAlign.right,
+              style: AppTypography.labelSmall.bold.colored(colors.textPrimary),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
