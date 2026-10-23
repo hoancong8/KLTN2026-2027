@@ -2,7 +2,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:kltn2026_2027/app/consts/app_config.dart';
 import 'package:kltn2026_2027/app/theme/theme.dart';
 import '../../../../../domain/entities/session/guest_recruitment.dart';
 import '../../../../../domain/enums/session_enums.dart';
@@ -243,6 +245,7 @@ class ExploreRecruitmentsPage extends ConsumerWidget {
                     behavior: SnackBarBehavior.floating,
                   ),
                 );
+                context.push(AppConfig.sessionDetailRoutePath(match.sessionId));
               }
             },
             child: const Text('Xác nhận nhận suất'),

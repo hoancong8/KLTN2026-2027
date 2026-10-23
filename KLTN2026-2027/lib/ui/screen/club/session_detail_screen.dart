@@ -179,7 +179,10 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
     final colors = context.colors;
     final slotsNeeded = (session.maxPlayers - session.confirmedCount).clamp(1, session.maxPlayers);
     final slotsCtl = TextEditingController(text: slotsNeeded.toString());
-    final costCtl = TextEditingController(text: '50000');
+    final suggestedCost = session.maxPlayers > 0 && session.courtRentalCost > 0
+        ? ((session.courtRentalCost / session.maxPlayers) / 1000).ceil() * 1000
+        : 50000;
+    final costCtl = TextEditingController(text: suggestedCost.toString());
     SkillLevel selectedLevel = SkillLevel.tb;
     double radiusKm = 5.0;
 
