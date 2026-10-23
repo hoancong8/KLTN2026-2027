@@ -30,7 +30,7 @@ class FakeSessionDetailNotifier extends StateNotifier<SessionDetailState> implem
 
 void main() {
   testWidgets('Renders SessionDetailScreen without errors on desktop and mobile', (tester) async {
-    tester.view.physicalSize = const Size(1920, 1080);
+    tester.view.physicalSize = const Size(1024, 496);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(() {
       tester.view.resetPhysicalSize();
@@ -53,8 +53,8 @@ void main() {
       status: SessionStatus.open,
       confirmedCount: 1,
       waitingCount: 0,
-      isBookedByCurrentUser: true,
-      currentUserBookingStatus: BookingStatus.confirmed,
+      isBookedByCurrentUser: false,
+      currentUserBookingStatus: null,
       currentUserQueueOrder: 0,
     );
 
@@ -99,5 +99,9 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Buổi sinh hoạt Thứ 2 (19:00 - 22:00)'), findsWidgets);
+    expect(find.text('Biểu Quyết Tham Gia'), findsOneWidget);
+    expect(tester.getRect(find.byType(AppBar)).bottom, 56.0);
+    expect(tester.getRect(find.byType(NestedScrollView)).height, greaterThan(200.0));
+    expect(tester.getRect(find.text('Biểu Quyết Tham Gia')).top, greaterThan(400.0));
   });
 }

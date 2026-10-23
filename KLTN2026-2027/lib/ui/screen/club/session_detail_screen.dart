@@ -1961,6 +1961,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
         ),
         child: SafeArea(
           child: Center(
+            heightFactor: 1.0,
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 800),
               child: Padding(
@@ -2035,6 +2036,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
       ),
       child: SafeArea(
         child: Center(
+          heightFactor: 1.0,
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 800),
             child: Padding(
