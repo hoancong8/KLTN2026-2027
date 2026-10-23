@@ -180,12 +180,10 @@ final isAdminUserProvider = Provider<bool>((ref) {
       userProfile.permissions.contains('System.Administrator');
 });
 
-/// Helper check permission trong CLB đang hoạt động
+/// Helper check permission trong CLB đang hoạt động (Contextual Multi-Club Dynamic RBAC)
 final hasClubPermissionProvider =
     Provider.family<bool, String>((ref, permissionCode) {
   if (permissionCode.isEmpty) return true;
-  final isAdmin = ref.watch(isAdminUserProvider);
-  if (isAdmin) return true;
 
   final activeContext = ref.watch(activeClubContextProvider);
   if (activeContext == null) return false;

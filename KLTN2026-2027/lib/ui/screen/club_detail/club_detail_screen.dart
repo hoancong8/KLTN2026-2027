@@ -141,10 +141,13 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
     });
 
     final club = state.club;
+    final currentProfile = ref.watch(currentUserProfileProvider);
     final activeContext = ref.watch(activeClubContextProvider);
     final isSameClub = activeContext?.clubId == widget.clubId;
-    final isHost = (club?.currentUserStatus.isHost ?? false) || (isSameClub && activeContext?.role == ClubRole.host);
+    final isHostOwner = club != null && currentProfile != null && club.host.userId == currentProfile.id;
+    final isHost = isHostOwner || (club?.currentUserStatus.isHost ?? false) || (isSameClub && activeContext?.role == ClubRole.host);
     final canManageRoles = isHost || (isSameClub && ref.hasClubPermission('MEMBER.ROLE.MANAGE'));
+    final canManageSchedule = isHost || (isSameClub && ref.hasClubPermission('OPERATIONS.SCHEDULE.MANAGE'));
     final canManageClub = isHost ||
         (isSameClub &&
             (ref.hasClubPermission('MEMBER.INFO.UPDATE') ||
@@ -263,7 +266,7 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
                           const SizedBox(height: 16),
                           _buildVenueCard(club),
                           const SizedBox(height: 16),
-                          _buildSchedulesCard(club),
+                          _buildSchedulesCard(club, canManageSchedule),
                           const SizedBox(height: 16),
                           _buildHostCard(club),
                           const SizedBox(height: 16),
@@ -598,7 +601,7 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
     );
   }
 
-  Widget _buildSchedulesCard(ClubDetail club) {
+  Widget _buildSchedulesCard(ClubDetail club, bool canManageSchedule) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -619,7 +622,7 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
                 style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: colors.textPrimary),
               ),
               const Spacer(),
-              if (club.currentUserStatus.isHost)
+              if (canManageSchedule)
                 InkWell(
                   onTap: () => context.push('/club/${widget.clubId}/settings'),
                   borderRadius: BorderRadius.circular(8),

@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:kltn2026_2027/app/provider.dart';
 import 'package:kltn2026_2027/app/theme/theme.dart';
 import '../../../../domain/entities/club/club_detail.dart';
+import '../../../../domain/enums/club_role.dart';
 import '../../../../domain/enums/session_enums.dart';
 import '../club_vm/club_context_vm.dart';
 import '../role_management/club_role_management_screen.dart';
@@ -139,36 +140,45 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
     }
   }
 
-  Future<void> _saveAllChanges(ClubDetailViewModel vm) async {
+  Future<void> _saveAllChanges(
+    ClubDetailViewModel vm, {
+    required bool canManageInfo,
+    required bool canManageSchedule,
+  }) async {
     if (!_formKey.currentState!.validate()) return;
+    if (!canManageInfo && !canManageSchedule) return;
 
     setState(() => _isSaving = true);
     try {
-      // 1. Cập nhật thông tin nhóm
-      await vm.updateInfo(
-        groupName: _nameController.text.trim(),
-        description: _descController.text.trim().isNotEmpty ? _descController.text.trim() : null,
-        avatarUrl: _avatarUrlController.text.trim().isNotEmpty ? _avatarUrlController.text.trim() : null,
-        fixedVenueName: _venueController.text.trim().isNotEmpty ? _venueController.text.trim() : null,
-        fixedAddress: _addressController.text.trim().isNotEmpty ? _addressController.text.trim() : null,
-        lat: _lat,
-        lng: _lng,
-        minSkillLevel: _minLevel,
-        maxSkillLevel: _maxLevel,
-        isRecruiting: _isRecruiting,
-      );
+      // 1. Cập nhật thông tin nhóm (chỉ khi có quyền)
+      if (canManageInfo) {
+        await vm.updateInfo(
+          groupName: _nameController.text.trim(),
+          description: _descController.text.trim().isNotEmpty ? _descController.text.trim() : null,
+          avatarUrl: _avatarUrlController.text.trim().isNotEmpty ? _avatarUrlController.text.trim() : null,
+          fixedVenueName: _venueController.text.trim().isNotEmpty ? _venueController.text.trim() : null,
+          fixedAddress: _addressController.text.trim().isNotEmpty ? _addressController.text.trim() : null,
+          lat: _lat,
+          lng: _lng,
+          minSkillLevel: _minLevel,
+          maxSkillLevel: _maxLevel,
+          isRecruiting: _isRecruiting,
+        );
+      }
 
-      // 2. Cập nhật lịch sinh hoạt tuần
-      final scheduleInputs = _schedules
-          .map(
-            (e) => ClubScheduleInput(
-              dayOfWeek: e.dayOfWeek,
-              startTime: _formatTime(e.startTime),
-              endTime: _formatTime(e.endTime),
-            ),
-          )
-          .toList();
-      await vm.updateSchedules(scheduleInputs);
+      // 2. Cập nhật lịch sinh hoạt tuần (chỉ khi có quyền)
+      if (canManageSchedule) {
+        final scheduleInputs = _schedules
+            .map(
+              (e) => ClubScheduleInput(
+                dayOfWeek: e.dayOfWeek,
+                startTime: _formatTime(e.startTime),
+                endTime: _formatTime(e.endTime),
+              ),
+            )
+            .toList();
+        await vm.updateSchedules(scheduleInputs);
+      }
 
       // 3. Tải lại MyClubs để đồng bộ avatar và tên
       await ref.read(clubContextViewModelProvider.notifier).loadMyClubs();
@@ -226,7 +236,7 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
             onPressed: () async {
               Navigator.of(ctx).pop();
               setState(() => _isRecruiting = false);
-              await _saveAllChanges(vm);
+              await _saveAllChanges(vm, canManageInfo: true, canManageSchedule: false);
             },
             child: const Text('Xác nhận khóa'),
           ),
@@ -303,13 +313,64 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
       _populateData(club);
     }
 
-    final isHost = (club?.currentUserStatus.isHost ?? false);
+    final currentProfile = ref.watch(currentUserProfileProvider);
     final activeContext = ref.watch(activeClubContextProvider);
     final isSameClub = activeContext?.clubId == widget.clubId;
+    final isHostOwner = club != null && currentProfile != null && club.host.userId == currentProfile.id;
+    final isHost = isHostOwner || (club?.currentUserStatus.isHost ?? false) || (isSameClub && activeContext?.role == ClubRole.host);
     final canManageInfo = isHost || (isSameClub && ref.hasClubPermission('MEMBER.INFO.UPDATE'));
     final canManageSchedule = isHost || (isSameClub && ref.hasClubPermission('OPERATIONS.SCHEDULE.MANAGE'));
     final canManageRoles = isHost || (isSameClub && ref.hasClubPermission('MEMBER.ROLE.MANAGE'));
     final canSave = canManageInfo || canManageSchedule;
+
+    // Chặn triệt để thành viên không có quyền chỉnh sửa
+    if (club != null && !isHost && !canManageInfo && !canManageSchedule && !canManageRoles) {
+      return Scaffold(
+        backgroundColor: colors.background,
+        appBar: AppBar(
+          title: Text(
+            'Cài Đặt Câu Lạc Bộ',
+            style: AppTypography.titleLarge.bold.colored(colors.textPrimary),
+          ),
+          backgroundColor: colors.surface,
+          foregroundColor: colors.textPrimary,
+          elevation: 0.5,
+        ),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.lock_person_rounded, size: 54, color: colors.error),
+                const SizedBox(height: 16),
+                Text(
+                  'Không Có Quyền Chỉnh Sửa',
+                  style: AppTypography.titleMedium.bold.colored(colors.textPrimary),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Bạn đang tham gia với tư cách Thành viên. Chỉ Chủ nhóm (Host) hoặc người có quyền quản trị mới có thể chỉnh sửa thông tin câu lạc bộ.',
+                  style: AppTypography.bodySmall.colored(colors.textMuted),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 20),
+                ElevatedButton.icon(
+                  onPressed: () => context.pop(),
+                  icon: const Icon(Icons.arrow_back_rounded, size: 18),
+                  label: const Text('Quay lại'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: colors.primary,
+                    foregroundColor: AppColors.white,
+                    shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
 
     return Scaffold(
       backgroundColor: colors.background,
@@ -328,7 +389,7 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                   ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2))
                   : const Icon(Icons.check_rounded, size: 18),
               label: const Text('Lưu'),
-              onPressed: _isSaving ? null : () => _saveAllChanges(vm),
+              onPressed: _isSaving ? null : () => _saveAllChanges(vm, canManageInfo: canManageInfo, canManageSchedule: canManageSchedule),
             ),
         ],
       ),

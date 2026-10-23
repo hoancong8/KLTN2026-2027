@@ -245,5 +245,49 @@ void main() {
 
       container.dispose();
     });
+
+    test('Admin user does not bypass contextual club permissions in hasClubPermissionProvider', () {
+      final container = ProviderContainer(
+        overrides: [
+          currentUserProfileProvider.overrideWith(
+            () => CurrentUserProfileNotifier(
+              const UserProfile(
+                id: 'admin-id',
+                email: 'admin@test.com',
+                userName: 'Admin',
+                isLocked: false,
+                roles: ['Admin'],
+                permissions: ['System.Administrator'],
+              ),
+            ),
+          ),
+        ],
+      );
+
+      container.read(activeClubContextProvider.notifier).state =
+          const ActiveClubContext(
+        clubId: 'club-test',
+        clubName: 'CLB Test',
+        role: ClubRole.member,
+        permissions: [ClubPermissions.sessionView],
+      );
+
+      expect(container.read(isAdminUserProvider), isTrue);
+      // hasClubPermission tuân thủ tuyệt đối vai trò và quyền trong CLB, không bypass cho Admin
+      expect(
+        container.read(hasClubPermissionProvider(ClubPermissions.sessionView)),
+        isTrue,
+      );
+      expect(
+        container.read(hasClubPermissionProvider(ClubPermissions.scheduleManage)),
+        isFalse,
+      );
+      expect(
+        container.read(hasClubPermissionProvider('MEMBER.INFO.UPDATE')),
+        isFalse,
+      );
+
+      container.dispose();
+    });
   });
 }
