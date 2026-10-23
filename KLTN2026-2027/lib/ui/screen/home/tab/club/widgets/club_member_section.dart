@@ -1,6 +1,7 @@
 // lib/ui/screen/home/tab/club/widgets/club_member_section.dart
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kltn2026_2027/app/theme/theme.dart';
 import '../../../../../../app/provider.dart';
@@ -267,7 +268,10 @@ class _ClubMemberSectionState extends ConsumerState<ClubMemberSection> {
         ? '${m.userName ?? "Thành viên"} (${m.nickname})'
         : m.userName ?? 'Thành viên';
 
-    return Container(
+    return InkWell(
+      onTap: () => _showMemberActionSheet(m, isMe, canManageRoles, canRemoveMember),
+      borderRadius: AppRadius.borderMd,
+      child: Container(
       margin: const EdgeInsets.symmetric(vertical: 3.5),
       padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 8.5),
       decoration: BoxDecoration(
@@ -399,68 +403,173 @@ class _ClubMemberSectionState extends ConsumerState<ClubMemberSection> {
             ),
           ),
 
-          // Actions for Host & Managers (chỉ hiện khi có quyền, và không hiện cho chính mình)
-          if ((canManageRoles || canRemoveMember) && m.role != ClubRole.host && !isMe)
-            PopupMenuButton<String>(
-              color: colors.cardBackground,
-              icon: Icon(Icons.more_vert, size: AppSpacing.iconSm, color: colors.textMuted),
-              onSelected: (val) {
-                if (val == 'role') {
-                  _showUpdateRoleDialog(m);
-                } else if (val == 'remove') {
-                  _showRemoveDialog(m);
-                }
-              },
-              itemBuilder: (context) => [
-                if (canManageRoles)
-                  PopupMenuItem(
-                    value: 'role',
-                    child: Row(
-                      children: [
-                        Icon(Icons.edit_outlined, size: 16, color: colors.primary),
-                        AppSpacing.gapW8,
-                        Text('Đổi vai trò', style: AppTypography.bodyMedium.colored(colors.textPrimary)),
-                      ],
-                    ),
-                  ),
-                if (canRemoveMember)
-                  PopupMenuItem(
-                    value: 'remove',
-                    child: Row(
-                      children: [
-                        Icon(Icons.person_remove_outlined, size: 16, color: colors.error),
-                        AppSpacing.gapW8,
-                        Text('Xóa khỏi nhóm', style: AppTypography.bodyMedium.colored(colors.error)),
-                      ],
-                    ),
-                  ),
-              ],
+          if ((canManageRoles || canRemoveMember || isMe) && m.role != ClubRole.host) ...[
+            AppSpacing.gapW4,
+            IconButton(
+              icon: Icon(Icons.more_horiz_rounded, size: 20, color: colors.textMuted),
+              tooltip: 'Tùy chọn thành viên',
+              onPressed: () => _showMemberActionSheet(m, isMe, canManageRoles, canRemoveMember),
             ),
-
-          // Actions for current user (Rời nhóm nếu không phải Host)
-          if (isMe && m.role != ClubRole.host)
-            PopupMenuButton<String>(
-              color: colors.cardBackground,
-              icon: Icon(Icons.more_vert, size: AppSpacing.iconSm, color: colors.textMuted),
-              onSelected: (val) {
-                if (val == 'leave') {
-                  _showLeaveDialog(m);
-                }
-              },
-              itemBuilder: (context) => [
-                PopupMenuItem(
-                  value: 'leave',
-                  child: Row(
-                    children: [
-                      Icon(Icons.exit_to_app_rounded, size: 16, color: colors.error),
-                      AppSpacing.gapW8,
-                      Text('Rời câu lạc bộ', style: AppTypography.bodyMedium.colored(colors.error)),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+          ],
         ],
+      ),
+    ),
+  );
+}
+
+  Color _getRoleColor(ClubRole role) {
+    switch (role) {
+      case ClubRole.host:
+        return AppColors.roleHost;
+      case ClubRole.deputy:
+        return AppColors.roleDeputy;
+      case ClubRole.treasurer:
+        return AppColors.roleTreasurer;
+      case ClubRole.member:
+        return context.colors.primary;
+      case ClubRole.guest:
+        return AppColors.roleGuest;
+    }
+  }
+
+  void _showMemberActionSheet(ClubMember m, bool isMe, bool canManageRoles, bool canRemoveMember) {
+    final colors = context.colors;
+    final roleColor = _getRoleColor(m.role);
+    final displayName = (m.nickname != null && m.nickname!.isNotEmpty) ? m.nickname! : (m.userName ?? 'Thành viên');
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: colors.cardBackground,
+      shape: const RoundedRectangleBorder(borderRadius: AppRadius.bottomSheet),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(color: colors.borderStrong, borderRadius: BorderRadius.circular(2)),
+                ),
+              ),
+              AppSpacing.gapH16,
+              Row(
+                children: [
+                  Container(
+                    width: 52,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      color: roleColor.withValues(alpha: 0.15),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: roleColor.withValues(alpha: 0.3), width: 1.5),
+                    ),
+                    child: Center(
+                      child: Text(
+                        displayName.isNotEmpty ? displayName[0].toUpperCase() : 'U',
+                        style: AppTypography.titleLarge.bold.colored(roleColor),
+                      ),
+                    ),
+                  ),
+                  AppSpacing.gapW12,
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(displayName, style: AppTypography.titleMedium.bold.colored(colors.textPrimary)),
+                        AppSpacing.gapH4,
+                        Text(m.email ?? 'Thành viên câu lạc bộ', style: AppTypography.bodySmall.colored(colors.textMuted)),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: roleColor.withValues(alpha: 0.12),
+                      borderRadius: AppRadius.tag,
+                      border: Border.all(color: roleColor.withValues(alpha: 0.3)),
+                    ),
+                    child: Text(
+                      (m.roleName != null && m.roleName!.isNotEmpty) ? m.roleName! : m.role.displayName,
+                      style: AppTypography.labelSmall.bold.colored(roleColor),
+                    ),
+                  ),
+                ],
+              ),
+              AppSpacing.gapH16,
+              const Divider(height: 1),
+              AppSpacing.gapH12,
+
+              if (canManageRoles && m.role != ClubRole.host && !isMe)
+                ListTile(
+                  dense: true,
+                  leading: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(color: colors.primary.withValues(alpha: 0.1), borderRadius: AppRadius.borderSm),
+                    child: Icon(Icons.manage_accounts_rounded, color: colors.primary, size: 20),
+                  ),
+                  title: Text('Phân quyền / Đổi vai trò', style: AppTypography.bodyMedium.bold.colored(colors.textPrimary)),
+                  subtitle: Text('Bổ nhiệm Host, Phó nhóm, Thủ quỹ hoặc Thành viên', style: AppTypography.labelSmall.colored(colors.textMuted)),
+                  onTap: () {
+                    Navigator.of(ctx).pop();
+                    _showUpdateRoleDialog(m);
+                  },
+                ),
+              if (canRemoveMember && m.role != ClubRole.host && !isMe)
+                ListTile(
+                  dense: true,
+                  leading: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(color: colors.error.withValues(alpha: 0.1), borderRadius: AppRadius.borderSm),
+                    child: Icon(Icons.person_remove_rounded, color: colors.error, size: 20),
+                  ),
+                  title: Text('Xóa khỏi câu lạc bộ', style: AppTypography.bodyMedium.bold.colored(colors.error)),
+                  subtitle: Text('Hủy tư cách thành viên của người này tại CLB', style: AppTypography.labelSmall.colored(colors.textMuted)),
+                  onTap: () {
+                    Navigator.of(ctx).pop();
+                    _showRemoveDialog(m);
+                  },
+                ),
+              if (isMe && m.role != ClubRole.host)
+                ListTile(
+                  dense: true,
+                  leading: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(color: colors.error.withValues(alpha: 0.1), borderRadius: AppRadius.borderSm),
+                    child: Icon(Icons.exit_to_app_rounded, color: colors.error, size: 20),
+                  ),
+                  title: Text('Rời khỏi câu lạc bộ', style: AppTypography.bodyMedium.bold.colored(colors.error)),
+                  subtitle: Text('Rút lui khỏi danh sách thành viên của nhóm', style: AppTypography.labelSmall.colored(colors.textMuted)),
+                  onTap: () {
+                    Navigator.of(ctx).pop();
+                    _showLeaveDialog(m);
+                  },
+                ),
+              ListTile(
+                dense: true,
+                leading: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(color: colors.surfaceSubtle, borderRadius: AppRadius.borderSm),
+                  child: Icon(Icons.copy_rounded, color: colors.textSecondary, size: 20),
+                ),
+                title: Text('Sao chép thông tin liên hệ', style: AppTypography.bodyMedium.colored(colors.textPrimary)),
+                onTap: () {
+                  Navigator.of(ctx).pop();
+                  Clipboard.setData(ClipboardData(text: m.email ?? m.userName ?? ''));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: const Text('Đã sao chép thông tin liên hệ'),
+                      backgroundColor: colors.primary,
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

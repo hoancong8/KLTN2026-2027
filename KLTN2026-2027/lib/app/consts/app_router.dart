@@ -9,6 +9,7 @@ import '../../ui/screen/admin/role_management/role_management_screen.dart';
 import '../../ui/screen/admin/user_management/user_management_screen.dart';
 import '../../ui/screen/club/club_management_screen.dart';
 import '../../ui/screen/club/create_club/create_club_screen.dart';
+import '../../ui/screen/club/ledger/club_ledger_screen.dart';
 import '../../ui/screen/club/settings/club_settings_screen.dart';
 import '../../ui/screen/club/role_management/club_role_management_screen.dart';
 import '../../ui/screen/club/session_detail_screen.dart';
@@ -87,6 +88,13 @@ GoRouter generateAppRouter(String initialRoute) {
         builder: (_, state) {
           final clubId = state.pathParameters['clubId'] ?? '';
           return ClubSettingsScreen(clubId: clubId);
+        },
+      ),
+      GoRoute(
+        path: '/club/:clubId/ledger',
+        builder: (_, state) {
+          final clubId = state.pathParameters['clubId'] ?? '';
+          return ClubLedgerScreen(clubId: clubId);
         },
       ),
       GoRoute(

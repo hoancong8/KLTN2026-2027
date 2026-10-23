@@ -464,6 +464,21 @@ class _ClubOverviewTabState extends ConsumerState<ClubOverviewTab> {
                   'Tự động đối soát chuyển khoản VietQR',
                   icon: Icons.qr_code_scanner_rounded,
                 ),
+                AppSpacing.gapH12,
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: colors.primary,
+                      foregroundColor: AppColors.white,
+                      shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                    icon: const Icon(Icons.account_balance_wallet_outlined, size: 18),
+                    label: const Text('Xem Sổ Quỹ Mở Minh Bạch'),
+                    onPressed: () => context.push('/club/${widget.clubId}/ledger'),
+                  ),
+                ),
               ],
             ),
           ),
