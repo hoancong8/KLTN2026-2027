@@ -15,6 +15,12 @@ import '../../../../../../domain/enums/session_enums.dart';
 import '../../../../club/session_vm/club_sessions_vm.dart';
 import '../../../../club/widgets/create_session_dialog.dart';
 
+enum _SessionTabFilter {
+  all,
+  upcoming,
+  ended,
+}
+
 class ClubSessionsTab extends ConsumerStatefulWidget {
   final String clubId;
   final String clubName;
@@ -38,6 +44,19 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
   AppLocalizations get l10n => context.l10n;
 
   DateTime? _selectedDate;
+  _SessionTabFilter _filter = _SessionTabFilter.all;
+
+  bool _isSessionEnded(Session s, DateTime now) {
+    return s.status == SessionStatus.completed ||
+        s.status == SessionStatus.calculated ||
+        s.endTime.isBefore(now);
+  }
+
+  bool _isSessionPlaying(Session s, DateTime now) {
+    if (_isSessionEnded(s, now)) return false;
+    return s.status == SessionStatus.playing ||
+        (s.startTime.isBefore(now) && s.endTime.isAfter(now));
+  }
 
   @override
   void initState() {
@@ -67,18 +86,20 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
     }
   }
 
-  String _getTimeRemainingLabel(DateTime sessionTime) {
+  String _getTimeRemainingLabel(DateTime sessionTime, DateTime sessionEndTime) {
     final now = DateTime.now();
+    if (sessionEndTime.isBefore(now)) {
+      return 'Đã kết thúc';
+    }
+    if (sessionTime.isBefore(now) && sessionEndTime.isAfter(now)) {
+      return 'Đang diễn ra';
+    }
     final today = DateTime(now.year, now.month, now.day);
     final sessionDate = DateTime(sessionTime.year, sessionTime.month, sessionTime.day);
     final diffDays = sessionDate.difference(today).inDays;
 
     if (diffDays == 0) {
-      if (sessionTime.isAfter(now)) {
-        return 'Hôm nay';
-      } else {
-        return 'Đang diễn ra';
-      }
+      return 'Hôm nay';
     } else if (diffDays == 1) {
       return 'Ngày mai';
     } else if (diffDays > 1 && diffDays <= 7) {
@@ -96,7 +117,7 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
     final vm = ref.read(clubSessionsViewModelProvider(widget.clubId).notifier);
 
     if (state.isLoading) {
-      return const Center(child: CircularProgressIndicator(color: AppColors.primary));
+      return Center(child: CircularProgressIndicator(color: colors.primary));
     }
 
     if (state.errorMessage != null) {
@@ -106,11 +127,11 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.error_outline_rounded, color: AppColors.error, size: 48),
+              Icon(Icons.error_outline_rounded, color: colors.error, size: 48),
               const SizedBox(height: 12),
               Text(
                 state.errorMessage!,
-                style: const TextStyle(color: AppColors.error, fontSize: 13),
+                style: AppTypography.bodySmall.colored(colors.error),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 16),
@@ -130,22 +151,26 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
       ..sort((a, b) => a.startTime.compareTo(b.startTime));
 
     final upcomingSessions = sortedSessions.where(
-      (s) => s.endTime.isAfter(now) && s.status != SessionStatus.completed,
+      (s) => !_isSessionEnded(s, now),
     ).toList();
 
     final Session? nearestSession = upcomingSessions.isNotEmpty
         ? upcomingSessions.first
         : (sortedSessions.isNotEmpty ? sortedSessions.last : null);
 
-    final List<Session> displaySessions;
+    List<Session> displaySessions = sortedSessions;
     if (_selectedDate != null) {
-      displaySessions = sortedSessions.where((s) {
+      displaySessions = displaySessions.where((s) {
         return s.startTime.year == _selectedDate!.year &&
             s.startTime.month == _selectedDate!.month &&
             s.startTime.day == _selectedDate!.day;
       }).toList();
-    } else {
-      displaySessions = sortedSessions;
+    }
+
+    if (_filter == _SessionTabFilter.upcoming) {
+      displaySessions = displaySessions.where((s) => !_isSessionEnded(s, now)).toList();
+    } else if (_filter == _SessionTabFilter.ended) {
+      displaySessions = displaySessions.where((s) => _isSessionEnded(s, now)).toList();
     }
 
     final activeContext = ref.watch(activeClubContextProvider);
@@ -188,6 +213,9 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
                   // 2. Lịch tháng trực quan về các ngày tập
                   _buildMonthCalendarCard(sortedSessions, nearestSession),
 
+                  // 3. Thanh lọc trạng thái: Tất cả / Sắp tới / Đã kết thúc
+                  _buildFilterChips(sortedSessions, now),
+
                   // 4. Thanh lọc ngày đã chọn trên lịch
                   if (_selectedDate != null) ...[
                     Container(
@@ -227,35 +255,7 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
 
                   // 5. Danh sách các buổi tập
                   if (displaySessions.isEmpty)
-                    Container(
-                      padding: const EdgeInsets.all(24),
-                      margin: const EdgeInsets.only(bottom: 16),
-                      decoration: BoxDecoration(
-                        color: colors.cardBackground,
-                        borderRadius: AppRadius.card,
-                        border: Border.all(color: colors.cardBorder),
-                      ),
-                      child: Center(
-                        child: Column(
-                          children: [
-                            Icon(Icons.event_busy_rounded, color: colors.textMuted, size: 36),
-                            const SizedBox(height: 8),
-                            Text(
-                              'Không có buổi tập nào vào ngày ${DateFormat('dd/MM/yyyy').format(_selectedDate!)}',
-                              style: AppTypography.bodySmall.colored(colors.textMuted),
-                            ),
-                            const SizedBox(height: 8),
-                            TextButton(
-                              onPressed: () => setState(() => _selectedDate = null),
-                              child: Text(
-                                'Xem tất cả các buổi tập',
-                                style: AppTypography.bodySmall.bold.colored(colors.primary),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    )
+                    _buildFilteredEmptyState()
                   else
                     ...displaySessions.map((session) => Padding(
                           padding: const EdgeInsets.only(bottom: 12),
@@ -272,31 +272,191 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
     );
   }
 
+  Widget _buildFilterChips(List<Session> allSessions, DateTime now) {
+    final upcomingCount = allSessions.where((s) => !_isSessionEnded(s, now)).length;
+    final endedCount = allSessions.where((s) => _isSessionEnded(s, now)).length;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: colors.cardBackground,
+        borderRadius: AppRadius.buttonPill,
+        border: Border.all(color: colors.cardBorder),
+      ),
+      child: Row(
+        children: [
+          _buildFilterChipItem(
+            label: 'Tất cả (${allSessions.length})',
+            isSelected: _filter == _SessionTabFilter.all,
+            activeColor: colors.primary,
+            onTap: () => setState(() => _filter = _SessionTabFilter.all),
+          ),
+          _buildFilterChipItem(
+            label: 'Sắp tới ($upcomingCount)',
+            isSelected: _filter == _SessionTabFilter.upcoming,
+            activeColor: colors.success,
+            onTap: () => setState(() => _filter = _SessionTabFilter.upcoming),
+          ),
+          _buildFilterChipItem(
+            label: 'Đã xong ($endedCount)',
+            isSelected: _filter == _SessionTabFilter.ended,
+            activeColor: colors.textMuted,
+            onTap: () => setState(() => _filter = _SessionTabFilter.ended),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFilterChipItem({
+    required String label,
+    required bool isSelected,
+    required Color activeColor,
+    required VoidCallback onTap,
+  }) {
+    return Expanded(
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: AppRadius.buttonPill,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          decoration: BoxDecoration(
+            color: isSelected ? activeColor.withValues(alpha: 0.15) : AppColors.transparent,
+            borderRadius: AppRadius.buttonPill,
+            border: isSelected ? Border.all(color: activeColor.withValues(alpha: 0.35)) : null,
+          ),
+          child: Center(
+            child: Text(
+              label,
+              style: AppTypography.labelSmall.copyWith(
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                color: isSelected ? activeColor : colors.textMuted,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFilteredEmptyState() {
+    String message;
+    if (_selectedDate != null) {
+      message = 'Không có buổi tập nào vào ngày ${DateFormat('dd/MM/yyyy').format(_selectedDate!)}';
+    } else if (_filter == _SessionTabFilter.upcoming) {
+      message = 'Không có buổi tập nào sắp diễn ra hoặc đang mở';
+    } else if (_filter == _SessionTabFilter.ended) {
+      message = 'Chưa có buổi tập nào đã kết thúc';
+    } else {
+      message = 'Chưa có buổi tập nào';
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(24),
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: colors.cardBackground,
+        borderRadius: AppRadius.card,
+        border: Border.all(color: colors.cardBorder),
+      ),
+      child: Center(
+        child: Column(
+          children: [
+            Icon(Icons.event_busy_rounded, color: colors.textMuted, size: 36),
+            const SizedBox(height: 8),
+            Text(
+              message,
+              style: AppTypography.bodySmall.colored(colors.textMuted),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            if (_selectedDate != null || _filter != _SessionTabFilter.all)
+              TextButton(
+                onPressed: () {
+                  setState(() {
+                    _selectedDate = null;
+                    _filter = _SessionTabFilter.all;
+                  });
+                },
+                child: Text(
+                  'Xem tất cả các buổi tập',
+                  style: AppTypography.bodySmall.bold.colored(colors.primary),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
   /// 1. Card Buổi tập gần nhất (Đưa lên trên cùng)
   Widget _buildNearestSessionHero(BuildContext context, Session session) {
-    final remainingLabel = _getTimeRemainingLabel(session.startTime);
+    final now = DateTime.now();
+    final isEnded = _isSessionEnded(session, now);
+    final isPlaying = _isSessionPlaying(session, now);
+    final remainingLabel = _getTimeRemainingLabel(session.startTime, session.endTime);
     final isToday = remainingLabel == 'Hôm nay' || remainingLabel == 'Đang diễn ra';
     final progress = session.maxPlayers > 0 ? (session.confirmedCount / session.maxPlayers).clamp(0.0, 1.0) : 0.0;
     final isFull = session.isFull;
     final timeRange = '${DateFormat('HH:mm').format(session.startTime)} - ${DateFormat('HH:mm').format(session.endTime)}';
     final dateStr = '${_getWeekdayName(session.startTime)}, ngày ${DateFormat('dd/MM/yyyy').format(session.startTime)}';
 
+    Color headerBg;
+    Color headerFg;
+    IconData headerIcon;
+    String headerText;
+    List<Color> gradientColors;
+    Color borderColor;
+
+    if (isEnded) {
+      headerBg = colors.surfaceSubtle;
+      headerFg = colors.textMuted;
+      headerIcon = Icons.history_rounded;
+      headerText = 'BUỔI GẦN NHẤT (ĐÃ KẾT THÚC)';
+      gradientColors = [
+        colors.surfaceSubtle.withValues(alpha: 0.6),
+        colors.cardBackground,
+      ];
+      borderColor = colors.cardBorder;
+    } else if (isPlaying) {
+      headerBg = colors.success;
+      headerFg = AppColors.white;
+      headerIcon = Icons.play_circle_fill_rounded;
+      headerText = 'ĐANG THI ĐẤU / DIỄN RA';
+      gradientColors = [
+        colors.success.withValues(alpha: 0.12),
+        colors.cardBackground,
+      ];
+      borderColor = colors.success.withValues(alpha: 0.5);
+    } else {
+      headerBg = colors.primary;
+      headerFg = AppColors.white;
+      headerIcon = Icons.bolt_rounded;
+      headerText = 'BUỔI TẬP TIẾP THEO';
+      gradientColors = [
+        colors.primary.withValues(alpha: 0.08),
+        colors.primaryContainer.withValues(alpha: 0.5),
+      ];
+      borderColor = colors.primary.withValues(alpha: 0.35);
+    }
+
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [
-            colors.primary.withValues(alpha: 0.08),
-            colors.primaryContainer.withValues(alpha: 0.5),
-          ],
+          colors: gradientColors,
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: AppRadius.card,
-        border: Border.all(color: colors.primary.withValues(alpha: 0.35), width: 1.5),
+        border: Border.all(color: borderColor, width: 1.5),
         boxShadow: [
           BoxShadow(
-            color: colors.primary.withValues(alpha: 0.05),
+            color: isEnded ? colors.cardBorder.withValues(alpha: 0.05) : colors.primary.withValues(alpha: 0.05),
             blurRadius: 8,
             offset: const Offset(0, 3),
           ),
@@ -316,17 +476,18 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
                     decoration: BoxDecoration(
-                      color: colors.primary,
+                      color: headerBg,
                       borderRadius: AppRadius.borderSm,
+                      border: isEnded ? Border.all(color: colors.border.withValues(alpha: 0.4)) : null,
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.bolt_rounded, size: 14, color: AppColors.white),
+                        Icon(headerIcon, size: 14, color: headerFg),
                         const SizedBox(width: 4),
                         Text(
-                          'BUỔI TẬP GẦN NHẤT',
-                          style: AppTypography.labelSmall.bold.colored(AppColors.white),
+                          headerText,
+                          style: AppTypography.labelSmall.bold.colored(headerFg),
                         ),
                       ],
                     ),
@@ -335,20 +496,22 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: isToday
-                          ? colors.warning.withValues(alpha: 0.15)
-                          : colors.info.withValues(alpha: 0.15),
+                      color: isEnded
+                          ? colors.surfaceSubtle
+                          : (isToday ? colors.warning.withValues(alpha: 0.15) : colors.info.withValues(alpha: 0.15)),
                       borderRadius: AppRadius.borderSm,
                       border: Border.all(
-                        color: isToday
-                            ? colors.warning.withValues(alpha: 0.4)
-                            : colors.info.withValues(alpha: 0.4),
+                        color: isEnded
+                            ? colors.border.withValues(alpha: 0.3)
+                            : (isToday ? colors.warning.withValues(alpha: 0.4) : colors.info.withValues(alpha: 0.4)),
                       ),
                     ),
                     child: Text(
                       remainingLabel,
                       style: AppTypography.labelSmall.bold.colored(
-                        isToday ? colors.warning : colors.info,
+                        isEnded
+                            ? colors.textMuted
+                            : (isToday ? colors.warning : colors.info),
                       ),
                     ),
                   ),
@@ -362,7 +525,9 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
               // Title
               Text(
                 session.title,
-                style: AppTypography.titleMedium.bold.colored(colors.textPrimary),
+                style: AppTypography.titleMedium.bold.colored(
+                  isEnded ? colors.textMuted : colors.textPrimary,
+                ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -371,11 +536,17 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
               // Date & Time Row
               Row(
                 children: [
-                  Icon(Icons.calendar_today_rounded, size: 14, color: colors.primary),
+                  Icon(
+                    isEnded ? Icons.history_rounded : Icons.calendar_today_rounded,
+                    size: 14,
+                    color: isEnded ? colors.textMuted : colors.primary,
+                  ),
                   const SizedBox(width: 6),
                   Text(
                     dateStr,
-                    style: AppTypography.bodySmall.semiBold.colored(colors.textPrimary),
+                    style: AppTypography.bodySmall.semiBold.colored(
+                      isEnded ? colors.textMuted : colors.textPrimary,
+                    ),
                   ),
                   const SizedBox(width: 8),
                   Container(
@@ -391,7 +562,9 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
                         const SizedBox(width: 4),
                         Text(
                           timeRange,
-                          style: AppTypography.labelSmall.bold.colored(colors.textPrimary),
+                          style: AppTypography.labelSmall.bold.colored(
+                            isEnded ? colors.textMuted : colors.textPrimary,
+                          ),
                         ),
                       ],
                     ),
@@ -428,19 +601,23 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
                         minHeight: 6,
                         backgroundColor: colors.cardBorder,
                         valueColor: AlwaysStoppedAnimation<Color>(
-                          isFull ? colors.warning : colors.primary,
+                          isEnded
+                              ? colors.textMuted.withValues(alpha: 0.3)
+                              : (isFull ? colors.warning : colors.primary),
                         ),
                       ),
                     ),
                   ),
                   const SizedBox(width: 10),
                   Text(
-                    '${session.confirmedCount}/${session.maxPlayers} slot',
+                    isEnded
+                        ? '${session.confirmedCount}/${session.maxPlayers} tham gia'
+                        : '${session.confirmedCount}/${session.maxPlayers} slot',
                     style: AppTypography.labelMedium.bold.colored(
-                      isFull ? colors.warning : colors.primary,
+                      isEnded ? colors.textMuted : (isFull ? colors.warning : colors.primary),
                     ),
                   ),
-                  if (session.waitingCount > 0) ...[
+                  if (!isEnded && session.waitingCount > 0) ...[
                     const SizedBox(width: 6),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
@@ -463,16 +640,26 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
                 width: double.infinity,
                 child: ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: colors.primary,
-                    foregroundColor: AppColors.white,
+                    backgroundColor: isEnded
+                        ? colors.surfaceSubtle
+                        : (isPlaying ? colors.success : colors.primary),
+                    foregroundColor: isEnded ? colors.textPrimary : AppColors.white,
                     elevation: 0,
                     padding: const EdgeInsets.symmetric(vertical: 11),
                     shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                    side: isEnded ? BorderSide(color: colors.border.withValues(alpha: 0.5)) : null,
                   ),
-                  icon: const Icon(Icons.sports_tennis_rounded, size: 18),
+                  icon: Icon(
+                    isEnded ? Icons.receipt_long_rounded : Icons.sports_tennis_rounded,
+                    size: 18,
+                  ),
                   label: Text(
-                    session.isBookedByCurrentUser ? 'Xem chi tiết & Điểm danh' : 'Xem chi tiết & Giữ chỗ',
-                    style: AppTypography.bodyMedium.bold.colored(AppColors.white),
+                    isEnded
+                        ? 'Xem lại kết quả & Điểm danh'
+                        : (session.isBookedByCurrentUser ? 'Xem chi tiết & Điểm danh' : 'Xem chi tiết & Giữ chỗ'),
+                    style: AppTypography.bodyMedium.bold.colored(
+                      isEnded ? colors.textPrimary : AppColors.white,
+                    ),
                   ),
                   onPressed: () => context.push(AppConfig.sessionDetailRoutePath(session.id)),
                 ),
@@ -853,19 +1040,34 @@ class _SessionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
+    final now = DateTime.now();
+    final isEnded = session.status == SessionStatus.completed ||
+        session.status == SessionStatus.calculated ||
+        session.endTime.isBefore(now);
+    final isPlaying = !isEnded && (session.status == SessionStatus.playing ||
+        (session.startTime.isBefore(now) && session.endTime.isAfter(now)));
+
     final dateFormat = DateFormat('HH:mm, dd/MM/yyyy');
     final timeStr = '${DateFormat('HH:mm').format(session.startTime)} - ${dateFormat.format(session.endTime)}';
     final progress = session.maxPlayers > 0 ? (session.confirmedCount / session.maxPlayers).clamp(0.0, 1.0) : 0.0;
     final isFull = session.isFull;
 
-    return Card(
-      elevation: 0.8,
+    Color borderColor = colors.cardBorder;
+    if (isPlaying) {
+      borderColor = colors.success;
+    } else if (session.isBookedByCurrentUser && !isEnded) {
+      borderColor = colors.primary;
+    }
+
+    final cardContent = Card(
+      elevation: isEnded ? 0 : 0.8,
       margin: EdgeInsets.zero,
+      color: isEnded ? colors.cardBackground.withValues(alpha: 0.6) : colors.cardBackground,
       shape: RoundedRectangleBorder(
         borderRadius: AppRadius.card,
         side: BorderSide(
-          color: session.isBookedByCurrentUser ? colors.primary : colors.cardBorder,
-          width: session.isBookedByCurrentUser ? 1.5 : 1,
+          color: isEnded ? colors.cardBorder.withValues(alpha: 0.5) : borderColor,
+          width: (isPlaying || session.isBookedByCurrentUser) && !isEnded ? 1.5 : 1,
         ),
       ),
       child: InkWell(
@@ -879,10 +1081,15 @@ class _SessionCard extends StatelessWidget {
               // Header Row: Status badge & User booking tag
               Row(
                 children: [
-                  _buildStatusBadge(session.status, colors),
+                  _buildStatusBadge(session.status, isEnded, isPlaying, colors),
                   const Spacer(),
                   if (session.isBookedByCurrentUser)
-                    _buildUserTicketBadge(session.currentUserBookingStatus, session.currentUserQueueOrder, colors),
+                    _buildUserTicketBadge(
+                      session.currentUserBookingStatus,
+                      session.currentUserQueueOrder,
+                      isEnded,
+                      colors,
+                    ),
                 ],
               ),
               const SizedBox(height: 10),
@@ -890,7 +1097,9 @@ class _SessionCard extends StatelessWidget {
               // Title
               Text(
                 session.title,
-                style: AppTypography.titleMedium.bold.colored(colors.textPrimary),
+                style: AppTypography.titleMedium.bold.colored(
+                  isEnded ? colors.textMuted : colors.textPrimary,
+                ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -904,7 +1113,9 @@ class _SessionCard extends StatelessWidget {
                   Expanded(
                     child: Text(
                       session.courtLocation,
-                      style: AppTypography.bodySmall.colored(colors.textSecondary),
+                      style: AppTypography.bodySmall.colored(
+                        isEnded ? colors.textMuted : colors.textSecondary,
+                      ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -916,11 +1127,17 @@ class _SessionCard extends StatelessWidget {
               // Time
               Row(
                 children: [
-                  Icon(Icons.access_time_rounded, size: 16, color: colors.textMuted),
+                  Icon(
+                    isEnded ? Icons.history_rounded : Icons.access_time_rounded,
+                    size: 16,
+                    color: colors.textMuted,
+                  ),
                   const SizedBox(width: 4),
                   Text(
                     timeStr,
-                    style: AppTypography.bodySmall.medium.colored(colors.textPrimary),
+                    style: AppTypography.bodySmall.medium.colored(
+                      isEnded ? colors.textMuted : colors.textPrimary,
+                    ),
                   ),
                 ],
               ),
@@ -937,19 +1154,23 @@ class _SessionCard extends StatelessWidget {
                         minHeight: 6,
                         backgroundColor: colors.cardBorder,
                         valueColor: AlwaysStoppedAnimation<Color>(
-                          isFull ? colors.warning : colors.primary,
+                          isEnded
+                              ? colors.textMuted.withValues(alpha: 0.3)
+                              : (isFull ? colors.warning : colors.primary),
                         ),
                       ),
                     ),
                   ),
                   const SizedBox(width: 10),
                   Text(
-                    '${session.confirmedCount}/${session.maxPlayers} slot',
+                    isEnded
+                        ? '${session.confirmedCount}/${session.maxPlayers} tham gia'
+                        : '${session.confirmedCount}/${session.maxPlayers} slot',
                     style: AppTypography.labelMedium.bold.colored(
-                      isFull ? colors.warning : colors.primary,
+                      isEnded ? colors.textMuted : (isFull ? colors.warning : colors.primary),
                     ),
                   ),
-                  if (session.waitingCount > 0) ...[
+                  if (!isEnded && session.waitingCount > 0) ...[
                     const SizedBox(width: 6),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
@@ -970,9 +1191,73 @@ class _SessionCard extends StatelessWidget {
         ),
       ),
     );
+
+    if (isEnded) {
+      return Opacity(
+        opacity: 0.76,
+        child: cardContent,
+      );
+    }
+    return cardContent;
   }
 
-  Widget _buildStatusBadge(SessionStatus status, AppThemeColors colors) {
+  Widget _buildStatusBadge(
+    SessionStatus status,
+    bool isEnded,
+    bool isPlaying,
+    AppThemeColors colors,
+  ) {
+    if (isEnded) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+        decoration: BoxDecoration(
+          color: colors.surfaceSubtle,
+          borderRadius: AppRadius.tag,
+          border: Border.all(color: colors.border.withValues(alpha: 0.4)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.history_rounded, size: 12, color: colors.textMuted),
+            const SizedBox(width: 4),
+            Text(
+              'ĐÃ KẾT THÚC',
+              style: AppTypography.labelSmall.bold.colored(colors.textMuted),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (isPlaying) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+        decoration: BoxDecoration(
+          color: colors.success.withValues(alpha: 0.15),
+          borderRadius: AppRadius.tag,
+          border: Border.all(color: colors.success.withValues(alpha: 0.4)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 6,
+              height: 6,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: colors.success,
+              ),
+            ),
+            const SizedBox(width: 5),
+            Text(
+              'ĐANG DIỄN RA',
+              style: AppTypography.labelSmall.bold.colored(colors.success),
+            ),
+          ],
+        ),
+      );
+    }
+
     Color bg;
     Color fg;
     switch (status) {
@@ -983,10 +1268,6 @@ class _SessionCard extends StatelessWidget {
       case SessionStatus.locked:
         bg = colors.warning.withValues(alpha: 0.15);
         fg = colors.warning;
-        break;
-      case SessionStatus.playing:
-        bg = colors.info.withValues(alpha: 0.15);
-        fg = colors.info;
         break;
       default:
         bg = colors.surfaceSubtle;
@@ -1003,7 +1284,34 @@ class _SessionCard extends StatelessWidget {
     );
   }
 
-  Widget _buildUserTicketBadge(BookingStatus? status, int queueOrder, AppThemeColors colors) {
+  Widget _buildUserTicketBadge(
+    BookingStatus? status,
+    int queueOrder,
+    bool isEnded,
+    AppThemeColors colors,
+  ) {
+    if (isEnded) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+        decoration: BoxDecoration(
+          color: colors.surfaceSubtle,
+          borderRadius: AppRadius.tag,
+          border: Border.all(color: colors.border.withValues(alpha: 0.3)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.check_circle_outline_rounded, size: 12, color: colors.textMuted),
+            const SizedBox(width: 4),
+            Text(
+              'Đã tham gia',
+              style: AppTypography.labelSmall.bold.colored(colors.textMuted),
+            ),
+          ],
+        ),
+      );
+    }
+
     if (status == BookingStatus.waiting) {
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),

@@ -53,6 +53,9 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
     _descController = TextEditingController();
     _venueController = TextEditingController();
     _addressController = TextEditingController();
+    _avatarUrlController.addListener(() {
+      if (mounted) setState(() {});
+    });
   }
 
   @override
@@ -122,16 +125,16 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
           content: Text(
             'Đã cập nhật tọa độ GPS: (${loc.latitude.toStringAsFixed(4)}, ${loc.longitude.toStringAsFixed(4)})',
           ),
-          backgroundColor: AppColors.success,
+          backgroundColor: colors.success,
           behavior: SnackBarBehavior.floating,
         ),
       );
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Không thể lấy tọa độ GPS. Vui lòng kiểm tra quyền vị trí.'),
-          backgroundColor: AppColors.error,
+        SnackBar(
+          content: const Text('Không thể lấy tọa độ GPS. Vui lòng kiểm tra quyền vị trí.'),
+          backgroundColor: colors.error,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -150,7 +153,6 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
 
     setState(() => _isSaving = true);
     try {
-      // 1. Cập nhật thông tin nhóm (chỉ khi có quyền)
       if (canManageInfo) {
         await vm.updateInfo(
           groupName: _nameController.text.trim(),
@@ -166,7 +168,6 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
         );
       }
 
-      // 2. Cập nhật lịch sinh hoạt tuần (chỉ khi có quyền)
       if (canManageSchedule) {
         final scheduleInputs = _schedules
             .map(
@@ -180,14 +181,13 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
         await vm.updateSchedules(scheduleInputs);
       }
 
-      // 3. Tải lại MyClubs để đồng bộ avatar và tên
       await ref.read(clubContextViewModelProvider.notifier).loadMyClubs();
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Cập nhật cài đặt câu lạc bộ thành công!'),
-          backgroundColor: AppColors.success,
+        SnackBar(
+          content: const Text('Cập nhật cài đặt câu lạc bộ thành công!'),
+          backgroundColor: colors.success,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -197,7 +197,7 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Lỗi cập nhật: $e'),
-          backgroundColor: AppColors.error,
+          backgroundColor: colors.error,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -214,7 +214,7 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
         shape: const RoundedRectangleBorder(borderRadius: AppRadius.dialog),
         title: Row(
           children: [
-            const Icon(Icons.warning_amber_rounded, color: AppColors.warning, size: 24),
+            Icon(Icons.warning_amber_rounded, color: colors.warning, size: 24),
             AppSpacing.gapW8,
             Text('Tạm Dừng / Khóa Nhóm', style: AppTypography.titleMedium.bold.colored(colors.textPrimary)),
           ],
@@ -230,7 +230,7 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.warning,
+              backgroundColor: colors.warning,
               foregroundColor: AppColors.white,
             ),
             onPressed: () async {
@@ -253,7 +253,7 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
         shape: const RoundedRectangleBorder(borderRadius: AppRadius.dialog),
         title: Row(
           children: [
-            const Icon(Icons.exit_to_app_rounded, color: AppColors.error, size: 24),
+            Icon(Icons.exit_to_app_rounded, color: colors.error, size: 24),
             AppSpacing.gapW8,
             Text('Rời Câu Lạc Bộ', style: AppTypography.titleMedium.bold.colored(colors.textPrimary)),
           ],
@@ -269,7 +269,7 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.error,
+              backgroundColor: colors.error,
               foregroundColor: AppColors.white,
             ),
             onPressed: () async {
@@ -280,17 +280,17 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
               if (mounted) {
                 if (success) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Bạn đã rời khỏi câu lạc bộ.'),
-                      backgroundColor: AppColors.primary,
+                    SnackBar(
+                      content: const Text('Bạn đã rời khỏi câu lạc bộ.'),
+                      backgroundColor: colors.primary,
                     ),
                   );
                   context.go('/home');
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Chủ nhóm (Host) không thể tự rời khi chưa chuyển giao quyền.'),
-                      backgroundColor: AppColors.error,
+                    SnackBar(
+                      content: const Text('Chủ nhóm (Host) không thể tự rời khi chưa chuyển giao quyền.'),
+                      backgroundColor: colors.error,
                     ),
                   );
                 }
@@ -300,6 +300,126 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildAvatarPreview() {
+    final avatarUrl = _avatarUrlController.text.trim();
+    return Center(
+      child: Column(
+        children: [
+          Container(
+            width: 86,
+            height: 86,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: colors.primary.withValues(alpha: 0.1),
+              border: Border.all(color: colors.primary.withValues(alpha: 0.35), width: 2),
+            ),
+            child: ClipOval(
+              child: avatarUrl.isNotEmpty
+                  ? Image.network(
+                      avatarUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, _, _) => Icon(
+                        Icons.sports_tennis_rounded,
+                        size: 40,
+                        color: colors.primary,
+                      ),
+                    )
+                  : Icon(
+                      Icons.groups_rounded,
+                      size: 42,
+                      color: colors.primary,
+                    ),
+            ),
+          ),
+          AppSpacing.gapH8,
+          Text(
+            avatarUrl.isNotEmpty ? 'Ảnh đại diện câu lạc bộ' : 'Chưa có ảnh đại diện',
+            style: AppTypography.labelSmall.colored(colors.textMuted),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSkillLevelSelector(bool enabled) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Yêu Cầu Trình Độ Thành Viên',
+          style: AppTypography.labelMedium.bold.colored(colors.textPrimary),
+        ),
+        AppSpacing.gapH4,
+        Text(
+          'Khoảng trình độ phù hợp để thành viên mới tìm kiếm và nộp đơn',
+          style: AppTypography.bodySmall.colored(colors.textMuted),
+        ),
+        AppSpacing.gapH8,
+        Row(
+          children: [
+            Expanded(
+              child: DropdownButtonFormField<SkillLevel>(
+                initialValue: _minLevel,
+                isExpanded: true,
+                decoration: InputDecoration(
+                  labelText: 'Tối thiểu',
+                  labelStyle: AppTypography.labelSmall.colored(colors.textMuted),
+                  filled: true,
+                  fillColor: colors.inputFill,
+                  prefixIcon: Icon(Icons.trending_up_rounded, size: 18, color: colors.primary),
+                  border: OutlineInputBorder(
+                    borderRadius: AppRadius.borderMd,
+                    borderSide: BorderSide(color: colors.inputBorder),
+                  ),
+                ),
+                items: SkillLevel.values.map((lvl) {
+                  return DropdownMenuItem(
+                    value: lvl,
+                    child: Text(
+                      '${lvl.code} - ${lvl.displayName}',
+                      style: AppTypography.bodySmall.colored(colors.textPrimary),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  );
+                }).toList(),
+                onChanged: enabled ? (val) => setState(() => _minLevel = val) : null,
+              ),
+            ),
+            AppSpacing.gapW12,
+            Expanded(
+              child: DropdownButtonFormField<SkillLevel>(
+                initialValue: _maxLevel,
+                isExpanded: true,
+                decoration: InputDecoration(
+                  labelText: 'Tối đa',
+                  labelStyle: AppTypography.labelSmall.colored(colors.textMuted),
+                  filled: true,
+                  fillColor: colors.inputFill,
+                  prefixIcon: Icon(Icons.military_tech_outlined, size: 18, color: colors.primary),
+                  border: OutlineInputBorder(
+                    borderRadius: AppRadius.borderMd,
+                    borderSide: BorderSide(color: colors.inputBorder),
+                  ),
+                ),
+                items: SkillLevel.values.map((lvl) {
+                  return DropdownMenuItem(
+                    value: lvl,
+                    child: Text(
+                      '${lvl.code} - ${lvl.displayName}',
+                      style: AppTypography.bodySmall.colored(colors.textPrimary),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  );
+                }).toList(),
+                onChanged: enabled ? (val) => setState(() => _maxLevel = val) : null,
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 
@@ -323,7 +443,6 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
     final canManageRoles = isHost || (isSameClub && ref.hasClubPermission('MEMBER.ROLE.MANAGE'));
     final canSave = canManageInfo || canManageSchedule;
 
-    // Chặn triệt để thành viên không có quyền chỉnh sửa
     if (club != null && !isHost && !canManageInfo && !canManageSchedule && !canManageRoles) {
       return Scaffold(
         backgroundColor: colors.background,
@@ -384,259 +503,429 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
         elevation: 0.5,
         actions: [
           if (club != null && canSave)
-            TextButton.icon(
-              icon: _isSaving
-                  ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2))
-                  : const Icon(Icons.check_rounded, size: 18),
-              label: const Text('Lưu'),
-              onPressed: _isSaving ? null : () => _saveAllChanges(vm, canManageInfo: canManageInfo, canManageSchedule: canManageSchedule),
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: IconButton(
+                tooltip: 'Lưu thay đổi',
+                icon: _isSaving
+                    ? SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: colors.primary))
+                    : Icon(Icons.done_all_rounded, color: colors.primary),
+                onPressed: _isSaving
+                    ? null
+                    : () => _saveAllChanges(vm, canManageInfo: canManageInfo, canManageSchedule: canManageSchedule),
+              ),
             ),
         ],
       ),
+      bottomNavigationBar: (club != null && canSave)
+          ? SafeArea(
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  color: colors.surface,
+                  border: Border(top: BorderSide(color: colors.cardBorder)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: colors.cardBorder.withValues(alpha: 0.15),
+                      blurRadius: 8,
+                      offset: const Offset(0, -2),
+                    ),
+                  ],
+                ),
+                child: Align(
+                  alignment: Alignment.center,
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 768),
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: colors.primary,
+                          foregroundColor: AppColors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                          elevation: 0,
+                        ),
+                        icon: _isSaving
+                            ? const SizedBox(
+                                width: 18,
+                                height: 18,
+                                child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.white),
+                              )
+                            : const Icon(Icons.check_rounded, size: 20),
+                        label: Text(
+                          _isSaving ? 'Đang lưu thay đổi...' : 'Lưu Thay Đổi Cài Đặt',
+                          style: AppTypography.bodyMedium.bold.colored(AppColors.white),
+                        ),
+                        onPressed: _isSaving
+                            ? null
+                            : () => _saveAllChanges(vm, canManageInfo: canManageInfo, canManageSchedule: canManageSchedule),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            )
+          : null,
       body: state.isLoading && club == null
           ? Center(child: CircularProgressIndicator(color: colors.primary))
           : Form(
               key: _formKey,
               child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(horizontal: AppSpacing.base, vertical: AppSpacing.md),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Section 1: Thông tin chung
-                    _buildSectionCard(
-                      title: 'Thông Tin Chung',
-                      icon: Icons.info_outline_rounded,
+                child: Align(
+                  alignment: Alignment.topCenter,
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 768),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Tên Câu Lạc Bộ *', style: AppTypography.labelMedium.bold.colored(colors.textPrimary)),
-                        AppSpacing.gapH8,
-                        TextFormField(
-                          controller: _nameController,
-                          enabled: isHost,
-                          decoration: InputDecoration(
-                            hintText: 'Nhập tên câu lạc bộ',
-                            filled: true,
-                            fillColor: colors.inputFill,
-                            border: OutlineInputBorder(borderRadius: AppRadius.borderMd, borderSide: BorderSide(color: colors.inputBorder)),
-                          ),
-                          validator: (v) {
-                            if (v == null || v.trim().isEmpty) return 'Tên câu lạc bộ không được để trống';
-                            return null;
-                          },
-                        ),
-                        AppSpacing.gapH16,
-                        Text('Đường dẫn ảnh đại diện (Avatar URL)', style: AppTypography.labelMedium.bold.colored(colors.textPrimary)),
-                        AppSpacing.gapH8,
-                        TextFormField(
-                          controller: _avatarUrlController,
-                          enabled: canManageInfo,
-                          decoration: InputDecoration(
-                            hintText: 'https://...',
-                            filled: true,
-                            fillColor: colors.inputFill,
-                            prefixIcon: Icon(Icons.link_rounded, color: colors.textMuted),
-                            border: OutlineInputBorder(borderRadius: AppRadius.borderMd, borderSide: BorderSide(color: colors.inputBorder)),
-                          ),
-                        ),
-                        AppSpacing.gapH16,
-                        Text('Mô tả câu lạc bộ', style: AppTypography.labelMedium.bold.colored(colors.textPrimary)),
-                        AppSpacing.gapH8,
-                        TextFormField(
-                          controller: _descController,
-                          enabled: canManageInfo,
-                          maxLines: 3,
-                          decoration: InputDecoration(
-                            hintText: 'Giới thiệu về hoạt động của câu lạc bộ',
-                            filled: true,
-                            fillColor: colors.inputFill,
-                            border: OutlineInputBorder(borderRadius: AppRadius.borderMd, borderSide: BorderSide(color: colors.inputBorder)),
-                          ),
-                        ),
-                        AppSpacing.gapH16,
-                        SwitchListTile(
-                          contentPadding: EdgeInsets.zero,
-                          activeThumbColor: AppColors.primary,
-                          title: Text('Mở tuyển thành viên mới', style: AppTypography.titleSmall.bold.colored(colors.textPrimary)),
-                          subtitle: Text('Cho phép người chơi khác tìm thấy và nộp đơn gia nhập', style: AppTypography.bodySmall.colored(colors.textMuted)),
-                          value: _isRecruiting,
-                          onChanged: canManageInfo ? (val) => setState(() => _isRecruiting = val) : null,
-                        ),
-                      ],
-                    ),
-                    AppSpacing.gapH16,
-
-                    // Section 2: Sân bãi & GPS
-                    _buildSectionCard(
-                      title: 'Sân Sinh Hoạt & Vị Trí',
-                      icon: Icons.place_outlined,
-                      children: [
-                        Text('Tên Sân Cố Định', style: AppTypography.labelMedium.bold.colored(colors.textPrimary)),
-                        AppSpacing.gapH8,
-                        TextFormField(
-                          controller: _venueController,
-                          enabled: canManageInfo,
-                          decoration: InputDecoration(
-                            hintText: 'Ví dụ: Sân Cầu Lông Kỳ Hòa Q10',
-                            filled: true,
-                            fillColor: colors.inputFill,
-                            border: OutlineInputBorder(borderRadius: AppRadius.borderMd, borderSide: BorderSide(color: colors.inputBorder)),
-                          ),
-                        ),
-                        AppSpacing.gapH16,
-                        Text('Địa Chỉ Cụ Thể', style: AppTypography.labelMedium.bold.colored(colors.textPrimary)),
-                        AppSpacing.gapH8,
-                        TextFormField(
-                          controller: _addressController,
-                          enabled: canManageInfo,
-                          decoration: InputDecoration(
-                            hintText: 'Ví dụ: 238 Ba Tháng Hai, P.12, Q.10',
-                            filled: true,
-                            fillColor: colors.inputFill,
-                            border: OutlineInputBorder(borderRadius: AppRadius.borderMd, borderSide: BorderSide(color: colors.inputBorder)),
-                          ),
-                        ),
-                        AppSpacing.gapH16,
-                        Row(
+                        // Section 1: Thông tin chung
+                        _buildSectionCard(
+                          title: 'Thông Tin Chung',
+                          icon: Icons.info_outline_rounded,
                           children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                            _buildAvatarPreview(),
+                            AppSpacing.gapH16,
+                            Text('Tên Câu Lạc Bộ *', style: AppTypography.labelMedium.bold.colored(colors.textPrimary)),
+                            AppSpacing.gapH8,
+                            TextFormField(
+                              controller: _nameController,
+                              enabled: isHost,
+                              decoration: InputDecoration(
+                                hintText: 'Nhập tên câu lạc bộ',
+                                filled: true,
+                                fillColor: colors.inputFill,
+                                prefixIcon: Icon(Icons.groups_rounded, color: colors.primary),
+                                border: OutlineInputBorder(
+                                  borderRadius: AppRadius.borderMd,
+                                  borderSide: BorderSide(color: colors.inputBorder),
+                                ),
+                              ),
+                              validator: (v) {
+                                if (v == null || v.trim().isEmpty) return 'Tên câu lạc bộ không được để trống';
+                                return null;
+                              },
+                            ),
+                            AppSpacing.gapH16,
+                            Text('Đường dẫn ảnh đại diện (Avatar URL)', style: AppTypography.labelMedium.bold.colored(colors.textPrimary)),
+                            AppSpacing.gapH8,
+                            TextFormField(
+                              controller: _avatarUrlController,
+                              enabled: canManageInfo,
+                              decoration: InputDecoration(
+                                hintText: 'https://...',
+                                filled: true,
+                                fillColor: colors.inputFill,
+                                prefixIcon: Icon(Icons.link_rounded, color: colors.primary),
+                                border: OutlineInputBorder(
+                                  borderRadius: AppRadius.borderMd,
+                                  borderSide: BorderSide(color: colors.inputBorder),
+                                ),
+                              ),
+                            ),
+                            AppSpacing.gapH16,
+                            Text('Mô tả câu lạc bộ', style: AppTypography.labelMedium.bold.colored(colors.textPrimary)),
+                            AppSpacing.gapH8,
+                            TextFormField(
+                              controller: _descController,
+                              enabled: canManageInfo,
+                              maxLines: 3,
+                              decoration: InputDecoration(
+                                hintText: 'Giới thiệu về hoạt động và tiêu chí của câu lạc bộ',
+                                filled: true,
+                                fillColor: colors.inputFill,
+                                border: OutlineInputBorder(
+                                  borderRadius: AppRadius.borderMd,
+                                  borderSide: BorderSide(color: colors.inputBorder),
+                                ),
+                              ),
+                            ),
+                            AppSpacing.gapH16,
+                            _buildSkillLevelSelector(canManageInfo),
+                            AppSpacing.gapH16,
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: colors.surfaceSubtle,
+                                borderRadius: AppRadius.borderMd,
+                                border: Border.all(color: colors.cardBorder),
+                              ),
+                              child: SwitchListTile(
+                                contentPadding: EdgeInsets.zero,
+                                activeThumbColor: colors.primary,
+                                title: Text(
+                                  'Mở tuyển thành viên mới',
+                                  style: AppTypography.titleSmall.bold.colored(colors.textPrimary),
+                                ),
+                                subtitle: Text(
+                                  'Cho phép người chơi khác tìm thấy và nộp đơn gia nhập CLB',
+                                  style: AppTypography.bodySmall.colored(colors.textMuted),
+                                ),
+                                value: _isRecruiting,
+                                onChanged: canManageInfo ? (val) => setState(() => _isRecruiting = val) : null,
+                              ),
+                            ),
+                          ],
+                        ),
+                        AppSpacing.gapH16,
+
+                        // Section 2: Sân bãi & GPS
+                        _buildSectionCard(
+                          title: 'Sân Sinh Hoạt & Vị Trí',
+                          icon: Icons.place_outlined,
+                          children: [
+                            Text('Tên Sân Cố Định', style: AppTypography.labelMedium.bold.colored(colors.textPrimary)),
+                            AppSpacing.gapH8,
+                            TextFormField(
+                              controller: _venueController,
+                              enabled: canManageInfo,
+                              decoration: InputDecoration(
+                                hintText: 'Ví dụ: Sân Cầu Lông Kỳ Hòa Q10',
+                                filled: true,
+                                fillColor: colors.inputFill,
+                                prefixIcon: Icon(Icons.sports_tennis_rounded, color: colors.primary),
+                                border: OutlineInputBorder(
+                                  borderRadius: AppRadius.borderMd,
+                                  borderSide: BorderSide(color: colors.inputBorder),
+                                ),
+                              ),
+                            ),
+                            AppSpacing.gapH16,
+                            Text('Địa Chỉ Cụ Thể', style: AppTypography.labelMedium.bold.colored(colors.textPrimary)),
+                            AppSpacing.gapH8,
+                            TextFormField(
+                              controller: _addressController,
+                              enabled: canManageInfo,
+                              decoration: InputDecoration(
+                                hintText: 'Ví dụ: 238 Ba Tháng Hai, P.12, Q.10',
+                                filled: true,
+                                fillColor: colors.inputFill,
+                                prefixIcon: Icon(Icons.location_on_outlined, color: colors.primary),
+                                border: OutlineInputBorder(
+                                  borderRadius: AppRadius.borderMd,
+                                  borderSide: BorderSide(color: colors.inputBorder),
+                                ),
+                              ),
+                            ),
+                            AppSpacing.gapH16,
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: colors.surfaceSubtle,
+                                borderRadius: AppRadius.borderMd,
+                                border: Border.all(color: colors.cardBorder),
+                              ),
+                              child: Row(
                                 children: [
-                                  Text('Tọa độ GPS', style: AppTypography.labelMedium.bold.colored(colors.textPrimary)),
-                                  AppSpacing.gapH4,
-                                  Text(
-                                    _lat != null
-                                        ? '(${_lat!.toStringAsFixed(4)}, ${_lng!.toStringAsFixed(4)})'
-                                        : 'Chưa có tọa độ',
-                                    style: AppTypography.bodySmall.colored(colors.textMuted),
+                                  Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      color: (_lat != null ? colors.success : colors.textMuted).withValues(alpha: 0.15),
+                                      borderRadius: AppRadius.borderSm,
+                                    ),
+                                    child: Icon(
+                                      _lat != null ? Icons.gps_fixed_rounded : Icons.gps_not_fixed_rounded,
+                                      color: _lat != null ? colors.success : colors.textMuted,
+                                      size: 20,
+                                    ),
+                                  ),
+                                  AppSpacing.gapW12,
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text('Tọa độ vị trí GPS', style: AppTypography.labelMedium.bold.colored(colors.textPrimary)),
+                                        AppSpacing.gapH4,
+                                        Text(
+                                          _lat != null
+                                              ? '${_lat!.toStringAsFixed(4)}, ${_lng!.toStringAsFixed(4)}'
+                                              : 'Chưa có tọa độ',
+                                          style: AppTypography.bodySmall.semiBold.colored(
+                                            _lat != null ? colors.primary : colors.textMuted,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  OutlinedButton.icon(
+                                    style: OutlinedButton.styleFrom(
+                                      foregroundColor: colors.primary,
+                                      side: BorderSide(color: colors.primary.withValues(alpha: 0.4)),
+                                      shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                                    ),
+                                    icon: _isGettingLocation
+                                        ? SizedBox(
+                                            width: 14,
+                                            height: 14,
+                                            child: CircularProgressIndicator(strokeWidth: 2, color: colors.primary),
+                                          )
+                                        : const Icon(Icons.my_location_rounded, size: 16),
+                                    label: const Text('Cập nhật GPS'),
+                                    onPressed: (_isGettingLocation || !canManageInfo) ? null : _getCurrentLocation,
                                   ),
                                 ],
                               ),
                             ),
-                            OutlinedButton.icon(
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: colors.primary,
-                                side: BorderSide(color: colors.primary.withValues(alpha: 0.4)),
+                          ],
+                        ),
+                        AppSpacing.gapH16,
+
+                        // Section 3: Lịch sinh hoạt định kỳ
+                        _buildSectionCard(
+                          title: 'Lịch Sinh Hoạt Cố Định Hàng Tuần',
+                          icon: Icons.calendar_month_outlined,
+                          children: [
+                            IgnorePointer(
+                              ignoring: !canManageSchedule,
+                              child: Opacity(
+                                opacity: canManageSchedule ? 1.0 : 0.75,
+                                child: ClubSchedulePlanner(
+                                  initialSchedules: _schedules,
+                                  onChanged: (list) {
+                                    _schedules.clear();
+                                    _schedules.addAll(list);
+                                  },
+                                ),
                               ),
-                              icon: _isGettingLocation
-                                  ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2))
-                                  : const Icon(Icons.my_location_rounded, size: 16),
-                              label: const Text('Cập nhật GPS'),
-                              onPressed: (_isGettingLocation || !canManageInfo) ? null : _getCurrentLocation,
                             ),
                           ],
                         ),
-                      ],
-                    ),
-                    AppSpacing.gapH16,
+                        AppSpacing.gapH16,
 
-                    // Section 3: Lịch sinh hoạt định kỳ
-                    _buildSectionCard(
-                      title: 'Lịch Sinh Hoạt Cố Định Hàng Tuần',
-                      icon: Icons.calendar_month_outlined,
-                      children: [
-                        IgnorePointer(
-                          ignoring: !canManageSchedule,
-                          child: Opacity(
-                            opacity: canManageSchedule ? 1.0 : 0.75,
-                            child: ClubSchedulePlanner(
-                              initialSchedules: _schedules,
-                              onChanged: (list) {
-                                _schedules.clear();
-                                _schedules.addAll(list);
-                              },
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    AppSpacing.gapH16,
-
-                    // Section 4: Quản lý vai trò (Nếu là Host hoặc có quyền quản lý vai trò)
-                    if (isHost || canManageRoles) ...[
-                      _buildSectionCard(
-                        title: 'Phân Quyền Vai Trò (Discord-Style)',
-                        icon: Icons.shield_outlined,
-                        children: [
-                          Text(
-                            'Tùy chỉnh các vai trò (Host, Thủ quỹ, Phó nhóm) và phân công quyền hạn trong nhóm.',
-                            style: AppTypography.bodySmall.colored(colors.textMuted),
-                          ),
-                          AppSpacing.gapH12,
-                          SizedBox(
-                            width: double.infinity,
-                            child: OutlinedButton.icon(
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: AppColors.roleHost,
-                                side: BorderSide(color: AppColors.roleHost.withValues(alpha: 0.5)),
-                                padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+                        // Section 4: Quản lý vai trò (Nếu là Host hoặc có quyền quản lý vai trò)
+                        if (isHost || canManageRoles) ...[
+                          _buildSectionCard(
+                            title: 'Phân Quyền Vai Trò (Discord-Style)',
+                            icon: Icons.shield_outlined,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      colors.primary.withValues(alpha: 0.08),
+                                      colors.surfaceSubtle,
+                                    ],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                  ),
+                                  borderRadius: AppRadius.borderMd,
+                                  border: Border.all(color: colors.primary.withValues(alpha: 0.25)),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                          decoration: BoxDecoration(
+                                            color: colors.primary,
+                                            borderRadius: AppRadius.tag,
+                                          ),
+                                          child: Text(
+                                            'RBAC PHÂN QUYỀN',
+                                            style: AppTypography.labelSmall.bold.colored(AppColors.white),
+                                          ),
+                                        ),
+                                        AppSpacing.gapW8,
+                                        Text(
+                                          'Quản trị đa vai trò',
+                                          style: AppTypography.labelSmall.semiBold.colored(colors.textMuted),
+                                        ),
+                                      ],
+                                    ),
+                                    AppSpacing.gapH8,
+                                    Text(
+                                      'Tùy chỉnh các vai trò (Host, Thủ quỹ, Ban điều hành...) và phân bổ cây quyền hạn chi tiết trong câu lạc bộ.',
+                                      style: AppTypography.bodySmall.colored(colors.textSecondary),
+                                    ),
+                                    AppSpacing.gapH12,
+                                    SizedBox(
+                                      width: double.infinity,
+                                      child: ElevatedButton.icon(
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: colors.primary,
+                                          foregroundColor: AppColors.white,
+                                          shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                                          padding: const EdgeInsets.symmetric(vertical: 12),
+                                          elevation: 0,
+                                        ),
+                                        icon: const Icon(Icons.manage_accounts_rounded, size: 18),
+                                        label: const Text('Quản lý cây vai trò & quyền hạn'),
+                                        onPressed: () {
+                                          ClubRoleManagementScreen.show(context, clubId: widget.clubId);
+                                        },
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
-                              icon: const Icon(Icons.manage_accounts_rounded, size: 18),
-                              label: const Text('Quản lý cây vai trò & quyền hạn'),
-                              onPressed: () {
-                                ClubRoleManagementScreen.show(context, clubId: widget.clubId);
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                      AppSpacing.gapH16,
-                    ],
-
-                    // Section 5: Vùng nhạy cảm (Danger Zone)
-                    _buildSectionCard(
-                      title: 'Vùng Nguy Hiểm',
-                      icon: Icons.warning_rounded,
-                      isDanger: true,
-                      children: [
-                        if (isHost) ...[
-                          Text(
-                            'Tạm dừng hoạt động hoặc khóa câu lạc bộ',
-                            style: AppTypography.titleSmall.bold.colored(colors.textPrimary),
-                          ),
-                          AppSpacing.gapH4,
-                          Text(
-                            'Ẩn nhóm khỏi radar tìm kiếm và tạm ngừng các hoạt động sinh hoạt mới.',
-                            style: AppTypography.bodySmall.colored(colors.textMuted),
-                          ),
-                          AppSpacing.gapH12,
-                          OutlinedButton.icon(
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: AppColors.warning,
-                              side: const BorderSide(color: AppColors.warning),
-                              padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-                            ),
-                            icon: const Icon(Icons.pause_circle_outline_rounded, size: 18),
-                            label: const Text('Tạm dừng hoạt động CLB'),
-                            onPressed: () => _showLockClubDialog(vm),
+                            ],
                           ),
                           AppSpacing.gapH16,
                         ],
-                        if (!isHost) ...[
-                          Text(
-                            'Rời khỏi câu lạc bộ',
-                            style: AppTypography.titleSmall.bold.colored(colors.textPrimary),
-                          ),
-                          AppSpacing.gapH4,
-                          Text(
-                            'Hủy tư cách thành viên của bạn tại câu lạc bộ này.',
-                            style: AppTypography.bodySmall.colored(colors.textMuted),
-                          ),
-                          AppSpacing.gapH12,
-                          OutlinedButton.icon(
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: AppColors.error,
-                              side: const BorderSide(color: AppColors.error),
-                              padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-                            ),
-                            icon: const Icon(Icons.exit_to_app_rounded, size: 18),
-                            label: const Text('Rời câu lạc bộ'),
-                            onPressed: _showLeaveClubDialog,
-                          ),
-                        ],
+
+                        // Section 5: Vùng nhạy cảm (Danger Zone)
+                        _buildSectionCard(
+                          title: 'Vùng Nguy Hiểm',
+                          icon: Icons.warning_rounded,
+                          isDanger: true,
+                          children: [
+                            if (isHost) ...[
+                              Text(
+                                'Tạm dừng hoạt động hoặc khóa câu lạc bộ',
+                                style: AppTypography.titleSmall.bold.colored(colors.textPrimary),
+                              ),
+                              AppSpacing.gapH4,
+                              Text(
+                                'Ẩn nhóm khỏi radar tìm kiếm và tạm ngừng các hoạt động sinh hoạt mới.',
+                                style: AppTypography.bodySmall.colored(colors.textMuted),
+                              ),
+                              AppSpacing.gapH12,
+                              OutlinedButton.icon(
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: colors.warning,
+                                  side: BorderSide(color: colors.warning),
+                                  padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+                                  shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                                ),
+                                icon: const Icon(Icons.pause_circle_outline_rounded, size: 18),
+                                label: const Text('Tạm dừng hoạt động CLB'),
+                                onPressed: () => _showLockClubDialog(vm),
+                              ),
+                              AppSpacing.gapH16,
+                            ],
+                            if (!isHost) ...[
+                              Text(
+                                'Rời khỏi câu lạc bộ',
+                                style: AppTypography.titleSmall.bold.colored(colors.textPrimary),
+                              ),
+                              AppSpacing.gapH4,
+                              Text(
+                                'Hủy tư cách thành viên của bạn tại câu lạc bộ này.',
+                                style: AppTypography.bodySmall.colored(colors.textMuted),
+                              ),
+                              AppSpacing.gapH12,
+                              OutlinedButton.icon(
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: colors.error,
+                                  side: BorderSide(color: colors.error),
+                                  padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+                                  shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                                ),
+                                icon: const Icon(Icons.exit_to_app_rounded, size: 18),
+                                label: const Text('Rời câu lạc bộ'),
+                                onPressed: _showLeaveClubDialog,
+                              ),
+                            ],
+                          ],
+                        ),
+                        AppSpacing.gapH32,
                       ],
                     ),
-                    AppSpacing.gapH32,
-                  ],
+                  ),
                 ),
               ),
             ),
@@ -654,26 +943,36 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
       padding: AppSpacing.allBase,
       decoration: BoxDecoration(
         color: colors.cardBackground,
-        borderRadius: AppRadius.borderLg,
+        borderRadius: AppRadius.card,
         border: Border.all(
-          color: isDanger ? AppColors.error.withValues(alpha: 0.3) : colors.cardBorder,
+          color: isDanger ? colors.error.withValues(alpha: 0.35) : colors.cardBorder,
         ),
+        boxShadow: AppShadows.sm,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(
-                icon,
-                color: isDanger ? AppColors.error : colors.primary,
-                size: 20,
+              Container(
+                padding: const EdgeInsets.all(7),
+                decoration: BoxDecoration(
+                  color: (isDanger ? colors.error : colors.primary).withValues(alpha: 0.12),
+                  borderRadius: AppRadius.borderSm,
+                ),
+                child: Icon(
+                  icon,
+                  color: isDanger ? colors.error : colors.primary,
+                  size: 18,
+                ),
               ),
               AppSpacing.gapW8,
-              Text(
-                title,
-                style: AppTypography.titleMedium.bold.colored(
-                  isDanger ? AppColors.error : colors.textPrimary,
+              Expanded(
+                child: Text(
+                  title,
+                  style: AppTypography.titleMedium.bold.colored(
+                    isDanger ? colors.error : colors.textPrimary,
+                  ),
                 ),
               ),
             ],
