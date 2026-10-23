@@ -1,6 +1,7 @@
 // lib/ui/screen/club/session_detail_screen.dart
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:kltn2026_2027/app/provider/localization_provider.dart';
@@ -36,6 +37,27 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
   void dispose() {
     _tabController.dispose();
     super.dispose();
+  }
+
+  String _getWeekdayName(DateTime date) {
+    switch (date.weekday) {
+      case DateTime.monday:
+        return 'Thứ Hai';
+      case DateTime.tuesday:
+        return 'Thứ Ba';
+      case DateTime.wednesday:
+        return 'Thứ Tư';
+      case DateTime.thursday:
+        return 'Thứ Năm';
+      case DateTime.friday:
+        return 'Thứ Sáu';
+      case DateTime.saturday:
+        return 'Thứ Bảy';
+      case DateTime.sunday:
+        return 'Chủ Nhật';
+      default:
+        return '';
+    }
   }
 
   Future<void> _handleVote() async {
@@ -186,13 +208,18 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                 AppSpacing.gapH16,
                 Row(
                   children: [
-                    const Icon(Icons.radar_rounded, color: AppColors.roleViolet, size: 24),
+                    Icon(Icons.radar_rounded, color: colors.primary, size: 24),
                     AppSpacing.gapW8,
                     Text(
-                      context.l10n.explore_tab_recruitments,
+                      'Phát Tín Hiệu Tuyển Khách Giao Lưu (Radar)',
                       style: AppTypography.titleMedium.copyWith(color: colors.textPrimary),
                     ),
                   ],
+                ),
+                AppSpacing.gapH8,
+                Text(
+                  'Hệ thống sẽ quét các tay vợt quanh khu vực sân để gửi thông báo mời tham gia bù slot thiếu.',
+                  style: AppTypography.bodySmall.copyWith(color: colors.textMuted),
                 ),
                 AppSpacing.gapH16,
                 Row(
@@ -202,7 +229,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            context.l10n.session_max_players,
+                            'Số slot cần tuyển',
                             style: AppTypography.labelMedium.copyWith(color: colors.textPrimary),
                           ),
                           AppSpacing.gapH4,
@@ -229,7 +256,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            context.l10n.club_level,
+                            'Trình độ yêu cầu',
                             style: AppTypography.labelMedium.copyWith(color: colors.textPrimary),
                           ),
                           AppSpacing.gapH4,
@@ -249,8 +276,9 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                               return DropdownMenuItem(
                                 value: s,
                                 child: Text(
-                                  s.displayName,
-                                  style: AppTypography.bodyMedium.copyWith(color: colors.textPrimary),
+                                  '${s.code} - ${s.displayName}',
+                                  style: AppTypography.bodySmall.copyWith(color: colors.textPrimary),
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               );
                             }).toList(),
@@ -265,7 +293,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                 ),
                 AppSpacing.gapH16,
                 Text(
-                  context.l10n.session_fee_per_player,
+                  'Chi phí chia sẻ sân / khách (VNĐ)',
                   style: AppTypography.labelMedium.copyWith(color: colors.textPrimary),
                 ),
                 AppSpacing.gapH4,
@@ -291,14 +319,14 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Bán kính phát tín hiệu:',
+                      'Bán kính quét radar:',
                       style: AppTypography.labelMedium.copyWith(color: colors.textPrimary),
                     ),
                     Text(
                       '${radiusKm.toStringAsFixed(1)} km',
                       style: AppTypography.labelMedium.copyWith(
                         fontWeight: FontWeight.bold,
-                        color: AppColors.roleViolet,
+                        color: colors.primary,
                       ),
                     ),
                   ],
@@ -308,7 +336,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                   min: 1.0,
                   max: 20.0,
                   divisions: 19,
-                  activeColor: AppColors.roleViolet,
+                  activeColor: colors.primary,
                   onChanged: (val) => setModalState(() => radiusKm = val),
                 ),
                 AppSpacing.gapH16,
@@ -331,22 +359,22 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
 
                     if (ok && context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Đã phát tín hiệu tìm khách giao lưu thành công!'),
-                          backgroundColor: AppColors.roleViolet,
+                        SnackBar(
+                          content: const Text('Đã phát tín hiệu tìm khách giao lưu thành công!'),
+                          backgroundColor: colors.primary,
                           behavior: SnackBarBehavior.floating,
                         ),
                       );
                     }
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.roleViolet,
+                    backgroundColor: colors.primary,
                     foregroundColor: AppColors.white,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
                   ),
                   child: Text(
-                    context.l10n.explore_tab_recruitments,
+                    'Xác Nhận Phát Tín Hiệu Radar',
                     style: AppTypography.titleSmall.copyWith(
                       color: AppColors.white,
                       fontWeight: FontWeight.bold,
@@ -413,7 +441,6 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
     final confirmedCount = detail.confirmedPlayers.length;
     final waitingCount = detail.waitingQueue.length;
 
-    // RBAC: Check management rights in session's club context
     final activeContext = ref.watch(activeClubContextProvider);
     final isSameClub = activeContext?.clubId == session.groupId;
     final isHost = isSameClub && activeContext?.role == ClubRole.host;
@@ -425,12 +452,25 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
     return Scaffold(
       backgroundColor: colors.background,
       appBar: AppBar(
-        title: Text(
-          session.title,
-          style: AppTypography.titleMedium.copyWith(
-            fontWeight: FontWeight.bold,
-            color: colors.textPrimary,
-          ),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              session.title,
+              style: AppTypography.titleMedium.copyWith(
+                fontWeight: FontWeight.bold,
+                color: colors.textPrimary,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            Text(
+              session.clubName,
+              style: AppTypography.labelSmall.copyWith(color: colors.textMuted),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
         ),
         backgroundColor: colors.surface,
         foregroundColor: colors.textPrimary,
@@ -454,6 +494,8 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                   await vm.updateStatus('OPEN');
                 } else if (val == 'play') {
                   await vm.updateStatus('PLAYING');
+                } else if (val == 'complete') {
+                  await vm.updateStatus('COMPLETED');
                 } else if (val == 'delete') {
                   final ok = await showDialog<bool>(
                     context: context,
@@ -461,11 +503,11 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                       backgroundColor: colors.cardBackground,
                       shape: const RoundedRectangleBorder(borderRadius: AppRadius.dialog),
                       title: Text(
-                        context.l10n.session_status_cancelled,
+                        'Hủy Buổi Chơi',
                         style: AppTypography.titleMedium.copyWith(color: colors.textPrimary),
                       ),
                       content: Text(
-                        'Hành động này sẽ hủy buổi chơi vĩnh viễn và gửi thông báo tới người đã vote.',
+                        'Hành động này sẽ hủy buổi chơi vĩnh viễn và thông báo tới toàn bộ người đã biểu quyết.',
                         style: AppTypography.bodyMedium.copyWith(color: colors.textSecondary),
                       ),
                       actions: [
@@ -497,10 +539,10 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                     value: 'recruit',
                     child: Row(
                       children: [
-                        const Icon(Icons.radar_rounded, color: AppColors.roleViolet, size: 18),
+                        Icon(Icons.radar_rounded, color: colors.primary, size: 18),
                         AppSpacing.gapW8,
                         Text(
-                          context.l10n.explore_tab_recruitments,
+                          'Tuyển khách giao lưu (Radar)',
                           style: AppTypography.bodyMedium.copyWith(color: colors.textPrimary),
                         ),
                       ],
@@ -512,12 +554,9 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                       value: 'lock',
                       child: Row(
                         children: [
-                          const Icon(Icons.lock_outline, size: 18),
+                          Icon(Icons.lock_outline_rounded, size: 18, color: colors.warning),
                           AppSpacing.gapW8,
-                          Text(
-                            'Khóa sổ biểu quyết',
-                            style: AppTypography.bodyMedium.copyWith(color: colors.textPrimary),
-                          ),
+                          Text('Khóa sổ biểu quyết (LOCKED)', style: AppTypography.bodyMedium.copyWith(color: colors.textPrimary)),
                         ],
                       ),
                     )
@@ -526,12 +565,9 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                       value: 'open',
                       child: Row(
                         children: [
-                          const Icon(Icons.lock_open, size: 18),
+                          Icon(Icons.lock_open_rounded, size: 18, color: colors.primary),
                           AppSpacing.gapW8,
-                          Text(
-                            'Mở lại biểu quyết',
-                            style: AppTypography.bodyMedium.copyWith(color: colors.textPrimary),
-                          ),
+                          Text('Mở lại biểu quyết (OPEN)', style: AppTypography.bodyMedium.copyWith(color: colors.textPrimary)),
                         ],
                       ),
                     ),
@@ -539,12 +575,19 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                     value: 'play',
                     child: Row(
                       children: [
-                        const Icon(Icons.sports_tennis, size: 18),
+                        Icon(Icons.play_circle_outline_rounded, size: 18, color: colors.success),
                         AppSpacing.gapW8,
-                        Text(
-                          'Bắt đầu thi đấu',
-                          style: AppTypography.bodyMedium.copyWith(color: colors.textPrimary),
-                        ),
+                        Text('Bắt đầu thi đấu (PLAYING)', style: AppTypography.bodyMedium.copyWith(color: colors.textPrimary)),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: 'complete',
+                    child: Row(
+                      children: [
+                        Icon(Icons.check_circle_outline_rounded, size: 18, color: colors.textMuted),
+                        AppSpacing.gapW8,
+                        Text('Kết thúc buổi chơi (COMPLETED)', style: AppTypography.bodyMedium.copyWith(color: colors.textPrimary)),
                       ],
                     ),
                   ),
@@ -555,12 +598,9 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                     value: 'delete',
                     child: Row(
                       children: [
-                        Icon(Icons.delete_outline, color: colors.error, size: 18),
+                        Icon(Icons.delete_outline_rounded, color: colors.error, size: 18),
                         AppSpacing.gapW8,
-                        Text(
-                          context.l10n.com_delete,
-                          style: AppTypography.bodyMedium.copyWith(color: colors.error),
-                        ),
+                        Text('Xóa buổi chơi', style: AppTypography.bodyMedium.copyWith(color: colors.error)),
                       ],
                     ),
                   ),
@@ -570,66 +610,90 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
         ],
       ),
       bottomNavigationBar: _buildBottomActionBar(context, session, state.isSubmitting),
-      body: Column(
-        children: [
-          // 1. Session Information Header Card
-          _buildSessionHeaderCard(session, detail.activeRecruitment),
+      body: Align(
+        alignment: Alignment.topCenter,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 800),
+          child: Column(
+            children: [
+              // 1. Session Detailed Overview Card
+              _buildSessionHeaderCard(session, detail.activeRecruitment, canManageSession, canRecruit),
 
-          // 2. Tab Bar: Confirmed vs Waiting Queue
-          Container(
-            color: colors.cardBackground,
-            child: TabBar(
-              controller: _tabController,
-              labelColor: colors.primary,
-              unselectedLabelColor: colors.textMuted,
-              indicatorColor: colors.primary,
-              indicatorWeight: 3,
-              tabs: [
-                Tab(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.check_circle_outline, size: 18),
-                      AppSpacing.gapW4,
-                      Text('${context.l10n.booking_status_confirmed} ($confirmedCount/${session.maxPlayers})'),
-                    ],
-                  ),
+              // 2. Tab Bar: Confirmed vs Waiting Queue
+              Container(
+                color: colors.cardBackground,
+                child: TabBar(
+                  controller: _tabController,
+                  labelColor: colors.primary,
+                  unselectedLabelColor: colors.textMuted,
+                  indicatorColor: colors.primary,
+                  indicatorWeight: 3,
+                  tabs: [
+                    Tab(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.check_circle_rounded, size: 18),
+                          AppSpacing.gapW4,
+                          Text('Chính thức ($confirmedCount/${session.maxPlayers})'),
+                        ],
+                      ),
+                    ),
+                    Tab(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.hourglass_empty_rounded, size: 18),
+                          AppSpacing.gapW4,
+                          Text('Hàng đợi ($waitingCount)'),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-                Tab(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.hourglass_empty_rounded, size: 18),
-                      AppSpacing.gapW4,
-                      Text('${context.l10n.booking_status_pending} ($waitingCount)'),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
+              ),
 
-          // 3. Tab Views
-          Expanded(
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                _buildPlayersList(detail.confirmedPlayers, isWaiting: false),
-                _buildPlayersList(detail.waitingQueue, isWaiting: true),
-              ],
-            ),
+              // 3. Tab Views: Confirmed and Waiting Players List
+              Expanded(
+                child: TabBarView(
+                  controller: _tabController,
+                  children: [
+                    _buildPlayersList(detail.confirmedPlayers, isWaiting: false),
+                    _buildPlayersList(detail.waitingQueue, isWaiting: true),
+                  ],
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
 
-  Widget _buildSessionHeaderCard(Session session, GuestRecruitment? activeRecruitment) {
+  Widget _buildSessionHeaderCard(
+    Session session,
+    GuestRecruitment? activeRecruitment,
+    bool canManageSession,
+    bool canRecruit,
+  ) {
     final colors = context.colors;
+    final now = DateTime.now();
+    final isEnded = session.status == SessionStatus.completed ||
+        session.status == SessionStatus.calculated ||
+        session.endTime.isBefore(now);
+    final isPlaying = !isEnded && (session.status == SessionStatus.playing ||
+        (session.startTime.isBefore(now) && session.endTime.isAfter(now)));
+
     final dateFormat = DateFormat('HH:mm, dd/MM/yyyy');
     final timeStr = '${DateFormat('HH:mm').format(session.startTime)} - ${dateFormat.format(session.endTime)}';
+    final weekdayStr = _getWeekdayName(session.startTime);
+    final dateStr = '$weekdayStr, ${DateFormat('dd/MM/yyyy').format(session.startTime)}';
     final progress = session.maxPlayers > 0 ? (session.confirmedCount / session.maxPlayers).clamp(0.0, 1.0) : 0.0;
     final isFull = session.isFull;
+
+    final feePerPlayer = session.maxPlayers > 0
+        ? (session.courtRentalCost / session.maxPlayers).round()
+        : 0;
 
     return Container(
       width: double.infinity,
@@ -638,58 +702,190 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Header Row: Club Tag + Status Badge
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
                 decoration: BoxDecoration(
-                  color: colors.primaryContainer,
+                  color: colors.primary.withValues(alpha: 0.1),
                   borderRadius: AppRadius.tag,
+                  border: Border.all(color: colors.primary.withValues(alpha: 0.25)),
                 ),
-                child: Text(
-                  session.clubName,
-                  style: AppTypography.labelSmall.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: colors.primary,
-                  ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.shield_outlined, size: 14, color: colors.primary),
+                    AppSpacing.gapW4,
+                    Text(
+                      session.clubName,
+                      style: AppTypography.labelSmall.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: colors.primary,
+                      ),
+                    ),
+                  ],
                 ),
               ),
               const Spacer(),
-              _buildStatusBadge(session.status),
+              _buildStatusBadge(session.status, isEnded, isPlaying),
             ],
+          ),
+          AppSpacing.gapH12,
+
+          // Date & Time Banner
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: colors.surfaceSubtle,
+              borderRadius: AppRadius.borderMd,
+              border: Border.all(color: colors.cardBorder),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: colors.primary.withValues(alpha: 0.12),
+                    borderRadius: AppRadius.borderSm,
+                  ),
+                  child: Icon(Icons.calendar_month_rounded, color: colors.primary, size: 20),
+                ),
+                AppSpacing.gapW12,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        dateStr,
+                        style: AppTypography.bodyMedium.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: colors.textPrimary,
+                        ),
+                      ),
+                      AppSpacing.gapH4,
+                      Text(
+                        timeStr,
+                        style: AppTypography.bodySmall.copyWith(color: colors.textSecondary),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
           AppSpacing.gapH8,
 
-          // Court address & Time
+          // Court location with Copy action
+          InkWell(
+            onTap: () {
+              Clipboard.setData(ClipboardData(text: session.courtLocation));
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: const Text('Đã sao chép địa chỉ sân đấu vào bộ nhớ tạm'),
+                  backgroundColor: colors.primary,
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+            },
+            borderRadius: AppRadius.borderSm,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: Row(
+                children: [
+                  Icon(Icons.location_on_rounded, size: 16, color: colors.primary),
+                  AppSpacing.gapW8,
+                  Expanded(
+                    child: Text(
+                      session.courtLocation,
+                      style: AppTypography.bodySmall.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: colors.textPrimary,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  Icon(Icons.copy_rounded, size: 14, color: colors.textMuted),
+                ],
+              ),
+            ),
+          ),
+          AppSpacing.gapH8,
+
+          // Scale & Pricing Specs Grid
           Row(
             children: [
-              Icon(Icons.location_on_rounded, size: 16, color: colors.textMuted),
-              AppSpacing.gapW4,
               Expanded(
-                child: Text(
-                  session.courtLocation,
-                  style: AppTypography.titleSmall.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: colors.textPrimary,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: colors.surfaceSubtle,
+                    borderRadius: AppRadius.borderSm,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Quy mô sân', style: AppTypography.labelSmall.copyWith(color: colors.textMuted)),
+                      AppSpacing.gapH4,
+                      Text(
+                        '${session.courtCount} sân (${session.targetPlayerPerCourt} ng/sân)',
+                        style: AppTypography.bodySmall.copyWith(fontWeight: FontWeight.bold, color: colors.textPrimary),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              AppSpacing.gapW8,
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: colors.surfaceSubtle,
+                    borderRadius: AppRadius.borderSm,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Dự kiến phí / người', style: AppTypography.labelSmall.copyWith(color: colors.textMuted)),
+                      AppSpacing.gapH4,
+                      Text(
+                        feePerPlayer > 0 ? '~${NumberFormat('#,###').format(feePerPlayer)} đ' : 'Miễn phí',
+                        style: AppTypography.bodySmall.copyWith(fontWeight: FontWeight.bold, color: colors.primary),
+                      ),
+                    ],
                   ),
                 ),
               ),
             ],
           ),
-          AppSpacing.gapH4,
+          AppSpacing.gapH12,
+
+          // Booking Deadline Warning
           Row(
             children: [
-              Icon(Icons.access_time_filled_rounded, size: 16, color: colors.textMuted),
+              Icon(
+                session.isExpired ? Icons.timer_off_outlined : Icons.timer_outlined,
+                size: 15,
+                color: session.isExpired ? colors.error : colors.textMuted,
+              ),
               AppSpacing.gapW4,
-              Text(
-                timeStr,
-                style: AppTypography.bodySmall.copyWith(color: colors.textPrimary),
+              Expanded(
+                child: Text(
+                  session.isExpired
+                      ? 'Đã hết hạn giữ chỗ: ${DateFormat('HH:mm, dd/MM').format(session.deadlineBooking)}'
+                      : 'Hạn chốt giữ chỗ: ${DateFormat('HH:mm, dd/MM').format(session.deadlineBooking)}',
+                  style: AppTypography.labelSmall.copyWith(
+                    color: session.isExpired ? colors.error : colors.textMuted,
+                    fontWeight: session.isExpired ? FontWeight.bold : FontWeight.normal,
+                  ),
+                ),
               ),
-              const Spacer(),
-              Text(
-                '${session.courtCount} sân • ${session.targetPlayerPerCourt} người/sân',
-                style: AppTypography.bodySmall.copyWith(color: colors.textMuted),
-              ),
+              if (session.courtRentalCost > 0)
+                Text(
+                  'Tổng tiền sân: ${NumberFormat('#,###').format(session.courtRentalCost)} đ',
+                  style: AppTypography.labelSmall.copyWith(color: colors.textMuted),
+                ),
             ],
           ),
           AppSpacing.gapH12,
@@ -705,7 +901,9 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                     minHeight: 8,
                     backgroundColor: colors.borderSubtle,
                     valueColor: AlwaysStoppedAnimation<Color>(
-                      isFull ? colors.warning : colors.primary,
+                      isEnded
+                          ? colors.textMuted.withValues(alpha: 0.3)
+                          : (isFull ? colors.warning : colors.primary),
                     ),
                   ),
                 ),
@@ -715,35 +913,163 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                 '${session.confirmedCount}/${session.maxPlayers} slot',
                 style: AppTypography.labelMedium.copyWith(
                   fontWeight: FontWeight.bold,
-                  color: isFull ? colors.warning : colors.primary,
+                  color: isEnded ? colors.textMuted : (isFull ? colors.warning : colors.primary),
                 ),
               ),
+              if (!isEnded && session.waitingCount > 0) ...[
+                AppSpacing.gapW8,
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: colors.warning.withValues(alpha: 0.15),
+                    borderRadius: AppRadius.borderXs,
+                  ),
+                  child: Text(
+                    '${session.waitingCount} chờ',
+                    style: AppTypography.labelSmall.semiBold.colored(colors.warning),
+                  ),
+                ),
+              ],
             ],
           ),
 
-          // Active recruitment banner
-          if (activeRecruitment != null) ...[
+          // Host Quick Control Strip (Chỉ hiển thị cho Host/Quản trị viên)
+          if (canManageSession && !isEnded) ...[
             AppSpacing.gapH12,
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
               decoration: BoxDecoration(
-                color: context.isDark ? AppColors.roleViolet.withValues(alpha: 0.2) : AppColors.violetLight,
+                color: colors.primary.withValues(alpha: 0.05),
                 borderRadius: AppRadius.borderSm,
-                border: Border.all(color: AppColors.violetBorder),
+                border: Border.all(color: colors.primary.withValues(alpha: 0.2)),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.radar_rounded, size: 18, color: AppColors.roleViolet),
+                  Icon(Icons.admin_panel_settings_outlined, size: 16, color: colors.primary),
                   AppSpacing.gapW8,
-                  Expanded(
-                    child: Text(
-                      'Đang phát tin tìm ${activeRecruitment.slotsRemaining} khách giao lưu (${NumberFormat('#,###').format(activeRecruitment.sharedCost)} đ)',
-                      style: AppTypography.bodySmall.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: context.isDark ? AppColors.white : AppColors.roleHost,
+                  Text(
+                    'Quản lý buổi chơi:',
+                    style: AppTypography.labelSmall.bold.colored(colors.primary),
+                  ),
+                  const Spacer(),
+                  if (session.status == SessionStatus.open)
+                    InkWell(
+                      onTap: () => ref.read(sessionDetailViewModelProvider(widget.sessionId).notifier).updateStatus('LOCKED'),
+                      borderRadius: AppRadius.tag,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: colors.warning.withValues(alpha: 0.15),
+                          borderRadius: AppRadius.tag,
+                        ),
+                        child: Text(
+                          'Khóa sổ',
+                          style: AppTypography.labelSmall.bold.colored(colors.warning),
+                        ),
                       ),
                     ),
+                  if (session.status == SessionStatus.locked) ...[
+                    InkWell(
+                      onTap: () => ref.read(sessionDetailViewModelProvider(widget.sessionId).notifier).updateStatus('OPEN'),
+                      borderRadius: AppRadius.tag,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: colors.primary.withValues(alpha: 0.15),
+                          borderRadius: AppRadius.tag,
+                        ),
+                        child: Text(
+                          'Mở lại',
+                          style: AppTypography.labelSmall.bold.colored(colors.primary),
+                        ),
+                      ),
+                    ),
+                    AppSpacing.gapW8,
+                    InkWell(
+                      onTap: () => ref.read(sessionDetailViewModelProvider(widget.sessionId).notifier).updateStatus('PLAYING'),
+                      borderRadius: AppRadius.tag,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: colors.success.withValues(alpha: 0.15),
+                          borderRadius: AppRadius.tag,
+                        ),
+                        child: Text(
+                          'Vào thi đấu',
+                          style: AppTypography.labelSmall.bold.colored(colors.success),
+                        ),
+                      ),
+                    ),
+                  ],
+                  if (session.status == SessionStatus.playing)
+                    InkWell(
+                      onTap: () => ref.read(sessionDetailViewModelProvider(widget.sessionId).notifier).updateStatus('COMPLETED'),
+                      borderRadius: AppRadius.tag,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: colors.textMuted.withValues(alpha: 0.15),
+                          borderRadius: AppRadius.tag,
+                        ),
+                        child: Text(
+                          'Kết thúc buổi',
+                          style: AppTypography.labelSmall.bold.colored(colors.textPrimary),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ],
+
+          // Active recruitment banner (Tin tuyển khách vãng lai)
+          if (activeRecruitment != null) ...[
+            AppSpacing.gapH12,
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              decoration: BoxDecoration(
+                color: colors.primary.withValues(alpha: 0.08),
+                borderRadius: AppRadius.borderSm,
+                border: Border.all(color: colors.primary.withValues(alpha: 0.3)),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.radar_rounded, size: 20, color: colors.primary),
+                  AppSpacing.gapW8,
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Đang tuyển ${activeRecruitment.slotsRemaining} khách giao lưu',
+                          style: AppTypography.bodySmall.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: colors.primary,
+                          ),
+                        ),
+                        Text(
+                          'Mức phí: ${NumberFormat('#,###').format(activeRecruitment.sharedCost)} đ • Trình độ ${activeRecruitment.minSkillLevel}',
+                          style: AppTypography.labelSmall.copyWith(color: colors.textMuted),
+                        ),
+                      ],
+                    ),
                   ),
+                  if (canRecruit)
+                    TextButton(
+                      style: TextButton.styleFrom(
+                        visualDensity: VisualDensity.compact,
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                      ),
+                      onPressed: () async {
+                        final ok = await ref.read(sessionDetailViewModelProvider(widget.sessionId).notifier).deleteRecruitment();
+                        if (ok && mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Đã hủy tin tuyển khách giao lưu')),
+                          );
+                        }
+                      },
+                      child: Text('Hủy tin', style: AppTypography.labelSmall.bold.colored(colors.error)),
+                    ),
                 ],
               ),
             ),
@@ -755,6 +1081,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
 
   Widget _buildPlayersList(List<SessionBooking> players, {required bool isWaiting}) {
     final colors = context.colors;
+    final currentUserId = ref.watch(currentUserProfileProvider)?.id ?? ref.watch(authTokenProvider)?.userId;
 
     if (players.isEmpty) {
       return Center(
@@ -779,7 +1106,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
               AppSpacing.gapH4,
               Text(
                 isWaiting
-                    ? 'Khi slot chính thức đầy, các biểu quyết tiếp theo sẽ vào đây.'
+                    ? 'Khi slot chính thức đã đủ, các biểu quyết tiếp theo sẽ tự động vào đây.'
                     : 'Hãy là người đầu tiên biểu quyết giữ chỗ cho buổi chơi này!',
                 style: AppTypography.bodySmall.copyWith(color: colors.textMuted),
                 textAlign: TextAlign.center,
@@ -796,16 +1123,21 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
       separatorBuilder: (_, _) => AppSpacing.gapH8,
       itemBuilder: (ctx, index) {
         final player = players[index];
+        final isMe = currentUserId != null && player.userId.toLowerCase() == currentUserId.toLowerCase();
+
         return Card(
           elevation: 0,
           margin: EdgeInsets.zero,
-          color: colors.cardBackground,
+          color: isMe ? colors.primary.withValues(alpha: 0.05) : colors.cardBackground,
           shape: RoundedRectangleBorder(
             borderRadius: AppRadius.card,
-            side: BorderSide(color: colors.cardBorder),
+            side: BorderSide(
+              color: isMe ? colors.primary.withValues(alpha: 0.5) : colors.cardBorder,
+              width: isMe ? 1.5 : 1,
+            ),
           ),
           child: ListTile(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
             leading: isWaiting
                 ? Container(
                     width: 36,
@@ -826,30 +1158,76 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                 : CircleAvatar(
                     radius: 18,
                     backgroundColor: colors.primaryContainer,
+                    backgroundImage: (player.avatarUrl != null && player.avatarUrl!.isNotEmpty)
+                        ? NetworkImage(player.avatarUrl!)
+                        : null,
+                    child: (player.avatarUrl == null || player.avatarUrl!.isEmpty)
+                        ? Text(
+                            player.fullName.isNotEmpty ? player.fullName[0].toUpperCase() : '?',
+                            style: AppTypography.labelSmall.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: colors.primary,
+                            ),
+                          )
+                        : null,
+                  ),
+            title: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    player.fullName,
+                    style: AppTypography.bodyMedium.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: colors.textPrimary,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                if (isMe) ...[
+                  AppSpacing.gapW8,
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                    decoration: BoxDecoration(
+                      color: colors.primary,
+                      borderRadius: AppRadius.tag,
+                    ),
                     child: Text(
-                      player.fullName.isNotEmpty ? player.fullName[0].toUpperCase() : '?',
-                      style: AppTypography.labelSmall.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: colors.primary,
-                      ),
+                      'Bạn',
+                      style: AppTypography.labelSmall.bold.colored(AppColors.white),
                     ),
                   ),
-            title: Text(
-              player.fullName,
-              style: AppTypography.bodyMedium.copyWith(
-                fontWeight: FontWeight.w600,
-                color: colors.textPrimary,
-              ),
+                ],
+              ],
             ),
-            subtitle: Text(
-              'Biểu quyết lúc: ${DateFormat('HH:mm, dd/MM').format(player.bookedAt)}',
-              style: AppTypography.bodySmall.copyWith(color: colors.textMuted),
+            subtitle: Row(
+              children: [
+                Text(
+                  'Đặt: ${DateFormat('HH:mm, dd/MM').format(player.bookedAt)}',
+                  style: AppTypography.bodySmall.copyWith(color: colors.textMuted),
+                ),
+                if (player.checkinAt != null) ...[
+                  AppSpacing.gapW8,
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                    decoration: BoxDecoration(
+                      color: colors.success.withValues(alpha: 0.15),
+                      borderRadius: AppRadius.borderXs,
+                    ),
+                    child: Text(
+                      'Đã điểm danh',
+                      style: AppTypography.labelSmall.semiBold.colored(colors.success),
+                    ),
+                  ),
+                ],
+              ],
             ),
             trailing: Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
               decoration: BoxDecoration(
                 color: colors.surfaceSubtle,
                 borderRadius: AppRadius.tag,
+                border: Border.all(color: colors.cardBorder),
               ),
               child: Text(
                 player.skillLevel,
@@ -867,6 +1245,11 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
 
   Widget _buildBottomActionBar(BuildContext context, Session session, bool isSubmitting) {
     final colors = context.colors;
+    final now = DateTime.now();
+    final isEnded = session.status == SessionStatus.completed ||
+        session.status == SessionStatus.calculated ||
+        session.endTime.isBefore(now);
+
     final detail = ref.watch(sessionDetailViewModelProvider(widget.sessionId)).detail;
     final currentUserId = ref.watch(currentUserProfileProvider)?.id ?? ref.watch(authTokenProvider)?.userId;
 
@@ -881,6 +1264,38 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
         ? session.currentUserQueueOrder
         : (detail?.waitingQueue.where((p) => p.userId.toLowerCase() == currentUserId?.toLowerCase()).firstOrNull?.queueOrder ?? 1);
     final isOpen = session.status == SessionStatus.open;
+
+    // 1. Buổi chơi đã kết thúc
+    if (isEnded) {
+      return Container(
+        padding: AppSpacing.screen,
+        decoration: BoxDecoration(
+          color: colors.cardBackground,
+          border: Border(top: BorderSide(color: colors.divider)),
+        ),
+        child: SafeArea(
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            decoration: BoxDecoration(
+              color: colors.surfaceSubtle,
+              borderRadius: AppRadius.button,
+              border: Border.all(color: colors.cardBorder),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.history_rounded, size: 18, color: colors.textMuted),
+                AppSpacing.gapW8,
+                Text(
+                  'Buổi chơi này đã kết thúc',
+                  style: AppTypography.bodyMedium.bold.colored(colors.textMuted),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
 
     return Container(
       padding: AppSpacing.screen,
@@ -898,16 +1313,26 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          isConfirmed ? 'Bạn đã có slot chính thức' : 'Đang ở hàng đợi số #$waitingOrder',
-                          style: AppTypography.titleSmall.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: isConfirmed ? colors.primary : colors.warning,
-                          ),
+                        Row(
+                          children: [
+                            Icon(
+                              isConfirmed ? Icons.check_circle_rounded : Icons.schedule_rounded,
+                              size: 16,
+                              color: isConfirmed ? colors.primary : colors.warning,
+                            ),
+                            AppSpacing.gapW8,
+                            Text(
+                              isConfirmed ? 'Bạn đã có slot chính thức' : 'Đang ở hàng đợi số #$waitingOrder',
+                              style: AppTypography.titleSmall.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: isConfirmed ? colors.primary : colors.warning,
+                              ),
+                            ),
+                          ],
                         ),
                         AppSpacing.gapH4,
                         Text(
-                          'Báo vắng để tự động nhường slot',
+                          'Báo vắng để tự động nhường slot cho hàng đợi',
                           style: AppTypography.bodySmall.copyWith(color: colors.textMuted),
                         ),
                       ],
@@ -938,39 +1363,103 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                 ),
                 child: isSubmitting
                     ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.white))
-                    : Text(
-                        !isOpen
-                            ? 'Buổi chơi đã đóng biểu quyết'
-                            : (session.isFull ? 'Xếp Vào Hàng Đợi Chờ (Slot #${session.waitingCount + 1})' : 'Biểu Quyết Tham Gia (Vote YES)'),
-                        style: AppTypography.titleSmall.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.white,
-                        ),
+                    : Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            !isOpen
+                                ? Icons.lock_outline_rounded
+                                : (session.isFull ? Icons.queue_rounded : Icons.sports_tennis_rounded),
+                            size: 18,
+                            color: AppColors.white,
+                          ),
+                          AppSpacing.gapW8,
+                          Text(
+                            !isOpen
+                                ? 'Buổi chơi đã đóng biểu quyết'
+                                : (session.isFull
+                                    ? 'Xếp Vào Hàng Đợi Chờ (Slot #${session.waitingCount + 1})'
+                                    : 'Biểu Quyết Tham Gia (Vote YES)'),
+                            style: AppTypography.titleSmall.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.white,
+                            ),
+                          ),
+                        ],
                       ),
               ),
       ),
     );
   }
 
-  Widget _buildStatusBadge(SessionStatus status) {
+  Widget _buildStatusBadge(SessionStatus status, bool isEnded, bool isPlaying) {
+    final colors = context.colors;
+
+    if (isEnded) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: colors.surfaceSubtle,
+          borderRadius: AppRadius.tag,
+          border: Border.all(color: colors.cardBorder),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.history_rounded, size: 12, color: colors.textMuted),
+            AppSpacing.gapW4,
+            Text(
+              'ĐÃ KẾT THÚC',
+              style: AppTypography.labelSmall.copyWith(fontWeight: FontWeight.bold, color: colors.textMuted),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (isPlaying) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: colors.success.withValues(alpha: 0.15),
+          borderRadius: AppRadius.tag,
+          border: Border.all(color: colors.success.withValues(alpha: 0.4)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 6,
+              height: 6,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: colors.success,
+              ),
+            ),
+            AppSpacing.gapW4,
+            Text(
+              'ĐANG THI ĐẤU',
+              style: AppTypography.labelSmall.copyWith(fontWeight: FontWeight.bold, color: colors.success),
+            ),
+          ],
+        ),
+      );
+    }
+
     Color bg;
     Color fg;
     switch (status) {
       case SessionStatus.open:
-        bg = AppColors.successLight;
-        fg = AppColors.roleMember;
+        bg = colors.primary.withValues(alpha: 0.15);
+        fg = colors.primary;
         break;
       case SessionStatus.locked:
-        bg = AppColors.warningLight;
-        fg = AppColors.roleTreasurer;
-        break;
-      case SessionStatus.playing:
-        bg = AppColors.infoLight;
-        fg = AppColors.indigo;
+        bg = colors.warning.withValues(alpha: 0.15);
+        fg = colors.warning;
         break;
       default:
-        bg = context.colors.surfaceSubtle;
-        fg = context.colors.textMuted;
+        bg = colors.surfaceSubtle;
+        fg = colors.textMuted;
     }
 
     return Container(
