@@ -55,6 +55,7 @@ abstract class SessionRepository {
     String minSkillLevel = 'NB',
     double sharedCost = 0.0,
     double scanRadiusKm = 5.0,
+    bool hidePlayerList = false,
   });
 
   Future<GuestRecruitment?> getSessionRecruitment(String sessionId);

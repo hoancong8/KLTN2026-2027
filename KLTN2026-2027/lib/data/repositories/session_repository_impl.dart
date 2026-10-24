@@ -126,12 +126,14 @@ class SessionRepositoryImpl implements SessionRepository {
     String minSkillLevel = 'NB',
     double sharedCost = 0.0,
     double scanRadiusKm = 5.0,
+    bool hidePlayerList = false,
   }) async {
     final request = CreateRecruitmentRequestDto(
       slotsNeeded: slotsNeeded,
       minSkillLevel: minSkillLevel,
       sharedCost: sharedCost,
       scanRadiusKm: scanRadiusKm,
+      hidePlayerList: hidePlayerList,
     );
     return await remote.createRecruitment(sessionId, request);
   }

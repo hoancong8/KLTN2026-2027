@@ -805,6 +805,32 @@ class _RecruitmentMatchCard extends StatelessWidget {
                                 ),
                               ),
                             ),
+                            if (match.hidePlayerList) ...[
+                              const SizedBox(width: 4),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                                decoration: BoxDecoration(
+                                  color: colors.surfaceSubtle,
+                                  borderRadius: BorderRadius.circular(4),
+                                  border: Border.all(color: colors.cardBorder),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.lock_outline_rounded, size: 9.5, color: colors.textMuted),
+                                    const SizedBox(width: 2),
+                                    Text(
+                                      'Ẩn danh',
+                                      style: TextStyle(
+                                        fontSize: 9.5,
+                                        fontWeight: FontWeight.w600,
+                                        color: colors.textMuted,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ],
                         ),
                       ],

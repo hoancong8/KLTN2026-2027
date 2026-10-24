@@ -17,6 +17,7 @@ class GuestRecruitment {
   final RecruitmentStatus status;
   final DateTime broadcastAt;
   final double? distanceKm;
+  final bool hidePlayerList;
 
   const GuestRecruitment({
     required this.id,
@@ -33,6 +34,7 @@ class GuestRecruitment {
     required this.status,
     required this.broadcastAt,
     this.distanceKm,
+    this.hidePlayerList = false,
   });
 
   bool get isActive => status == RecruitmentStatus.active;

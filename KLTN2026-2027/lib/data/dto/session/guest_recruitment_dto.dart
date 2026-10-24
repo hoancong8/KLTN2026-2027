@@ -15,6 +15,7 @@ class GuestRecruitmentDto {
   final String status;
   final String broadcastAt;
   final double? distanceKm;
+  final bool hidePlayerList;
 
   GuestRecruitmentDto({
     required this.id,
@@ -31,6 +32,7 @@ class GuestRecruitmentDto {
     required this.status,
     required this.broadcastAt,
     this.distanceKm,
+    this.hidePlayerList = false,
   });
 
   static int _parseInt(dynamic value) {
@@ -45,6 +47,13 @@ class GuestRecruitmentDto {
     if (value is num) return value.toDouble();
     if (value is String) return double.tryParse(value) ?? 0.0;
     return 0.0;
+  }
+
+  static bool _parseBool(dynamic value) {
+    if (value is bool) return value;
+    if (value is String) return value.toLowerCase() == 'true' || value == '1';
+    if (value is num) return value == 1;
+    return false;
   }
 
   factory GuestRecruitmentDto.fromJson(Map<String, dynamic> json) {
@@ -63,6 +72,7 @@ class GuestRecruitmentDto {
       status: json['status']?.toString() ?? '1',
       broadcastAt: json['broadcastAt']?.toString() ?? '',
       distanceKm: json['distanceKm'] != null ? _parseDouble(json['distanceKm']) : null,
+      hidePlayerList: _parseBool(json['hidePlayerList']),
     );
   }
 
@@ -81,5 +91,6 @@ class GuestRecruitmentDto {
     'status': status,
     'broadcastAt': broadcastAt,
     'distanceKm': distanceKm,
+    'hidePlayerList': hidePlayerList,
   };
 }

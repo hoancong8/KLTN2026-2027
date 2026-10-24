@@ -186,6 +186,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
     final costCtl = TextEditingController(text: suggestedCost.toString());
     SkillLevel selectedLevel = SkillLevel.tb;
     double radiusKm = 5.0;
+    bool hidePlayerList = false;
 
     showModalBottomSheet(
       context: context,
@@ -350,6 +351,32 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                   activeColor: colors.primary,
                   onChanged: (val) => setModalState(() => radiusKm = val),
                 ),
+                AppSpacing.gapH8,
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: colors.surfaceSubtle,
+                    borderRadius: AppRadius.card,
+                    border: Border.all(color: colors.cardBorder),
+                  ),
+                  child: SwitchListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(
+                      'Ẩn danh sách người chơi',
+                      style: AppTypography.labelMedium.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: colors.textPrimary,
+                      ),
+                    ),
+                    subtitle: Text(
+                      'Khách vãng lai chỉ thấy số lượng slot trống, không xem được danh tính các thành viên trong nhóm.',
+                      style: AppTypography.bodySmall.copyWith(color: colors.textMuted),
+                    ),
+                    value: hidePlayerList,
+                    activeTrackColor: colors.primary,
+                    onChanged: (val) => setModalState(() => hidePlayerList = val),
+                  ),
+                ),
                 AppSpacing.gapH16,
                 ElevatedButton(
                   onPressed: () async {
@@ -365,6 +392,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                         minSkillLevel: selectedLevel.code,
                         sharedCost: cost,
                         scanRadiusKm: radiusKm,
+                        hidePlayerList: hidePlayerList,
                       ),
                     );
 
@@ -1973,6 +2001,45 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
     final currentUserId = ref.watch(currentUserProfileProvider)?.id ?? ref.watch(authTokenProvider)?.userId;
     final detail = ref.watch(sessionDetailViewModelProvider(widget.sessionId)).detail;
     final session = detail?.session;
+    final activeContext = ref.watch(activeClubContextProvider);
+    final isSameClub = session != null && activeContext?.clubId == session.groupId;
+    final isHostOrAdmin = isSameClub && (activeContext?.role == ClubRole.host || ref.hasClubPermission('OPERATIONS.SESSION.UPDATE'));
+    final shouldHidePlayers = (detail?.activeRecruitment?.hidePlayerList ?? false) && !isSameClub && !isHostOrAdmin;
+
+    if (shouldHidePlayers) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: colors.surfaceSubtle,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(Icons.visibility_off_rounded, size: 40, color: colors.textMuted),
+              ),
+              AppSpacing.gapH16,
+              Text(
+                'Danh sách người chơi được ẩn',
+                style: AppTypography.titleSmall.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: colors.textPrimary,
+                ),
+              ),
+              AppSpacing.gapH8,
+              Text(
+                'Chủ câu lạc bộ đã bật chế độ bảo mật danh tính thành viên cho buổi chơi này.',
+                style: AppTypography.bodySmall.copyWith(color: colors.textMuted),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      );
+    }
     final isOpen = session?.status == SessionStatus.open;
     final now = DateTime.now();
     final isEnded = session?.status == SessionStatus.completed ||

@@ -5,12 +5,14 @@ class CreateRecruitmentRequestDto {
   final String minSkillLevel;
   final double sharedCost;
   final double scanRadiusKm;
+  final bool hidePlayerList;
 
   CreateRecruitmentRequestDto({
     required this.slotsNeeded,
     this.minSkillLevel = 'NB',
     this.sharedCost = 0.0,
     this.scanRadiusKm = 5.0,
+    this.hidePlayerList = false,
   });
 
   Map<String, dynamic> toJson() => {
@@ -18,5 +20,6 @@ class CreateRecruitmentRequestDto {
     'minSkillLevel': minSkillLevel,
     'sharedCost': sharedCost,
     'scanRadiusKm': scanRadiusKm,
+    'hidePlayerList': hidePlayerList,
   };
 }

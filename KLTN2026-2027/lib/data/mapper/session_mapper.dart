@@ -69,6 +69,7 @@ class SessionMapper {
       status: RecruitmentStatus.fromString(dto.status),
       broadcastAt: (DateTime.tryParse(dto.broadcastAt) ?? DateTime.now()).toLocal(),
       distanceKm: dto.distanceKm,
+      hidePlayerList: dto.hidePlayerList,
     );
   }
 

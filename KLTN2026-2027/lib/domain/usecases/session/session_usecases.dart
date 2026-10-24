@@ -156,6 +156,7 @@ class CreateRecruitmentParams {
   final String minSkillLevel;
   final double sharedCost;
   final double scanRadiusKm;
+  final bool hidePlayerList;
 
   const CreateRecruitmentParams({
     required this.sessionId,
@@ -163,6 +164,7 @@ class CreateRecruitmentParams {
     this.minSkillLevel = 'NB',
     this.sharedCost = 0.0,
     this.scanRadiusKm = 5.0,
+    this.hidePlayerList = false,
   });
 }
 
@@ -177,6 +179,7 @@ class CreateRecruitmentUseCase {
       minSkillLevel: params.minSkillLevel,
       sharedCost: params.sharedCost,
       scanRadiusKm: params.scanRadiusKm,
+      hidePlayerList: params.hidePlayerList,
     );
   }
 }
