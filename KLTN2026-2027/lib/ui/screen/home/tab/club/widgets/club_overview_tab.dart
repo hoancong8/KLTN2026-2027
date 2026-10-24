@@ -61,7 +61,6 @@ class _ClubOverviewTabState extends ConsumerState<ClubOverviewTab> {
     final isSameClub = activeContext?.clubId == widget.clubId;
     final isHostOwner = club != null && currentProfile != null && club.host.userId == currentProfile.id;
     final isHost = isHostOwner || (isSameClub && activeContext?.role == ClubRole.host) || widget.userRole == ClubRole.host;
-    final canManageSchedule = isHost || (isSameClub && ref.hasClubPermission('OPERATIONS.SCHEDULE.MANAGE'));
     final canManageInfo = isHost || (isSameClub && ref.hasClubPermission('MEMBER.INFO.UPDATE'));
     final canManageRoles = isHost || (isSameClub && ref.hasClubPermission('MEMBER.ROLE.MANAGE'));
 
@@ -341,79 +340,6 @@ class _ClubOverviewTabState extends ConsumerState<ClubOverviewTab> {
                     ),
                   ),
                 ],
-              ],
-            ),
-          ),
-
-          AppSpacing.gapH16,
-
-          // 3. Regular Weekly Schedules Card (FR07, FR13)
-          Container(
-            padding: AppSpacing.allBase,
-            decoration: BoxDecoration(
-              color: colors.cardBackground,
-              borderRadius: AppRadius.card,
-              border: Border.all(color: colors.cardBorder),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        const Icon(Icons.calendar_month_rounded, color: AppColors.primary, size: 20),
-                        AppSpacing.gapW8,
-                        Text(
-                          'Lịch sinh hoạt định kỳ tuần',
-                          style: AppTypography.titleSmall.bold.colored(colors.textPrimary),
-                        ),
-                      ],
-                    ),
-                    if (canManageSchedule && club != null)
-                      TextButton.icon(
-                        onPressed: () => context.push('/club/${widget.clubId}/settings'),
-                        icon: const Icon(Icons.edit_calendar_outlined, size: AppSpacing.iconXs),
-                        label: Text('Sửa lịch', style: AppTypography.labelSmall.colored(AppColors.primary)),
-                      ),
-                  ],
-                ),
-                AppSpacing.gapH8,
-                if (club?.schedules == null || club!.schedules.isEmpty)
-                  Text(
-                    'Chưa thiết lập lịch định kỳ tuần',
-                    style: AppTypography.bodySmall.colored(colors.textMuted),
-                  )
-                else
-                  Wrap(
-                    spacing: AppSpacing.sm,
-                    runSpacing: AppSpacing.xs,
-                    children: club.schedules
-                        .where((s) => s.isActive)
-                        .map(
-                          (s) => Container(
-                            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: 6),
-                            decoration: BoxDecoration(
-                              color: colors.primary.withValues(alpha: 0.12),
-                              borderRadius: AppRadius.borderMd,
-                              border: Border.all(color: colors.primary.withValues(alpha: 0.25)),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(Icons.access_time_rounded, size: 14, color: AppColors.primary),
-                                AppSpacing.gapW8,
-                                Text(
-                                  '${s.dayName}: ${s.startTime} - ${s.endTime}',
-                                  style: AppTypography.labelMedium.bold.colored(colors.primary),
-                                ),
-                              ],
-                            ),
-                          ),
-                        )
-                        .toList(),
-                  ),
               ],
             ),
           ),
