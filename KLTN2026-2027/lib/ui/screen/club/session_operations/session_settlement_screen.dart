@@ -409,7 +409,7 @@ class SessionSettlementScreen extends ConsumerWidget {
               vm.markPaid(fee.userId);
               Navigator.of(ctx).pop();
             },
-            child: const Text('Xác nhận gạch nợ'),
+            child: const Text('Xác nhận đã nhận tiền'),
           ),
         ],
       ),
@@ -425,7 +425,7 @@ class SessionSettlementScreen extends ConsumerWidget {
       builder: (ctx) => AlertDialog(
         backgroundColor: colors.cardBackground,
         title: Center(
-          child: Text('VietQR Tự Động Gạch Nợ', style: AppTypography.titleMedium.bold.colored(colors.textPrimary)),
+          child: Text('Mã VietQR Chuyển Khoản', style: AppTypography.titleMedium.bold.colored(colors.textPrimary)),
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -451,6 +451,26 @@ class SessionSettlementScreen extends ConsumerWidget {
             ),
             AppSpacing.gapH4,
             Text('Nội dung: ${fee.paymentCode}', style: AppTypography.bodySmall.colored(colors.textMuted)),
+            AppSpacing.gapH12,
+            ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: colors.primary,
+                foregroundColor: AppColors.white,
+                shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+              ),
+              icon: const Icon(Icons.copy_rounded, size: 16),
+              label: const Text('Sao chép cú pháp chuyển khoản'),
+              onPressed: () {
+                Clipboard.setData(ClipboardData(text: fee.paymentCode));
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Đã sao chép cú pháp: ${fee.paymentCode}'),
+                    backgroundColor: colors.primary,
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              },
+            ),
           ],
         ),
         actions: [
