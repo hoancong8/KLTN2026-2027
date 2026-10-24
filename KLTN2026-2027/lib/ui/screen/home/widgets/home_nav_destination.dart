@@ -26,8 +26,8 @@ List<HomeNavDestination> getHomeNavDestinations(BuildContext context) {
   return [
     HomeNavDestination(
       title: l10n.nav_home,
-      icon: const Icon(Icons.dashboard_outlined),
-      selectedIcon: const Icon(Icons.dashboard_rounded),
+      icon: const Icon(Icons.home_outlined),
+      selectedIcon: const Icon(Icons.home_rounded),
       page: const DashboardPage(),
     ),
     HomeNavDestination(
@@ -38,20 +38,20 @@ List<HomeNavDestination> getHomeNavDestinations(BuildContext context) {
     ),
     HomeNavDestination(
       title: l10n.nav_explore,
-      icon: const Icon(Icons.explore_outlined),
-      selectedIcon: const Icon(Icons.explore_rounded),
+      icon: const Icon(Icons.sports_tennis_outlined),
+      selectedIcon: const Icon(Icons.sports_tennis_rounded),
       page: const ExplorePage(),
     ),
     HomeNavDestination(
       title: l10n.nav_report,
-      icon: const Icon(Icons.bar_chart_outlined),
-      selectedIcon: const Icon(Icons.bar_chart_rounded),
+      icon: const Icon(Icons.calendar_month_outlined),
+      selectedIcon: const Icon(Icons.calendar_month_rounded),
       page: const ReportPage(),
     ),
     HomeNavDestination(
       title: l10n.nav_settings,
-      icon: const Icon(Icons.settings_outlined),
-      selectedIcon: const Icon(Icons.settings_rounded),
+      icon: const Icon(Icons.person_outline_rounded),
+      selectedIcon: const Icon(Icons.person_rounded),
       page: const SettingsPage(),
     ),
   ];
