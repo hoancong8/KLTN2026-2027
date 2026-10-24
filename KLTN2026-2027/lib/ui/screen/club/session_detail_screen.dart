@@ -520,7 +520,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
             onPressed: vm.loadDetail,
             tooltip: context.l10n.com_refresh,
           ),
-          if (hasAnySessionManagePerm)
+          if (hasAnySessionManagePerm && session.status != SessionStatus.completed)
             IconButton(
               icon: const Icon(Icons.tune_rounded),
               tooltip: 'Tác vụ quản lý',
@@ -1452,46 +1452,49 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                   spacing: 8,
                   runSpacing: 8,
                   children: [
+                    if (session.status != SessionStatus.completed) ...[
+                      ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: colors.primary,
+                          foregroundColor: AppColors.white,
+                          shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                        ),
+                        icon: const Icon(Icons.how_to_reg_rounded, size: 16),
+                        label: const Text('Điểm danh sân'),
+                        onPressed: () => context.push('/session//attendance'),
+                      ),
+                      ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: colors.success,
+                          foregroundColor: AppColors.white,
+                          shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                        ),
+                        icon: const Icon(Icons.swap_horiz_rounded, size: 16),
+                        label: const Text('Xoay tua sân'),
+                        onPressed: () => context.push('/session//rotation'),
+                      ),
+                    ],
                     ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: colors.primary,
                         foregroundColor: AppColors.white,
                         shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
                       ),
-                      icon: const Icon(Icons.how_to_reg_rounded, size: 16),
-                      label: const Text('Điểm danh sân'),
-                      onPressed: () => context.push('/session/${session.id}/attendance'),
-                    ),
-                    ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: colors.success,
-                        foregroundColor: AppColors.white,
-                        shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
-                      ),
-                      icon: const Icon(Icons.swap_horiz_rounded, size: 16),
-                      label: const Text('Xoay tua sân'),
-                      onPressed: () => context.push('/session/${session.id}/rotation'),
-                    ),
-                    OutlinedButton.icon(
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: colors.primary,
-                        side: BorderSide(color: colors.primary),
-                        shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
-                      ),
                       icon: const Icon(Icons.calculate_outlined, size: 16),
                       label: const Text('Chia tiền & Thu phí'),
-                      onPressed: () => context.push('/session/${session.id}/settlement'),
+                      onPressed: () => context.push('/session//settlement'),
                     ),
-                    OutlinedButton.icon(
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: colors.warning,
-                        side: BorderSide(color: colors.warning),
-                        shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                    if (session.status != SessionStatus.completed)
+                      OutlinedButton.icon(
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: colors.warning,
+                          side: BorderSide(color: colors.warning),
+                          shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                        ),
+                        icon: const Icon(Icons.star_outline_rounded, size: 16),
+                        label: const Text('Đánh giá buổi chơi'),
+                        onPressed: () => context.push('/session//reviews'),
                       ),
-                      icon: const Icon(Icons.star_outline_rounded, size: 16),
-                      label: const Text('Đánh giá buổi chơi'),
-                      onPressed: () => context.push('/session/${session.id}/reviews'),
-                    ),
                   ],
                 ),
               ],
@@ -1736,7 +1739,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
           ),
 
           // Host Quick Action Strip (Bảng thao tác nhanh cho Host/Quản trị viên)
-          if ((canManageSession || canRecruit) && !isEnded) ...[
+          if ((canManageSession || canRecruit) && !isEnded && session.status != SessionStatus.completed) ...[
             AppSpacing.gapH12,
             Container(
               padding: const EdgeInsets.all(12),
