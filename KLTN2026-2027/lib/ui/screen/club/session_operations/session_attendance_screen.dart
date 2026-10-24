@@ -315,27 +315,54 @@ class SessionAttendanceScreen extends ConsumerWidget {
             ),
           ),
           AppSpacing.gapW8,
-          // Quick Toggle Buttons
+          // Quick Toggle Action Chips
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              IconButton(
-                icon: Icon(
-                  Icons.check_circle_rounded,
-                  color: isCheckedIn ? colors.success : colors.textMuted.withValues(alpha: 0.4),
-                  size: 28,
+              InkWell(
+                onTap: () => vm.markStatus(player.userId, 'CHECKED_IN'),
+                borderRadius: AppRadius.tag,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: isCheckedIn ? colors.success : colors.success.withValues(alpha: 0.1),
+                    borderRadius: AppRadius.tag,
+                    border: Border.all(color: colors.success.withValues(alpha: 0.4)),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.check_rounded, size: 14, color: isCheckedIn ? AppColors.white : colors.success),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Có mặt',
+                        style: AppTypography.labelSmall.bold.colored(isCheckedIn ? AppColors.white : colors.success),
+                      ),
+                    ],
+                  ),
                 ),
-                tooltip: 'Có mặt tại sân',
-                onPressed: () => vm.markStatus(player.userId, 'CHECKED_IN'),
               ),
-              IconButton(
-                icon: Icon(
-                  Icons.cancel_rounded,
-                  color: isNoShow ? colors.error : colors.textMuted.withValues(alpha: 0.4),
-                  size: 28,
+              const SizedBox(width: 6),
+              InkWell(
+                onTap: () => vm.markStatus(player.userId, 'NO_SHOW'),
+                borderRadius: AppRadius.tag,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: isNoShow ? colors.error : colors.error.withValues(alpha: 0.1),
+                    borderRadius: AppRadius.tag,
+                    border: Border.all(color: colors.error.withValues(alpha: 0.4)),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.close_rounded, size: 14, color: isNoShow ? AppColors.white : colors.error),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Vắng',
+                        style: AppTypography.labelSmall.bold.colored(isNoShow ? AppColors.white : colors.error),
+                      ),
+                    ],
+                  ),
                 ),
-                tooltip: 'Vắng mặt (No-show)',
-                onPressed: () => vm.markStatus(player.userId, 'NO_SHOW'),
               ),
             ],
           ),
