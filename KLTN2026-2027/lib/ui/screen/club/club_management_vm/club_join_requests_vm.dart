@@ -1,9 +1,12 @@
 // lib/ui/screen/club/club_management_vm/club_join_requests_vm.dart
 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import '../../../../app/provider.dart';
 import '../../../../domain/entities/club/join_request.dart';
 import '../../../../domain/usecases/club/join_request_usecases.dart';
+import '../../club_detail/club_detail_vm/club_detail_vm.dart';
+import 'club_members_vm.dart';
 
 class ClubJoinRequestsState {
   final bool isLoading;
@@ -40,6 +43,7 @@ class ClubJoinRequestsState {
 final clubJoinRequestsViewModelProvider = StateNotifierProvider.autoDispose
     .family<ClubJoinRequestsViewModel, ClubJoinRequestsState, String>((ref, clubId) {
   return ClubJoinRequestsViewModel(
+    ref: ref,
     clubId: clubId,
     getJoinRequestsUseCase: ref.watch(getJoinRequestsUseCaseProvider),
     approveJoinRequestUseCase: ref.watch(approveJoinRequestUseCaseProvider),
@@ -49,6 +53,7 @@ final clubJoinRequestsViewModelProvider = StateNotifierProvider.autoDispose
 });
 
 class ClubJoinRequestsViewModel extends StateNotifier<ClubJoinRequestsState> {
+  final Ref ref;
   final String clubId;
   final GetJoinRequestsUseCase getJoinRequestsUseCase;
   final ApproveJoinRequestUseCase approveJoinRequestUseCase;
@@ -56,6 +61,7 @@ class ClubJoinRequestsViewModel extends StateNotifier<ClubJoinRequestsState> {
   final CreateJoinRequestUseCase createJoinRequestUseCase;
 
   ClubJoinRequestsViewModel({
+    required this.ref,
     required this.clubId,
     required this.getJoinRequestsUseCase,
     required this.approveJoinRequestUseCase,
@@ -87,8 +93,11 @@ class ClubJoinRequestsViewModel extends StateNotifier<ClubJoinRequestsState> {
           memberType: memberType,
         ),
       );
+      ref.invalidate(clubDetailViewModelProvider(clubId));
+      ref.read(clubMembersViewModelProvider.notifier).loadForClub(clubId);
+      final remaining = state.requests.where((r) => r.id != requestId).toList();
+      state = state.copyWith(requests: remaining, isProcessing: false, successMessage: 'Đã chấp thuận đơn gia nhập!');
       await loadRequests();
-      state = state.copyWith(isProcessing: false, successMessage: 'Đã chấp thuận đơn gia nhập!');
       return true;
     } catch (e) {
       state = state.copyWith(isProcessing: false, errorMessage: e.toString());
@@ -100,8 +109,10 @@ class ClubJoinRequestsViewModel extends StateNotifier<ClubJoinRequestsState> {
     state = state.copyWith(isProcessing: true, errorMessage: null);
     try {
       await rejectJoinRequestUseCase.execute(clubId, requestId);
+      ref.invalidate(clubDetailViewModelProvider(clubId));
+      final remaining = state.requests.where((r) => r.id != requestId).toList();
+      state = state.copyWith(requests: remaining, isProcessing: false, successMessage: 'Đã từ chối đơn gia nhập');
       await loadRequests();
-      state = state.copyWith(isProcessing: false, successMessage: 'Đã từ chối đơn gia nhập');
       return true;
     } catch (e) {
       state = state.copyWith(isProcessing: false, errorMessage: e.toString());

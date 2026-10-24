@@ -11,6 +11,7 @@ import '../../../app/utils/exception_ext.dart';
 import '../../../domain/entities/club/club_detail.dart';
 import '../home/tab/club/widgets/club_qr_dialog.dart';
 import '../home/tab/club/widgets/club_sessions_tab.dart';
+import '../club/club_vm/club_context_vm.dart';
 import 'club_detail_vm/club_detail_vm.dart';
 
 class ClubDetailScreen extends ConsumerStatefulWidget {
@@ -32,6 +33,10 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(clubDetailViewModelProvider(widget.clubId).notifier).loadDetail();
+      ref.read(clubContextViewModelProvider.notifier).loadMyClubs();
+    });
   }
 
   @override
@@ -172,6 +177,16 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
           onPressed: () => context.pop(),
         ),
         actions: [
+          IconButton(
+            icon: Icon(Icons.refresh_rounded, color: colors.textPrimary, size: 22),
+            tooltip: 'Làm mới',
+            onPressed: () async {
+              await Future.wait([
+                vm.loadDetail(),
+                ref.read(clubContextViewModelProvider.notifier).loadMyClubs(),
+              ]);
+            },
+          ),
           if (club != null && canManageClub)
             IconButton(
               icon: Icon(Icons.settings_outlined, color: colors.textPrimary, size: 22),
@@ -258,7 +273,12 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
                     // Tab 2: Thông tin chi tiết & sân cố định
                     RefreshIndicator(
                       color: AppColors.primary,
-                      onRefresh: () => vm.loadDetail(),
+                      onRefresh: () async {
+                        await Future.wait([
+                          vm.loadDetail(),
+                          ref.read(clubContextViewModelProvider.notifier).loadMyClubs(),
+                        ]);
+                      },
                       child: ListView(
                         padding: const EdgeInsets.all(16),
                         children: [
@@ -827,6 +847,10 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
 
   Widget _buildBottomActionBar(ClubDetail club, ClubDetailViewModel vm, bool isSubmitting) {
     final status = club.currentUserStatus;
+    final myClubs = ref.watch(clubContextViewModelProvider).myClubs;
+    final isMemberInClubs = myClubs.any((c) => c.clubId == club.id);
+    final isMember = status.isMember || isMemberInClubs;
+    final hasPending = !isMember && status.hasPendingJoinRequest;
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -839,7 +863,7 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
         child: SizedBox(
           width: double.infinity,
           height: 50,
-          child: status.isMember
+          child: isMember
               ? ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: colors.success,
@@ -868,7 +892,7 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
                           style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                         ),
                 )
-              : status.hasPendingJoinRequest
+              : hasPending
                   ? ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: colors.warningContainer,
