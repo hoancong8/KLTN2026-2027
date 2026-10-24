@@ -44,7 +44,7 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: AppColors.primary,
+        backgroundColor: colors.primary,
         behavior: SnackBarBehavior.floating,
       ),
     );
@@ -124,7 +124,7 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(next.error!.getDisplayMessage(context.l10n)),
-            backgroundColor: AppColors.error,
+            backgroundColor: colors.error,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -133,7 +133,7 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(next.successMessage!),
-            backgroundColor: AppColors.primary,
+            backgroundColor: colors.primary,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -302,7 +302,7 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
                 child: Container(
                   width: 60,
                   height: 60,
-                  color: AppColors.primary.withValues(alpha: 0.1),
+                  color: colors.primary.withValues(alpha: 0.1),
                   child: club.avatarUrl != null && club.avatarUrl!.isNotEmpty
                       ? Image.network(
                           club.avatarUrl!,
@@ -443,7 +443,7 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
               decoration: BoxDecoration(
                 color: colors.primaryContainer,
                 borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: AppColors.primary.withValues(alpha: 0.25)),
+                border: Border.all(color: colors.primary.withValues(alpha: 0.25)),
               ),
               child: Row(
                 children: [
@@ -507,7 +507,7 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
         children: [
           Row(
             children: [
-              const Icon(Icons.stadium_rounded, color: AppColors.primary, size: 20),
+              Icon(Icons.stadium_rounded, color: colors.primary, size: 20),
               SizedBox(width: 8),
               Text(
                 'Sân sinh hoạt cố định',
@@ -615,7 +615,7 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
         children: [
           Row(
             children: [
-              const Icon(Icons.calendar_month_rounded, color: AppColors.primary, size: 20),
+              Icon(Icons.calendar_month_rounded, color: colors.primary, size: 20),
               const SizedBox(width: 8),
               Text(
                 'Lịch sinh hoạt định kỳ hàng tuần',
@@ -629,9 +629,9 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
-                      color: AppColors.primary.withValues(alpha: 0.1),
+                      color: colors.primary.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: AppColors.primary.withValues(alpha: 0.25)),
+                      border: Border.all(color: colors.primary.withValues(alpha: 0.25)),
                     ),
                     child: const Row(
                       mainAxisSize: MainAxisSize.min,
@@ -669,7 +669,7 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
                     Container(
                       padding: const EdgeInsets.all(6),
                       decoration: BoxDecoration(
-                        color: AppColors.primary.withValues(alpha: 0.1),
+                        color: colors.primary.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: const Icon(Icons.access_time_rounded, size: 16, color: AppColors.primary),
@@ -722,7 +722,7 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
         children: [
           Row(
             children: [
-              const Icon(Icons.person_pin_rounded, color: AppColors.primary, size: 20),
+              Icon(Icons.person_pin_rounded, color: colors.primary, size: 20),
               SizedBox(width: 8),
               Text(
                 'Thông tin Chủ nhiệm / Host',
@@ -795,7 +795,7 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
         children: [
           Row(
             children: [
-              const Icon(Icons.notes_rounded, color: AppColors.primary, size: 20),
+              Icon(Icons.notes_rounded, color: colors.primary, size: 20),
               SizedBox(width: 8),
               Text(
                 'Giới thiệu & Tiêu chuẩn',
@@ -842,7 +842,7 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
           child: status.isMember
               ? ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.success,
+                    backgroundColor: colors.success,
                     foregroundColor: AppColors.white,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
@@ -879,7 +879,7 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
                       onPressed: null,
                       icon: Icon(Icons.hourglass_top_rounded, color: colors.warning),
                       label: Text(
-                        'Đơn xin gia nhập đang chờ duyệt [WAITING]',
+                        'Đơn xin gia nhập đang chờ duyệt',
                         style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: colors.warning),
                       ),
                     )
@@ -900,7 +900,7 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
                         )
                       : ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
+                        backgroundColor: colors.primary,
                         foregroundColor: AppColors.white,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
