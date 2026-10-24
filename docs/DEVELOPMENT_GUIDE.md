@@ -1,17 +1,17 @@
-# 📘 Tài Liệu Kiến Trúc & Hướng Dẫn Phát Triển (Development Guide)
+#  Tài Liệu Kiến Trúc & Hướng Dẫn Phát Triển (Development Guide)
 
 Tài liệu này là cẩm nang phát triển chính thức cho toàn bộ dự án **LegendsTeamVN.BadmintonClub**. Tất cả kỹ sư phần mềm khi tham gia phát triển backend cần đọc kỹ và tuân thủ các quy tắc dưới đây.
 
 ---
 
-## 📑 Mục Lục
+##  Mục Lục
 1. [Kiến Trúc Hệ Thống (Clean Architecture & CQRS)](#1-kiến-trúc-hệ-thống-clean-architecture--cqrs)
 2. [Cấu Trúc Cơ Sở Dữ Liệu (Mô Hình ERD 22 Bảng Chuẩn Hóa)](#2-cấu-trúc-cơ-sở-dữ-liệu-mô-hình-erd-22-bảng-chuẩn-hóa)
 3. [Hệ Thống Phân Quyền Đa Nhóm (Multi-Group Dynamic RBAC)](#3-hệ-thống-phân-quyền-đa-nhóm-multi-group-dynamic-rbac)
 4. [Chuẩn Thiết Kế RESTful Minimal API](#4-chuẩn-thiết-kế-restful-minimal-api)
 5. [Quy Trình Phát Triển Tính Năng Mới (Feature Workflow)](#5-quy-trình-phát-triển-tính-năng-mới-feature-workflow)
 6. [Lệnh Thao Tác, Di Trú Dữ Liệu & Kiểm Thử](#6-lệnh-thao-tác-di-trú-dữ-liệu--kiểm-thử)
-7. [📖 Danh Sách & Đặc Tả Toàn Bộ API (API Specification)](API_DOCUMENTATION.md)
+7. [ Danh Sách & Đặc Tả Toàn Bộ API (API Specification)](API_DOCUMENTATION.md)
 
 ---
 

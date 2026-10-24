@@ -1,4 +1,4 @@
-# 🏸 BẢNG TỔNG HỢP VÀ TIẾN ĐỘ TOÀN BỘ CÁC YÊU CẦU CHỨC NĂNG (FR01 - FR23)
+#  BẢNG TỔNG HỢP VÀ TIẾN ĐỘ TOÀN BỘ CÁC YÊU CẦU CHỨC NĂNG (FR01 - FR23)
 > **Dự án**: Hệ thống quản lý nhóm cầu lông phong trào (Badminton Club Management System)  
 > **Tài liệu tham chiếu gốc**: `KLHK1262714_BC1_Hệ thống quản lý nhóm cầu lông phong trào.docx`  
 > **Cập nhật ngày**: 14/10/2026  
@@ -6,7 +6,7 @@
 
 ---
 
-## 📊 BẢNG TỔNG KẾT TỔNG QUAN TIẾN ĐỘ 23 FR
+##  BẢNG TỔNG KẾT TỔNG QUAN TIẾN ĐỘ 23 FR
 
 | Mã FR | Tên Yêu Cầu Chức Năng | Phân Hệ Nghiệp Vụ | Trạng Thái Backend | Số Lượng API |
 | :---: | :--- | :--- | :---: | :---: |
@@ -41,7 +41,7 @@
 
 ---
 
-## 🌟 PHẦN I: CHI TIẾT CÁC FR ĐÃ HOÀN THÀNH (BACKEND PRODUCTION READY)
+##  PHẦN I: CHI TIẾT CÁC FR ĐÃ HOÀN THÀNH (BACKEND PRODUCTION READY)
 
 ### 1. FR01 & FR02: Định Danh, Đăng Ký, Đăng Nhập & Phiên Làm Việc
 - **Mục tiêu**: Quản lý tài khoản duy nhất, cấp Access Token (JWT) và Refresh Token an toàn, duy trì phiên trên thiết bị.
@@ -236,15 +236,15 @@ Các phân hệ dưới đây đã có sẵn cấu trúc bảng và mô hình th
 
 ---
 
-## 🛠️ HƯỚNG DẪN DÀNH CHO PHÍA MOBILE (FLUTTER)
+## ️ HƯỚNG DẪN DÀNH CHO PHÍA MOBILE (FLUTTER)
 
 1. **Swagger UI trực quan**:
    - Khi Backend đang chạy, truy cập đường dẫn: **`http://localhost:54796/swagger`**
    - Toàn bộ các API đều được phân nhóm rõ ràng theo Tag từng FR (ví dụ: `FR03 - Quản lý CLB & Thành viên`, `FR05 - Quản lý hồ sơ cá nhân & Trình độ`, `FR06 - Khám phá nhóm theo vị trí`, `FR07 - Thông tin chi tiết & Lịch sinh hoạt nhóm`, `FR08-FR10 - Biểu quyết giữ chỗ & Hàng đợi`, `FR11 - Phát tín hiệu tìm khách giao lưu`, `FR12 - Khách vãng lai đăng ký tham gia`, `FR13 - Khởi tạo buổi chơi`).
 
 2. **Tài liệu đặc tả chi tiết chuyên sâu**:
-   - Đặc tả luồng dữ liệu, JSON Request/Response, logic Flutter mẫu: [docs/API_DOCUMENTATION.md](file:///c:/code/abp_be/KLTN2026/docs/API_DOCUMENTATION.md)
-   - Đặc tả độc lập cho Phân hệ 1 (FR05, FR06, FR07): [docs/PHAN_HE_1_HO_SO_VA_TIM_KIEM_CLB_FR05_FR06_FR07.md](file:///c:/code/abp_be/KLTN2026/docs/PHAN_HE_1_HO_SO_VA_TIM_KIEM_CLB_FR05_FR06_FR07.md)
+   - Đặc tả luồng dữ liệu, JSON Request/Response, logic Flutter mẫu: [docs/API_DOCUMENTATION.md](docs/API_DOCUMENTATION.md)
+   - Đặc tả độc lập cho Phân hệ 1 (FR05, FR06, FR07): [docs/PHAN_HE_1_HO_SO_VA_TIM_KIEM_CLB_FR05_FR06_FR07.md](docs/PHAN_HE_1_HO_SO_VA_TIM_KIEM_CLB_FR05_FR06_FR07.md)
 
 3. **Tài khoản kiểm thử có sẵn dữ liệu**:
    - Mật khẩu tất cả tài khoản: **`admin`**

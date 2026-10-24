@@ -24,7 +24,7 @@ Nhằm đảm bảo tính đúng đắn của các giải pháp kỹ thuật, t�
 
 ### 2.1. Cấp độ 1: Kiểm thử Kiến trúc Tự động (Architecture Testing với NetArchTest)
 
-Hệ thống tích hợp bộ kiểm thử kiến trúc tự động trong project [`LegendsTeamVN.BadmintonClub.Architecture.Tests`](file:///d:/[l7TeamVN]/LegendsTeamVN.BadmintonClub/tests/LegendsTeamVN.BadmintonClub.Architecture.Tests). Bất kỳ đoạn mã nào vi phạm ranh giới phân tầng Clean Architecture sẽ lập tức làm bài test thất bại (Failed) trong quy trình CI/CD.
+Hệ thống tích hợp bộ kiểm thử kiến trúc tự động trong project [`LegendsTeamVN.BadmintonClub.Architecture.Tests`]. Bất kỳ đoạn mã nào vi phạm ranh giới phân tầng Clean Architecture sẽ lập tức làm bài test thất bại (Failed) trong quy trình CI/CD.
 
 ```bash
 dotnet test tests/LegendsTeamVN.BadmintonClub.Architecture.Tests/LegendsTeamVN.BadmintonClub.Architecture.Tests.csproj --verbosity minimal
@@ -48,7 +48,7 @@ dotnet test tests/LegendsTeamVN.BadmintonClub.Architecture.Tests/LegendsTeamVN.B
 
 ### 2.2. Cấp độ 2: Kiểm thử Ứng dụng & Nghiệp vụ (Application & Unit Testing)
 
-Project [`LegendsTeamVN.BadmintonClub.Application.Tests`](file:///d:/[l7TeamVN]/LegendsTeamVN.BadmintonClub/tests/LegendsTeamVN.BadmintonClub.Application.Tests) tập trung kiểm thử các kịch bản nghiệp vụ cốt lõi, bảo vệ tính toàn vẹn (Invariants) của Aggregate Roots.
+Project [`LegendsTeamVN.BadmintonClub.Application.Tests`] tập trung kiểm thử các kịch bản nghiệp vụ cốt lõi, bảo vệ tính toàn vẹn (Invariants) của Aggregate Roots.
 
 ```bash
 dotnet test tests/LegendsTeamVN.BadmintonClub.Application.Tests/LegendsTeamVN.BadmintonClub.Application.Tests.csproj --verbosity minimal
