@@ -1,3 +1,5 @@
+import '../domain/repositories/session_operations_repository.dart';
+import '../data/repositories/session_operations_repository_impl.dart';
 import 'package:dio/dio.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'package:flutter/foundation.dart';
@@ -675,4 +677,12 @@ final joinRecruitmentUseCaseProvider = Provider<JoinRecruitmentUseCase>((ref) {
 
 final cancelRecruitmentBookingUseCaseProvider = Provider<CancelRecruitmentBookingUseCase>((ref) {
   return CancelRecruitmentBookingUseCase(ref.watch(sessionRepositoryProvider));
+});
+
+// ============================================================================
+// FR14 - FR23: SESSION ON-COURT OPERATIONS & SETTLEMENT PROVIDERS
+// ============================================================================
+
+final sessionOperationsRepositoryProvider = Provider<SessionOperationsRepository>((ref) {
+  return SessionOperationsRepositoryImpl(dio: ref.watch(dioProvider));
 });

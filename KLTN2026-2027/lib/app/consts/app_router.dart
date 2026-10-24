@@ -1,3 +1,7 @@
+import '../../ui/screen/club/session_operations/session_attendance_screen.dart';
+import '../../ui/screen/club/session_operations/session_rotation_screen.dart';
+import '../../ui/screen/club/session_operations/session_settlement_screen.dart';
+import '../../ui/screen/club/session_operations/session_reviews_screen.dart';
 // app/router/app_router.dart
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -109,6 +113,34 @@ GoRouter generateAppRouter(String initialRoute) {
         builder: (_, state) {
           final sessionId = state.pathParameters['sessionId'] ?? '';
           return SessionDetailScreen(sessionId: sessionId);
+        },
+      ),
+      GoRoute(
+        path: '/session/:sessionId/attendance',
+        builder: (_, state) {
+          final sessionId = state.pathParameters['sessionId'] ?? '';
+          return SessionAttendanceScreen(sessionId: sessionId);
+        },
+      ),
+      GoRoute(
+        path: '/session/:sessionId/rotation',
+        builder: (_, state) {
+          final sessionId = state.pathParameters['sessionId'] ?? '';
+          return SessionRotationScreen(sessionId: sessionId);
+        },
+      ),
+      GoRoute(
+        path: '/session/:sessionId/settlement',
+        builder: (_, state) {
+          final sessionId = state.pathParameters['sessionId'] ?? '';
+          return SessionSettlementScreen(sessionId: sessionId);
+        },
+      ),
+      GoRoute(
+        path: '/session/:sessionId/reviews',
+        builder: (_, state) {
+          final sessionId = state.pathParameters['sessionId'] ?? '';
+          return SessionReviewsScreen(sessionId: sessionId);
         },
       ),
     ],

@@ -1,4 +1,5 @@
-﻿// lib/ui/screen/club/session_detail_screen.dart
+import 'package:go_router/go_router.dart';
+// lib/ui/screen/club/session_detail_screen.dart
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -1377,6 +1378,93 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                 ),
               ),
             ],
+          ),
+          AppSpacing.gapH12,
+
+          // Bảng phím tắt nghiệp vụ tại sân (FR14 - FR23)
+          Container(
+            padding: AppSpacing.allBase,
+            decoration: BoxDecoration(
+              color: colors.cardBackground,
+              borderRadius: AppRadius.card,
+              border: Border.all(color: colors.primary.withValues(alpha: 0.3)),
+              boxShadow: AppShadows.sm,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.sports_tennis_rounded, color: colors.primary, size: 20),
+                        AppSpacing.gapW8,
+                        Text(
+                          'Vận Hành Tại Sân & Hạch Toán',
+                          style: AppTypography.titleSmall.bold.colored(colors.textPrimary),
+                        ),
+                      ],
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: colors.primary.withValues(alpha: 0.12),
+                        borderRadius: AppRadius.tag,
+                      ),
+                      child: Text('FR14 - FR23', style: AppTypography.labelSmall.bold.colored(colors.primary)),
+                    ),
+                  ],
+                ),
+                AppSpacing.gapH12,
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: colors.primary,
+                        foregroundColor: AppColors.white,
+                        shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                      ),
+                      icon: const Icon(Icons.how_to_reg_rounded, size: 16),
+                      label: const Text('Điểm danh sân (FR14)'),
+                      onPressed: () => context.push('/session//attendance'),
+                    ),
+                    ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: colors.success,
+                        foregroundColor: AppColors.white,
+                        shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                      ),
+                      icon: const Icon(Icons.swap_horiz_rounded, size: 16),
+                      label: const Text('Xoay tua sân (FR15)'),
+                      onPressed: () => context.push('/session//rotation'),
+                    ),
+                    OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: colors.primary,
+                        side: BorderSide(color: colors.primary),
+                        shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                      ),
+                      icon: const Icon(Icons.calculate_outlined, size: 16),
+                      label: const Text('Hạch toán & VietQR (FR18)'),
+                      onPressed: () => context.push('/session//settlement'),
+                    ),
+                    OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: colors.warning,
+                        side: BorderSide(color: colors.warning),
+                        shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                      ),
+                      icon: const Icon(Icons.star_outline_rounded, size: 16),
+                      label: const Text('Đánh giá tín nhiệm (FR23)'),
+                      onPressed: () => context.push('/session//reviews'),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
           AppSpacing.gapH12,
 
