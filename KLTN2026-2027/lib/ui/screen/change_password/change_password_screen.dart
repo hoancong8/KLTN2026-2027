@@ -59,6 +59,7 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
           SnackBar(
             content: Text(context.l10n.auth_change_password_success),
             backgroundColor: colors.primary,
+            behavior: SnackBarBehavior.floating,
           ),
         );
         context.pop();
@@ -69,6 +70,7 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
           SnackBar(
             content: Text(next.error!),
             backgroundColor: colors.error,
+            behavior: SnackBarBehavior.floating,
           ),
         );
       }
