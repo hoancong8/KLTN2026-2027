@@ -88,7 +88,7 @@ class SessionAttendanceScreen extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('Điểm Danh Tại Sân', style: AppTypography.titleMedium.bold.colored(colors.textPrimary)),
-            Text('Xác nhận hội viên có mặt để nạp hàng đợi xoay tua (FR14)',
+            Text('Xác nhận hội viên có mặt để nạp hàng đợi xoay tua',
                 style: AppTypography.labelSmall.colored(colors.textMuted)),
           ],
         ),
@@ -195,7 +195,7 @@ class SessionAttendanceScreen extends ConsumerWidget {
                       shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
                     ),
                     icon: const Icon(Icons.swap_horiz_rounded),
-                    label: const Text('Bàn Điều Phối Xoay Tua Sân (FR15 - FR17)'),
+                    label: const Text('Bàn Điều Phối Xoay Tua Sân'),
                     onPressed: () {
                       context.push('/session/$sessionId/rotation');
                     },
@@ -379,20 +379,22 @@ class SessionAttendanceScreen extends ConsumerWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Thêm Khách Vãng Lai'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: nameCtrl,
-              decoration: const InputDecoration(labelText: 'Họ tên khách *'),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: phoneCtrl,
-              keyboardType: TextInputType.phone,
-              decoration: const InputDecoration(labelText: 'Số điện thoại'),
-            ),
-          ],
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: nameCtrl,
+                decoration: const InputDecoration(labelText: 'Họ tên khách *'),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: phoneCtrl,
+                keyboardType: TextInputType.phone,
+                decoration: const InputDecoration(labelText: 'Số điện thoại'),
+              ),
+            ],
+          ),
         ),
         actions: [
           TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('Hủy')),

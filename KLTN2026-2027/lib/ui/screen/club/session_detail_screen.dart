@@ -120,7 +120,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
     final isOpen = detail?.session.status == SessionStatus.open;
     final dialogTitle = isOpen ? 'Hủy giữ chỗ tham gia' : context.l10n.session_cancel_join;
     final dialogContent = isOpen
-        ? 'Bạn có chắc chắn muốn hủy xác nhận tham gia buổi chơi này? Suất của bạn sẽ tự động được nhường cho người tiếp theo trong hàng đợi (FR10).'
+        ? 'Bạn có chắc chắn muốn hủy xác nhận tham gia buổi chơi này? Suất của bạn sẽ tự động được nhường cho người tiếp theo trong hàng đợi.'
         : context.l10n.session_cancel_confirm;
     final confirmBtnLabel = isOpen ? 'Hủy giữ chỗ' : context.l10n.session_cancel_join;
 
@@ -1383,7 +1383,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
           ),
           AppSpacing.gapH12,
 
-          // Bảng phím tắt nghiệp vụ tại sân (FR14 - FR23) - Chỉ hiển thị cho Host / Ban điều hành
+          // Bảng phím tắt nghiệp vụ tại sân (Ban Điều Hành) - Chỉ hiển thị cho Host / Ban điều hành
           if (isHost)
             Container(
             padding: AppSpacing.allBase,
@@ -1415,7 +1415,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                         color: colors.primary.withValues(alpha: 0.12),
                         borderRadius: AppRadius.tag,
                       ),
-                      child: Text('FR14 - FR23', style: AppTypography.labelSmall.bold.colored(colors.primary)),
+                      child: Text('Ban Điều Hành', style: AppTypography.labelSmall.bold.colored(colors.primary)),
                     ),
                   ],
                 ),
@@ -1431,7 +1431,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                         shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
                       ),
                       icon: const Icon(Icons.how_to_reg_rounded, size: 16),
-                      label: const Text('Điểm danh sân (FR14)'),
+                      label: const Text('Điểm danh sân'),
                       onPressed: () => context.push('/session/${session.id}/attendance'),
                     ),
                     ElevatedButton.icon(
@@ -1441,7 +1441,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                         shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
                       ),
                       icon: const Icon(Icons.swap_horiz_rounded, size: 16),
-                      label: const Text('Xoay tua sân (FR15)'),
+                      label: const Text('Xoay tua sân'),
                       onPressed: () => context.push('/session/${session.id}/rotation'),
                     ),
                     OutlinedButton.icon(
@@ -1451,7 +1451,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                         shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
                       ),
                       icon: const Icon(Icons.calculate_outlined, size: 16),
-                      label: const Text('Hạch toán & VietQR (FR18)'),
+                      label: const Text('Hạch toán & VietQR'),
                       onPressed: () => context.push('/session/${session.id}/settlement'),
                     ),
                     OutlinedButton.icon(
@@ -1461,7 +1461,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                         shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
                       ),
                       icon: const Icon(Icons.star_outline_rounded, size: 16),
-                      label: const Text('Đánh giá tín nhiệm (FR23)'),
+                      label: const Text('Đánh giá buổi chơi'),
                       onPressed: () => context.push('/session/${session.id}/reviews'),
                     ),
                   ],

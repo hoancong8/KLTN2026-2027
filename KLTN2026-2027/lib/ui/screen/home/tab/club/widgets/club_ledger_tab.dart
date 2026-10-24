@@ -34,7 +34,7 @@ class _ClubLedgerTabState extends ConsumerState<ClubLedgerTab> {
     final canManageFinance = isHost || isTreasurer || (isSameClub && ref.hasClubPermission('FINANCE.MANAGE'));
 
     return Scaffold(
-      backgroundColor: Colors.transparent,
+      backgroundColor: AppColors.transparent,
       floatingActionButton: canManageFinance
           ? FloatingActionButton.extended(
               onPressed: () => _showCreateTransactionSheet(context, vm, currentProfile?.userName ?? 'Thủ quỹ'),

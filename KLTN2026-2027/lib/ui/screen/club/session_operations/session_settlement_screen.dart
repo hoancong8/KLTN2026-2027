@@ -76,7 +76,7 @@ class SessionSettlementScreen extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('Hạch Toán Cầu & Chia Tiền', style: AppTypography.titleMedium.bold.colored(colors.textPrimary)),
-            Text('Công thức đa hệ số & VietQR tự động gạch nợ (FR18 - FR21)',
+            Text('Công thức đa hệ số & VietQR tự động gạch nợ',
                 style: AppTypography.labelSmall.colored(colors.textMuted)),
           ],
         ),
@@ -89,7 +89,7 @@ class SessionSettlementScreen extends ConsumerWidget {
         actions: [
           IconButton(
             icon: Icon(Icons.rate_review_outlined, color: colors.primary),
-            tooltip: 'Đánh giá tín nhiệm buổi chơi (FR23)',
+            tooltip: 'Đánh giá tín nhiệm buổi chơi',
             onPressed: () => context.push('/session/$sessionId/reviews'),
           ),
         ],
@@ -178,7 +178,7 @@ class SessionSettlementScreen extends ConsumerWidget {
                           shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
                         ),
                         icon: const Icon(Icons.edit_note_rounded),
-                        label: const Text('Cập nhật số quả cầu bóc mới & phụ phí (FR18)'),
+                        label: const Text('Cập nhật số quả cầu bóc mới & phụ phí'),
                         onPressed: () => _showUpdateConsumablesDialog(context, settlement, vm),
                       ),
                     ],
@@ -371,7 +371,7 @@ class SessionSettlementScreen extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Ghi Nhận Vật Tư Tiêu Hao (FR18)'),
+        title: const Text('Ghi Nhận Vật Tư Tiêu Hao'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [

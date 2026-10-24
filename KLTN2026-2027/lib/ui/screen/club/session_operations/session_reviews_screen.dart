@@ -78,7 +78,7 @@ class SessionReviewsScreen extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('Đánh Giá & Tín Nhiệm', style: AppTypography.titleMedium.bold.colored(colors.textPrimary)),
-            Text('Đánh giá chất lượng buổi chơi & uy tín tay vợt (FR23)',
+            Text('Đánh giá chất lượng buổi chơi & uy tín tay vợt',
                 style: AppTypography.labelSmall.colored(colors.textMuted)),
           ],
         ),
@@ -232,6 +232,7 @@ class SessionReviewsScreen extends ConsumerWidget {
   }
 
   void _showAddReviewDialog(BuildContext context, SessionReviewsNotifier vm, String defaultName) {
+    final colors = context.colors;
     final commentCtrl = TextEditingController();
     var rating = 5.0;
     final selectedTags = <String>['Xoay sân công bằng', 'Vui vẻ'];
@@ -240,7 +241,7 @@ class SessionReviewsScreen extends ConsumerWidget {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
-          title: const Text('Viết Đánh Giá Buổi Chơi (FR23)'),
+          title: const Text('Viết Đánh Giá Buổi Chơi'),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -253,7 +254,7 @@ class SessionReviewsScreen extends ConsumerWidget {
                     return IconButton(
                       icon: Icon(
                         star <= rating ? Icons.star_rounded : Icons.star_outline_rounded,
-                        color: Colors.amber,
+                        color: colors.warning,
                         size: 32,
                       ),
                       onPressed: () => setDialogState(() => rating = star.toDouble()),
