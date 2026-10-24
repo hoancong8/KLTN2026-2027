@@ -199,7 +199,7 @@ void main() {
     expect(find.text('Tính Tiền Cầu & Sân'), findsOneWidget);
     expect(find.text('Tổng Chi Phí Buổi Chơi'), findsOneWidget);
     expect(find.text('440,000 đ'), findsOneWidget);
-    expect(find.text('ĐÃ GẠCH NỢ'), findsOneWidget);
+    expect(find.text('ĐÃ ĐÓNG TIỀN'), findsOneWidget);
   });
 
   testWidgets('SessionReviewsScreen renders FR23 reviews and rating score', (tester) async {

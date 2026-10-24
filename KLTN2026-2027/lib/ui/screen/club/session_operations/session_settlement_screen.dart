@@ -280,6 +280,19 @@ class SessionSettlementScreen extends ConsumerWidget {
     );
   }
 
+  String _formatRoleName(String role) {
+    switch (role) {
+      case 'MEMBER_MONTHLY':
+        return 'Hội viên tháng';
+      case 'MEMBER_DAILY':
+        return 'Hội viên ngày';
+      case 'GUEST':
+        return 'Khách vãng lai';
+      default:
+        return role;
+    }
+  }
+
   Widget _buildMemberFeeCard(BuildContext context, MemberSettlementFee fee, SessionSettlementNotifier vm) {
     final colors = context.colors;
     final currencyFormat = NumberFormat('#,###');
@@ -316,7 +329,7 @@ class SessionSettlementScreen extends ConsumerWidget {
                     Text(fee.fullName, style: AppTypography.titleSmall.bold.colored(colors.textPrimary)),
                     const SizedBox(height: 2),
                     Text(
-                      '${fee.roleName} • ${fee.gender == "FEMALE" ? "Nữ (Giảm giá)" : "Nam"}',
+                      '${_formatRoleName(fee.roleName)} • ${fee.gender == "FEMALE" ? "Nữ (Giảm giá)" : "Nam"}',
                       style: AppTypography.labelSmall.colored(colors.textMuted),
                     ),
                   ],
@@ -331,8 +344,8 @@ class SessionSettlementScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: 2),
                   isPaid
-                      ? const AppStatusBadge.success(label: 'ĐÃ GẠCH NỢ')
-                      : const AppStatusBadge.warning(label: 'CHƯA TRẢ'),
+                      ? const AppStatusBadge.success(label: 'ĐÃ ĐÓNG TIỀN')
+                      : const AppStatusBadge.warning(label: 'CHƯA ĐÓNG'),
                 ],
               ),
             ],
