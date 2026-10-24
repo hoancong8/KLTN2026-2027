@@ -1,4 +1,4 @@
-﻿// lib/ui/screen/home/tab/explore/explore_recruitments_page.dart
+// lib/ui/screen/home/tab/explore/explore_recruitments_page.dart
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -472,7 +472,7 @@ class _ExploreRecruitmentsPageState extends ConsumerState<ExploreRecruitmentsPag
                       context,
                       icon: Icons.military_tech_rounded,
                       label: 'Yêu cầu trình độ',
-                      value: match.minSkillLevel.displayName,
+                      value: '${match.minSkillLevel.displayName} (${match.minSkillLevel.description})',
                       valueColor: AppColors.roleViolet,
                       isBold: true,
                     ),
@@ -505,7 +505,7 @@ class _ExploreRecruitmentsPageState extends ConsumerState<ExploreRecruitmentsPag
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        'Cam kết văn hóa sân cầu: Hãy đến sân đúng giờ để giao lưu cùng mọi người. Nếu có việc bận đột xuất, vui lòng hủy suất sớm để nhường chỗ cho người khác.',
+                        'Cam kết văn hóa sân cầu: Hãy đến sân đúng giờ để giao lưu cùng mọi người. Tiền sân & cầu thanh toán trực tiếp qua VietQR tại sân sau buổi chơi. Nếu có việc bận đột xuất, vui lòng hủy suất sớm để nhường chỗ cho người khác.',
                         style: TextStyle(
                           fontSize: 12,
                           color: colors.textPrimary,

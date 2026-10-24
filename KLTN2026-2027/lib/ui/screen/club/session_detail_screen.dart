@@ -929,7 +929,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
           style: AppTypography.titleMedium.copyWith(color: colors.textPrimary),
         ),
         content: Text(
-          'Hành động này sẽ hủy buổi chơi vĩnh viễn và thông báo tới toàn bộ người đã biểu quyết.',
+          'Hành động này sẽ hủy buổi chơi vĩnh viễn và thông báo tới toàn bộ người đã đăng ký.',
           style: AppTypography.bodyMedium.copyWith(color: colors.textSecondary),
         ),
         actions: [
@@ -1015,7 +1015,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                   _buildActionTile(
                     icon: Icons.lock_outline_rounded,
                     color: colors.warning,
-                    label: 'Khóa sổ biểu quyết (LOCKED)',
+                    label: 'Khóa sổ đăng ký (LOCKED)',
                     subtitle: 'Ngừng nhận thêm đăng ký và chốt danh sách',
                     onTap: () {
                       Navigator.of(ctx).pop();
@@ -1026,7 +1026,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                   _buildActionTile(
                     icon: Icons.lock_open_rounded,
                     color: colors.primary,
-                    label: 'Mở lại biểu quyết',
+                    label: 'Mở lại đăng ký',
                     subtitle: 'Cho phép thành viên tiếp tục đăng ký',
                     onTap: () {
                       Navigator.of(ctx).pop();
@@ -2382,7 +2382,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                                         ? 'Buổi chơi đã đóng đăng ký'
                                         : (session.isFull
                                             ? 'Vào Hàng Đợi Chờ (Slot #${session.waitingCount + 1})'
-                                            : 'Biểu Quyết Giữ Chỗ'),
+                                            : 'Đăng Ký Tham Gia'),
                                     style: AppTypography.titleSmall.copyWith(
                                       fontWeight: FontWeight.bold,
                                       color: AppColors.white,
