@@ -1,12 +1,13 @@
 // lib/ui/screen/home/tab/club/widgets/club_action_sheet.dart
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../../../app/consts/app_config.dart';
+import '../../../../../../app/provider.dart';
 import '../../../../../../app/theme/theme.dart';
 import 'club_join_by_code_dialog.dart';
 
-class ClubActionSheet extends StatelessWidget {
+class ClubActionSheet extends ConsumerWidget {
   const ClubActionSheet({super.key});
 
   static Future<void> show(BuildContext context) {
@@ -19,7 +20,7 @@ class ClubActionSheet extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final colors = context.colors;
     return Container(
       decoration: BoxDecoration(
@@ -92,7 +93,7 @@ class ClubActionSheet extends StatelessWidget {
               subtitle: 'Tìm các câu lạc bộ cầu lông đang hoạt động trong khu vực của bạn',
               onTap: () {
                 Navigator.of(context).pop();
-                context.push(AppConfig.exploreClubsScreenPath);
+                ref.read(homeTabProvider.notifier).state = 2;
               },
             ),
             AppSpacing.gapH12,

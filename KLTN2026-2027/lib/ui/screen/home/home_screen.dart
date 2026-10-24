@@ -59,6 +59,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<int>(homeTabProvider, (previous, next) {
+      if (_pageController.hasClients && _pageController.page?.round() != next) {
+        if ((next - (previous ?? 0)).abs() > 1) {
+          _pageController.jumpToPage(next);
+        } else {
+          _pageController.animateToPage(
+            next,
+            duration: const Duration(milliseconds: 250),
+            curve: Curves.easeOutCubic,
+          );
+        }
+      }
+    });
+
     final destinations = getHomeNavDestinations(context);
     final pages = destinations.map((d) => d.page).toList();
 

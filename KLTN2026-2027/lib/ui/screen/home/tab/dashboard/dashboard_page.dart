@@ -223,7 +223,7 @@ class DashboardPage extends ConsumerWidget {
           AppSpacing.gapH12,
           // Search Input Quick Access
           GestureDetector(
-            onTap: () => context.push(AppConfig.exploreClubsScreenPath),
+            onTap: () => ref.read(homeTabProvider.notifier).state = 2,
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               decoration: BoxDecoration(
@@ -267,7 +267,7 @@ class DashboardPage extends ConsumerWidget {
         icon: Icons.radar_rounded,
         bgColor: colors.accent.withValues(alpha: 0.15),
         iconColor: colors.accent,
-        onTap: () => context.push(AppConfig.exploreRecruitmentsScreenPath),
+        onTap: () => ref.read(homeTabProvider.notifier).state = 2,
       ),
       _QuickActionData(
         title: l10n.home_my_clubs,
@@ -283,7 +283,7 @@ class DashboardPage extends ConsumerWidget {
         icon: Icons.explore_rounded,
         bgColor: colors.info.withValues(alpha: 0.12),
         iconColor: colors.info,
-        onTap: () => context.push(AppConfig.exploreClubsScreenPath),
+        onTap: () => ref.read(homeTabProvider.notifier).state = 2,
       ),
     ];
 
@@ -441,11 +441,11 @@ class DashboardPage extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildUpcomingSessionHero(context, state.nextBooking),
+        _buildUpcomingSessionHero(context, ref, state.nextBooking),
         AppSpacing.gapH20,
-        _buildRadarRecruitments(context, state.nearbyRecruitments, vm, state.joiningRecruitmentId),
+        _buildRadarRecruitments(context, ref, state.nearbyRecruitments, vm, state.joiningRecruitmentId),
         AppSpacing.gapH20,
-        _buildNearbyClubs(context, state.nearbyClubs),
+        _buildNearbyClubs(context, ref, state.nearbyClubs),
       ],
     );
   }
@@ -464,9 +464,9 @@ class DashboardPage extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildUpcomingSessionHero(context, state.nextBooking),
+              _buildUpcomingSessionHero(context, ref, state.nextBooking),
               AppSpacing.gapH20,
-              _buildRadarRecruitments(context, state.nearbyRecruitments, vm, state.joiningRecruitmentId),
+              _buildRadarRecruitments(context, ref, state.nearbyRecruitments, vm, state.joiningRecruitmentId),
             ],
           ),
         ),
@@ -476,7 +476,7 @@ class DashboardPage extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildNearbyClubs(context, state.nearbyClubs),
+              _buildNearbyClubs(context, ref, state.nearbyClubs),
             ],
           ),
         ),
@@ -487,7 +487,7 @@ class DashboardPage extends ConsumerWidget {
   // ===========================================================================
   // 5. HERO CARD: UPCOMING SESSION / BOOKING (FR08 - FR10)
   // ===========================================================================
-  Widget _buildUpcomingSessionHero(BuildContext context, MyBookingItem? booking) {
+  Widget _buildUpcomingSessionHero(BuildContext context, WidgetRef ref, MyBookingItem? booking) {
     final colors = context.colors;
     final l10n = context.l10n;
 
@@ -552,7 +552,7 @@ class DashboardPage extends ConsumerWidget {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () => context.push(AppConfig.exploreRecruitmentsScreenPath),
+                onPressed: () => ref.read(homeTabProvider.notifier).state = 2,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: colors.primary,
                   foregroundColor: AppColors.white,
@@ -726,6 +726,7 @@ class DashboardPage extends ConsumerWidget {
   // ===========================================================================
   Widget _buildRadarRecruitments(
     BuildContext context,
+    WidgetRef ref,
     List<GuestRecruitment> recruitments,
     DashboardViewModel vm,
     String? joiningId,
@@ -753,7 +754,7 @@ class DashboardPage extends ConsumerWidget {
               ],
             ),
             GestureDetector(
-              onTap: () => context.push(AppConfig.exploreRecruitmentsScreenPath),
+              onTap: () => ref.read(homeTabProvider.notifier).state = 2,
               child: Text(
                 l10n.com_view_all,
                 style: AppTypography.labelMedium.copyWith(
@@ -1021,6 +1022,7 @@ class DashboardPage extends ConsumerWidget {
   // ===========================================================================
   Widget _buildNearbyClubs(
     BuildContext context,
+    WidgetRef ref,
     List<ExploreClub> clubs,
   ) {
     final colors = context.colors;
@@ -1046,7 +1048,7 @@ class DashboardPage extends ConsumerWidget {
               ],
             ),
             GestureDetector(
-              onTap: () => context.push(AppConfig.exploreClubsScreenPath),
+              onTap: () => ref.read(homeTabProvider.notifier).state = 2,
               child: Text(
                 l10n.com_view_all,
                 style: AppTypography.labelMedium.copyWith(

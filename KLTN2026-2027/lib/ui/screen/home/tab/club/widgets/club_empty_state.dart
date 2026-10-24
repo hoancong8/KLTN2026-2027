@@ -1,16 +1,17 @@
 // lib/ui/screen/home/tab/club/widgets/club_empty_state.dart
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../../../app/consts/app_config.dart';
+import '../../../../../../app/provider.dart';
 import '../../../../../../app/theme/theme.dart';
 import 'club_join_by_code_dialog.dart';
 
-class ClubEmptyState extends StatelessWidget {
+class ClubEmptyState extends ConsumerWidget {
   const ClubEmptyState({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final colors = context.colors;
     return Center(
       child: SingleChildScrollView(
@@ -84,7 +85,7 @@ class ClubEmptyState extends StatelessWidget {
               description: 'Quét bán kính xung quanh tìm các CLB cầu lông đang hoạt động và tuyển quân',
               icon: Icons.radar_rounded,
               accentColor: AppColors.roleViolet,
-              onTap: () => context.push(AppConfig.exploreClubsScreenPath),
+              onTap: () => ref.read(homeTabProvider.notifier).state = 2,
             ),
             AppSpacing.gapH12,
 
@@ -95,7 +96,7 @@ class ClubEmptyState extends StatelessWidget {
               description: 'Quét radar tìm kiếm các buổi tập đang tuyển người vãng lai trong khu vực',
               icon: Icons.sports_tennis_rounded,
               accentColor: colors.warning,
-              onTap: () => context.push(AppConfig.exploreRecruitmentsScreenPath),
+              onTap: () => ref.read(homeTabProvider.notifier).state = 2,
             ),
           ],
         ),
