@@ -11,6 +11,7 @@ import '../../../../../../domain/enums/club_role.dart';
 import '../../../../club/club_management_vm/club_members_vm.dart';
 import '../../../../club/club_vm/club_context_vm.dart';
 import 'club_join_requests_tab.dart';
+import 'club_ledger_tab.dart';
 import 'club_member_section.dart';
 import 'club_overview_tab.dart';
 import 'club_qr_dialog.dart';
@@ -44,7 +45,7 @@ class _ClubDetailViewState extends ConsumerState<ClubDetailView> with SingleTick
 
   void _onTabChanged() {
     if (_tabController != null && !_tabController!.indexIsChanging) {
-      if (_canManageJoinRequests && _tabController!.index == 2) {
+      if (_canManageJoinRequests && _tabController!.index == 3) {
         ref.read(clubContextViewModelProvider.notifier).switchClub(widget.club.clubId);
       }
     }
@@ -97,7 +98,7 @@ class _ClubDetailViewState extends ConsumerState<ClubDetailView> with SingleTick
                 ref.hasClubPermission('MEMBER.ROLE.MANAGE')));
     _canManageJoinRequests = canManageJoinRequests;
 
-    final expectedLength = canManageJoinRequests ? 4 : 3;
+    final expectedLength = canManageJoinRequests ? 5 : 4;
     if (_tabController == null || _tabController!.length != expectedLength) {
       _tabController?.removeListener(_onTabChanged);
       _tabController?.dispose();
@@ -148,6 +149,16 @@ class _ClubDetailViewState extends ConsumerState<ClubDetailView> with SingleTick
                   ],
                 ),
               ),
+              const Tab(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.account_balance_wallet_rounded, size: AppSpacing.iconSm),
+                    AppSpacing.gapW8,
+                    Text('Sổ Quỹ'),
+                  ],
+                ),
+              ),
               if (canManageJoinRequests)
                 const Tab(
                   child: Row(
@@ -193,6 +204,9 @@ class _ClubDetailViewState extends ConsumerState<ClubDetailView> with SingleTick
                       isHost: isHost,
                       vm: membersVm,
                     ),
+
+              // Tab 3: Sổ Quỹ (FR22, UC19)
+              ClubLedgerTab(clubId: widget.club.clubId),
 
               // Tab 3: Join Requests (Chỉ hiện khi có quyền duyệt)
               if (canManageJoinRequests)

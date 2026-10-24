@@ -185,6 +185,77 @@ class _ClubOverviewTabState extends ConsumerState<ClubOverviewTab> {
 
           AppSpacing.gapH16,
 
+          // 5. Club Finance & Treasury Card (FR22, UC19)
+          Container(
+            padding: AppSpacing.allBase,
+            decoration: BoxDecoration(
+              color: colors.cardBackground,
+              borderRadius: AppRadius.card,
+              border: Border.all(color: colors.cardBorder),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(Icons.account_balance_wallet_rounded, color: AppColors.primary, size: 20),
+                        AppSpacing.gapW8,
+                        Text(
+                          'Sổ quỹ & Tài chính CLB',
+                          style: AppTypography.titleSmall.bold.colored(colors.textPrimary),
+                        ),
+                      ],
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: AppColors.success.withValues(alpha: 0.12),
+                        borderRadius: AppRadius.tag,
+                        border: Border.all(color: AppColors.success.withValues(alpha: 0.3)),
+                      ),
+                      child: Text(
+                        'Minh bạch',
+                        style: AppTypography.labelSmall.bold.colored(AppColors.success),
+                      ),
+                    ),
+                  ],
+                ),
+                AppSpacing.gapH12,
+                _buildInfoRow(
+                  'Nguyên tắc thu chi',
+                  'Công khai theo từng buổi chơi & định kỳ tháng',
+                  icon: Icons.receipt_long_rounded,
+                ),
+                Divider(height: AppSpacing.base, color: colors.cardBorder),
+                _buildInfoRow(
+                  'Quy chế quỹ nhóm',
+                  'Tự động đối soát chuyển khoản VietQR',
+                  icon: Icons.qr_code_scanner_rounded,
+                ),
+                AppSpacing.gapH12,
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: colors.primary,
+                      foregroundColor: AppColors.white,
+                      shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                    icon: const Icon(Icons.account_balance_wallet_outlined, size: 18),
+                    label: const Text('Xem Sổ Quỹ Mở Minh Bạch'),
+                    onPressed: () => context.push('/club/${widget.clubId}/ledger'),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          AppSpacing.gapH16,
+
           // 2. Fixed Venue & Location Card (FR07)
           Container(
             padding: AppSpacing.allBase,
@@ -408,77 +479,6 @@ class _ClubOverviewTabState extends ConsumerState<ClubOverviewTab> {
                     icon: Icons.notes_rounded,
                   ),
                 ],
-              ],
-            ),
-          ),
-
-          AppSpacing.gapH16,
-
-          // 5. Club Finance & Treasury Card (FR22, UC19)
-          Container(
-            padding: AppSpacing.allBase,
-            decoration: BoxDecoration(
-              color: colors.cardBackground,
-              borderRadius: AppRadius.card,
-              border: Border.all(color: colors.cardBorder),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        const Icon(Icons.account_balance_wallet_rounded, color: AppColors.primary, size: 20),
-                        AppSpacing.gapW8,
-                        Text(
-                          'Sổ quỹ & Tài chính CLB',
-                          style: AppTypography.titleSmall.bold.colored(colors.textPrimary),
-                        ),
-                      ],
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: AppColors.success.withValues(alpha: 0.12),
-                        borderRadius: AppRadius.tag,
-                        border: Border.all(color: AppColors.success.withValues(alpha: 0.3)),
-                      ),
-                      child: Text(
-                        'Minh bạch',
-                        style: AppTypography.labelSmall.bold.colored(AppColors.success),
-                      ),
-                    ),
-                  ],
-                ),
-                AppSpacing.gapH12,
-                _buildInfoRow(
-                  'Nguyên tắc thu chi',
-                  'Công khai theo từng buổi chơi & định kỳ tháng',
-                  icon: Icons.receipt_long_rounded,
-                ),
-                Divider(height: AppSpacing.base, color: colors.cardBorder),
-                _buildInfoRow(
-                  'Quy chế quỹ nhóm',
-                  'Tự động đối soát chuyển khoản VietQR',
-                  icon: Icons.qr_code_scanner_rounded,
-                ),
-                AppSpacing.gapH12,
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: colors.primary,
-                      foregroundColor: AppColors.white,
-                      shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                    ),
-                    icon: const Icon(Icons.account_balance_wallet_outlined, size: 18),
-                    label: const Text('Xem Sổ Quỹ Mở Minh Bạch'),
-                    onPressed: () => context.push('/club/${widget.clubId}/ledger'),
-                  ),
-                ),
               ],
             ),
           ),
