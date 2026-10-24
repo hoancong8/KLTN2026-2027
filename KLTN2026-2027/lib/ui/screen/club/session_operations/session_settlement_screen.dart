@@ -75,7 +75,7 @@ class SessionSettlementScreen extends ConsumerWidget {
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Hạch Toán Cầu & Chia Tiền', style: AppTypography.titleMedium.bold.colored(colors.textPrimary)),
+            Text('Tính Tiền Cầu & Sân', style: AppTypography.titleMedium.bold.colored(colors.textPrimary)),
             Text('Công thức đa hệ số & VietQR tự động gạch nợ',
                 style: AppTypography.labelSmall.colored(colors.textMuted)),
           ],

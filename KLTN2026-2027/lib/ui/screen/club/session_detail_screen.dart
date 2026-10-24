@@ -718,7 +718,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                     ),
                     AppSpacing.gapH8,
                     Text(
-                      'Hạch toán tự động: Tổng chi phí = Tiền sân + Tiền cầu bóc mới + Phụ phí.',
+                      'Tự động tính: Tổng chi phí = Tiền sân + Tiền cầu bóc mới + Phụ phí.',
                       style: AppTypography.bodySmall.copyWith(color: colors.textMuted),
                     ),
                     AppSpacing.gapH16,
@@ -1059,7 +1059,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                   icon: Icons.calculate_rounded,
                   color: colors.primary,
                   label: 'Chốt sổ & Phân bổ chi phí',
-                  subtitle: 'Hạch toán thực tế tiền sân, cầu bóc mới, ưu đãi Nữ',
+                  subtitle: 'Tính tiền thực tế sân, cầu bóc mới, ưu đãi Nữ',
                   onTap: () {
                     Navigator.of(ctx).pop();
                     _showSettlementModal(context, session);
@@ -1404,7 +1404,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                         Icon(Icons.sports_tennis_rounded, color: colors.primary, size: 20),
                         AppSpacing.gapW8,
                         Text(
-                          'Vận Hành Tại Sân & Hạch Toán',
+                          'Vận Hành Tại Sân & Thu Phí',
                           style: AppTypography.titleSmall.bold.colored(colors.textPrimary),
                         ),
                       ],
@@ -1451,7 +1451,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                         shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
                       ),
                       icon: const Icon(Icons.calculate_outlined, size: 16),
-                      label: const Text('Hạch toán & VietQR'),
+                      label: const Text('Chia tiền & Thu phí'),
                       onPressed: () => context.push('/session/${session.id}/settlement'),
                     ),
                     OutlinedButton.icon(

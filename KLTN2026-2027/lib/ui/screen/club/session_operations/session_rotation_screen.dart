@@ -128,7 +128,7 @@ class SessionRotationScreen extends ConsumerWidget {
                   shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
                 ),
                 icon: const Icon(Icons.receipt_long_rounded),
-                label: const Text('Hạch Toán Cầu/Sân'),
+                label: const Text('Chia Tiền Buổi Chơi'),
                 onPressed: () => context.push('/session/$sessionId/settlement'),
               ),
             ),

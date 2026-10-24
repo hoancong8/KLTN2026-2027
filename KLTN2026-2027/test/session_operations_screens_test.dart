@@ -196,7 +196,7 @@ void main() {
     await tester.pumpWidget(buildTestableWidget(const SessionSettlementScreen(sessionId: 'session-1')));
     await tester.pumpAndSettle();
 
-    expect(find.text('Hạch Toán Cầu & Chia Tiền'), findsOneWidget);
+    expect(find.text('Tính Tiền Cầu & Sân'), findsOneWidget);
     expect(find.text('Tổng Chi Phí Buổi Chơi'), findsOneWidget);
     expect(find.text('440,000 đ'), findsOneWidget);
     expect(find.text('ĐÃ GẠCH NỢ'), findsOneWidget);
