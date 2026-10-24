@@ -262,7 +262,7 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
           ],
         ),
         content: Text(
-          'Khi tạm dừng hoạt động, câu lạc bộ sẽ ẩn khỏi radar tìm kiếm và thành viên không thể biểu quyết buổi chơi mới. Bạn có thể mở lại bất cứ lúc nào.',
+          'Khi tạm dừng hoạt động, câu lạc bộ sẽ ẩn khỏi radar tìm kiếm và thành viên không thể đăng ký buổi chơi mới. Bạn có thể mở lại bất cứ lúc nào.',
           style: AppTypography.bodyMedium.colored(colors.textMuted),
         ),
         actions: [
@@ -845,7 +845,7 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                           icon: Icons.account_balance_wallet_outlined,
                           children: [
                             Text(
-                              '1. Phương thức hạch toán & Làm tròn tiền lẻ',
+                              '1. Cách tính tiền & Làm tròn tiền lẻ',
                               style: AppTypography.labelMedium.bold.colored(colors.textPrimary),
                             ),
                             AppSpacing.gapH8,
@@ -1283,7 +1283,7 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                                       children: [
                                         Text('VietQR Tự Động Gạch Nợ', style: AppTypography.labelSmall.bold.colored(colors.textPrimary)),
                                         Text(
-                                          'Khi thành viên quét mã VietQR, hệ thống ngân hàng sẽ gửi Webhook để gạch nợ tự động 100%.',
+                                          'Khi thành viên quét mã VietQR, hệ thống ngân hàng sẽ gửi Webhook để tự động xác nhận đã chuyển khoản 100%.',
                                           style: AppTypography.bodySmall.colored(colors.textMuted),
                                         ),
                                       ],

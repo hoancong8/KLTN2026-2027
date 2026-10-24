@@ -371,7 +371,7 @@ class SessionSettlementScreen extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Ghi Nhận Vật Tư Tiêu Hao'),
+        title: const Text('Ghi Nhận Tiền Cầu & Nước Uống'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [

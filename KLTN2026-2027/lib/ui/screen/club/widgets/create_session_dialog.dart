@@ -319,7 +319,7 @@ class _CreateSessionDialogState extends ConsumerState<CreateSessionDialog> {
                       const Icon(Icons.info_outline, size: 16, color: AppColors.primary),
                       const SizedBox(width: 8),
                       Text(
-                        'Tổng sĩ số tối đa: $_maxPlayers slot chính thức',
+                        'Số lượng người tối đa: $_maxPlayers slot chính thức',
                         style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: colors.textPrimary),
                       ),
                     ],

@@ -603,7 +603,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
               ),
               AppSpacing.gapH8,
               Text(
-                'Quét mã qua app ngân hàng bất kỳ để hệ thống tự động gạch nợ.',
+                'Quét mã qua app ngân hàng bất kỳ để hệ thống tự động xác nhận đã đóng tiền.',
                 style: AppTypography.bodySmall.copyWith(color: colors.textMuted),
                 textAlign: TextAlign.center,
               ),
@@ -825,7 +825,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text('Tổng chi phí quyết toán:', style: AppTypography.bodyMedium.bold.colored(colors.textPrimary)),
+                              Text('Tổng tiền buổi chơi:', style: AppTypography.bodyMedium.bold.colored(colors.textPrimary)),
                               Text(
                                 '${NumberFormat('#,###').format(totalSessionCost)} đ',
                                 style: AppTypography.titleMedium.copyWith(fontWeight: FontWeight.bold, color: colors.primary),
@@ -889,7 +889,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                         if (context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text('Đã chốt sổ và ban hành quyết toán buổi chơi thành công (${NumberFormat('#,###').format(totalSessionCost)} đ)!'),
+                              content: Text('Đã chốt sổ và chốt tiền buổi chơi thành công (${NumberFormat('#,###').format(totalSessionCost)} đ)!'),
                               backgroundColor: colors.primary,
                               behavior: SnackBarBehavior.floating,
                             ),
@@ -1506,7 +1506,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                 ),
                 AppSpacing.gapH8,
                 Text(
-                  'Chi phí quyết toán cuối buổi = Tiền thuê sân + Tiền cầu bóc mới thực tế + Phụ phí.',
+                  'Tổng tiền cuối buổi = Tiền thuê sân + Tiền cầu bóc mới thực tế + Phụ phí.',
                   style: AppTypography.bodySmall.copyWith(color: colors.textSecondary),
                 ),
                 AppSpacing.gapH8,

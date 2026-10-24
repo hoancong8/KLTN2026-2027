@@ -521,7 +521,7 @@ class _ReportMobileState extends ConsumerState<ReportMobile> {
           ),
           AppSpacing.gapH4,
           Text(
-            'Hãy tham gia biểu quyết giữ chỗ tại các câu lạc bộ để lịch xuất hiện tại đây.',
+            'Hãy tham gia đăng ký giữ chỗ tại các câu lạc bộ để lịch xuất hiện tại đây.',
             textAlign: TextAlign.center,
             style: AppTypography.bodySmall.colored(colors.textMuted),
           ),

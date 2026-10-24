@@ -953,7 +953,7 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Các buổi giao lưu sắp tới của câu lạc bộ sẽ hiển thị ở đây để bạn biểu quyết giữ chỗ.',
+              'Các buổi giao lưu sắp tới của câu lạc bộ sẽ hiển thị ở đây để bạn đăng ký giữ chỗ.',
               style: AppTypography.bodySmall.colored(colors.textMuted),
               textAlign: TextAlign.center,
             ),
