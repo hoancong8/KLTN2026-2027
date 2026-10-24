@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import '../../../../../../app/theme/theme.dart';
-import 'package:kltn2026_2027/app/provider/localization_provider.dart';
+import 'package:kltn2026_2027/domain/entities/session/my_booking_item.dart';
 import 'package:kltn2026_2027/ui/screen/home/tab/report/report_vm/report_state.dart';
 import 'package:kltn2026_2027/ui/screen/home/tab/report/report_vm/report_vm.dart';
 
@@ -20,327 +22,510 @@ class _ReportMobileState extends ConsumerState<ReportMobile> {
 
   @override
   Widget build(BuildContext context) {
-    if (widget.state.isLoading) {
-      return Center(
-        child: CircularProgressIndicator(
-          valueColor: AlwaysStoppedAnimation<Color>(colors.primary),
-        ),
-      );
-    }
-
-    if (widget.state.error != null) {
-      return Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: colors.error.withValues(alpha: 0.1),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                Icons.error_outline,
-                color: colors.error,
-                size: 48,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              widget.state.error!,
-              style: TextStyle(color: colors.error),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton.icon(
-              onPressed: () =>
-                  ref.read(reportViewModelProvider.notifier).loadData(),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: colors.primary,
-                foregroundColor: AppColors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              icon: const Icon(Icons.refresh),
-              label: const Text('Thử lại'),
-            ),
-          ],
-        ),
-      );
-    }
+    final vm = ref.read(reportViewModelProvider.notifier);
+    final state = widget.state;
 
     return RefreshIndicator(
       color: colors.primary,
       backgroundColor: colors.surface,
-      onRefresh: () async {
-        await ref.read(reportViewModelProvider.notifier).loadData();
-      },
+      onRefresh: widget.onRefresh,
       child: ListView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.all(16),
+        padding: AppSpacing.allBase,
         children: [
-          _buildHeader(context),
-          const SizedBox(height: 20),
-          _buildSectionTitle(
-            context,
-            context.l10n.rep_dashboard,
-            Icons.dashboard_outlined,
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: _buildStatCard(
-                  icon: Icons.trending_up,
-                  value: '0',
-                  label: context.l10n.rep_revenue_report,
-                  color: colors.primary,
-                  onTap: () => _showComingSoon(context),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildStatCard(
-                  icon: Icons.receipt_long_outlined,
-                  value: '0',
-                  label: context.l10n.rep_orders,
-                  color: colors.secondary,
-                  onTap: () => _showComingSoon(context),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: _buildStatCard(
-                  icon: Icons.people_outline,
-                  value: '0',
-                  label: context.l10n.rep_client,
-                  color: colors.primaryLight,
-                  onTap: () => _showComingSoon(context),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildStatCard(
-                  icon: Icons.inventory_2_outlined,
-                  value: '0',
-                  label: context.l10n.rep_products,
-                  color: colors.accent,
-                  onTap: () => _showComingSoon(context),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 24),
-          _buildSectionTitle(
-            context,
-            context.l10n.rep_detailed_report,
-            Icons.analytics_outlined,
-          ),
-          const SizedBox(height: 12),
-          _buildReportItem(
-            icon: Icons.bar_chart,
-            title: context.l10n.rep_revenue_report,
-            subtitle: context.l10n.rep_revenue_over_time,
-            color: colors.primary,
-            onTap: () => _showComingSoon(context),
-          ),
-          const SizedBox(height: 12),
-          _buildReportItem(
-            icon: Icons.pie_chart_outline,
-            title: context.l10n.rep_expense_report,
-            subtitle: context.l10n.rep_operating_cost_analysis,
-            color: colors.secondary,
-            onTap: () => _showComingSoon(context),
-          ),
-          const SizedBox(height: 12),
-          _buildReportItem(
-            icon: Icons.show_chart,
-            title: context.l10n.rep_performance_report,
-            subtitle: context.l10n.rep_performance_analysis,
-            color: colors.primaryLight,
-            onTap: () => _showComingSoon(context),
-          ),
-          const SizedBox(height: 24),
+          // 1. Header Title & Stats
+          _buildSummaryCard(state),
+          AppSpacing.gapH16,
+
+          // 2. Month Calendar Card
+          _buildMonthCalendarCard(state, vm),
+          AppSpacing.gapH16,
+
+          // 3. Booked Sessions List Section
+          _buildBookingsHeader(state, vm),
+          AppSpacing.gapH12,
+
+          if (state.bookingsOnSelectedDate.isEmpty)
+            _buildEmptyBookings(state)
+          else
+            ...state.bookingsOnSelectedDate.map((b) => _buildBookingCard(b)),
+
+          AppSpacing.gapH32,
         ],
       ),
     );
   }
 
-  void _showComingSoon(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(context.l10n.com_feature_under_dev),
-        backgroundColor: colors.primary,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        duration: const Duration(seconds: 2),
-      ),
-    );
-  }
+  Widget _buildSummaryCard(ReportState state) {
+    final total = state.myBookings.length;
+    final confirmed = state.myBookings.where((b) => b.isConfirmed).length;
+    final waiting = state.myBookings.where((b) => b.isWaiting).length;
 
-  Widget _buildHeader(BuildContext context) {
-    return Row(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: colors.primary.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Icon(Icons.bar_chart, color: colors.primary, size: 24),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+    return Container(
+      padding: AppSpacing.allBase,
+      decoration: BoxDecoration(
+        color: colors.cardBackground,
+        borderRadius: AppRadius.card,
+        border: Border.all(color: colors.cardBorder),
+        boxShadow: context.isDark ? AppShadows.none : AppShadows.sm,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
             children: [
-              Text(
-                context.l10n.set_report,
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.w800,
-                  color: colors.textPrimary,
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: colors.primary.withValues(alpha: 0.12),
+                  borderRadius: AppRadius.borderSm,
                 ),
+                child: Icon(Icons.event_note_rounded, size: 20, color: colors.primary),
               ),
-              Text(
-                context.l10n.rep_data_analysis,
-                style: Theme.of(
-                  context,
-                ).textTheme.bodyMedium?.copyWith(color: colors.textMuted),
+              AppSpacing.gapW12,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Lịch Đăng Ký Tham Gia',
+                      style: AppTypography.titleMedium.bold.colored(colors.textPrimary),
+                    ),
+                    Text(
+                      'Theo dõi và quản lý các buổi sinh hoạt đã giữ chỗ',
+                      style: AppTypography.labelSmall.colored(colors.textMuted),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
-        ),
-      ],
+          AppSpacing.gapH16,
+          Row(
+            children: [
+              Expanded(
+                child: _buildMiniStat(
+                  'Tổng số suất',
+                  '$total',
+                  colors.primary,
+                  Icons.sports_tennis_rounded,
+                ),
+              ),
+              AppSpacing.gapW8,
+              Expanded(
+                child: _buildMiniStat(
+                  'Đã giữ chỗ',
+                  '$confirmed',
+                  colors.success,
+                  Icons.check_circle_outline_rounded,
+                ),
+              ),
+              AppSpacing.gapW8,
+              Expanded(
+                child: _buildMiniStat(
+                  'Hàng đợi',
+                  '$waiting',
+                  colors.warning,
+                  Icons.access_time_rounded,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
-  Widget _buildSectionTitle(BuildContext context, String title, IconData icon) {
+  Widget _buildMiniStat(String label, String value, Color color, IconData icon) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.08),
+        borderRadius: AppRadius.borderSm,
+        border: Border.all(color: color.withValues(alpha: 0.2)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, size: 14, color: color),
+              AppSpacing.gapW4,
+              Expanded(
+                child: Text(
+                  label,
+                  style: AppTypography.labelSmall.colored(color),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+          AppSpacing.gapH4,
+          Text(
+            value,
+            style: AppTypography.titleMedium.bold.colored(color),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMonthCalendarCard(ReportState state, ReportViewModel vm) {
+    final now = DateTime.now();
+    final focusedMonth = state.focusedMonth;
+    final totalDaysInMonth = DateTime(focusedMonth.year, focusedMonth.month + 1, 0).day;
+    final firstWeekday = DateTime(focusedMonth.year, focusedMonth.month, 1).weekday;
+    final leadingBlanks = (firstWeekday - 1) % 7;
+
+    // Group bookings in focused month by day
+    final Map<int, List<MyBookingItem>> bookingsByDay = {};
+    for (final b in state.bookingsInFocusedMonth) {
+      bookingsByDay.putIfAbsent(b.startTime.day, () => []).add(b);
+    }
+
+    const weekdays = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
+
+    return Container(
+      decoration: BoxDecoration(
+        color: colors.cardBackground,
+        borderRadius: AppRadius.card,
+        border: Border.all(color: colors.cardBorder),
+        boxShadow: context.isDark ? AppShadows.none : AppShadows.sm,
+      ),
+      padding: AppSpacing.allBase,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Month Header Row with Navigation
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: colors.primary.withValues(alpha: 0.12),
+                  borderRadius: AppRadius.borderSm,
+                ),
+                child: Icon(Icons.calendar_month_rounded, size: 18, color: colors.primary),
+              ),
+              AppSpacing.gapW8,
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Lịch Tháng ${DateFormat('MM/yyyy').format(focusedMonth)}',
+                    style: AppTypography.titleSmall.bold.colored(colors.textPrimary),
+                  ),
+                  Text(
+                    '${state.bookingsInFocusedMonth.length} buổi đã đăng ký',
+                    style: AppTypography.labelSmall.colored(colors.textMuted),
+                  ),
+                ],
+              ),
+              const Spacer(),
+              IconButton(
+                icon: Icon(Icons.chevron_left_rounded, size: 22, color: colors.textPrimary),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                onPressed: () => vm.changeMonth(-1),
+              ),
+              IconButton(
+                icon: Icon(Icons.chevron_right_rounded, size: 22, color: colors.textPrimary),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                onPressed: () => vm.changeMonth(1),
+              ),
+            ],
+          ),
+          AppSpacing.gapH12,
+
+          // Weekdays header
+          Row(
+            children: weekdays.map((label) {
+              final isWeekend = label == 'T7' || label == 'CN';
+              return Expanded(
+                child: Center(
+                  child: Text(
+                    label,
+                    style: AppTypography.labelSmall.bold.colored(
+                      isWeekend ? colors.warning : colors.textMuted,
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+          AppSpacing.gapH8,
+
+          // Calendar Grid
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final availableWidth = constraints.maxWidth;
+              final cellWidth = (availableWidth - 36) / 7;
+              final targetHeight = availableWidth > 500 ? 44.0 : 42.0;
+              final aspectRatio = (cellWidth / targetHeight).clamp(0.9, 3.5);
+
+              return GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: leadingBlanks + totalDaysInMonth,
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 7,
+                  mainAxisSpacing: 6,
+                  crossAxisSpacing: 6,
+                  childAspectRatio: aspectRatio,
+                ),
+                itemBuilder: (context, index) {
+                  if (index < leadingBlanks) {
+                    return const SizedBox.shrink();
+                  }
+
+                  final day = index - leadingBlanks + 1;
+                  final date = DateTime(focusedMonth.year, focusedMonth.month, day);
+                  final dayBookings = bookingsByDay[day] ?? [];
+                  final hasBookings = dayBookings.isNotEmpty;
+
+                  final isToday = date.year == now.year && date.month == now.month && date.day == now.day;
+                  final isSelected = state.selectedDate != null &&
+                      date.year == state.selectedDate!.year &&
+                      date.month == state.selectedDate!.month &&
+                      date.day == state.selectedDate!.day;
+
+                  Color bgColor = AppColors.transparent;
+                  Color textColor = colors.textPrimary;
+                  Border? border;
+
+                  if (isSelected) {
+                    bgColor = colors.primary;
+                    textColor = AppColors.white;
+                  } else if (hasBookings) {
+                    bgColor = colors.primary.withValues(alpha: 0.12);
+                    border = Border.all(color: colors.primary, width: 1.5);
+                    textColor = colors.primary;
+                  } else if (isToday) {
+                    border = Border.all(color: colors.primary.withValues(alpha: 0.5), width: 1);
+                  }
+
+                  return InkWell(
+                    onTap: () => vm.selectDate(date),
+                    borderRadius: AppRadius.borderSm,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: bgColor,
+                        borderRadius: AppRadius.borderSm,
+                        border: border,
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            '$day',
+                            style: AppTypography.labelMedium.bold.colored(textColor),
+                          ),
+                          if (hasBookings) ...[
+                            const SizedBox(height: 2),
+                            Container(
+                              width: 6,
+                              height: 6,
+                              decoration: BoxDecoration(
+                                color: isSelected ? AppColors.white : colors.primary,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBookingsHeader(ReportState state, ReportViewModel vm) {
+    final title = state.selectedDate != null
+        ? 'Buổi chơi ngày ${DateFormat('dd/MM/yyyy').format(state.selectedDate!)}'
+        : 'Tất cả buổi chơi trong tháng ${DateFormat('MM/yyyy').format(state.focusedMonth)}';
+
     return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: colors.primary.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Icon(icon, color: colors.primary, size: 18),
-        ),
-        const SizedBox(width: 10),
         Text(
-          title,
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.w700,
-            color: colors.textPrimary,
-          ),
+          '$title (${state.bookingsOnSelectedDate.length})',
+          style: AppTypography.titleSmall.bold.colored(colors.textPrimary),
         ),
+        if (state.selectedDate != null)
+          TextButton(
+            onPressed: () => vm.selectDate(state.selectedDate!),
+            style: TextButton.styleFrom(
+              padding: EdgeInsets.zero,
+              minimumSize: const Size(50, 30),
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+            child: Text(
+              'Xem cả tháng',
+              style: AppTypography.labelSmall.bold.colored(colors.primary),
+            ),
+          ),
       ],
     );
   }
 
-  Widget _buildStatCard({
-    required IconData icon,
-    required String value,
-    required String label,
-    required Color color,
-    VoidCallback? onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: colors.cardBackground,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: colors.cardBorder),
-        ),
+  Widget _buildBookingCard(MyBookingItem booking) {
+    final startStr = DateFormat('HH:mm').format(booking.startTime);
+    final endStr = DateFormat('HH:mm').format(booking.endTime);
+    final dateStr = DateFormat('EEEE, dd/MM/yyyy', 'vi').format(booking.startTime);
+    final isConfirmed = booking.isConfirmed;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: AppSpacing.sm),
+      decoration: BoxDecoration(
+        color: colors.cardBackground,
+        borderRadius: AppRadius.card,
+        border: Border.all(color: colors.cardBorder),
+        boxShadow: context.isDark ? AppShadows.none : AppShadows.sm,
+      ),
+      padding: AppSpacing.allBase,
+      child: InkWell(
+        onTap: () => context.push('/session/${booking.sessionId}'),
+        borderRadius: AppRadius.card,
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(10),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Avatar / Icon
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: colors.primary.withValues(alpha: 0.15),
+                    borderRadius: AppRadius.borderMd,
+                    image: (booking.clubAvatarUrl != null && booking.clubAvatarUrl!.isNotEmpty)
+                        ? DecorationImage(
+                            image: NetworkImage(booking.clubAvatarUrl!),
+                            fit: BoxFit.cover,
+                          )
+                        : null,
+                  ),
+                  child: (booking.clubAvatarUrl == null || booking.clubAvatarUrl!.isEmpty)
+                      ? Center(child: Icon(Icons.sports_tennis_rounded, color: colors.primary, size: 22))
+                      : null,
+                ),
+                AppSpacing.gapW12,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        booking.sessionTitle.isNotEmpty ? booking.sessionTitle : 'Buổi sinh hoạt cầu lông',
+                        style: AppTypography.titleSmall.bold.colored(colors.textPrimary),
+                      ),
+                      AppSpacing.gapH4,
+                      Row(
+                        children: [
+                          Icon(Icons.groups_rounded, size: 14, color: colors.textSecondary),
+                          AppSpacing.gapW4,
+                          Expanded(
+                            child: Text(
+                              booking.clubName,
+                              style: AppTypography.labelSmall.bold.colored(colors.textSecondary),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                // Status badge
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: (isConfirmed ? colors.success : colors.warning).withValues(alpha: 0.15),
+                    borderRadius: AppRadius.tag,
+                    border: Border.all(
+                      color: (isConfirmed ? colors.success : colors.warning).withValues(alpha: 0.3),
+                    ),
+                  ),
+                  child: Text(
+                    isConfirmed ? 'Đã giữ chỗ' : 'Hàng đợi #${booking.queueOrder}',
+                    style: AppTypography.labelSmall.bold.colored(
+                      isConfirmed ? colors.success : colors.warning,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            AppSpacing.gapH12,
+            Divider(height: 1, color: colors.cardBorder),
+            AppSpacing.gapH12,
+            Row(
+              children: [
+                Icon(Icons.access_time_rounded, size: 14, color: colors.primary),
+                AppSpacing.gapW4,
+                Text(
+                  '$startStr - $endStr, $dateStr',
+                  style: AppTypography.labelSmall.colored(colors.textPrimary),
+                ),
+              ],
+            ),
+            if (booking.courtLocation.isNotEmpty) ...[
+              AppSpacing.gapH4,
+              Row(
+                children: [
+                  Icon(Icons.location_on_outlined, size: 14, color: colors.textMuted),
+                  AppSpacing.gapW4,
+                  Expanded(
+                    child: Text(
+                      booking.courtLocation,
+                      style: AppTypography.labelSmall.colored(colors.textMuted),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
               ),
-              child: Icon(icon, color: color, size: 24),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              value,
-              style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.w800,
-                color: colors.textPrimary,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              style: TextStyle(fontSize: 13, color: colors.textMuted),
-              textAlign: TextAlign.center,
-            ),
+            ],
           ],
         ),
       ),
     );
   }
 
-  Widget _buildReportItem({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required Color color,
-    VoidCallback? onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: colors.cardBackground,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: colors.cardBorder),
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(icon, color: color, size: 24),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 15,
-                      color: colors.textPrimary,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    subtitle,
-                    style: TextStyle(fontSize: 13, color: colors.textMuted),
-                  ),
-                ],
-              ),
-            ),
-            Icon(Icons.chevron_right, color: colors.textMuted),
-          ],
-        ),
+  Widget _buildEmptyBookings(ReportState state) {
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.xxl),
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: colors.cardBackground,
+        borderRadius: AppRadius.card,
+        border: Border.all(color: colors.cardBorder),
+      ),
+      child: Column(
+        children: [
+          Icon(Icons.event_busy_rounded, size: 44, color: colors.textMuted),
+          AppSpacing.gapH12,
+          Text(
+            state.selectedDate != null
+                ? 'Không có lịch chơi trong ngày đã chọn'
+                : 'Chưa có lịch đăng ký nào trong tháng này',
+            style: AppTypography.titleSmall.bold.colored(colors.textSecondary),
+            textAlign: TextAlign.center,
+          ),
+          AppSpacing.gapH4,
+          Text(
+            'Hãy tham gia biểu quyết giữ chỗ tại các câu lạc bộ để lịch xuất hiện tại đây.',
+            textAlign: TextAlign.center,
+            style: AppTypography.bodySmall.colored(colors.textMuted),
+          ),
+        ],
       ),
     );
   }
