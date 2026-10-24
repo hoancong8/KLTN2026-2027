@@ -1461,7 +1461,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                         ),
                         icon: const Icon(Icons.how_to_reg_rounded, size: 16),
                         label: const Text('Điểm danh sân'),
-                        onPressed: () => context.push('/session//attendance'),
+                        onPressed: () => context.push('/session/${session.id}/attendance'),
                       ),
                       ElevatedButton.icon(
                         style: ElevatedButton.styleFrom(
@@ -1471,7 +1471,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                         ),
                         icon: const Icon(Icons.swap_horiz_rounded, size: 16),
                         label: const Text('Xoay tua sân'),
-                        onPressed: () => context.push('/session//rotation'),
+                        onPressed: () => context.push('/session/${session.id}/rotation'),
                       ),
                     ],
                     ElevatedButton.icon(
@@ -1482,7 +1482,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                       ),
                       icon: const Icon(Icons.calculate_outlined, size: 16),
                       label: const Text('Chia tiền & Thu phí'),
-                      onPressed: () => context.push('/session//settlement'),
+                      onPressed: () => context.push('/session/${session.id}/settlement'),
                     ),
                     if (session.status != SessionStatus.completed)
                       OutlinedButton.icon(
@@ -1493,7 +1493,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                         ),
                         icon: const Icon(Icons.star_outline_rounded, size: 16),
                         label: const Text('Đánh giá buổi chơi'),
-                        onPressed: () => context.push('/session//reviews'),
+                        onPressed: () => context.push('/session/${session.id}/reviews'),
                       ),
                   ],
                 ),

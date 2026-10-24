@@ -352,74 +352,97 @@ class SessionRotationScreen extends ConsumerWidget {
           AppSpacing.gapH12,
 
           // 2 Teams Layout
-          Row(
-            children: [
-              // Team A
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: colors.primary.withValues(alpha: 0.08),
-                    borderRadius: AppRadius.borderSm,
-                    border: Border.all(color: colors.primary.withValues(alpha: 0.2)),
+          if (court.state == 'Empty' || (court.teamA.isEmpty && court.teamB.isEmpty))
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: colors.surfaceSubtle,
+                borderRadius: AppRadius.borderSm,
+                border: Border.all(color: colors.cardBorder),
+              ),
+              child: Column(
+                children: [
+                  Icon(Icons.sports_tennis_rounded, size: 28, color: colors.textMuted),
+                  AppSpacing.gapH8,
+                  Text(
+                    'Sân đang trống, chờ đủ 4 người sẵn sàng trong hàng đợi...',
+                    style: AppTypography.bodySmall.colored(colors.textMuted),
+                    textAlign: TextAlign.center,
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text('ĐỘI 1', style: AppTypography.labelSmall.bold.colored(colors.primary)),
-                          Text('L${court.teamASkill}', style: AppTypography.labelSmall.colored(colors.textMuted)),
-                        ],
-                      ),
-                      const SizedBox(height: 6),
-                      ...court.teamA.map(
-                        (p) => Text('• ${p.fullName}',
-                            style: AppTypography.bodySmall.bold.colored(colors.textPrimary),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis),
-                      ),
-                    ],
+                ],
+              ),
+            )
+          else
+            Row(
+              children: [
+                // Team A
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: colors.primary.withValues(alpha: 0.08),
+                      borderRadius: AppRadius.borderSm,
+                      border: Border.all(color: colors.primary.withValues(alpha: 0.2)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text('ĐỘI 1', style: AppTypography.labelSmall.bold.colored(colors.primary)),
+                            Text('L${court.teamASkill}', style: AppTypography.labelSmall.colored(colors.textMuted)),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        ...court.teamA.map(
+                          (p) => Text('• ${p.fullName}',
+                              style: AppTypography.bodySmall.bold.colored(colors.textPrimary),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: Text('VS', style: AppTypography.titleSmall.bold.colored(colors.textMuted)),
-              ),
-              // Team B
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: colors.warning.withValues(alpha: 0.08),
-                    borderRadius: AppRadius.borderSm,
-                    border: Border.all(color: colors.warning.withValues(alpha: 0.2)),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text('ĐỘI 2', style: AppTypography.labelSmall.bold.colored(colors.warning)),
-                          Text('L${court.teamBSkill}', style: AppTypography.labelSmall.colored(colors.textMuted)),
-                        ],
-                      ),
-                      const SizedBox(height: 6),
-                      ...court.teamB.map(
-                        (p) => Text('• ${p.fullName}',
-                            style: AppTypography.bodySmall.bold.colored(colors.textPrimary),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis),
-                      ),
-                    ],
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  child: Text('VS', style: AppTypography.titleSmall.bold.colored(colors.textMuted)),
+                ),
+                // Team B
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: colors.warning.withValues(alpha: 0.08),
+                      borderRadius: AppRadius.borderSm,
+                      border: Border.all(color: colors.warning.withValues(alpha: 0.2)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text('ĐỘI 2', style: AppTypography.labelSmall.bold.colored(colors.warning)),
+                            Text('L${court.teamBSkill}', style: AppTypography.labelSmall.colored(colors.textMuted)),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        ...court.teamB.map(
+                          (p) => Text('• ${p.fullName}',
+                              style: AppTypography.bodySmall.bold.colored(colors.textPrimary),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
-          ),
+              ],
+            ),
           AppSpacing.gapH12,
 
           // Action Buttons with touch target >= 48dp
@@ -535,6 +558,17 @@ class SessionRotationScreen extends ConsumerWidget {
                 ),
                 child: Text('L${p.skillLevel}', style: AppTypography.labelSmall.colored(colors.primary)),
               ),
+              if (p.isResting) ...[
+                const SizedBox(width: 4),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                  decoration: BoxDecoration(
+                    color: colors.warning.withValues(alpha: 0.15),
+                    borderRadius: AppRadius.tag,
+                  ),
+                  child: Text('Nghỉ 5p', style: AppTypography.labelSmall.colored(colors.warning)),
+                ),
+              ],
             ],
           ),
         );

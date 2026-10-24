@@ -175,6 +175,7 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
       players: updatedPlayers,
     );
     _attendanceCache[sessionId] = updated;
+    _syncRotationWithAttendance(sessionId);
     return updated;
   }
 
@@ -206,6 +207,8 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
 
     final updatedPlayers = [...current.players, newPlayer];
     final present = updatedPlayers.where((p) => p.isCheckedIn).length;
+    final noShow = updatedPlayers.where((p) => p.isNoShow).length;
+    final notArrived = updatedPlayers.where((p) => p.isWaiting).length;
 
     final updated = SessionAttendanceSnapshot(
       sessionId: current.sessionId,
@@ -214,8 +217,8 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
       endTime: current.endTime,
       maxPlayers: current.maxPlayers,
       presentCount: present,
-      notArrivedCount: current.notArrivedCount,
-      noShowCount: current.noShowCount,
+      notArrivedCount: notArrived,
+      noShowCount: noShow,
       waitlistCount: current.waitlistCount,
       readyCount: present,
       canEdit: current.canEdit,
@@ -225,6 +228,7 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
       players: updatedPlayers,
     );
     _attendanceCache[sessionId] = updated;
+    _syncRotationWithAttendance(sessionId);
     return updated;
   }
 
@@ -260,6 +264,225 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
   // FR15 - FR17 / UC13: Điều phối xoay tua sân
   // ==========================================
 
+  RotationPlayer _toRotationPlayer(AttendancePlayer p, {int restSeconds = 0}) {
+    return RotationPlayer(
+      userId: p.userId,
+      fullName: p.fullName,
+      avatarUrl: p.avatarUrl,
+      skillLevel: p.skillLevel,
+      restSecondsLeft: restSeconds,
+    );
+  }
+
+  (List<RotationPlayer>, List<RotationPlayer>) _balanceTeams(List<RotationPlayer> four) {
+    if (four.length < 4) {
+      final mid = four.length ~/ 2;
+      return (four.sublist(0, mid), four.sublist(mid));
+    }
+    final p0 = four[0];
+    final p1 = four[1];
+    final p2 = four[2];
+    final p3 = four[3];
+
+    final diff1 = ((p0.skillLevel + p1.skillLevel) - (p2.skillLevel + p3.skillLevel)).abs();
+    final diff2 = ((p0.skillLevel + p2.skillLevel) - (p1.skillLevel + p3.skillLevel)).abs();
+    final diff3 = ((p0.skillLevel + p3.skillLevel) - (p1.skillLevel + p2.skillLevel)).abs();
+
+    if (diff1 <= diff2 && diff1 <= diff3) {
+      return ([p0, p1], [p2, p3]);
+    } else if (diff2 <= diff1 && diff2 <= diff3) {
+      return ([p0, p2], [p1, p3]);
+    } else {
+      return ([p0, p3], [p1, p2]);
+    }
+  }
+
+  SessionRotationSnapshot _buildRotationFromCheckedIn(String sessionId, List<AttendancePlayer> checkedIn) {
+    final courts = <CourtMatch>[];
+    final queue = <RotationPlayer>[];
+
+    if (checkedIn.length >= 4) {
+      final four = checkedIn.take(4).map((p) => _toRotationPlayer(p)).toList();
+      final balanced = _balanceTeams(four);
+      courts.add(CourtMatch(
+        matchId: 'match-01-$sessionId',
+        courtNumber: 1,
+        state: 'Playing',
+        startedAt: DateTime.now().subtract(const Duration(minutes: 8)),
+        teamA: balanced.$1,
+        teamB: balanced.$2,
+      ));
+    } else {
+      courts.add(CourtMatch(
+        matchId: 'match-01-$sessionId',
+        courtNumber: 1,
+        state: 'Empty',
+        teamA: const [],
+        teamB: const [],
+      ));
+    }
+
+    final hasCourt1 = courts.isNotEmpty && courts.first.state == 'Playing';
+    final remaining = checkedIn.skip(hasCourt1 ? 4 : 0).map((p) => _toRotationPlayer(p)).toList();
+
+    if (remaining.length >= 4) {
+      final four = remaining.take(4).toList();
+      final balanced = _balanceTeams(four);
+      courts.add(CourtMatch(
+        matchId: 'match-02-$sessionId',
+        courtNumber: 2,
+        state: 'Proposed',
+        teamA: balanced.$1,
+        teamB: balanced.$2,
+      ));
+      queue.addAll(remaining.skip(4));
+    } else {
+      courts.add(CourtMatch(
+        matchId: 'match-02-$sessionId',
+        courtNumber: 2,
+        state: 'Empty',
+        teamA: const [],
+        teamB: const [],
+      ));
+      queue.addAll(remaining);
+    }
+
+    final readyCount = queue.where((p) => !p.isResting).length;
+    final coolingCount = queue.where((p) => p.isResting).length;
+
+    final snapshot = SessionRotationSnapshot(
+      sessionId: sessionId,
+      sessionStatus: 'PLAYING',
+      rotationVersion: 1,
+      serverTime: DateTime.now(),
+      rotationStartedAt: DateTime.now().subtract(const Duration(minutes: 10)),
+      canInitialize: false,
+      canGenerateProposals: true,
+      readyCandidateCount: readyCount,
+      coolingDownCount: coolingCount,
+      courts: courts,
+      queuePlayers: queue,
+    );
+
+    _rotationCache[sessionId] = snapshot;
+    return snapshot;
+  }
+
+  SessionRotationSnapshot _syncRotationWithAttendance(String sessionId) {
+    final attendance = _attendanceCache[sessionId];
+    if (attendance == null) {
+      return _buildRotationFromCheckedIn(sessionId, const []);
+    }
+
+    final checkedInPlayers = attendance.players.where((p) => p.isCheckedIn).toList();
+    final checkedInMap = {for (final p in checkedInPlayers) p.userId: p};
+
+    final currentRotation = _rotationCache[sessionId];
+    if (currentRotation == null) {
+      return _buildRotationFromCheckedIn(sessionId, checkedInPlayers);
+    }
+
+    final updatedCourts = <CourtMatch>[];
+    final freedPlayers = <RotationPlayer>[];
+
+    for (final court in currentRotation.courts) {
+      if (court.isPlaying) {
+        updatedCourts.add(court);
+      } else if (court.isProposed) {
+        final allCourtPlayers = [...court.teamA, ...court.teamB];
+        final allStillCheckedIn = allCourtPlayers.every((p) => checkedInMap.containsKey(p.userId));
+        if (allStillCheckedIn) {
+          updatedCourts.add(court);
+        } else {
+          for (final p in allCourtPlayers) {
+            if (checkedInMap.containsKey(p.userId)) {
+              freedPlayers.add(p);
+            }
+          }
+          updatedCourts.add(CourtMatch(
+            matchId: court.matchId,
+            courtNumber: court.courtNumber,
+            state: 'Empty',
+            teamA: const [],
+            teamB: const [],
+          ));
+        }
+      } else {
+        updatedCourts.add(court);
+      }
+    }
+
+    final userIdsOnCourt = <String>{};
+    for (final c in updatedCourts) {
+      if (c.isPlaying || c.isProposed) {
+        for (final p in c.teamA) {
+          userIdsOnCourt.add(p.userId);
+        }
+        for (final p in c.teamB) {
+          userIdsOnCourt.add(p.userId);
+        }
+      }
+    }
+
+    final newQueue = <RotationPlayer>[];
+    final queuedUserIds = <String>{};
+
+    for (final p in [...currentRotation.queuePlayers, ...freedPlayers]) {
+      if (checkedInMap.containsKey(p.userId) && !userIdsOnCourt.contains(p.userId) && !queuedUserIds.contains(p.userId)) {
+        newQueue.add(p);
+        queuedUserIds.add(p.userId);
+      }
+    }
+
+    for (final p in checkedInPlayers) {
+      if (!userIdsOnCourt.contains(p.userId) && !queuedUserIds.contains(p.userId)) {
+        newQueue.add(_toRotationPlayer(p));
+        queuedUserIds.add(p.userId);
+      }
+    }
+
+    final finalCourts = <CourtMatch>[];
+    for (final court in updatedCourts) {
+      final readyInQueue = newQueue.where((p) => !p.isResting).toList();
+      if (court.state == 'Empty' && readyInQueue.length >= 4) {
+        final four = readyInQueue.take(4).toList();
+        for (final p in four) {
+          newQueue.removeWhere((q) => q.userId == p.userId);
+        }
+        final balanced = _balanceTeams(four);
+        finalCourts.add(CourtMatch(
+          matchId: 'match-${court.courtNumber}-${DateTime.now().millisecondsSinceEpoch}',
+          courtNumber: court.courtNumber,
+          state: 'Proposed',
+          teamA: balanced.$1,
+          teamB: balanced.$2,
+        ));
+      } else {
+        finalCourts.add(court);
+      }
+    }
+
+    final readyCount = newQueue.where((p) => !p.isResting).length;
+    final coolingCount = newQueue.where((p) => p.isResting).length;
+
+    final snapshot = SessionRotationSnapshot(
+      sessionId: sessionId,
+      sessionStatus: 'PLAYING',
+      rotationVersion: currentRotation.rotationVersion + 1,
+      serverTime: DateTime.now(),
+      rotationStartedAt: currentRotation.rotationStartedAt ?? DateTime.now(),
+      canInitialize: false,
+      canGenerateProposals: true,
+      readyCandidateCount: readyCount,
+      coolingDownCount: coolingCount,
+      courts: finalCourts,
+      queuePlayers: newQueue,
+    );
+
+    _rotationCache[sessionId] = snapshot;
+    return snapshot;
+  }
+
   @override
   Future<SessionRotationSnapshot> getRotation(String sessionId) async {
     try {
@@ -267,53 +490,8 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
       if (res.statusCode == 200 && res.data != null) {}
     } catch (_) {}
 
-    if (!_rotationCache.containsKey(sessionId)) {
-      _rotationCache[sessionId] = SessionRotationSnapshot(
-        sessionId: sessionId,
-        sessionStatus: 'PLAYING',
-        rotationVersion: 1,
-        serverTime: DateTime.now(),
-        rotationStartedAt: DateTime.now().subtract(const Duration(minutes: 10)),
-        canInitialize: false,
-        canGenerateProposals: true,
-        readyCandidateCount: 2,
-        coolingDownCount: 0,
-        courts: [
-          CourtMatch(
-            matchId: 'match-01',
-            courtNumber: 1,
-            state: 'Playing',
-            startedAt: DateTime.now().subtract(const Duration(minutes: 8)),
-            teamA: [
-              const RotationPlayer(userId: 'u1', fullName: 'Nguyễn Văn An', skillLevel: 4),
-              const RotationPlayer(userId: 'u2', fullName: 'Trần Minh Đức', skillLevel: 3),
-            ],
-            teamB: [
-              const RotationPlayer(userId: 'u3', fullName: 'Lê Hoàng Nam', skillLevel: 4),
-              const RotationPlayer(userId: 'u4', fullName: 'Phạm Quỳnh Anh', skillLevel: 3),
-            ],
-          ),
-          const CourtMatch(
-            matchId: 'match-02',
-            courtNumber: 2,
-            state: 'Proposed',
-            teamA: [
-              RotationPlayer(userId: 'u5', fullName: 'Vũ Quốc Bảo', skillLevel: 5),
-              RotationPlayer(userId: 'u6', fullName: 'Đặng Tuấn Kiệt', skillLevel: 3),
-            ],
-            teamB: [
-              RotationPlayer(userId: 'u7', fullName: 'Khách Walk-in 1', skillLevel: 4),
-              RotationPlayer(userId: 'u8', fullName: 'Khách Walk-in 2', skillLevel: 4),
-            ],
-          ),
-        ],
-        queuePlayers: [
-          const RotationPlayer(userId: 'u9', fullName: 'Đỗ Hữu Thắng', skillLevel: 3),
-          const RotationPlayer(userId: 'u10', fullName: 'Hoàng Mai Phương', skillLevel: 2),
-        ],
-      );
-    }
-    return _rotationCache[sessionId]!;
+    await getAttendance(sessionId);
+    return _syncRotationWithAttendance(sessionId);
   }
 
   @override
@@ -329,7 +507,7 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
     try {
       await dio.post('/api/v1/sessions/$sessionId/rotation/proposals');
     } catch (_) {}
-    return getRotation(sessionId);
+    return _syncRotationWithAttendance(sessionId);
   }
 
   @override
@@ -383,21 +561,36 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
     } catch (_) {}
 
     final current = await getRotation(sessionId);
+    final court = current.courts.firstWhere(
+      (c) => c.matchId == matchId,
+      orElse: () => current.courts.first,
+    );
+
+    final finishedPlayers = [...court.teamA, ...court.teamB].map((p) => RotationPlayer(
+      userId: p.userId,
+      fullName: p.fullName,
+      avatarUrl: p.avatarUrl,
+      skillLevel: p.skillLevel,
+      lastFinishedAt: DateTime.now(),
+      restSecondsLeft: 300,
+    )).toList();
+
     final updatedCourts = current.courts.map((c) {
       if (c.matchId == matchId) {
         return CourtMatch(
           matchId: c.matchId,
           courtNumber: c.courtNumber,
-          state: 'Finished',
-          startedAt: c.startedAt,
-          teamA: c.teamA,
-          teamB: c.teamB,
+          state: 'Empty',
+          teamA: const [],
+          teamB: const [],
         );
       }
       return c;
     }).toList();
 
-    final updated = SessionRotationSnapshot(
+    final newQueue = [...current.queuePlayers, ...finishedPlayers];
+
+    _rotationCache[sessionId] = SessionRotationSnapshot(
       sessionId: current.sessionId,
       sessionStatus: current.sessionStatus,
       rotationVersion: current.rotationVersion + 1,
@@ -405,13 +598,13 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
       rotationStartedAt: current.rotationStartedAt,
       canInitialize: false,
       canGenerateProposals: true,
-      readyCandidateCount: current.readyCandidateCount + 4,
-      coolingDownCount: current.coolingDownCount,
+      readyCandidateCount: newQueue.where((p) => !p.isResting).length,
+      coolingDownCount: newQueue.where((p) => p.isResting).length,
       courts: updatedCourts,
-      queuePlayers: current.queuePlayers,
+      queuePlayers: newQueue,
     );
-    _rotationCache[sessionId] = updated;
-    return updated;
+
+    return _syncRotationWithAttendance(sessionId);
   }
 
   // ==========================================

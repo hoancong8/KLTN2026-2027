@@ -11,19 +11,21 @@ import '../../../../app/theme/theme.dart';
 import '../../../../domain/entities/session/session_attendance.dart';
 import '../../../../widget/app_shimmer.dart';
 import '../../../../widget/app_status_badge.dart';
+import 'session_rotation_screen.dart';
 
 final sessionAttendanceNotifierProvider =
     StateNotifierProvider.autoDispose.family<SessionAttendanceNotifier, AsyncValue<SessionAttendanceSnapshot>, String>(
         (ref, sessionId) {
   final repo = ref.watch(sessionOperationsRepositoryProvider);
-  return SessionAttendanceNotifier(repo, sessionId);
+  return SessionAttendanceNotifier(repo, sessionId, ref);
 });
 
 class SessionAttendanceNotifier extends StateNotifier<AsyncValue<SessionAttendanceSnapshot>> {
   final dynamic _repo;
   final String sessionId;
+  final Ref ref;
 
-  SessionAttendanceNotifier(this._repo, this.sessionId) : super(const AsyncValue.loading()) {
+  SessionAttendanceNotifier(this._repo, this.sessionId, this.ref) : super(const AsyncValue.loading()) {
     loadAttendance();
   }
 
@@ -45,6 +47,7 @@ class SessionAttendanceNotifier extends StateNotifier<AsyncValue<SessionAttendan
         status: status,
       );
       state = AsyncValue.data(updated);
+      ref.invalidate(sessionRotationNotifierProvider(sessionId));
     } catch (e, st) {
       state = AsyncValue.error(e, st);
     }
@@ -58,6 +61,7 @@ class SessionAttendanceNotifier extends StateNotifier<AsyncValue<SessionAttendan
         phoneNumber: phone,
       );
       state = AsyncValue.data(updated);
+      ref.invalidate(sessionRotationNotifierProvider(sessionId));
     } catch (e, st) {
       state = AsyncValue.error(e, st);
     }
@@ -67,6 +71,7 @@ class SessionAttendanceNotifier extends StateNotifier<AsyncValue<SessionAttendan
     try {
       final updated = await _repo.completeAttendance(sessionId);
       state = AsyncValue.data(updated);
+      ref.invalidate(sessionRotationNotifierProvider(sessionId));
     } catch (e, st) {
       state = AsyncValue.error(e, st);
     }
