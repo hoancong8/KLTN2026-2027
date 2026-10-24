@@ -1241,6 +1241,13 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                             TextFormField(
                               controller: _bankAccountController,
                               keyboardType: TextInputType.number,
+                              validator: (v) {
+                                if (v == null || v.trim().isEmpty) return 'Vui lòng nhập số tài khoản';
+                                if (!RegExp(r'^\d{6,20}$').hasMatch(v.trim())) {
+                                  return 'Số tài khoản phải gồm 6–20 chữ số';
+                                }
+                                return null;
+                              },
                               style: AppTypography.bodyMedium.colored(colors.textPrimary),
                               decoration: InputDecoration(
                                 hintText: 'Ví dụ: 1029384756',
@@ -1256,6 +1263,11 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                             TextFormField(
                               controller: _bankHolderController,
                               textCapitalization: TextCapitalization.characters,
+                              validator: (v) {
+                                if (v == null || v.trim().isEmpty) return 'Vui lòng nhập tên chủ tài khoản';
+                                if (v.trim().length < 3) return 'Tên chủ tài khoản tối thiểu 3 ký tự';
+                                return null;
+                              },
                               style: AppTypography.bodyMedium.colored(colors.textPrimary),
                               decoration: InputDecoration(
                                 hintText: 'Ví dụ: NGUYEN VAN A',

@@ -1,6 +1,7 @@
 // lib/ui/screen/club/session_operations/session_attendance_screen.dart
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:go_router/go_router.dart';
@@ -8,6 +9,8 @@ import 'package:intl/intl.dart';
 import '../../../../app/provider.dart';
 import '../../../../app/theme/theme.dart';
 import '../../../../domain/entities/session/session_attendance.dart';
+import '../../../../widget/app_shimmer.dart';
+import '../../../../widget/app_status_badge.dart';
 
 final sessionAttendanceNotifierProvider =
     StateNotifierProvider.autoDispose.family<SessionAttendanceNotifier, AsyncValue<SessionAttendanceSnapshot>, String>(
@@ -113,125 +116,164 @@ class SessionAttendanceScreen extends ConsumerWidget {
         icon: const Icon(Icons.person_add_rounded),
         label: const Text('Thêm khách vãng lai'),
       ),
-      body: asyncState.when(
-        loading: () => Center(child: CircularProgressIndicator(color: colors.primary)),
-        error: (err, _) => Center(child: Text('Lỗi: $err')),
-        data: (snapshot) {
-          final timeStr =
-              '${DateFormat('HH:mm').format(snapshot.startTime)} - ${DateFormat('HH:mm').format(snapshot.endTime)}';
-
-          return RefreshIndicator(
-            onRefresh: vm.loadAttendance,
-            color: colors.primary,
-            child: ListView(
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 800),
+          child: asyncState.when(
+            loading: () => ListView(
               padding: AppSpacing.allBase,
               children: [
-                // 1. Overview Banner
-                Container(
-                  padding: AppSpacing.allBase,
-                  decoration: BoxDecoration(
-                    color: colors.cardBackground,
-                    borderRadius: AppRadius.card,
-                    border: Border.all(color: colors.cardBorder),
-                    boxShadow: AppShadows.sm,
-                  ),
-                  child: Column(
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Row(
-                            children: [
-                              Icon(Icons.access_time_filled_rounded, size: 18, color: colors.primary),
-                              AppSpacing.gapW8,
-                              Text(timeStr, style: AppTypography.titleSmall.bold.colored(colors.textPrimary)),
-                            ],
-                          ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                            decoration: BoxDecoration(
-                              color: snapshot.isCompleted
-                                  ? colors.success.withValues(alpha: 0.15)
-                                  : colors.warning.withValues(alpha: 0.15),
-                              borderRadius: AppRadius.tag,
-                            ),
-                            child: Text(
-                              snapshot.isCompleted ? 'Đã hoàn tất điểm danh' : 'Đang mở điểm danh',
-                              style: AppTypography.labelSmall.bold.colored(
-                                snapshot.isCompleted ? colors.success : colors.warning,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      AppSpacing.gapH16,
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _buildMetricTile(context, 'Có mặt', '${snapshot.presentCount}', colors.success),
-                          ),
-                          AppSpacing.gapW8,
-                          Expanded(
-                            child: _buildMetricTile(context, 'Chưa đến', '${snapshot.notArrivedCount}', colors.warning),
-                          ),
-                          AppSpacing.gapW8,
-                          Expanded(
-                            child: _buildMetricTile(context, 'Báo vắng', '${snapshot.noShowCount}', colors.error),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
+                AppShimmer.card(height: 120),
                 AppSpacing.gapH16,
-
-                // 2. Action to Switch to Rotation or Complete
-                if (snapshot.canStartRotation) ...[
+                AppShimmer.line(width: 180, height: 20),
+                AppSpacing.gapH12,
+                AppShimmer.card(height: 72),
+                AppSpacing.gapH8,
+                AppShimmer.card(height: 72),
+                AppSpacing.gapH8,
+                AppShimmer.card(height: 72),
+              ],
+            ),
+            error: (err, _) => Padding(
+              padding: AppSpacing.allXl,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.error_outline_rounded, size: 48, color: colors.error),
+                  AppSpacing.gapH12,
+                  Text('Không thể tải điểm danh', style: AppTypography.titleMedium.bold.colored(colors.textPrimary)),
+                  AppSpacing.gapH4,
+                  Text('$err', style: AppTypography.bodySmall.colored(colors.textMuted), textAlign: TextAlign.center),
+                  AppSpacing.gapH16,
                   ElevatedButton.icon(
+                    onPressed: vm.loadAttendance,
+                    icon: const Icon(Icons.refresh_rounded, size: 18),
+                    label: const Text('Thử lại'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: colors.primary,
                       foregroundColor: AppColors.white,
-                      minimumSize: const Size(double.infinity, 48),
-                      shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                      minimumSize: const Size(120, 44),
                     ),
-                    icon: const Icon(Icons.swap_horiz_rounded),
-                    label: const Text('Bàn Điều Phối Xoay Tua Sân'),
-                    onPressed: () {
-                      context.push('/session/$sessionId/rotation');
-                    },
                   ),
-                  AppSpacing.gapH16,
                 ],
+              ),
+            ),
+            data: (snapshot) {
+              final timeStr =
+                  '${DateFormat('HH:mm').format(snapshot.startTime)} - ${DateFormat('HH:mm').format(snapshot.endTime)}';
 
-                // 3. Players List
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              return RefreshIndicator(
+                onRefresh: vm.loadAttendance,
+                color: colors.primary,
+                child: ListView(
+                  padding: AppSpacing.allBase,
                   children: [
-                    Text('Danh sách tay vợt (${snapshot.players.length})',
-                        style: AppTypography.titleSmall.bold.colored(colors.textPrimary)),
-                    if (!snapshot.isCompleted)
-                      TextButton.icon(
-                        icon: const Icon(Icons.check_circle_outline_rounded, size: 16),
-                        label: const Text('Khóa điểm danh'),
-                        onPressed: () async {
-                          await vm.complete();
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Đã hoàn tất lượt điểm danh ban đầu!')),
-                            );
-                          }
+                    // 1. Overview Banner
+                    Container(
+                      padding: AppSpacing.allBase,
+                      decoration: BoxDecoration(
+                        color: colors.cardBackground,
+                        borderRadius: AppRadius.card,
+                        border: Border.all(color: colors.cardBorder),
+                        boxShadow: AppShadows.sm,
+                      ),
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(Icons.access_time_filled_rounded, size: 18, color: colors.primary),
+                                  AppSpacing.gapW8,
+                                  Text(timeStr, style: AppTypography.titleSmall.bold.colored(colors.textPrimary)),
+                                ],
+                              ),
+                              snapshot.isCompleted
+                                  ? const AppStatusBadge.success(label: 'Đã hoàn tất điểm danh')
+                                  : const AppStatusBadge.warning(label: 'Đang mở điểm danh'),
+                            ],
+                          ),
+                          AppSpacing.gapH16,
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _buildMetricTile(context, 'Có mặt', '${snapshot.presentCount}', colors.success),
+                              ),
+                              AppSpacing.gapW8,
+                              Expanded(
+                                child: _buildMetricTile(context, 'Chưa đến', '${snapshot.notArrivedCount}', colors.warning),
+                              ),
+                              AppSpacing.gapW8,
+                              Expanded(
+                                child: _buildMetricTile(context, 'Báo vắng', '${snapshot.noShowCount}', colors.error),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    AppSpacing.gapH16,
+
+                    // 2. Action to Switch to Rotation or Complete
+                    if (snapshot.canStartRotation) ...[
+                      ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: colors.primary,
+                          foregroundColor: AppColors.white,
+                          minimumSize: const Size(double.infinity, 48),
+                          shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                        ),
+                        icon: const Icon(Icons.swap_horiz_rounded),
+                        label: const Text('Bàn Điều Phối Xoay Tua Sân'),
+                        onPressed: () {
+                          HapticFeedback.lightImpact();
+                          context.push('/session/$sessionId/rotation');
                         },
                       ),
+                      AppSpacing.gapH16,
+                    ],
+
+                    // 3. Players List
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('Danh sách tay vợt (${snapshot.players.length})',
+                            style: AppTypography.titleSmall.bold.colored(colors.textPrimary)),
+                        if (!snapshot.isCompleted)
+                          TextButton.icon(
+                            icon: const Icon(Icons.check_circle_outline_rounded, size: 16),
+                            label: const Text('Khóa điểm danh'),
+                            onPressed: () => _confirmCompleteAttendance(context, vm),
+                          ),
+                      ],
+                    ),
+                    AppSpacing.gapH8,
+
+                    if (snapshot.players.isEmpty)
+                      Container(
+                        padding: AppSpacing.allXl,
+                        alignment: Alignment.center,
+                        child: Column(
+                          children: [
+                            Icon(Icons.group_off_rounded, size: 48, color: colors.textMuted),
+                            AppSpacing.gapH12,
+                            Text(
+                              'Chưa có thành viên nào đăng ký buổi chơi này',
+                              style: AppTypography.bodyMedium.colored(colors.textMuted),
+                            ),
+                          ],
+                        ),
+                      )
+                    else
+                      ...snapshot.players.map((p) => _buildPlayerCard(context, p, vm)),
+                    const SizedBox(height: 80),
                   ],
                 ),
-                AppSpacing.gapH8,
-
-                ...snapshot.players.map((p) => _buildPlayerCard(context, p, vm)),
-                const SizedBox(height: 80),
-              ],
-            ),
-          );
-        },
+              );
+            },
+          ),
+        ),
       ),
     );
   }
@@ -315,23 +357,28 @@ class SessionAttendanceScreen extends ConsumerWidget {
             ),
           ),
           AppSpacing.gapW8,
-          // Quick Toggle Action Chips
+          // Quick Toggle Action Chips (Touch target >= 44dp)
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               InkWell(
-                onTap: () => vm.markStatus(player.userId, 'CHECKED_IN'),
+                onTap: () {
+                  HapticFeedback.lightImpact();
+                  vm.markStatus(player.userId, 'CHECKED_IN');
+                },
                 borderRadius: AppRadius.tag,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  constraints: const BoxConstraints(minHeight: 44, minWidth: 68),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                   decoration: BoxDecoration(
                     color: isCheckedIn ? colors.success : colors.success.withValues(alpha: 0.1),
                     borderRadius: AppRadius.tag,
                     border: Border.all(color: colors.success.withValues(alpha: 0.4)),
                   ),
                   child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.check_rounded, size: 14, color: isCheckedIn ? AppColors.white : colors.success),
+                      Icon(Icons.check_rounded, size: 16, color: isCheckedIn ? AppColors.white : colors.success),
                       const SizedBox(width: 4),
                       Text(
                         'Có mặt',
@@ -341,20 +388,22 @@ class SessionAttendanceScreen extends ConsumerWidget {
                   ),
                 ),
               ),
-              const SizedBox(width: 6),
+              const SizedBox(width: 8),
               InkWell(
-                onTap: () => vm.markStatus(player.userId, 'NO_SHOW'),
+                onTap: () => _confirmMarkNoShow(context, player, vm),
                 borderRadius: AppRadius.tag,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  constraints: const BoxConstraints(minHeight: 44, minWidth: 64),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                   decoration: BoxDecoration(
                     color: isNoShow ? colors.error : colors.error.withValues(alpha: 0.1),
                     borderRadius: AppRadius.tag,
                     border: Border.all(color: colors.error.withValues(alpha: 0.4)),
                   ),
                   child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.close_rounded, size: 14, color: isNoShow ? AppColors.white : colors.error),
+                      Icon(Icons.close_rounded, size: 16, color: isNoShow ? AppColors.white : colors.error),
                       const SizedBox(width: 4),
                       Text(
                         'Vắng',
@@ -365,6 +414,71 @@ class SessionAttendanceScreen extends ConsumerWidget {
                 ),
               ),
             ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _confirmMarkNoShow(BuildContext context, AttendancePlayer player, SessionAttendanceNotifier vm) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Xác nhận báo vắng'),
+        content: Text(
+          'Đánh dấu "${player.fullName}" vắng mặt? Hệ thống sẽ giải phóng suất và loại khỏi danh sách xoay tua.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Hủy'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: context.colors.error,
+              foregroundColor: AppColors.white,
+            ),
+            onPressed: () {
+              HapticFeedback.mediumImpact();
+              vm.markStatus(player.userId, 'NO_SHOW');
+              Navigator.of(ctx).pop();
+            },
+            child: const Text('Xác nhận vắng'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _confirmCompleteAttendance(BuildContext context, SessionAttendanceNotifier vm) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Khóa lượt điểm danh ban đầu'),
+        content: const Text(
+          'Xác nhận hoàn tất lượt điểm danh? Các tay vợt có mặt sẽ được nạp vào hàng đợi xoay tua.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Hủy'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: context.colors.primary,
+              foregroundColor: AppColors.white,
+            ),
+            onPressed: () async {
+              HapticFeedback.mediumImpact();
+              Navigator.of(ctx).pop();
+              await vm.complete();
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Đã hoàn tất lượt điểm danh ban đầu!')),
+                );
+              }
+            },
+            child: const Text('Khóa điểm danh'),
           ),
         ],
       ),
@@ -401,6 +515,7 @@ class SessionAttendanceScreen extends ConsumerWidget {
           ElevatedButton(
             onPressed: () {
               if (nameCtrl.text.trim().isNotEmpty) {
+                HapticFeedback.lightImpact();
                 vm.addWalkIn(nameCtrl.text.trim(), phoneCtrl.text.trim());
                 Navigator.of(ctx).pop();
               }

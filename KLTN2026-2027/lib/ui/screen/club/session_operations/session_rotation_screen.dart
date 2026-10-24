@@ -1,12 +1,16 @@
 // lib/ui/screen/club/session_operations/session_rotation_screen.dart
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../app/consts/app_dimens.dart';
 import '../../../../app/provider.dart';
 import '../../../../app/theme/theme.dart';
 import '../../../../domain/entities/session/session_rotation.dart';
+import '../../../../widget/app_shimmer.dart';
+import '../../../../widget/app_status_badge.dart';
 
 final sessionRotationNotifierProvider =
     StateNotifierProvider.autoDispose.family<SessionRotationNotifier, AsyncValue<SessionRotationSnapshot>, String>(
@@ -111,6 +115,7 @@ class SessionRotationScreen extends ConsumerWidget {
                   foregroundColor: colors.primary,
                   side: BorderSide(color: colors.primary),
                   padding: const EdgeInsets.symmetric(vertical: 12),
+                  minimumSize: const Size(0, 48),
                   shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
                 ),
                 icon: const Icon(Icons.how_to_reg_rounded),
@@ -125,6 +130,7 @@ class SessionRotationScreen extends ConsumerWidget {
                   backgroundColor: colors.primary,
                   foregroundColor: AppColors.white,
                   padding: const EdgeInsets.symmetric(vertical: 12),
+                  minimumSize: const Size(0, 48),
                   shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
                 ),
                 icon: const Icon(Icons.receipt_long_rounded),
@@ -135,36 +141,110 @@ class SessionRotationScreen extends ConsumerWidget {
           ],
         ),
       ),
-      body: asyncState.when(
-        loading: () => Center(child: CircularProgressIndicator(color: colors.primary)),
-        error: (err, _) => Center(child: Text('Lỗi: $err')),
-        data: (snapshot) {
-          return RefreshIndicator(
-            onRefresh: vm.loadRotation,
-            color: colors.primary,
-            child: ListView(
-              padding: AppSpacing.allBase,
-              children: [
-                // 1. Live Rotation Status Banner
-                _buildLiveStatusBanner(context, snapshot, vm),
-                AppSpacing.gapH16,
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final isTablet = constraints.maxWidth >= AppDimens.tabletBreakpoint;
 
-                // 2. Courts & Matches
-                Text('Trạng thái các sân thi đấu (${snapshot.courts.length} sân)',
-                    style: AppTypography.titleSmall.bold.colored(colors.textPrimary)),
-                AppSpacing.gapH8,
+          return Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 1000),
+              child: asyncState.when(
+                loading: () => ListView(
+                  padding: AppSpacing.allBase,
+                  children: [
+                    AppShimmer.card(height: 90),
+                    AppSpacing.gapH16,
+                    AppShimmer.line(width: 220, height: 20),
+                    AppSpacing.gapH12,
+                    AppShimmer.card(height: 180),
+                    AppSpacing.gapH16,
+                    AppShimmer.card(height: 180),
+                  ],
+                ),
+                error: (err, _) => Padding(
+                  padding: AppSpacing.allXl,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.error_outline_rounded, size: 48, color: colors.error),
+                      AppSpacing.gapH12,
+                      Text('Không thể tải bàn xoay tua',
+                          style: AppTypography.titleMedium.bold.colored(colors.textPrimary)),
+                      AppSpacing.gapH4,
+                      Text('$err', style: AppTypography.bodySmall.colored(colors.textMuted), textAlign: TextAlign.center),
+                      AppSpacing.gapH16,
+                      ElevatedButton.icon(
+                        onPressed: vm.loadRotation,
+                        icon: const Icon(Icons.refresh_rounded, size: 18),
+                        label: const Text('Thử lại'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: colors.primary,
+                          foregroundColor: AppColors.white,
+                          minimumSize: const Size(120, 44),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                data: (snapshot) {
+                  return RefreshIndicator(
+                    onRefresh: vm.loadRotation,
+                    color: colors.primary,
+                    child: ListView(
+                      padding: AppSpacing.allBase,
+                      children: [
+                        // 1. Live Rotation Status Banner
+                        _buildLiveStatusBanner(context, snapshot, vm),
+                        AppSpacing.gapH16,
 
-                ...snapshot.courts.map((court) => _buildCourtCard(context, court, vm)),
-                AppSpacing.gapH16,
+                        // 2. Courts & Matches
+                        Text('Trạng thái các sân thi đấu (${snapshot.courts.length} sân)',
+                            style: AppTypography.titleSmall.bold.colored(colors.textPrimary)),
+                        AppSpacing.gapH8,
 
-                // 3. Resting / Waiting Queue
-                Text('Hàng đợi sẵn sàng vào sân (${snapshot.queuePlayers.length})',
-                    style: AppTypography.titleSmall.bold.colored(colors.textPrimary)),
-                AppSpacing.gapH8,
-                _buildQueueSection(context, snapshot.queuePlayers),
+                        if (snapshot.courts.isEmpty)
+                          Container(
+                            padding: AppSpacing.allXl,
+                            alignment: Alignment.center,
+                            child: Column(
+                              children: [
+                                Icon(Icons.sports_tennis_rounded, size: 48, color: colors.textMuted),
+                                AppSpacing.gapH12,
+                                Text(
+                                  'Chưa có sân thi đấu nào được thiết lập cho buổi chơi này',
+                                  style: AppTypography.bodyMedium.colored(colors.textMuted),
+                                ),
+                              ],
+                            ),
+                          )
+                        else if (isTablet && snapshot.courts.length > 1)
+                          Wrap(
+                            spacing: 16,
+                            runSpacing: 16,
+                            children: snapshot.courts.map((court) {
+                              final cardWidth = (constraints.maxWidth - 48) / 2;
+                              return SizedBox(
+                                width: cardWidth,
+                                child: _buildCourtCard(context, court, vm),
+                              );
+                            }).toList(),
+                          )
+                        else
+                          ...snapshot.courts.map((court) => _buildCourtCard(context, court, vm)),
+                        AppSpacing.gapH16,
 
-                AppSpacing.gapH48,
-              ],
+                        // 3. Resting / Waiting Queue
+                        Text('Hàng đợi sẵn sàng vào sân (${snapshot.queuePlayers.length})',
+                            style: AppTypography.titleSmall.bold.colored(colors.textPrimary)),
+                        AppSpacing.gapH8,
+                        _buildQueueSection(context, snapshot.queuePlayers),
+
+                        AppSpacing.gapH48,
+                      ],
+                    ),
+                  );
+                },
+              ),
             ),
           );
         },
@@ -229,14 +309,13 @@ class SessionRotationScreen extends ConsumerWidget {
     final isPlaying = court.isPlaying;
     final isProposed = court.isProposed;
 
-    Color badgeColor = colors.textMuted;
-    String badgeText = 'Trống';
+    Widget badgeWidget;
     if (isPlaying) {
-      badgeColor = colors.success;
-      badgeText = 'Đang thi đấu';
+      badgeWidget = const AppStatusBadge.success(label: 'Đang thi đấu');
     } else if (isProposed) {
-      badgeColor = colors.warning;
-      badgeText = 'Đề xuất sẵn sàng';
+      badgeWidget = const AppStatusBadge.warning(label: 'Đề xuất sẵn sàng');
+    } else {
+      badgeWidget = const AppStatusBadge.neutral(label: 'Trống');
     }
 
     return Container(
@@ -267,14 +346,7 @@ class SessionRotationScreen extends ConsumerWidget {
                       style: AppTypography.titleSmall.bold.colored(colors.textPrimary)),
                 ],
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: badgeColor.withValues(alpha: 0.15),
-                  borderRadius: AppRadius.tag,
-                ),
-                child: Text(badgeText, style: AppTypography.labelSmall.bold.colored(badgeColor)),
-              ),
+              badgeWidget,
             ],
           ),
           AppSpacing.gapH12,
@@ -350,7 +422,7 @@ class SessionRotationScreen extends ConsumerWidget {
           ),
           AppSpacing.gapH12,
 
-          // Action Buttons
+          // Action Buttons with touch target >= 48dp
           if (isProposed)
             SizedBox(
               width: double.infinity,
@@ -358,11 +430,15 @@ class SessionRotationScreen extends ConsumerWidget {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: colors.primary,
                   foregroundColor: AppColors.white,
+                  minimumSize: const Size.fromHeight(48),
                   shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
                 ),
                 icon: const Icon(Icons.play_arrow_rounded),
                 label: const Text('Bắt đầu trận đấu trên sân này'),
-                onPressed: () => vm.startMatch(court.matchId),
+                onPressed: () {
+                  HapticFeedback.mediumImpact();
+                  vm.startMatch(court.matchId);
+                },
               ),
             )
           else if (isPlaying)
@@ -372,13 +448,44 @@ class SessionRotationScreen extends ConsumerWidget {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: colors.success,
                   foregroundColor: AppColors.white,
+                  minimumSize: const Size.fromHeight(48),
                   shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
                 ),
                 icon: const Icon(Icons.stop_rounded),
                 label: const Text('Kết thúc trận (Tự động tính 5p nghỉ)'),
-                onPressed: () => vm.finishMatch(court.matchId),
+                onPressed: () => _confirmFinishMatch(context, court, vm),
               ),
             ),
+        ],
+      ),
+    );
+  }
+
+  void _confirmFinishMatch(BuildContext context, CourtMatch court, SessionRotationNotifier vm) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('Kết thúc trận sân ${court.courtNumber}?'),
+        content: const Text(
+          'Hệ thống sẽ giải phóng sân và tự động kích hoạt thời gian nghỉ 5 phút cho 4 tay vợt.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Hủy'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: context.colors.success,
+              foregroundColor: AppColors.white,
+            ),
+            onPressed: () {
+              HapticFeedback.mediumImpact();
+              vm.finishMatch(court.matchId);
+              Navigator.of(ctx).pop();
+            },
+            child: const Text('Kết thúc trận'),
+          ),
         ],
       ),
     );
