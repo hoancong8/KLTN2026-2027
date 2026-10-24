@@ -176,7 +176,7 @@ class _ClubDetailViewState extends ConsumerState<ClubDetailView> with SingleTick
                   children: [
                     Icon(Icons.info_outline_rounded, size: AppSpacing.iconSm),
                     AppSpacing.gapW8,
-                    Text('Thông tin & Lịch'),
+                    Text('Giới Thiệu Nhóm'),
                   ],
                 ),
               ),

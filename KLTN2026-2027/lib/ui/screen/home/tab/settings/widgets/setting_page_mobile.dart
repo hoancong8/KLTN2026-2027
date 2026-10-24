@@ -1,3 +1,7 @@
+import 'package:kltn2026_2027/ui/screen/profile/profile_vm/profile_vm.dart';
+import 'package:kltn2026_2027/app/provider.dart';
+import 'package:kltn2026_2027/app/consts/app_config.dart';
+import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../../app/theme/theme.dart';
@@ -29,6 +33,9 @@ class SettingsPageMobile extends ConsumerWidget {
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.all(16),
         children: [
+          // Thẻ hồ sơ cá nhân nổi bật ở đầu trang
+          _buildUserProfileHeaderCard(context, ref),
+          const SizedBox(height: 16),
           // Render tất cả các section một cách động
           for (final section in sections) ...[
             buildSectionTitle(context, section.title, section.icon),
@@ -61,6 +68,91 @@ class SettingsPageMobile extends ConsumerWidget {
           const SizedBox(height: 12),
           buildLogoutCard(context, ref, state.isLoading),
           const SizedBox(height: 24),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildUserProfileHeaderCard(BuildContext context, WidgetRef ref) {
+    final colors = context.colors;
+    final profileState = ref.watch(profileViewModelProvider);
+    final profile = profileState.playerProfile;
+    final user = ref.watch(currentUserProfileProvider);
+    final name = (profile != null && profile.fullName.isNotEmpty)
+        ? profile.fullName
+        : (user?.userName ?? 'Hội viên cầu lông');
+    final skill = profile?.skillLevel.displayName ?? 'Trung bình (TB)';
+    final reputation = profile?.reputationScore != null ? profile!.reputationScore.toStringAsFixed(1) : '5.0';
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: colors.cardBackground,
+        borderRadius: AppRadius.card,
+        border: Border.all(color: colors.cardBorder),
+        boxShadow: AppShadows.sm,
+      ),
+      child: Row(
+        children: [
+          CircleAvatar(
+            radius: 28,
+            backgroundColor: colors.primaryContainer,
+            backgroundImage: (profile?.avatarUrl != null && profile!.avatarUrl!.isNotEmpty)
+                ? NetworkImage(profile.avatarUrl!)
+                : null,
+            child: (profile?.avatarUrl == null || profile!.avatarUrl!.isEmpty)
+                ? Text(
+                    name.isNotEmpty ? name[0].toUpperCase() : 'U',
+                    style: AppTypography.titleMedium.bold.colored(colors.primary),
+                  )
+                : null,
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  name,
+                  style: AppTypography.titleMedium.bold.colored(colors.textPrimary),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: colors.primaryContainer,
+                        borderRadius: AppRadius.chip,
+                      ),
+                      child: Text(
+                        skill,
+                        style: AppTypography.labelSmall.bold.colored(colors.primary),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Row(
+                      children: [
+                        Icon(Icons.star_rounded, size: 16, color: colors.warning),
+                        const SizedBox(width: 2),
+                        Text(
+                          reputation,
+                          style: AppTypography.labelSmall.bold.colored(colors.textPrimary),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            icon: Icon(Icons.edit_outlined, color: colors.primary),
+            tooltip: 'Chỉnh sửa hồ sơ',
+            onPressed: () => context.push(AppConfig.profilePath),
+          ),
         ],
       ),
     );
