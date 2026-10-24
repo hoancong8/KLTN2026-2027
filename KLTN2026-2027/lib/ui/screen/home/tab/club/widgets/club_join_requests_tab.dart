@@ -38,20 +38,34 @@ class ClubJoinRequestsTab extends ConsumerWidget {
                   color: colors.primaryContainer,
                   shape: BoxShape.circle,
                 ),
-                child: Icon(Icons.mark_email_read_outlined, size: 50, color: colors.primary),
+                child: Icon(Icons.how_to_reg_rounded, size: 48, color: colors.primary),
               ),
             ),
             AppSpacing.gapH16,
             Text(
-              'Không Có Yêu Cầu Chờ Duyệt',
+              'Không có đơn gia nhập chờ duyệt',
               style: AppTypography.titleMedium.bold.colored(colors.textPrimary),
               textAlign: TextAlign.center,
             ),
             AppSpacing.gapH8,
             Text(
-              'Tất cả các đơn xin gia nhập câu lạc bộ đã được xử lý xong.',
+              'Khi người chơi gửi yêu cầu tham gia nhóm, đơn sẽ xuất hiện tại đây để ban điều hành xét duyệt.',
               style: AppTypography.bodySmall.colored(colors.textMuted),
               textAlign: TextAlign.center,
+            ),
+            AppSpacing.gapH24,
+            Center(
+              child: OutlinedButton.icon(
+                onPressed: vm.loadRequests,
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: colors.primary,
+                  side: BorderSide(color: colors.primary.withValues(alpha: 0.4)),
+                  shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                ),
+                icon: const Icon(Icons.refresh_rounded, size: 18),
+                label: const Text('Làm mới danh sách'),
+              ),
             ),
           ],
         ),
@@ -61,18 +75,52 @@ class ClubJoinRequestsTab extends ConsumerWidget {
     return RefreshIndicator(
       onRefresh: vm.loadRequests,
       color: colors.primary,
-      child: ListView.separated(
+      child: ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
         padding: AppSpacing.allBase,
-        itemCount: state.requests.length,
-        separatorBuilder: (_, _) => AppSpacing.gapH12,
-        itemBuilder: (ctx, index) {
-          final req = state.requests[index];
-          return _JoinRequestCard(
-            request: req,
-            onApprove: () => _confirmApprove(context, vm, req),
-            onReject: () => _confirmReject(context, vm, req),
-          );
-        },
+        children: [
+          // Header summary banner
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.base, vertical: AppSpacing.sm),
+            decoration: BoxDecoration(
+              color: colors.primaryContainer.withValues(alpha: 0.35),
+              borderRadius: AppRadius.card,
+              border: Border.all(color: colors.primary.withValues(alpha: 0.2)),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.pending_actions_rounded, color: colors.primary, size: 20),
+                AppSpacing.gapW8,
+                Expanded(
+                  child: Text(
+                    'Đang có ${state.requests.length} người chơi chờ xét duyệt vào CLB',
+                    style: AppTypography.labelMedium.bold.colored(colors.textPrimary),
+                  ),
+                ),
+                IconButton(
+                  icon: Icon(Icons.refresh_rounded, size: 20, color: colors.primary),
+                  tooltip: 'Tải lại',
+                  onPressed: vm.loadRequests,
+                ),
+              ],
+            ),
+          ),
+          AppSpacing.gapH12,
+
+          // Request cards
+          ...state.requests.map(
+            (req) => Padding(
+              padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+              child: _JoinRequestCard(
+                request: req,
+                isProcessing: state.isProcessing,
+                onApprove: () => _confirmApprove(context, vm, req),
+                onReject: () => _confirmReject(context, vm, req),
+              ),
+            ),
+          ),
+          AppSpacing.gapH32,
+        ],
       ),
     );
   }
@@ -84,15 +132,43 @@ class ClubJoinRequestsTab extends ConsumerWidget {
       builder: (ctx) => AlertDialog(
         backgroundColor: colors.cardBackground,
         shape: const RoundedRectangleBorder(borderRadius: AppRadius.dialog),
-        title: Text('Phê Duyệt Thành Viên', style: AppTypography.titleMedium.bold.colored(colors.textPrimary)),
-        content: Text(
-          'Bạn có chắc muốn duyệt thành viên "${req.fullName}" vào câu lạc bộ?',
-          style: AppTypography.bodyMedium.colored(colors.textSecondary),
+        title: Row(
+          children: [
+            Icon(Icons.check_circle_outline_rounded, color: colors.success, size: 24),
+            AppSpacing.gapW8,
+            Text('Phê Duyệt Gia Nhập', style: AppTypography.titleMedium.bold.colored(colors.textPrimary)),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Đồng ý kết nạp "${req.fullName}" vào câu lạc bộ với vai trò Hội viên chính thức?',
+              style: AppTypography.bodyMedium.colored(colors.textSecondary),
+            ),
+            if (req.introduction != null && req.introduction!.isNotEmpty) ...[
+              AppSpacing.gapH8,
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: colors.surfaceSubtle,
+                  borderRadius: AppRadius.borderSm,
+                  border: Border.all(color: colors.cardBorder),
+                ),
+                child: Text(
+                  '“${req.introduction}”',
+                  style: AppTypography.labelSmall.colored(colors.textMuted).copyWith(fontStyle: FontStyle.italic),
+                ),
+              ),
+            ],
+          ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: Text('Hủy', style: AppTypography.labelLarge.colored(colors.textMuted)),
+            child: Text('Đóng', style: AppTypography.labelLarge.colored(colors.textMuted)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
@@ -104,7 +180,7 @@ class ClubJoinRequestsTab extends ConsumerWidget {
               Navigator.of(ctx).pop();
               vm.approve(req.id);
             },
-            child: Text('Duyệt ngay', style: AppTypography.labelLarge.bold.colored(AppColors.white)),
+            child: Text('Duyệt Vào Nhóm', style: AppTypography.labelLarge.bold.colored(AppColors.white)),
           ),
         ],
       ),
@@ -118,9 +194,15 @@ class ClubJoinRequestsTab extends ConsumerWidget {
       builder: (ctx) => AlertDialog(
         backgroundColor: colors.cardBackground,
         shape: const RoundedRectangleBorder(borderRadius: AppRadius.dialog),
-        title: Text('Từ Chối Yêu Cầu', style: AppTypography.titleMedium.bold.colored(colors.textPrimary)),
+        title: Row(
+          children: [
+            Icon(Icons.highlight_off_rounded, color: colors.error, size: 24),
+            AppSpacing.gapW8,
+            Text('Từ Chối Đơn Gia Nhập', style: AppTypography.titleMedium.bold.colored(colors.textPrimary)),
+          ],
+        ),
         content: Text(
-          'Bạn có chắc muốn từ chối đơn gia nhập của "${req.fullName}"?',
+          'Bạn có chắc muốn từ chối yêu cầu gia nhập của "${req.fullName}"?',
           style: AppTypography.bodyMedium.colored(colors.textSecondary),
         ),
         actions: [
@@ -138,7 +220,7 @@ class ClubJoinRequestsTab extends ConsumerWidget {
               Navigator.of(ctx).pop();
               vm.reject(req.id);
             },
-            child: Text('Từ chối', style: AppTypography.labelLarge.bold.colored(AppColors.white)),
+            child: Text('Xác Nhận Từ Chối', style: AppTypography.labelLarge.bold.colored(AppColors.white)),
           ),
         ],
       ),
@@ -148,11 +230,13 @@ class ClubJoinRequestsTab extends ConsumerWidget {
 
 class _JoinRequestCard extends StatelessWidget {
   final JoinRequest request;
+  final bool isProcessing;
   final VoidCallback onApprove;
   final VoidCallback onReject;
 
   const _JoinRequestCard({
     required this.request,
+    required this.isProcessing,
     required this.onApprove,
     required this.onReject,
   });
@@ -160,94 +244,163 @@ class _JoinRequestCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
-    final dateStr = DateFormat('dd/MM/yyyy HH:mm').format(request.createdAt);
+    final dateStr = DateFormat('HH:mm - dd/MM/yyyy').format(request.createdAt);
 
-    return Card(
-      elevation: 0,
-      margin: EdgeInsets.zero,
-      color: colors.cardBackground,
-      shape: RoundedRectangleBorder(
+    return Container(
+      decoration: BoxDecoration(
+        color: colors.cardBackground,
         borderRadius: AppRadius.card,
-        side: BorderSide(color: colors.cardBorder),
+        border: Border.all(color: colors.cardBorder),
+        boxShadow: context.isDark ? AppShadows.none : AppShadows.sm,
       ),
-      child: Padding(
-        padding: AppSpacing.allBase,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                CircleAvatar(
-                  radius: 20,
-                  backgroundColor: colors.primaryContainer,
-                  child: Text(
-                    request.fullName.isNotEmpty ? request.fullName[0].toUpperCase() : '?',
-                    style: AppTypography.labelLarge.bold.colored(colors.primary),
-                  ),
-                ),
-                AppSpacing.gapW12,
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        request.fullName,
-                        style: AppTypography.titleSmall.bold.colored(colors.textPrimary),
-                      ),
-                      Text(
-                        dateStr,
-                        style: AppTypography.labelSmall.colored(colors.textMuted),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            if (request.introduction != null && request.introduction!.isNotEmpty) ...[
-              AppSpacing.gapH12,
+      padding: AppSpacing.allBase,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 1. Header: Avatar + Name + Contact Info + Time
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
               Container(
-                width: double.infinity,
-                padding: AppSpacing.allSm,
+                width: 46,
+                height: 46,
+                decoration: BoxDecoration(
+                  color: colors.primary.withValues(alpha: 0.15),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: colors.primary.withValues(alpha: 0.3)),
+                  image: (request.avatarUrl != null && request.avatarUrl!.isNotEmpty)
+                      ? DecorationImage(
+                          image: NetworkImage(request.avatarUrl!),
+                          fit: BoxFit.cover,
+                        )
+                      : null,
+                ),
+                child: (request.avatarUrl == null || request.avatarUrl!.isEmpty)
+                    ? Center(
+                        child: Text(
+                          request.fullName.isNotEmpty ? request.fullName[0].toUpperCase() : '?',
+                          style: AppTypography.titleMedium.bold.colored(colors.primary),
+                        ),
+                      )
+                    : null,
+              ),
+              AppSpacing.gapW12,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      request.fullName,
+                      style: AppTypography.titleSmall.bold.colored(colors.textPrimary),
+                    ),
+                    AppSpacing.gapH4,
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 4,
+                      children: [
+                        if (request.phoneNumber != null && request.phoneNumber!.isNotEmpty)
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.phone_outlined, size: 13, color: colors.textMuted),
+                              AppSpacing.gapW4,
+                              Text(request.phoneNumber!, style: AppTypography.labelSmall.colored(colors.textMuted)),
+                            ],
+                          ),
+                        if (request.email != null && request.email!.isNotEmpty)
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.email_outlined, size: 13, color: colors.textMuted),
+                              AppSpacing.gapW4,
+                              Text(request.email!, style: AppTypography.labelSmall.colored(colors.textMuted)),
+                            ],
+                          ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
                   color: colors.surfaceSubtle,
-                  borderRadius: AppRadius.borderSm,
+                  borderRadius: AppRadius.tag,
                   border: Border.all(color: colors.cardBorder),
                 ),
                 child: Text(
-                  '“${request.introduction}”',
-                  style: AppTypography.bodySmall.colored(colors.textPrimary).copyWith(fontStyle: FontStyle.italic),
+                  dateStr,
+                  style: AppTypography.labelSmall.colored(colors.textMuted),
                 ),
               ),
             ],
+          ),
+
+          // 2. Introduction / Message from Applicant
+          if (request.introduction != null && request.introduction!.isNotEmpty) ...[
             AppSpacing.gapH12,
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                OutlinedButton(
-                  onPressed: onReject,
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: context.isDark ? colors.surfaceSubtle : colors.background,
+                borderRadius: AppRadius.borderSm,
+                border: Border.all(color: colors.cardBorder),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(Icons.format_quote_rounded, size: 18, color: colors.primary),
+                  AppSpacing.gapW8,
+                  Expanded(
+                    child: Text(
+                      request.introduction!,
+                      style: AppTypography.bodySmall.colored(colors.textPrimary),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+
+          AppSpacing.gapH12,
+          Divider(height: 1, color: colors.cardBorder),
+          AppSpacing.gapH12,
+
+          // 3. Actions: Reject & Approve buttons
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: isProcessing ? null : onReject,
                   style: OutlinedButton.styleFrom(
                     foregroundColor: colors.error,
-                    side: BorderSide(color: colors.error),
+                    side: BorderSide(color: colors.error.withValues(alpha: 0.5)),
                     shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
-                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+                    padding: const EdgeInsets.symmetric(vertical: 10),
                   ),
-                  child: Text('Từ chối', style: AppTypography.labelMedium.colored(colors.error)),
+                  icon: const Icon(Icons.close_rounded, size: 18),
+                  label: Text('Từ chối', style: AppTypography.labelMedium.bold.colored(colors.error)),
                 ),
-                AppSpacing.gapW8,
-                ElevatedButton(
-                  onPressed: onApprove,
+              ),
+              AppSpacing.gapW12,
+              Expanded(
+                flex: 2,
+                child: ElevatedButton.icon(
+                  onPressed: isProcessing ? null : onApprove,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: colors.primary,
                     foregroundColor: AppColors.white,
                     shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
-                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.base, vertical: AppSpacing.sm),
+                    padding: const EdgeInsets.symmetric(vertical: 10),
                   ),
-                  child: Text('Duyệt vào CLB', style: AppTypography.labelMedium.bold.colored(AppColors.white)),
+                  icon: const Icon(Icons.check_rounded, size: 18),
+                  label: Text('Duyệt vào CLB', style: AppTypography.labelMedium.bold.colored(AppColors.white)),
                 ),
-              ],
-            ),
-          ],
-        ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
