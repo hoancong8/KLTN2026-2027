@@ -519,6 +519,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                   canManageSession,
                   canRecruit,
                   canDeleteSession,
+                  isHost,
                 ),
               ),
               SliverPersistentHeader(
@@ -1148,6 +1149,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
     bool canManageSession,
     bool canRecruit,
     bool canDeleteSession,
+    bool isHost,
   ) {
     final colors = context.colors;
     final now = DateTime.now();
@@ -1381,8 +1383,9 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
           ),
           AppSpacing.gapH12,
 
-          // Bảng phím tắt nghiệp vụ tại sân (FR14 - FR23)
-          Container(
+          // Bảng phím tắt nghiệp vụ tại sân (FR14 - FR23) - Chỉ hiển thị cho Host / Ban điều hành
+          if (isHost)
+            Container(
             padding: AppSpacing.allBase,
             decoration: BoxDecoration(
               color: colors.cardBackground,
