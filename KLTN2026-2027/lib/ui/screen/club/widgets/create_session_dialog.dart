@@ -92,9 +92,10 @@ class _CreateSessionDialogState extends ConsumerState<CreateSessionDialog> {
 
     if (_endTime.isBefore(_startTime) || _endTime.isAtSameMomentAs(_startTime)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Giờ kết thúc phải sau giờ bắt đầu!'),
-          backgroundColor: AppColors.error,
+        SnackBar(
+          content: const Text('Giờ kết thúc phải sau giờ bắt đầu!'),
+          backgroundColor: colors.error,
+          behavior: SnackBarBehavior.floating,
         ),
       );
       return;
@@ -124,9 +125,10 @@ class _CreateSessionDialogState extends ConsumerState<CreateSessionDialog> {
       if (sessionId != null) {
         Navigator.of(context).pop(sessionId);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Tạo buổi chơi thành công'),
-            backgroundColor: AppColors.primary,
+          SnackBar(
+            content: const Text('Tạo buổi chơi thành công!'),
+            backgroundColor: colors.primary,
+            behavior: SnackBarBehavior.floating,
           ),
         );
       }
@@ -152,10 +154,10 @@ class _CreateSessionDialogState extends ConsumerState<CreateSessionDialog> {
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: AppColors.primary.withValues(alpha: 0.12),
+                        color: colors.primary.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: const Icon(Icons.sports_tennis_rounded, color: AppColors.primary, size: 24),
+                      child: Icon(Icons.sports_tennis_rounded, color: colors.primary, size: 24),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
@@ -311,12 +313,12 @@ class _CreateSessionDialogState extends ConsumerState<CreateSessionDialog> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   decoration: BoxDecoration(
-                    color: AppColors.surfaceSubtle,
+                    color: colors.surfaceSubtle,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.info_outline, size: 16, color: AppColors.primary),
+                      Icon(Icons.info_outline, size: 16, color: colors.primary),
                       const SizedBox(width: 8),
                       Text(
                         'Số lượng người tối đa: $_maxPlayers slot chính thức',
@@ -343,7 +345,7 @@ class _CreateSessionDialogState extends ConsumerState<CreateSessionDialog> {
                 ElevatedButton(
                   onPressed: _isSubmitting ? null : _handleSubmit,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
+                    backgroundColor: colors.primary,
                     foregroundColor: AppColors.white,
                     padding: const EdgeInsets.symmetric(vertical: 13),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -379,7 +381,7 @@ class _CreateSessionDialogState extends ConsumerState<CreateSessionDialog> {
       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: colors.inputBorder)),
       enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: colors.inputBorder)),
-      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppColors.primary, width: 1.5)),
+      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: colors.primary, width: 1.5)),
     );
   }
 }
