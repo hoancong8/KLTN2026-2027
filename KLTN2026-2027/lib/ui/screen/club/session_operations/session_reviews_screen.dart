@@ -382,7 +382,11 @@ class SessionReviewsScreen extends ConsumerWidget {
                   Navigator.of(ctx).pop();
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Vui lòng nhập nội dung nhận xét trước khi gửi!')),
+                    SnackBar(
+                      content: const Text('Vui lòng nhập nội dung nhận xét trước khi gửi!'),
+                      backgroundColor: colors.warning,
+                      behavior: SnackBarBehavior.floating,
+                    ),
                   );
                 }
               },
