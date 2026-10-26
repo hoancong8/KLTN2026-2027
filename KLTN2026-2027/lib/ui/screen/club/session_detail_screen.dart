@@ -97,7 +97,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
               ],
             ),
             content: Text(
-              'Buổi chơi đã đủ slot chính thức. Bạn đang ở vị trí chờ số #${booking.queueOrder} trong hàng đợi.\nHệ thống sẽ tự động chuyển bạn lên danh sách chính thức khi có thành viên báo vắng.',
+              'Yêu cầu của bạn đang ở vị trí chờ số #${booking.queueOrder} trong hàng đợi.\nNgười quản trị sẽ xét duyệt bạn vào danh sách tham gia chính thức.',
               style: AppTypography.bodyMedium.copyWith(color: colors.textSecondary),
             ),
             actions: [
@@ -2590,8 +2590,16 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
     final session = detail?.session;
     final activeContext = ref.watch(activeClubContextProvider);
     final isSameClub = session != null && activeContext?.clubId == session.groupId;
-    final isHostOrAdmin = isSameClub && (activeContext?.role == ClubRole.host || ref.hasClubPermission('OPERATIONS.SESSION.UPDATE'));
-    final shouldHidePlayers = (detail?.activeRecruitment?.hidePlayerList ?? false) && !isSameClub && !isHostOrAdmin;
+    final isHost = isSameClub && activeContext?.role == ClubRole.host;
+    final isTreasurer = isSameClub && activeContext?.role == ClubRole.treasurer;
+    final isDeputy = isSameClub && activeContext?.role == ClubRole.deputy;
+    final canOperateAttendance = isHost ||
+        isDeputy ||
+        isTreasurer ||
+        (isSameClub &&
+            (ref.hasClubPermission('OPERATIONS.BOOKING.MANAGE') ||
+                ref.hasClubPermission('OPERATIONS.SESSION.UPDATE')));
+    final shouldHidePlayers = (detail?.activeRecruitment?.hidePlayerList ?? false) && !isSameClub && !canOperateAttendance;
 
     if (shouldHidePlayers) {
       return Center(
@@ -2801,7 +2809,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                if (isWaiting && isHostOrAdmin && isOpen && !isEnded) ...[
+                if (isWaiting && canOperateAttendance && isOpen && !isEnded) ...[
                   FilledButton.icon(
                     onPressed: isSubmitting ? null : () => _handleConfirmBooking(player),
                     icon: const Icon(Icons.check_circle_outline_rounded, size: 14),
