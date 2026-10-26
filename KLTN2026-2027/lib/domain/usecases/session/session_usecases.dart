@@ -135,6 +135,14 @@ class CancelBookingUseCase {
   Future<void> execute(String sessionId) => repository.cancelBooking(sessionId);
 }
 
+class ConfirmBookingUseCase {
+  final SessionRepository repository;
+  ConfirmBookingUseCase(this.repository);
+
+  Future<void> execute(String sessionId, String bookingId) =>
+      repository.confirmBooking(sessionId, bookingId);
+}
+
 class GetSessionBookingsUseCase {
   final SessionRepository repository;
   GetSessionBookingsUseCase(this.repository);

@@ -103,6 +103,8 @@ class AppConfig {
       '$sessionsPath/$sessionId/bookings';
   static String sessionMyBookingPath(String sessionId) =>
       '$sessionsPath/$sessionId/bookings/me';
+  static String sessionConfirmBookingPath(String sessionId, String bookingId) =>
+      '$sessionsPath/$sessionId/bookings/$bookingId/confirm';
   static const myBookingsPath = '$sessionsPath/my-bookings';
   static String sessionRecruitmentsPath(String sessionId) =>
       '$sessionsPath/$sessionId/recruitments';

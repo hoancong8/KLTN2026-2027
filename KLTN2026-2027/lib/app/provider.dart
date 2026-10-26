@@ -653,6 +653,10 @@ final cancelBookingUseCaseProvider = Provider<CancelBookingUseCase>((ref) {
   return CancelBookingUseCase(ref.watch(sessionRepositoryProvider));
 });
 
+final confirmBookingUseCaseProvider = Provider<ConfirmBookingUseCase>((ref) {
+  return ConfirmBookingUseCase(ref.watch(sessionRepositoryProvider));
+});
+
 final getSessionBookingsUseCaseProvider = Provider<GetSessionBookingsUseCase>((ref) {
   return GetSessionBookingsUseCase(ref.watch(sessionRepositoryProvider));
 });

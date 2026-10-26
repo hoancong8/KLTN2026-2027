@@ -26,6 +26,8 @@ abstract class SessionRemoteDataSource {
 
   Future<void> cancelBooking(String sessionId);
 
+  Future<void> confirmBooking(String sessionId, String bookingId);
+
   Future<List<SessionBookingDto>> getSessionBookings(String sessionId);
 
   Future<SessionBookingDto?> getMyBooking(String sessionId);

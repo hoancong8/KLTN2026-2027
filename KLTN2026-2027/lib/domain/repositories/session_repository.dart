@@ -43,6 +43,8 @@ abstract class SessionRepository {
 
   Future<void> cancelBooking(String sessionId);
 
+  Future<void> confirmBooking(String sessionId, String bookingId);
+
   Future<List<SessionBooking>> getSessionBookings(String sessionId);
 
   Future<SessionBooking?> getMyBooking(String sessionId);

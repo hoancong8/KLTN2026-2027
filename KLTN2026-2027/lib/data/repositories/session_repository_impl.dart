@@ -102,6 +102,11 @@ class SessionRepositoryImpl implements SessionRepository {
   }
 
   @override
+  Future<void> confirmBooking(String sessionId, String bookingId) async {
+    await remote.confirmBooking(sessionId, bookingId);
+  }
+
+  @override
   Future<List<SessionBooking>> getSessionBookings(String sessionId) async {
     final dtos = await remote.getSessionBookings(sessionId);
     return dtos.map(SessionMapper.toBookingEntity).toList();

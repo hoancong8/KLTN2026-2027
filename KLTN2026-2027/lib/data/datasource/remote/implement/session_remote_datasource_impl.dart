@@ -110,6 +110,15 @@ class SessionRemoteDataSourceImpl extends BaseRemoteDatasource implements Sessio
   }
 
   @override
+  Future<void> confirmBooking(String sessionId, String bookingId) async {
+    try {
+      await dio.post(AppConfig.sessionConfirmBookingPath(sessionId, bookingId));
+    } catch (e) {
+      throw handleError(e);
+    }
+  }
+
+  @override
   Future<List<SessionBookingDto>> getSessionBookings(String sessionId) async {
     try {
       final response = await dio.get(AppConfig.sessionBookingsPath(sessionId));

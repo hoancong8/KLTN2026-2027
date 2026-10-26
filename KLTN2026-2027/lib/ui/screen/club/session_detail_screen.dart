@@ -177,6 +177,73 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
     }
   }
 
+  Future<void> _handleConfirmBooking(SessionBooking player) async {
+    final colors = context.colors;
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: colors.cardBackground,
+        shape: const RoundedRectangleBorder(borderRadius: AppRadius.dialog),
+        title: Row(
+          children: [
+            Icon(Icons.how_to_reg_rounded, color: colors.success),
+            AppSpacing.gapW8,
+            Expanded(
+              child: Text(
+                'Duyệt người chơi vào sân',
+                style: AppTypography.titleMedium.copyWith(color: colors.textPrimary),
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          'Xác nhận duyệt người chơi "${player.fullName}" từ hàng đợi vào danh sách tham gia chính thức?',
+          style: AppTypography.bodyMedium.copyWith(color: colors.textSecondary),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(context.l10n.com_cancel, style: TextStyle(color: colors.textMuted)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: colors.success,
+              foregroundColor: AppColors.white,
+              shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+            ),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Duyệt ngay'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      final vm = ref.read(sessionDetailViewModelProvider(widget.sessionId).notifier);
+      final ok = await vm.confirmBooking(player.bookingId);
+      if (mounted) {
+        if (ok) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Đã duyệt "${player.fullName}" vào danh sách chính thức!'),
+              backgroundColor: colors.success,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        } else {
+          final error = ref.read(sessionDetailViewModelProvider(widget.sessionId)).errorMessage;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(error ?? 'Không thể duyệt người chơi'),
+              backgroundColor: colors.error,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      }
+    }
+  }
+
   void _showRecruitmentModal(BuildContext context, Session session) {
     final colors = context.colors;
     final slotsNeeded = (session.maxPlayers - session.confirmedCount).clamp(1, session.maxPlayers);
@@ -2364,6 +2431,22 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
+                if (isWaiting && isHostOrAdmin && isOpen && !isEnded) ...[
+                  FilledButton.icon(
+                    onPressed: isSubmitting ? null : () => _handleConfirmBooking(player),
+                    icon: const Icon(Icons.check_circle_outline_rounded, size: 14),
+                    label: const Text('Duyệt'),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: colors.success,
+                      foregroundColor: AppColors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      minimumSize: Size.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                    ),
+                  ),
+                  AppSpacing.gapW8,
+                ],
                 if (isMe && isOpen && !isEnded) ...[
                   OutlinedButton.icon(
                     onPressed: isSubmitting ? null : _handleCancelBooking,
