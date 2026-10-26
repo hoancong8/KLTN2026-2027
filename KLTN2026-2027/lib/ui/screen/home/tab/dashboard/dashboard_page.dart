@@ -559,14 +559,12 @@ class DashboardPage extends ConsumerWidget {
                   elevation: 0,
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                   shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
-                ),
-                child: Text(
-                  l10n.home_find_matches_now,
-                  style: AppTypography.labelMedium.copyWith(
+                  textStyle: AppTypography.labelMedium.copyWith(
                     fontWeight: FontWeight.bold,
-                    color: AppColors.white,
+                    inherit: false,
                   ),
                 ),
+                child: Text(l10n.home_find_matches_now),
               ),
             ),
           ],
@@ -990,6 +988,10 @@ class DashboardPage extends ConsumerWidget {
                             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                             visualDensity: VisualDensity.compact,
                             shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                            textStyle: AppTypography.labelSmall.copyWith(
+                              fontWeight: FontWeight.bold,
+                              inherit: false,
+                            ),
                           ),
                           child: isJoining
                               ? const SizedBox(
@@ -997,13 +999,7 @@ class DashboardPage extends ConsumerWidget {
                                   height: 14,
                                   child: CircularProgressIndicator(color: AppColors.white, strokeWidth: 2),
                                 )
-                              : Text(
-                                  l10n.home_join_match,
-                                  style: AppTypography.labelSmall.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                    color: AppColors.white,
-                                  ),
-                                ),
+                              : Text(l10n.home_join_match),
                         ),
                       ],
                     ),

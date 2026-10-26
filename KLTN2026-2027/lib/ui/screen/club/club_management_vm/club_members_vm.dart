@@ -69,14 +69,17 @@ class ClubMembersViewModel extends StateNotifier<ClubMembersState> {
         getClubMembersUseCase.execute(targetClubId),
       ]);
 
+      if (!mounted) return;
       state = state.copyWith(
         club: results[0] as dynamic,
         members: results[1] as dynamic,
         isLoading: false,
       );
     } on AppException catch (e) {
+      if (!mounted) return;
       state = state.copyWith(isLoading: false, error: e);
     } catch (e) {
+      if (!mounted) return;
       state = state.copyWith(
         isLoading: false,
         error: AppException(message: 'Lỗi tải dữ liệu CLB: $e'),
@@ -98,8 +101,10 @@ class ClubMembersViewModel extends StateNotifier<ClubMembersState> {
         role: newRole,
       ));
 
+      if (!mounted) return false;
       if (ok) {
         await loadData();
+        if (!mounted) return true;
         state = state.copyWith(
           isActionLoading: false,
           successMessage: 'Đã đổi vai trò thành ${newRole.displayName}',
@@ -109,9 +114,11 @@ class ClubMembersViewModel extends StateNotifier<ClubMembersState> {
       state = state.copyWith(isActionLoading: false);
       return false;
     } on AppException catch (e) {
+      if (!mounted) return false;
       state = state.copyWith(isActionLoading: false, error: e);
       return false;
     } catch (e) {
+      if (!mounted) return false;
       state = state.copyWith(
         isActionLoading: false,
         error: AppException(message: 'Không thể đổi vai trò: $e'),
@@ -129,8 +136,10 @@ class ClubMembersViewModel extends StateNotifier<ClubMembersState> {
         userId: memberUserId,
       ));
 
+      if (!mounted) return false;
       if (ok) {
         await loadData();
+        if (!mounted) return true;
         state = state.copyWith(
           isActionLoading: false,
           successMessage: 'Đã xóa thành viên khỏi nhóm',
@@ -140,9 +149,11 @@ class ClubMembersViewModel extends StateNotifier<ClubMembersState> {
       state = state.copyWith(isActionLoading: false);
       return false;
     } on AppException catch (e) {
+      if (!mounted) return false;
       state = state.copyWith(isActionLoading: false, error: e);
       return false;
     } catch (e) {
+      if (!mounted) return false;
       state = state.copyWith(
         isActionLoading: false,
         error: AppException(message: 'Không thể xóa thành viên: $e'),
@@ -160,14 +171,17 @@ class ClubMembersViewModel extends StateNotifier<ClubMembersState> {
         getClubPermissionsUseCase.execute(),
       ]);
 
+      if (!mounted) return;
       state = state.copyWith(
         roles: results[0] as dynamic,
         availablePermissions: results[1] as dynamic,
         isLoadingRoles: false,
       );
     } on AppException catch (e) {
+      if (!mounted) return;
       state = state.copyWith(isLoadingRoles: false, error: e);
     } catch (e) {
+      if (!mounted) return;
       state = state.copyWith(
         isLoadingRoles: false,
         error: AppException(message: 'Lỗi tải phân quyền: $e'),
@@ -180,9 +194,11 @@ class ClubMembersViewModel extends StateNotifier<ClubMembersState> {
     state = state.copyWith(isActionLoading: true, clearError: true, clearSuccess: true);
     try {
       final ok = await updateClubRolePermissionsUseCase.execute(clubId, roleId, permissionIds);
+      if (!mounted) return false;
       if (ok) {
         // Tải lại vai trò để cập nhật UI
         final updatedRoles = await getClubRolesUseCase.execute(clubId);
+        if (!mounted) return true;
         state = state.copyWith(
           isActionLoading: false,
           roles: updatedRoles,
@@ -193,9 +209,11 @@ class ClubMembersViewModel extends StateNotifier<ClubMembersState> {
       state = state.copyWith(isActionLoading: false);
       return false;
     } on AppException catch (e) {
+      if (!mounted) return false;
       state = state.copyWith(isActionLoading: false, error: e);
       return false;
     } catch (e) {
+      if (!mounted) return false;
       state = state.copyWith(
         isActionLoading: false,
         error: AppException(message: 'Không thể cập nhật quyền: $e'),
@@ -221,6 +239,7 @@ class ClubMembersViewModel extends StateNotifier<ClubMembersState> {
         return m;
       }).toList();
 
+      if (!mounted) return false;
       state = state.copyWith(
         isActionLoading: false,
         members: updatedMembers,
@@ -230,6 +249,7 @@ class ClubMembersViewModel extends StateNotifier<ClubMembersState> {
       );
       return true;
     } catch (e) {
+      if (!mounted) return false;
       state = state.copyWith(
         isActionLoading: false,
         error: AppException(message: 'Không thể cập nhật gói hội viên: $e'),
@@ -255,8 +275,10 @@ class ClubMembersViewModel extends StateNotifier<ClubMembersState> {
         isDefault: isDefault,
       ));
 
+      if (!mounted) return false;
       // Tải lại danh sách vai trò
       final updatedRoles = await getClubRolesUseCase.execute(clubId);
+      if (!mounted) return true;
       state = state.copyWith(
         isActionLoading: false,
         roles: updatedRoles,
@@ -264,9 +286,11 @@ class ClubMembersViewModel extends StateNotifier<ClubMembersState> {
       );
       return true;
     } on AppException catch (e) {
+      if (!mounted) return false;
       state = state.copyWith(isActionLoading: false, error: e);
       return false;
     } catch (e) {
+      if (!mounted) return false;
       state = state.copyWith(
         isActionLoading: false,
         error: AppException(message: 'Không thể tạo vai trò: $e'),
@@ -280,8 +304,10 @@ class ClubMembersViewModel extends StateNotifier<ClubMembersState> {
     state = state.copyWith(isActionLoading: true, clearError: true, clearSuccess: true);
     try {
       final ok = await deleteClubRoleUseCase.execute(clubId, roleId);
+      if (!mounted) return false;
       if (ok) {
         final updatedRoles = await getClubRolesUseCase.execute(clubId);
+        if (!mounted) return true;
         state = state.copyWith(
           isActionLoading: false,
           roles: updatedRoles,
@@ -292,9 +318,11 @@ class ClubMembersViewModel extends StateNotifier<ClubMembersState> {
       state = state.copyWith(isActionLoading: false);
       return false;
     } on AppException catch (e) {
+      if (!mounted) return false;
       state = state.copyWith(isActionLoading: false, error: e);
       return false;
     } catch (e) {
+      if (!mounted) return false;
       state = state.copyWith(
         isActionLoading: false,
         error: AppException(message: 'Không thể xóa vai trò: $e'),

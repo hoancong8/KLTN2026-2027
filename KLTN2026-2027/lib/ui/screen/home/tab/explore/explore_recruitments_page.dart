@@ -92,20 +92,26 @@ class _ExploreRecruitmentsPageState extends ConsumerState<ExploreRecruitmentsPag
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  children: [
-                    Icon(Icons.near_me_rounded, size: 16, color: colors.primary),
-                    const SizedBox(width: 6),
-                    Text(
-                      'Kèo giao lưu quanh bạn',
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.bold,
-                        color: colors.textPrimary,
+                Expanded(
+                  child: Row(
+                    children: [
+                      Icon(Icons.near_me_rounded, size: 16, color: colors.primary),
+                      const SizedBox(width: 6),
+                      Flexible(
+                        child: Text(
+                          'Kèo giao lưu quanh bạn',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            color: colors.textPrimary,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
+                const SizedBox(width: 8),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                   decoration: BoxDecoration(
@@ -127,49 +133,58 @@ class _ExploreRecruitmentsPageState extends ConsumerState<ExploreRecruitmentsPag
 
           // 3. Matches List (Responsive: Mobile 1 column, Tablet 2 columns)
           Expanded(
-            child: state.isLoading
-                ? Center(child: CircularProgressIndicator(color: colors.primary))
-                : RefreshIndicator(
-                    onRefresh: vm.explore,
-                    color: colors.primary,
-                    child: state.errorMessage != null && state.recruitments.isEmpty
-                        ? _buildErrorState(context, state.errorMessage!, vm)
-                        : filteredList.isEmpty
-                            ? _buildEmptyState(context, state, vm)
-                            : ResponsiveLayout(
-                                mobile: ListView.separated(
-                                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
-                                  itemCount: filteredList.length,
-                                  separatorBuilder: (_, _) => const SizedBox(height: 14),
-                                  itemBuilder: (ctx, index) {
-                                    final match = filteredList[index];
-                                    return _RecruitmentMatchCard(
-                                      match: match,
-                                      isJoining: state.isJoining,
-                                      onJoin: () => _showJoinBottomSheet(context, vm, match),
-                                    );
-                                  },
-                                ),
-                                tablet: GridView.builder(
-                                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
-                                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                                    crossAxisCount: 2,
-                                    mainAxisSpacing: 16,
-                                    crossAxisSpacing: 16,
-                                    childAspectRatio: 1.55,
-                                  ),
-                                  itemCount: filteredList.length,
-                                  itemBuilder: (ctx, index) {
-                                    final match = filteredList[index];
-                                    return _RecruitmentMatchCard(
-                                      match: match,
-                                      isJoining: state.isJoining,
-                                      onJoin: () => _showJoinBottomSheet(context, vm, match),
-                                    );
-                                  },
-                                ),
-                              ),
+            child: Builder(
+              builder: (ctx) {
+                if (state.isLoading) {
+                  return Center(child: CircularProgressIndicator(color: colors.primary));
+                }
+                if (state.errorMessage != null && state.recruitments.isEmpty) {
+                  return _buildErrorState(context, state.errorMessage!, vm);
+                }
+                if (filteredList.isEmpty) {
+                  return _buildEmptyState(context, state, vm);
+                }
+                return RefreshIndicator(
+                  onRefresh: vm.explore,
+                  color: colors.primary,
+                  child: ResponsiveLayout(
+                    mobile: ListView.separated(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
+                      itemCount: filteredList.length,
+                      separatorBuilder: (_, _) => const SizedBox(height: 14),
+                      itemBuilder: (ctx, index) {
+                        final match = filteredList[index];
+                        return _RecruitmentMatchCard(
+                          match: match,
+                          isJoining: state.isJoining,
+                          onJoin: () => _showJoinBottomSheet(context, vm, match),
+                        );
+                      },
+                    ),
+                    tablet: GridView.builder(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        mainAxisSpacing: 16,
+                        crossAxisSpacing: 16,
+                        childAspectRatio: 1.55,
+                      ),
+                      itemCount: filteredList.length,
+                      itemBuilder: (ctx, index) {
+                        final match = filteredList[index];
+                        return _RecruitmentMatchCard(
+                          match: match,
+                          isJoining: state.isJoining,
+                          onJoin: () => _showJoinBottomSheet(context, vm, match),
+                        );
+                      },
+                    ),
                   ),
+                );
+              },
+            ),
           ),
         ],
       ),
@@ -775,21 +790,27 @@ class _RecruitmentMatchCard extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                         ),
                         const SizedBox(height: 2),
-                        Row(
+                        Wrap(
+                          spacing: 4,
+                          runSpacing: 4,
+                          crossAxisAlignment: WrapCrossAlignment.center,
                           children: [
-                            if (match.distanceKm != null) ...[
-                              Icon(Icons.near_me_rounded, size: 11, color: colors.primary),
-                              const SizedBox(width: 3),
-                              Text(
-                                'Cách ${match.distanceKm!.toStringAsFixed(1)} km',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                  color: colors.primary,
-                                ),
+                            if (match.distanceKm != null)
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.near_me_rounded, size: 11, color: colors.primary),
+                                  const SizedBox(width: 3),
+                                  Text(
+                                    'Cách ${match.distanceKm!.toStringAsFixed(1)} km',
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w600,
+                                      color: colors.primary,
+                                    ),
+                                  ),
+                                ],
                               ),
-                              const SizedBox(width: 6),
-                            ],
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
                               decoration: BoxDecoration(
@@ -805,8 +826,7 @@ class _RecruitmentMatchCard extends StatelessWidget {
                                 ),
                               ),
                             ),
-                            if (match.hidePlayerList) ...[
-                              const SizedBox(width: 4),
+                            if (match.hidePlayerList)
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
                                 decoration: BoxDecoration(
@@ -830,7 +850,6 @@ class _RecruitmentMatchCard extends StatelessWidget {
                                   ],
                                 ),
                               ),
-                            ],
                           ],
                         ),
                       ],
@@ -951,46 +970,50 @@ class _RecruitmentMatchCard extends StatelessWidget {
 
               // 3. Footer: Price & CTA Actions
               Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Chi phí:',
-                        style: TextStyle(fontSize: 10.5, color: colors.textMuted),
-                      ),
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.baseline,
-                        textBaseline: TextBaseline.alphabetic,
-                        children: [
-                          Text(
-                            NumberFormat('#,###').format(match.sharedCost),
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: colors.primary,
+                  Flexible(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Chi phí:',
+                          style: TextStyle(fontSize: 10.5, color: colors.textMuted),
+                        ),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.baseline,
+                          textBaseline: TextBaseline.alphabetic,
+                          children: [
+                            Text(
+                              NumberFormat('#,###').format(match.sharedCost),
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: colors.primary,
+                              ),
                             ),
-                          ),
-                          Text(
-                            ' đ/người',
-                            style: TextStyle(fontSize: 11, color: colors.textMuted),
-                          ),
-                        ],
-                      ),
-                    ],
+                            Text(
+                              ' đ/người',
+                              style: TextStyle(fontSize: 11, color: colors.textMuted),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
-                  const Spacer(),
+                  const SizedBox(width: 8),
                   ElevatedButton.icon(
                     onPressed: isJoining ? null : onJoin,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: colors.primary,
                       foregroundColor: AppColors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
+                      minimumSize: const Size(64, 36),
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                       visualDensity: VisualDensity.compact,
                     ),
                     icon: const Icon(Icons.sports_tennis_rounded, size: 14),
-                    label: const Text('Nhận Suất Giao Lưu', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                    label: const Text('Nhận Suất', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
                   ),
                 ],
               ),

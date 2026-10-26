@@ -17,32 +17,40 @@ class SessionDetailDto {
     this.activeRecruitment,
   });
 
-  factory SessionDetailDto.fromJson(Map<String, dynamic> json) {
-    final sessionMap = json['session'] is Map<String, dynamic>
-        ? json['session'] as Map<String, dynamic>
+  factory SessionDetailDto.fromJson(dynamic rawJson) {
+    if (rawJson is! Map) {
+      return SessionDetailDto(
+        session: SessionDto.fromJson(null),
+        confirmedPlayers: const [],
+        waitingQueue: const [],
+        activeRecruitment: null,
+      );
+    }
+    final json = rawJson;
+    final sessionMap = json['session'] is Map
+        ? json['session']
         : json;
 
-    final confirmedList = (json['confirmedPlayers'] as List<dynamic>?)
-            ?.map((item) => SessionBookingDto.fromJson(item as Map<String, dynamic>))
-            .toList() ??
-        [];
+    final rawConfirmed = json['confirmedPlayers'];
+    final confirmedList = (rawConfirmed is List)
+        ? rawConfirmed.map((item) => SessionBookingDto.fromJson(item)).toList()
+        : <SessionBookingDto>[];
 
-    final waitingList = (json['waitingQueue'] as List<dynamic>?)
-            ?.map((item) => SessionBookingDto.fromJson(item as Map<String, dynamic>))
-            .toList() ??
-        [];
+    final rawWaiting = json['waitingQueue'];
+    final waitingList = (rawWaiting is List)
+        ? rawWaiting.map((item) => SessionBookingDto.fromJson(item)).toList()
+        : <SessionBookingDto>[];
 
-    final recruitmentMap = json['activeRecruitment'] is Map<String, dynamic>
-        ? json['activeRecruitment'] as Map<String, dynamic>
+    final rawRecruitment = json['activeRecruitment'];
+    final recruitment = (rawRecruitment is Map)
+        ? GuestRecruitmentDto.fromJson(rawRecruitment)
         : null;
 
     return SessionDetailDto(
       session: SessionDto.fromJson(sessionMap),
       confirmedPlayers: confirmedList,
       waitingQueue: waitingList,
-      activeRecruitment: recruitmentMap != null
-          ? GuestRecruitmentDto.fromJson(recruitmentMap)
-          : null,
+      activeRecruitment: recruitment,
     );
   }
 }

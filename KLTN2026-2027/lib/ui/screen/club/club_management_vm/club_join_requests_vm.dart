@@ -76,8 +76,10 @@ class ClubJoinRequestsViewModel extends StateNotifier<ClubJoinRequestsState> {
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
       final requests = await getJoinRequestsUseCase.execute(clubId);
+      if (!mounted) return;
       state = state.copyWith(isLoading: false, requests: requests);
     } catch (e) {
+      if (!mounted) return;
       state = state.copyWith(isLoading: false, errorMessage: e.toString());
     }
   }
@@ -95,11 +97,13 @@ class ClubJoinRequestsViewModel extends StateNotifier<ClubJoinRequestsState> {
       );
       ref.invalidate(clubDetailViewModelProvider(clubId));
       ref.read(clubMembersViewModelProvider.notifier).loadForClub(clubId);
+      if (!mounted) return true;
       final remaining = state.requests.where((r) => r.id != requestId).toList();
       state = state.copyWith(requests: remaining, isProcessing: false, successMessage: 'Đã chấp thuận đơn gia nhập!');
       await loadRequests();
       return true;
     } catch (e) {
+      if (!mounted) return false;
       state = state.copyWith(isProcessing: false, errorMessage: e.toString());
       return false;
     }
@@ -110,11 +114,13 @@ class ClubJoinRequestsViewModel extends StateNotifier<ClubJoinRequestsState> {
     try {
       await rejectJoinRequestUseCase.execute(clubId, requestId);
       ref.invalidate(clubDetailViewModelProvider(clubId));
+      if (!mounted) return true;
       final remaining = state.requests.where((r) => r.id != requestId).toList();
       state = state.copyWith(requests: remaining, isProcessing: false, successMessage: 'Đã từ chối đơn gia nhập');
       await loadRequests();
       return true;
     } catch (e) {
+      if (!mounted) return false;
       state = state.copyWith(isProcessing: false, errorMessage: e.toString());
       return false;
     }
@@ -124,9 +130,11 @@ class ClubJoinRequestsViewModel extends StateNotifier<ClubJoinRequestsState> {
     state = state.copyWith(isProcessing: true, errorMessage: null);
     try {
       await createJoinRequestUseCase.execute(clubId, introduction: introduction);
+      if (!mounted) return true;
       state = state.copyWith(isProcessing: false, successMessage: 'Đã gửi yêu cầu gia nhập!');
       return true;
     } catch (e) {
+      if (!mounted) return false;
       state = state.copyWith(isProcessing: false, errorMessage: e.toString());
       return false;
     }

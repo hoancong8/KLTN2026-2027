@@ -56,7 +56,25 @@ class GuestRecruitmentDto {
     return false;
   }
 
-  factory GuestRecruitmentDto.fromJson(Map<String, dynamic> json) {
+  factory GuestRecruitmentDto.fromJson(dynamic rawJson) {
+    if (rawJson is! Map) {
+      return GuestRecruitmentDto(
+        id: '',
+        sessionId: '',
+        clubName: '',
+        courtLocation: '',
+        startTime: '',
+        endTime: '',
+        slotsNeeded: 0,
+        slotsRemaining: 0,
+        minSkillLevel: 'NB',
+        sharedCost: 0.0,
+        scanRadiusKm: 5.0,
+        status: '1',
+        broadcastAt: '',
+      );
+    }
+    final json = rawJson;
     return GuestRecruitmentDto(
       id: json['id']?.toString() ?? '',
       sessionId: json['sessionId']?.toString() ?? '',

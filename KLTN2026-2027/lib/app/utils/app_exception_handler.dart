@@ -79,9 +79,9 @@ class AppExceptionHandler {
 
     // 4. Các lỗi HTTP thông dụng khác
     if (statusCode != null) {
-      if (statusCode == 403) return const ForbiddenException();
-      if (statusCode == 404) return const NotFoundException();
-      if (statusCode >= 500) return const ServerException();
+      if (statusCode == 403) return ForbiddenException(message: message, originalError: e);
+      if (statusCode == 404) return NotFoundException(message: message, originalError: e);
+      if (statusCode >= 500) return ServerException(message: message, originalError: e);
     }
 
     // 5. Các lỗi Network của Dio

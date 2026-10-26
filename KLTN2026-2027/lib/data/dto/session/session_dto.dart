@@ -61,7 +61,27 @@ class SessionDto {
     return false;
   }
 
-  factory SessionDto.fromJson(Map<String, dynamic> json) {
+  factory SessionDto.fromJson(dynamic rawJson) {
+    if (rawJson is! Map) {
+      return SessionDto(
+        id: '',
+        groupId: '',
+        clubName: '',
+        title: '',
+        startTime: '',
+        endTime: '',
+        courtLocation: '',
+        courtCount: 0,
+        targetPlayerPerCourt: 0,
+        maxPlayers: 0,
+        deadlineBooking: '',
+        courtRentalCost: 0.0,
+        status: '1',
+        confirmedCount: 0,
+        waitingCount: 0,
+      );
+    }
+    final json = rawJson;
     return SessionDto(
       id: json['id']?.toString() ?? '',
       groupId: json['groupId']?.toString() ?? '',

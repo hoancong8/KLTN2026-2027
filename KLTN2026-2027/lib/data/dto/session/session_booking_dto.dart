@@ -36,7 +36,24 @@ class SessionBookingDto {
     return 0;
   }
 
-  factory SessionBookingDto.fromJson(Map<String, dynamic> json) {
+  factory SessionBookingDto.fromJson(dynamic rawJson) {
+    if (rawJson is! Map) {
+      return SessionBookingDto(
+        bookingId: '',
+        sessionId: '',
+        userId: '',
+        fullName: '',
+        avatarUrl: null,
+        phoneNumber: null,
+        skillLevel: '1',
+        status: '1',
+        queueOrder: 0,
+        bookedAt: '',
+        checkinAt: null,
+        recruitmentId: null,
+      );
+    }
+    final json = rawJson;
     return SessionBookingDto(
       bookingId: json['bookingId']?.toString() ?? '',
       sessionId: json['sessionId']?.toString() ?? '',

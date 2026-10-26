@@ -86,10 +86,10 @@ class AppTheme {
           backgroundColor: colors.primary,
           foregroundColor: AppColors.white,
           elevation: 0,
-          minimumSize: const Size(double.infinity, AppSpacing.buttonHeightMd),
+          minimumSize: const Size(64, AppSpacing.buttonHeightMd),
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl, vertical: AppSpacing.md),
           shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
-          textStyle: AppTypography.labelLarge.copyWith(color: AppColors.white),
+          textStyle: AppTypography.labelLarge.copyWith(inherit: false),
         ),
       ),
 
@@ -102,7 +102,7 @@ class AppTheme {
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl, vertical: AppSpacing.md),
           side: BorderSide(color: colors.primary, width: 1.5),
           shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
-          textStyle: AppTypography.labelLarge.copyWith(color: colors.primary),
+          textStyle: AppTypography.labelLarge.copyWith(inherit: false),
         ),
       ),
 
@@ -112,7 +112,7 @@ class AppTheme {
           foregroundColor: colors.primary,
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.base, vertical: AppSpacing.sm),
           shape: const RoundedRectangleBorder(borderRadius: AppRadius.borderSm),
-          textStyle: AppTypography.labelLarge.copyWith(color: colors.primary),
+          textStyle: AppTypography.labelLarge.copyWith(inherit: false),
         ),
       ),
 
@@ -337,10 +337,10 @@ class AppTheme {
           backgroundColor: colors.primary,
           foregroundColor: AppColors.white,
           elevation: 0,
-          minimumSize: const Size(double.infinity, AppSpacing.buttonHeightMd),
+          minimumSize: const Size(64, AppSpacing.buttonHeightMd),
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl, vertical: AppSpacing.md),
           shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
-          textStyle: AppTypography.labelLarge.copyWith(color: AppColors.white),
+          textStyle: AppTypography.labelLarge.copyWith(inherit: false),
         ),
       ),
 
@@ -353,7 +353,7 @@ class AppTheme {
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl, vertical: AppSpacing.md),
           side: BorderSide(color: colors.primary, width: 1.5),
           shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
-          textStyle: AppTypography.labelLarge.copyWith(color: colors.primary),
+          textStyle: AppTypography.labelLarge.copyWith(inherit: false),
         ),
       ),
 
@@ -363,7 +363,7 @@ class AppTheme {
           foregroundColor: colors.primary,
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.base, vertical: AppSpacing.sm),
           shape: const RoundedRectangleBorder(borderRadius: AppRadius.borderSm),
-          textStyle: AppTypography.labelLarge.copyWith(color: colors.primary),
+          textStyle: AppTypography.labelLarge.copyWith(inherit: false),
         ),
       ),
 

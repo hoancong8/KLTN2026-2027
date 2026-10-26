@@ -27,33 +27,38 @@ class AppException implements Exception {
 // ---------------------------------------------------------------------------
 
 class ConnectionException extends AppException {
-  const ConnectionException();
+  const ConnectionException({super.message, super.originalError});
   @override
-  String resolve(IAppMessages messages) => messages.errorConnection;
+  String resolve(IAppMessages messages) =>
+      (message?.isNotEmpty == true) ? message! : messages.errorConnection;
 }
 
 class NetworkTimeoutException extends AppException {
-  const NetworkTimeoutException();
+  const NetworkTimeoutException({super.message, super.originalError});
   @override
-  String resolve(IAppMessages messages) => messages.errorNetworkTimeout;
+  String resolve(IAppMessages messages) =>
+      (message?.isNotEmpty == true) ? message! : messages.errorNetworkTimeout;
 }
 
 class ForbiddenException extends AppException {
-  const ForbiddenException();
+  const ForbiddenException({super.message, super.originalError});
   @override
-  String resolve(IAppMessages messages) => messages.errorForbidden;
+  String resolve(IAppMessages messages) =>
+      (message?.isNotEmpty == true) ? message! : messages.errorForbidden;
 }
 
 class NotFoundException extends AppException {
-  const NotFoundException();
+  const NotFoundException({super.message, super.originalError});
   @override
-  String resolve(IAppMessages messages) => messages.errorNotFound;
+  String resolve(IAppMessages messages) =>
+      (message?.isNotEmpty == true) ? message! : messages.errorNotFound;
 }
 
 class ServerException extends AppException {
-  const ServerException();
+  const ServerException({super.message, super.originalError});
   @override
-  String resolve(IAppMessages messages) => messages.errorServer;
+  String resolve(IAppMessages messages) =>
+      (message?.isNotEmpty == true) ? message! : messages.errorServer;
 }
 
 class InvalidResponseException extends AppException {

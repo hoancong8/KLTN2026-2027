@@ -3,6 +3,7 @@
 import 'package:flutter_riverpod/legacy.dart';
 import '../../../../app/provider.dart';
 import '../../../../domain/entities/session/session_booking.dart';
+import '../../../../domain/exceptions/app_exception.dart';
 import '../../../../domain/usecases/session/session_usecases.dart';
 import 'session_detail_state.dart';
 
@@ -47,9 +48,11 @@ class SessionDetailViewModel extends StateNotifier<SessionDetailState> {
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
       final detail = await getSessionDetailUseCase.execute(sessionId);
+      if (!mounted) return;
       state = state.copyWith(isLoading: false, detail: detail);
     } catch (e) {
-      state = state.copyWith(isLoading: false, errorMessage: e.toString());
+      if (!mounted) return;
+      state = state.copyWith(isLoading: false, errorMessage: _resolveErrorMessage(e));
     }
   }
 
@@ -57,11 +60,14 @@ class SessionDetailViewModel extends StateNotifier<SessionDetailState> {
     state = state.copyWith(isSubmitting: true, errorMessage: null);
     try {
       final booking = await voteBookingUseCase.execute(sessionId);
+      if (!mounted) return booking;
       await loadDetail();
+      if (!mounted) return booking;
       state = state.copyWith(isSubmitting: false);
       return booking;
     } catch (e) {
-      state = state.copyWith(isSubmitting: false, errorMessage: e.toString());
+      if (!mounted) return null;
+      state = state.copyWith(isSubmitting: false, errorMessage: _resolveErrorMessage(e));
       return null;
     }
   }
@@ -70,11 +76,14 @@ class SessionDetailViewModel extends StateNotifier<SessionDetailState> {
     state = state.copyWith(isSubmitting: true, errorMessage: null);
     try {
       await cancelBookingUseCase.execute(sessionId);
+      if (!mounted) return true;
       await loadDetail();
+      if (!mounted) return true;
       state = state.copyWith(isSubmitting: false);
       return true;
     } catch (e) {
-      state = state.copyWith(isSubmitting: false, errorMessage: e.toString());
+      if (!mounted) return false;
+      state = state.copyWith(isSubmitting: false, errorMessage: _resolveErrorMessage(e));
       return false;
     }
   }
@@ -83,11 +92,14 @@ class SessionDetailViewModel extends StateNotifier<SessionDetailState> {
     state = state.copyWith(isSubmitting: true, errorMessage: null);
     try {
       await updateSessionStatusUseCase.execute(sessionId, status);
+      if (!mounted) return true;
       await loadDetail();
+      if (!mounted) return true;
       state = state.copyWith(isSubmitting: false);
       return true;
     } catch (e) {
-      state = state.copyWith(isSubmitting: false, errorMessage: e.toString());
+      if (!mounted) return false;
+      state = state.copyWith(isSubmitting: false, errorMessage: _resolveErrorMessage(e));
       return false;
     }
   }
@@ -96,10 +108,12 @@ class SessionDetailViewModel extends StateNotifier<SessionDetailState> {
     state = state.copyWith(isSubmitting: true, errorMessage: null);
     try {
       await deleteSessionUseCase.execute(sessionId);
+      if (!mounted) return true;
       state = state.copyWith(isSubmitting: false);
       return true;
     } catch (e) {
-      state = state.copyWith(isSubmitting: false, errorMessage: e.toString());
+      if (!mounted) return false;
+      state = state.copyWith(isSubmitting: false, errorMessage: _resolveErrorMessage(e));
       return false;
     }
   }
@@ -108,11 +122,14 @@ class SessionDetailViewModel extends StateNotifier<SessionDetailState> {
     state = state.copyWith(isSubmitting: true, errorMessage: null);
     try {
       await createRecruitmentUseCase.execute(params);
+      if (!mounted) return true;
       await loadDetail();
+      if (!mounted) return true;
       state = state.copyWith(isSubmitting: false);
       return true;
     } catch (e) {
-      state = state.copyWith(isSubmitting: false, errorMessage: e.toString());
+      if (!mounted) return false;
+      state = state.copyWith(isSubmitting: false, errorMessage: _resolveErrorMessage(e));
       return false;
     }
   }
@@ -121,12 +138,27 @@ class SessionDetailViewModel extends StateNotifier<SessionDetailState> {
     state = state.copyWith(isSubmitting: true, errorMessage: null);
     try {
       await deleteRecruitmentUseCase.execute(sessionId);
+      if (!mounted) return true;
       await loadDetail();
+      if (!mounted) return true;
       state = state.copyWith(isSubmitting: false);
       return true;
     } catch (e) {
-      state = state.copyWith(isSubmitting: false, errorMessage: e.toString());
+      if (!mounted) return false;
+      state = state.copyWith(isSubmitting: false, errorMessage: _resolveErrorMessage(e));
       return false;
     }
+  }
+
+  String _resolveErrorMessage(dynamic error) {
+    if (error is AppException) {
+      if (error.message?.isNotEmpty == true) return error.message!;
+      if (error is ServerException) return 'Lỗi máy chủ nội bộ (HTTP 500).';
+      if (error is NotFoundException) return 'Không tìm thấy dữ liệu.';
+      if (error is ForbiddenException) return 'Bạn không có quyền thực hiện thao tác này.';
+      if (error is ConnectionException) return 'Không thể kết nối đến máy chủ.';
+      if (error is NetworkTimeoutException) return 'Hết thời gian chờ phản hồi từ máy chủ.';
+    }
+    return error.toString();
   }
 }
