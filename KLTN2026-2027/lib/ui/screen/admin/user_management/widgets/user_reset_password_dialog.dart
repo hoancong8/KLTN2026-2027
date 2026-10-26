@@ -44,7 +44,7 @@ class _UserResetPasswordDialogState extends State<UserResetPasswordDialog> {
       backgroundColor: colors.surface,
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 420),
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
           child: Form(
             key: _formKey,

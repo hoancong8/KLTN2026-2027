@@ -848,8 +848,13 @@ class SessionRotationScreen extends ConsumerWidget {
             return AlertDialog(
               title: Text('Đổi Đội Hình Sân ${court.courtNumber}'),
               content: SingleChildScrollView(
-                child: SizedBox(
-                  width: 380,
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxWidth: 380,
+                    minWidth: MediaQuery.sizeOf(context).width < 400
+                        ? MediaQuery.sizeOf(context).width * 0.8
+                        : 360,
+                  ),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
