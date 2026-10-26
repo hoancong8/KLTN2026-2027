@@ -37,11 +37,11 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
   String _feeMode = 'DYNAMIC';
   int _roundRule = 1000;
   late final TextEditingController _monthlyFeeController;
-  late final TextEditingController _femaleDiscountMonthlyController;
+  late final TextEditingController _monthlyFemaleFeeController;
   late final TextEditingController _dailyMemberFeeController;
-  late final TextEditingController _femaleDiscountController;
+  late final TextEditingController _dailyFemaleFeeController;
   late final TextEditingController _guestFeeController;
-  late final TextEditingController _femaleDiscountGuestController;
+  late final TextEditingController _guestFemaleFeeController;
 
   String _bankName = 'Vietcombank';
   late final TextEditingController _bankAccountController;
@@ -69,19 +69,19 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
     _addressController = TextEditingController();
 
     _monthlyFeeController = TextEditingController(text: '500.000');
-    _femaleDiscountMonthlyController = TextEditingController(text: '50.000');
+    _monthlyFemaleFeeController = TextEditingController(text: '450.000');
     _dailyMemberFeeController = TextEditingController(text: '50.000');
-    _femaleDiscountController = TextEditingController(text: '10.000');
+    _dailyFemaleFeeController = TextEditingController(text: '40.000');
     _guestFeeController = TextEditingController(text: '70.000');
-    _femaleDiscountGuestController = TextEditingController(text: '10.000');
+    _guestFemaleFeeController = TextEditingController(text: '60.000');
 
     for (final c in [
       _monthlyFeeController,
-      _femaleDiscountMonthlyController,
+      _monthlyFemaleFeeController,
       _dailyMemberFeeController,
-      _femaleDiscountController,
+      _dailyFemaleFeeController,
       _guestFeeController,
-      _femaleDiscountGuestController,
+      _guestFemaleFeeController,
     ]) {
       c.addListener(() {
         if (mounted) setState(() {});
@@ -104,11 +104,11 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
     _venueController.dispose();
     _addressController.dispose();
     _monthlyFeeController.dispose();
-    _femaleDiscountMonthlyController.dispose();
+    _monthlyFemaleFeeController.dispose();
     _dailyMemberFeeController.dispose();
-    _femaleDiscountController.dispose();
+    _dailyFemaleFeeController.dispose();
     _guestFeeController.dispose();
-    _femaleDiscountGuestController.dispose();
+    _guestFemaleFeeController.dispose();
     _bankAccountController.dispose();
     _bankHolderController.dispose();
     super.dispose();
@@ -1129,16 +1129,15 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                                         child: Column(
                                           crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [
-                                            Text('Giảm trừ Nữ / tháng', style: AppTypography.labelSmall.bold.colored(colors.textSecondary)),
+                                            Text('Quỹ tháng (Nữ)', style: AppTypography.labelSmall.bold.colored(colors.textSecondary)),
                                             AppSpacing.gapH4,
                                             TextFormField(
-                                              controller: _femaleDiscountMonthlyController,
+                                              controller: _monthlyFemaleFeeController,
                                               keyboardType: TextInputType.number,
                                               inputFormatters: const [CurrencyThousandsFormatter()],
                                               style: AppTypography.bodyMedium.colored(colors.textPrimary),
                                               decoration: InputDecoration(
-                                                prefixText: '- ',
-                                                suffixText: 'đ',
+                                                suffixText: 'đ/tháng',
                                                 filled: true,
                                                 fillColor: colors.inputFill,
                                                 border: OutlineInputBorder(borderRadius: AppRadius.input, borderSide: BorderSide(color: colors.inputBorder)),
@@ -1153,8 +1152,8 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                                   Builder(
                                     builder: (context) {
                                       final monthlyMale = int.tryParse(_monthlyFeeController.text.replaceAll('.', '').trim()) ?? 0;
-                                      final monthlyDisc = int.tryParse(_femaleDiscountMonthlyController.text.replaceAll('.', '').trim()) ?? 0;
-                                      final monthlyFemale = (monthlyMale - monthlyDisc).clamp(0, 999999999);
+                                      final monthlyFemale = int.tryParse(_monthlyFemaleFeeController.text.replaceAll('.', '').trim()) ?? 0;
+                                      final monthlyDisc = (monthlyMale - monthlyFemale).clamp(0, 999999999);
                                       return Padding(
                                         padding: const EdgeInsets.only(top: 8),
                                         child: Container(
@@ -1169,8 +1168,8 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                                             children: [
                                               Icon(Icons.female_rounded, size: 15, color: colors.success),
                                               AppSpacing.gapW4,
-                                              Text('Sau giảm trừ (Nữ): ', style: AppTypography.labelSmall.colored(colors.textSecondary)),
-                                              Text('${_formatCurrency(monthlyFemale)} đ/tháng', style: AppTypography.labelSmall.bold.colored(colors.success)),
+                                              Text('Ưu đãi tự động giảm trừ cho Nữ: ', style: AppTypography.labelSmall.colored(colors.textSecondary)),
+                                              Text('- ${_formatCurrency(monthlyDisc)} đ/tháng', style: AppTypography.labelSmall.bold.colored(colors.success)),
                                             ],
                                           ),
                                         ),
@@ -1255,16 +1254,15 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                                         child: Column(
                                           crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [
-                                            Text('Giảm trừ Nữ / buổi', style: AppTypography.labelSmall.bold.colored(colors.textSecondary)),
+                                            Text('Phí buổi (Nữ)', style: AppTypography.labelSmall.bold.colored(colors.textSecondary)),
                                             AppSpacing.gapH4,
                                             TextFormField(
-                                              controller: _femaleDiscountController,
+                                              controller: _dailyFemaleFeeController,
                                               keyboardType: TextInputType.number,
                                               inputFormatters: const [CurrencyThousandsFormatter()],
                                               style: AppTypography.bodyMedium.colored(colors.textPrimary),
                                               decoration: InputDecoration(
-                                                prefixText: '- ',
-                                                suffixText: 'đ',
+                                                suffixText: 'đ/buổi',
                                                 filled: true,
                                                 fillColor: colors.inputFill,
                                                 border: OutlineInputBorder(borderRadius: AppRadius.input, borderSide: BorderSide(color: colors.inputBorder)),
@@ -1279,8 +1277,8 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                                   Builder(
                                     builder: (context) {
                                       final dailyMale = int.tryParse(_dailyMemberFeeController.text.replaceAll('.', '').trim()) ?? 0;
-                                      final dailyDisc = int.tryParse(_femaleDiscountController.text.replaceAll('.', '').trim()) ?? 0;
-                                      final dailyFemale = (dailyMale - dailyDisc).clamp(0, 999999999);
+                                      final dailyFemale = int.tryParse(_dailyFemaleFeeController.text.replaceAll('.', '').trim()) ?? 0;
+                                      final dailyDisc = (dailyMale - dailyFemale).clamp(0, 999999999);
                                       return Padding(
                                         padding: const EdgeInsets.only(top: 8),
                                         child: Container(
@@ -1295,8 +1293,8 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                                             children: [
                                               Icon(Icons.female_rounded, size: 15, color: colors.primary),
                                               AppSpacing.gapW4,
-                                              Text('Sau giảm trừ (Nữ): ', style: AppTypography.labelSmall.colored(colors.textSecondary)),
-                                              Text('${_formatCurrency(dailyFemale)} đ/buổi', style: AppTypography.labelSmall.bold.colored(colors.primary)),
+                                              Text('Ưu đãi tự động giảm trừ cho Nữ: ', style: AppTypography.labelSmall.colored(colors.textSecondary)),
+                                              Text('- ${_formatCurrency(dailyDisc)} đ/buổi', style: AppTypography.labelSmall.bold.colored(colors.primary)),
                                             ],
                                           ),
                                         ),
@@ -1381,16 +1379,15 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                                         child: Column(
                                           crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [
-                                            Text('Giảm trừ Nữ / buổi', style: AppTypography.labelSmall.bold.colored(colors.textSecondary)),
+                                            Text('Vé vãng lai (Nữ)', style: AppTypography.labelSmall.bold.colored(colors.textSecondary)),
                                             AppSpacing.gapH4,
                                             TextFormField(
-                                              controller: _femaleDiscountGuestController,
+                                              controller: _guestFemaleFeeController,
                                               keyboardType: TextInputType.number,
                                               inputFormatters: const [CurrencyThousandsFormatter()],
                                               style: AppTypography.bodyMedium.colored(colors.textPrimary),
                                               decoration: InputDecoration(
-                                                prefixText: '- ',
-                                                suffixText: 'đ',
+                                                suffixText: 'đ/buổi',
                                                 filled: true,
                                                 fillColor: colors.inputFill,
                                                 border: OutlineInputBorder(borderRadius: AppRadius.input, borderSide: BorderSide(color: colors.inputBorder)),
@@ -1405,8 +1402,8 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                                   Builder(
                                     builder: (context) {
                                       final guestFee = int.tryParse(_guestFeeController.text.replaceAll('.', '').trim()) ?? 0;
-                                      final guestDisc = int.tryParse(_femaleDiscountGuestController.text.replaceAll('.', '').trim()) ?? 0;
-                                      final guestFemale = (guestFee - guestDisc).clamp(0, 999999999);
+                                      final guestFemale = int.tryParse(_guestFemaleFeeController.text.replaceAll('.', '').trim()) ?? 0;
+                                      final guestDisc = (guestFee - guestFemale).clamp(0, 999999999);
                                       return Padding(
                                         padding: const EdgeInsets.only(top: 8),
                                         child: Container(
@@ -1421,8 +1418,8 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                                             children: [
                                               Icon(Icons.female_rounded, size: 15, color: colors.warning),
                                               AppSpacing.gapW4,
-                                              Text('Sau giảm trừ (Nữ): ', style: AppTypography.labelSmall.colored(colors.textSecondary)),
-                                              Text('${_formatCurrency(guestFemale)} đ/buổi', style: AppTypography.labelSmall.bold.colored(colors.warning)),
+                                              Text('Ưu đãi tự động giảm trừ cho Nữ: ', style: AppTypography.labelSmall.colored(colors.textSecondary)),
+                                              Text('- ${_formatCurrency(guestDisc)} đ/buổi', style: AppTypography.labelSmall.bold.colored(colors.warning)),
                                             ],
                                           ),
                                         ),
@@ -1723,16 +1720,13 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
 
   Widget _buildLiveFeeSimulationPreview() {
     final monthlyMale = int.tryParse(_monthlyFeeController.text.replaceAll('.', '').trim()) ?? 500000;
-    final monthlyDisc = int.tryParse(_femaleDiscountMonthlyController.text.replaceAll('.', '').trim()) ?? 50000;
-    final monthlyFemale = (monthlyMale - monthlyDisc).clamp(0, 99999999);
+    final monthlyFemale = int.tryParse(_monthlyFemaleFeeController.text.replaceAll('.', '').trim()) ?? 450000;
 
     final dailyMale = int.tryParse(_dailyMemberFeeController.text.replaceAll('.', '').trim()) ?? 50000;
-    final dailyDisc = int.tryParse(_femaleDiscountController.text.replaceAll('.', '').trim()) ?? 10000;
-    final dailyFemale = (dailyMale - dailyDisc).clamp(0, 99999999);
+    final dailyFemale = int.tryParse(_dailyFemaleFeeController.text.replaceAll('.', '').trim()) ?? 40000;
 
     final guestFee = int.tryParse(_guestFeeController.text.replaceAll('.', '').trim()) ?? 70000;
-    final guestDisc = int.tryParse(_femaleDiscountGuestController.text.replaceAll('.', '').trim()) ?? 10000;
-    final guestFemale = (guestFee - guestDisc).clamp(0, 99999999);
+    final guestFemale = int.tryParse(_guestFemaleFeeController.text.replaceAll('.', '').trim()) ?? 60000;
 
     return Container(
       padding: const EdgeInsets.all(12),
