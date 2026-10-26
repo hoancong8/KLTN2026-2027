@@ -50,6 +50,7 @@ class SessionMapper {
       bookedAt: (DateTime.tryParse(dto.bookedAt) ?? DateTime.now()).toLocal(),
       checkinAt: dto.checkinAt != null ? DateTime.tryParse(dto.checkinAt!)?.toLocal() : null,
       recruitmentId: dto.recruitmentId,
+      gender: dto.gender,
     );
   }
 

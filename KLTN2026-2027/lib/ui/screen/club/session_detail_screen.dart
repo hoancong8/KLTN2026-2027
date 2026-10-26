@@ -13,6 +13,7 @@ import '../../../domain/entities/session/guest_recruitment.dart';
 import '../../../domain/entities/club/club_fee_rule.dart';
 import '../../../domain/entities/session/session.dart';
 import '../../../domain/entities/session/session_booking.dart';
+import '../../common/player_gender_helper.dart';
 import '../../../domain/enums/session_enums.dart';
 import '../../../domain/usecases/session/session_usecases.dart';
 import 'club_vm/club_context_vm.dart';
@@ -1783,7 +1784,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                     Icon(Icons.account_balance_wallet_outlined, size: 16, color: colors.primary),
                     AppSpacing.gapW8,
                     Text(
-                      'Phân bổ chi phí',
+                      !isMember ? 'Chi phí tham gia giao lưu' : 'Phân bổ chi phí',
                       style: AppTypography.labelMedium.copyWith(fontWeight: FontWeight.bold, color: colors.textPrimary),
                     ),
                     const Spacer(),
@@ -1794,7 +1795,9 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                         borderRadius: AppRadius.tag,
                       ),
                       child: Text(
-                        isFeeDynamic ? 'Chia thực tế' : 'Định mức cố định',
+                        !isMember
+                            ? 'Khách giao lưu'
+                            : (isFeeDynamic ? 'Chia thực tế' : 'Định mức cố định'),
                         style: AppTypography.labelSmall.bold.colored(colors.primary),
                       ),
                     ),
@@ -1802,13 +1805,98 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                 ),
                 AppSpacing.gapH8,
                 Text(
-                  isFeeDynamic
-                      ? 'Chia đều toàn bộ chi phí thực tế (sân, cầu bóc mới, phụ phí) cho các tay vợt. Ưu đãi giảm trừ thẳng cho Nữ.'
-                      : 'Áp dụng biểu giá cố định: Hội viên tháng (trọn gói), Hội viên ngày và Khách vãng lai tính theo mức cố định của CLB.',
+                  !isMember
+                      ? (isFeeDynamic
+                          ? 'Chi phí dự kiến cho khách vãng lai giao lưu buổi này (chia sẻ sân cầu và ưu đãi Nữ).'
+                          : 'Biểu phí giao lưu cố định dành cho khách vãng lai tham gia buổi sinh hoạt.')
+                      : (isFeeDynamic
+                          ? 'Chia đều toàn bộ chi phí thực tế (sân, cầu bóc mới, phụ phí) cho các tay vợt. Ưu đãi giảm trừ thẳng cho Nữ.'
+                          : 'Áp dụng biểu giá cố định: Hội viên tháng (trọn gói), Hội viên ngày và Khách vãng lai tính theo mức cố định của CLB.'),
                   style: AppTypography.bodySmall.copyWith(color: colors.textSecondary),
                 ),
                 AppSpacing.gapH8,
-                if (isFeeDynamic)
+                if (!isMember)
+                  // Khách vãng lai: chỉ xem duy nhất biểu giá áp dụng cho khách giao lưu (Nam & Nữ)
+                  Builder(
+                    builder: (context) {
+                      final guestMaleFee = activeRecruitment != null
+                          ? activeRecruitment.maleCost.toInt()
+                          : (isFeeDynamic ? (feePerPlayer > 0 ? (feePerPlayer * 1.25).round() : 50000) : (feeRule?.guestFee.toInt() ?? 60000));
+                      final femaleDiscount = isFeeDynamic
+                          ? (feeRule?.femaleDiscountDaily.toInt() ?? 10000)
+                          : (feeRule?.femaleDiscountGuest.toInt() ?? 10000);
+                      final guestFemaleFee = activeRecruitment != null
+                          ? activeRecruitment.femaleCost.toInt()
+                          : (guestMaleFee - femaleDiscount).clamp(0, guestMaleFee);
+
+                      return Row(
+                        children: [
+                          Expanded(
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                              decoration: BoxDecoration(
+                                color: colors.cardBackground,
+                                borderRadius: AppRadius.borderSm,
+                                border: Border.all(color: colors.cardBorder),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Icon(Icons.male_rounded, size: 14, color: AppColors.info),
+                                      AppSpacing.gapW4,
+                                      Text(
+                                        'Khách Nam',
+                                        style: AppTypography.labelSmall.copyWith(fontWeight: FontWeight.bold, color: colors.textPrimary),
+                                      ),
+                                    ],
+                                  ),
+                                  AppSpacing.gapH4,
+                                  Text(
+                                    '${NumberFormat('#,###').format(guestMaleFee)} đ/buổi',
+                                    style: AppTypography.bodySmall.copyWith(fontWeight: FontWeight.bold, color: AppColors.info),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          AppSpacing.gapW8,
+                          Expanded(
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                              decoration: BoxDecoration(
+                                color: colors.cardBackground,
+                                borderRadius: AppRadius.borderSm,
+                                border: Border.all(color: colors.cardBorder),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      const Icon(Icons.female_rounded, size: 14, color: AppColors.pink),
+                                      AppSpacing.gapW4,
+                                      Text(
+                                        'Khách Nữ (Ưu đãi)',
+                                        style: AppTypography.labelSmall.copyWith(fontWeight: FontWeight.bold, color: AppColors.pink),
+                                      ),
+                                    ],
+                                  ),
+                                  AppSpacing.gapH4,
+                                  Text(
+                                    '${NumberFormat('#,###').format(guestFemaleFee)} đ/buổi',
+                                    style: AppTypography.bodySmall.copyWith(fontWeight: FontWeight.bold, color: AppColors.pink),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  )
+                else if (isFeeDynamic)
                   Row(
                     children: [
                       Expanded(
@@ -1920,80 +2008,113 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                         ),
                       ),
                       AppSpacing.gapW8,
-                      Expanded(
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: colors.cardBackground,
-                            borderRadius: AppRadius.borderSm,
-                            border: Border.all(color: colors.cardBorder),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
+                      Builder(
+                        builder: (context) {
+                          final dailyFee = feeRule?.dailyMemberFee.toInt() ?? 40000;
+                          final dailyDisc = feeRule?.femaleDiscountDaily.toInt() ?? 10000;
+                          final dailyFemale = (dailyFee - dailyDisc).clamp(0, dailyFee);
+
+                          return Expanded(
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: colors.cardBackground,
+                                borderRadius: AppRadius.borderSm,
+                                border: Border.all(color: colors.cardBorder),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Icon(Icons.sports_tennis_rounded, size: 12, color: colors.primary),
-                                  AppSpacing.gapW4,
-                                  Expanded(
-                                    child: Text(
-                                      'HV Ngày',
-                                      style: AppTypography.labelSmall.copyWith(fontWeight: FontWeight.bold, color: colors.textPrimary),
+                                  Row(
+                                    children: [
+                                      Icon(Icons.sports_tennis_rounded, size: 12, color: colors.primary),
+                                      AppSpacing.gapW4,
+                                      Expanded(
+                                        child: Text(
+                                          'HV Ngày',
+                                          style: AppTypography.labelSmall.copyWith(fontWeight: FontWeight.bold, color: colors.textPrimary),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  AppSpacing.gapH4,
+                                  Text(
+                                    '${NumberFormat('#,###').format(dailyFee)} đ',
+                                    style: AppTypography.labelSmall.copyWith(color: colors.primary, fontWeight: FontWeight.bold),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  if (dailyDisc > 0) ...[
+                                    const SizedBox(height: 1),
+                                    Text(
+                                      'Nữ: ${NumberFormat('#,###').format(dailyFemale)} đ',
+                                      style: AppTypography.labelSmall.copyWith(color: AppColors.pink, fontWeight: FontWeight.bold, fontSize: 10),
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                     ),
-                                  ),
+                                  ],
                                 ],
                               ),
-                              AppSpacing.gapH4,
-                              Text(
-                                '${NumberFormat('#,###').format(feeRule?.dailyMemberFee.toInt() ?? 50000)} đ',
-                                style: AppTypography.labelSmall.copyWith(color: colors.primary, fontWeight: FontWeight.bold),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ],
-                          ),
-                        ),
+                            ),
+                          );
+                        },
                       ),
                       AppSpacing.gapW8,
-                      Expanded(
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: colors.cardBackground,
-                            borderRadius: AppRadius.borderSm,
-                            border: Border.all(color: colors.cardBorder),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
+                      Builder(
+                        builder: (context) {
+                          final guestFee = activeRecruitment != null
+                              ? activeRecruitment.maleCost.toInt()
+                              : (feeRule?.guestFee.toInt() ?? 60000);
+                          final guestFemaleFee = activeRecruitment != null
+                              ? activeRecruitment.femaleCost.toInt()
+                              : ((feeRule?.guestFee ?? 60000) - (feeRule?.femaleDiscountGuest ?? 10000)).clamp(0, 999999).toInt();
+
+                          return Expanded(
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: colors.cardBackground,
+                                borderRadius: AppRadius.borderSm,
+                                border: Border.all(color: colors.cardBorder),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Icon(Icons.people_outline_rounded, size: 12, color: colors.warning),
-                                  AppSpacing.gapW4,
-                                  Expanded(
-                                    child: Text(
-                                      'Khách Giao Lưu',
-                                      style: AppTypography.labelSmall.copyWith(fontWeight: FontWeight.bold, color: colors.textPrimary),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
+                                  Row(
+                                    children: [
+                                      Icon(Icons.people_outline_rounded, size: 12, color: colors.warning),
+                                      AppSpacing.gapW4,
+                                      Expanded(
+                                        child: Text(
+                                          'Khách Giao Lưu',
+                                          style: AppTypography.labelSmall.copyWith(fontWeight: FontWeight.bold, color: colors.textPrimary),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  AppSpacing.gapH4,
+                                  Text(
+                                    '${NumberFormat('#,###').format(guestFee)} đ',
+                                    style: AppTypography.labelSmall.copyWith(color: colors.warning, fontWeight: FontWeight.bold),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  const SizedBox(height: 1),
+                                  Text(
+                                    'Nữ: ${NumberFormat('#,###').format(guestFemaleFee)} đ',
+                                    style: AppTypography.labelSmall.copyWith(color: AppColors.pink, fontWeight: FontWeight.bold, fontSize: 10),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
                                   ),
                                 ],
                               ),
-                              AppSpacing.gapH4,
-                              Text(
-                                activeRecruitment != null
-                                    ? '${NumberFormat('#,###').format(activeRecruitment.maleCost)} đ'
-                                    : '${NumberFormat('#,###').format(feeRule?.guestFee.toInt() ?? 70000)} đ',
-                                style: AppTypography.labelSmall.copyWith(color: colors.warning, fontWeight: FontWeight.bold),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ],
-                          ),
-                        ),
+                            ),
+                          );
+                        },
                       ),
                     ],
                   ),
@@ -2527,6 +2648,13 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
+                AppSpacing.gapW8,
+                PlayerGenderHelper.buildGenderBadge(
+                  isFemale: PlayerGenderHelper.isFemale(
+                    explicitGender: player.gender,
+                    fullName: player.fullName,
+                  ),
+                ),
                 if (player.recruitmentId != null) ...[
                   AppSpacing.gapW8,
                   Container(
@@ -2704,17 +2832,45 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                           AppSpacing.gapW12,
                           Expanded(
                             flex: 2,
-                            child: ElevatedButton.icon(
-                              icon: const Icon(Icons.qr_code_scanner_rounded, size: 18),
-                              label: const Text('Thanh Toán VietQR'),
-                              onPressed: () => _showVietQRModal(context, session),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: colors.primary,
-                                foregroundColor: AppColors.white,
-                                elevation: 0,
-                                padding: const EdgeInsets.symmetric(vertical: 12),
-                                shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
-                              ),
+                            child: Builder(
+                              builder: (context) {
+                                final settlementAsync = ref.watch(sessionSettlementProvider(session.id));
+                                final settlement = settlementAsync.asData?.value;
+                                final myFeeItem = settlement?.memberFees.where((m) => m.userId.toLowerCase() == currentUserId?.toLowerCase()).firstOrNull;
+                                
+                                int computedFee = 0;
+                                String? paymentCode;
+                                if (myFeeItem != null) {
+                                  computedFee = myFeeItem.finalFee;
+                                  paymentCode = myFeeItem.paymentCode;
+                                } else {
+                                  final myConfirmedBooking = detail?.confirmedPlayers.where((p) => p.userId.toLowerCase() == currentUserId?.toLowerCase()).firstOrNull;
+                                  final isFem = PlayerGenderHelper.isFemale(
+                                    explicitGender: myConfirmedBooking?.gender,
+                                    fullName: myConfirmedBooking?.fullName ?? '',
+                                  );
+                                  final feeRule = ref.watch(clubFeeRuleProvider(session.groupId)).asData?.value;
+                                  final totalP = session.confirmedCount > 0 ? session.confirmedCount : (session.maxPlayers > 0 ? session.maxPlayers : 1);
+                                  final baseF = (session.courtRentalCost / totalP).round();
+                                  final disc = feeRule?.femaleDiscountDaily.toInt() ?? 10000;
+                                  computedFee = isFem ? (baseF - disc).clamp(0, baseF) : baseF;
+                                }
+
+                                final feeLabel = computedFee > 0 ? '${NumberFormat('#,###').format(computedFee)} đ' : '0 đ (Miễn phí)';
+
+                                return ElevatedButton.icon(
+                                  icon: const Icon(Icons.qr_code_scanner_rounded, size: 18),
+                                  label: Text('Thanh Toán: $feeLabel'),
+                                  onPressed: () => _showVietQRModal(context, session, computedFee, paymentCode),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: colors.primary,
+                                    foregroundColor: AppColors.white,
+                                    elevation: 0,
+                                    padding: const EdgeInsets.symmetric(vertical: 12),
+                                    shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                                  ),
+                                );
+                              },
                             ),
                           ),
                         ],

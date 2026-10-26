@@ -1,4 +1,5 @@
 import '../domain/repositories/session_operations_repository.dart';
+import '../domain/entities/session/session_settlement.dart';
 import '../data/repositories/session_operations_repository_impl.dart';
 import 'package:dio/dio.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
@@ -704,4 +705,8 @@ final cancelRecruitmentBookingUseCaseProvider = Provider<CancelRecruitmentBookin
 
 final sessionOperationsRepositoryProvider = Provider<SessionOperationsRepository>((ref) {
   return SessionOperationsRepositoryImpl(dio: ref.watch(dioProvider));
+});
+
+final sessionSettlementProvider = FutureProvider.autoDispose.family<SessionSettlement, String>((ref, sessionId) async {
+  return ref.watch(sessionOperationsRepositoryProvider).getSettlement(sessionId);
 });

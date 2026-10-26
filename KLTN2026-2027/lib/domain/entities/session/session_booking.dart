@@ -15,6 +15,7 @@ class SessionBooking {
   final DateTime bookedAt;
   final DateTime? checkinAt;
   final String? recruitmentId;
+  final int? gender;
 
   const SessionBooking({
     required this.bookingId,
@@ -29,6 +30,7 @@ class SessionBooking {
     required this.bookedAt,
     this.checkinAt,
     this.recruitmentId,
+    this.gender,
   });
 
   bool get isConfirmed => status == BookingStatus.confirmed;
