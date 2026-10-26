@@ -2,31 +2,13 @@ import 'package:flutter/material.dart';
 import '../../app/theme/theme.dart';
 
 class PlayerGenderHelper {
-  static const Set<String> _femaleKeywords = {
-    'thị', 'thi', 'mai', 'lan', 'hương', 'huong', 'ngọc', 'ngoc', 'phương', 'phuong',
-    'anh', 'linh', 'hà', 'ha', 'thảo', 'thao', 'trang', 'nga', 'hạnh', 'hanh',
-    'hoa', 'hồng', 'hong', 'yến', 'yen', 'ly', 'nhi', 'oanh', 'tuyết', 'tuyet',
-    'châu', 'chau', 'quỳnh', 'quynh', 'vy', 'trâm', 'tram', 'diệp', 'diep',
-    'dung', 'dương', 'duong', 'uyên', 'uyen', 'vân', 'van', 'hằng', 'hang',
-  };
-
-  static bool isFemale({int? explicitGender, String? genderString, required String fullName}) {
+  static bool isFemale({int? explicitGender, String? genderString}) {
     if (explicitGender != null) {
-      if (explicitGender == 2) return true;
-      if (explicitGender == 1) return false;
+      return explicitGender == 2;
     }
     if (genderString != null && genderString.isNotEmpty) {
       final g = genderString.toUpperCase();
-      if (g == 'FEMALE' || g == 'NU' || g == 'NỮ' || g == '2') return true;
-      if (g == 'MALE' || g == 'NAM' || g == '1') return false;
-    }
-
-    final tokens = fullName.trim().toLowerCase().split(RegExp(r'\s+'));
-    for (final token in tokens) {
-      if (token == 'thị' || token == 'thi') return true;
-    }
-    if (tokens.isNotEmpty && _femaleKeywords.contains(tokens.last)) {
-      return true;
+      return g == 'FEMALE' || g == 'NU' || g == 'NỮ' || g == '2';
     }
     return false;
   }

@@ -2652,7 +2652,6 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                 PlayerGenderHelper.buildGenderBadge(
                   isFemale: PlayerGenderHelper.isFemale(
                     explicitGender: player.gender,
-                    fullName: player.fullName,
                   ),
                 ),
                 if (player.recruitmentId != null) ...[
@@ -2847,7 +2846,6 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                                   final myConfirmedBooking = detail?.confirmedPlayers.where((p) => p.userId.toLowerCase() == currentUserId?.toLowerCase()).firstOrNull;
                                   final isFem = PlayerGenderHelper.isFemale(
                                     explicitGender: myConfirmedBooking?.gender,
-                                    fullName: myConfirmedBooking?.fullName ?? '',
                                   );
                                   final feeRule = ref.watch(clubFeeRuleProvider(session.groupId)).asData?.value;
                                   final totalP = session.confirmedCount > 0 ? session.confirmedCount : (session.maxPlayers > 0 ? session.maxPlayers : 1);
