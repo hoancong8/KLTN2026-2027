@@ -501,14 +501,14 @@ class _ClubOverviewTabState extends ConsumerState<ClubOverviewTab> {
           Divider(height: AppSpacing.base, color: colors.cardBorder),
           _buildInfoRow(
             'Khách vãng lai giao lưu',
-            '70.000 đ/buổi',
+            '70.000 đ/buổi (Nữ: 60.000 đ)',
             icon: Icons.sports_tennis_rounded,
             iconColor: colors.warning,
           ),
           Divider(height: AppSpacing.base, color: colors.cardBorder),
           _buildInfoRow(
-            'Ưu đãi thành viên Nữ',
-            'Giảm 50.000 đ/tháng hoặc 10.000 đ/buổi',
+            'Ưu đãi cho Nữ (mọi đối tượng)',
+            'Giảm 50.000 đ/tháng hoặc 10.000 đ/buổi (kể cả khách vãng lai)',
             icon: Icons.favorite_outline_rounded,
             iconColor: colors.error,
             valueColor: colors.error,
