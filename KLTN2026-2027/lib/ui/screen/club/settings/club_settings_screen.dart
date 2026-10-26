@@ -577,7 +577,7 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
             tabs: [
               const Tab(icon: Icon(Icons.info_outline_rounded, size: 18), text: 'Thông Tin'),
               const Tab(icon: Icon(Icons.place_outlined, size: 18), text: 'Sân & Lịch'),
-              const Tab(icon: Icon(Icons.account_balance_wallet_outlined, size: 18), text: 'Biểu Phí & QR'),
+              const Tab(icon: Icon(Icons.account_balance_wallet_outlined, size: 18), text: 'Biểu Phí & Ngân Hàng'),
               if (hasRolePermission)
                 const Tab(icon: Icon(Icons.shield_outlined, size: 18), text: 'Phân Quyền'),
             ],
@@ -1016,7 +1016,7 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'Làm tròn hóa đơn VietQR:',
+                                  'Làm tròn hóa đơn thanh toán:',
                                   style: AppTypography.labelSmall.bold.colored(colors.textSecondary),
                                 ),
                                 AppSpacing.gapH8,
@@ -1439,9 +1439,9 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
 
 
                             AppSpacing.gapH16,
-                        // Section: Tài khoản ngân hàng VietQR
+                        // Section: Tài khoản ngân hàng
                         _buildSectionCard(
-                          title: 'Tài Khoản Ngân Hàng Nhận Tiền (VietQR)',
+                          title: 'Tài Khoản Ngân Hàng Nhận Tiền',
                           icon: Icons.qr_code_2_rounded,
                           children: [
                             Text(
@@ -1524,15 +1524,15 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                               ),
                               child: Row(
                                 children: [
-                                  Icon(Icons.qr_code_scanner_rounded, size: 28, color: colors.primary),
+                                  Icon(Icons.account_balance_rounded, size: 28, color: colors.primary),
                                   AppSpacing.gapW12,
                                   Expanded(
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        Text('VietQR Tự Động Gạch Nợ', style: AppTypography.labelSmall.bold.colored(colors.textPrimary)),
+                                        Text('Tự Động Xác Nhận Thanh Toán', style: AppTypography.labelSmall.bold.colored(colors.textPrimary)),
                                         Text(
-                                          'Khi thành viên quét mã VietQR, hệ thống ngân hàng sẽ gửi Webhook để tự động xác nhận đã chuyển khoản 100%.',
+                                          'Khi thành viên quét mã chuyển khoản, hệ thống ngân hàng sẽ tự động xác nhận đã hoàn tất giao dịch.',
                                           style: AppTypography.bodySmall.colored(colors.textMuted),
                                         ),
                                       ],
@@ -1555,97 +1555,9 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                   ),
 
                   // Tab 4: Phân quyền vai trò
-                  SingleChildScrollView(
-                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.base, vertical: AppSpacing.md),
-                    child: Align(
-                      alignment: Alignment.topCenter,
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 768),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                        if (isHost || canManageRoles) ...[
-                          _buildSectionCard(
-                            title: 'Phân Quyền Vai Trò (Discord-Style)',
-                            icon: Icons.shield_outlined,
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(16),
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    colors: [
-                                      colors.primary.withValues(alpha: 0.08),
-                                      colors.surfaceSubtle,
-                                    ],
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                  ),
-                                  borderRadius: AppRadius.borderMd,
-                                  border: Border.all(color: colors.primary.withValues(alpha: 0.25)),
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                          decoration: BoxDecoration(
-                                            color: colors.primary,
-                                            borderRadius: AppRadius.tag,
-                                          ),
-                                          child: Text(
-                                            'RBAC PHÂN QUYỀN',
-                                            style: AppTypography.labelSmall.bold.colored(AppColors.white),
-                                          ),
-                                        ),
-                                        AppSpacing.gapW8,
-                                        Expanded(
-                                          child: Text(
-                                            'Quản trị đa vai trò',
-                                            style: AppTypography.labelSmall.semiBold.colored(colors.textMuted),
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    AppSpacing.gapH8,
-                                    Text(
-                                      'Tùy chỉnh các vai trò (Host, Thủ quỹ, Ban điều hành...) và phân bổ cây quyền hạn chi tiết trong câu lạc bộ.',
-                                      style: AppTypography.bodySmall.colored(colors.textSecondary),
-                                    ),
-                                    AppSpacing.gapH12,
-                                    SizedBox(
-                                      width: double.infinity,
-                                      child: ElevatedButton.icon(
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: colors.primary,
-                                          foregroundColor: AppColors.white,
-                                          shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
-                                          padding: const EdgeInsets.symmetric(vertical: 12),
-                                          elevation: 0,
-                                        ),
-                                        icon: const Icon(Icons.manage_accounts_rounded, size: 18),
-                                        label: const Text('Quản lý cây vai trò & quyền hạn'),
-                                        onPressed: () {
-                                          ClubRoleManagementScreen.show(context, clubId: widget.clubId);
-                                        },
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                          AppSpacing.gapH16,
-                        ],
-
-
-                            AppSpacing.gapH32,
-                          ],
-                        ),
-                      ),
-                    ),
+                  ClubRoleManagementScreen(
+                    clubId: widget.clubId,
+                    embedded: true,
                   ),
                 ],
               ),

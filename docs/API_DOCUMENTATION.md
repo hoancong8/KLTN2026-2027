@@ -61,9 +61,9 @@ Toàn bộ các phản hồi lỗi từ server đều trả về theo chuẩn **
   "type": "https://tools.ietf.org/html/rfc7231#section-6.5.1",
   "title": "Bad Request",
   "status": 400,
-  "detail": "Buổi chơi hiện không mở biểu quyết giữ chỗ.",
+  "detail": "Buổi chơi hiện không mở đăng ký giữ chỗ.",
   "errors": {
-    "Status": ["Buổi chơi hiện không mở biểu quyết giữ chỗ."]
+    "Status": ["Buổi chơi hiện không mở đăng ký giữ chỗ."]
   }
 }
 ```
@@ -81,8 +81,8 @@ Toàn bộ các phản hồi lỗi từ server đều trả về theo chuẩn **
 3. [Module 3: Quản Trị Người Dùng & Vai Trò Toàn Cục (Users & Roles - Admin)](#-module-3-quản-trị-người-dùng--vai-trò-hệ-thống-users--roles) *(16 APIs)*
 4. [Module 4: Quản Trị Đa Nhóm, Gia Nhập & Chuyển Đổi Ngữ Cảnh (FR03, FR04)](#-module-4-quản-trị-đa-nhóm-gia-nhập--chuyển-đổi-ngữ-cảnh-fr03-fr04) *(15 APIs)*
 5. [Module 7: Quản Lý Buổi Sinh Hoạt (FR13 - Sessions)](#-module-7-quản-lý-buổi-sinh-hoạt-fr13---sessions) *(6 APIs)*
-6. [Module 8: Biểu Quyết Giữ Chỗ & Hàng Đợi (FR08, FR09, FR10 - Bookings)](#-module-8-biểu-quyết-giữ-chỗ--hàng-đợi-fr08-fr09-fr10---bookings) *(4 APIs)*
-7. [Module 9: Khách Vãng Lai & Tuyển Kèo Giao Lưu (FR11, FR12 - Recruitments)](#-module-9-khách-vãng-lai--tuyển-kèo-giao-lưu-fr11-fr12---recruitments) *(6 APIs)*
+6. [Module 8: Đăng Ký Giữ Chỗ & Hàng Đợi (FR08, FR09, FR10 - Bookings)](#-module-8-biểu-quyết-giữ-chỗ--hàng-đợi-fr08-fr09-fr10---bookings) *(4 APIs)*
+7. [Module 9: Khách Vãng Lai & Buổi Giao Lưu (FR11, FR12 - Recruitments)](#-module-9-tuyển-người-giao-lưu--khách-vãng-lai-fr11-fr12---recruitments) *(6 APIs)*
 8. [Kế Hoạch Triển Khai Cho Mobile Làm Thông API (Mobile Integration Master Plan)](#-kế-hoạch-triển-khai-cho-mobile-làm-thông-api-chi-tiết-rõ-ràng)
 9. [Bảng Tra Cứu Toàn Bộ Mã Quyền Hạn (`GroupPermissions`)](#-bảng-tra-cứu-toàn-bộ-mã-quyền-hạn-grouppermissions)
 
@@ -173,7 +173,7 @@ sequenceDiagram
 | `gender` | `short` | `RadioListTile` / `Chip` | `0`: Khác, `1`: Nam, `2`: Nữ; render icon giới tính tương ứng (♂ / ♀). |
 | `skillLevel` | `string` | `SkillBadge(level: skillLevel)` | Mã trình độ (`NB`..`G`); render huy hiệu trình độ với màu tương ứng (ví dụ: `TB` màu xanh dương). |
 | `skillLevelName` | `string` | `Text(skillLevelName)` | Tên tiếng Việt thân thiện (ví dụ: *"Trung bình"*). |
-| `isOpenForGuest` | `bool` | `SwitchListTile(value: ...)` | Toggle switch *"Sẵn sàng nhận kèo giao lưu"*. Khi người dùng bật, hồ sơ sẽ xuất hiện trên radar tìm khách vãng lai. |
+| `isOpenForGuest` | `bool` | `SwitchListTile(value: ...)` | Toggle switch *"Sẵn sàng tham gia giao lưu"*. Khi người dùng bật, hồ sơ sẽ xuất hiện trên radar tìm khách vãng lai. |
 | `reputationScore` | `double` | `Chip(avatar: Icon(Icons.star), ...)` | Điểm uy tín tín nhiệm (mặc định 100.0 điểm). Nếu < 80 đổi sang màu vàng cảnh báo. |
 
 #####  Luồng Dữ Liệu Kế Tiếp (Next Steps Flow):
@@ -241,8 +241,8 @@ graph TD
 | `distanceKm` | `double?` | `Chip(label: Text(' ${distanceKm.toStringAsFixed(1)} km'))` | Cự ly thực tế tính theo giải thuật Haversine. Nếu `null` (do user tắt GPS) thì ẩn Chip này đi. |
 | `fixedVenueName` & `fixedAddress` | `string?` | `Text(fixedVenueName)` & `Text(fixedAddress)` | Tên sân và địa chỉ cụ thể nơi nhóm sinh hoạt cố định. |
 | `schedulesSummary` | `string?` | `Row(children: [Icon(Icons.calendar_today), Text(schedulesSummary)])` | Chuỗi tóm tắt lịch cố định tuần (ví dụ: *"T3, T5, T7 (18:00 - 21:00)"*). |
-| `minSkillLevel` - `maxSkillLevel` | `string?` | `Text('Trình độ: $minSkillLevel - $maxSkillLevel')` | Khoảng trình độ của CLB. So sánh với `profile.skillLevel` của người dùng: Nếu người dùng yếu hơn `minSkillLevel`, hiển thị icon cảnh báo nhẹ: *"Kèo có thể hơi nặng so với bạn"*. |
-| `isRecruiting` | `bool` | `Badge(label: Text(isRecruiting ? 'Đang tuyển' : 'Đủ quân'))` | `true` = Badge xanh lá; `false` = Badge xám. |
+| `minSkillLevel` - `maxSkillLevel` | `string?` | `Text('Trình độ: $minSkillLevel - $maxSkillLevel')` | Khoảng trình độ của CLB. So sánh với `profile.skillLevel` của người dùng: Nếu người dùng yếu hơn `minSkillLevel`, hiển thị icon cảnh báo nhẹ: *"Trình độ buổi chơi có thể cao hơn so với bạn"*. |
+| `isRecruiting` | `bool` | `Badge(label: Text(isRecruiting ? 'Đang tuyển' : 'Đã đủ người'))` | `true` = Badge xanh lá; `false` = Badge xám. |
 | `memberCount` | `int` | `Text(' $memberCount thành viên')` | Tổng số thành viên hiện tại của CLB. |
 
 ---
@@ -409,7 +409,7 @@ graph TD
 
 1. **Hồ sơ cá nhân & Trình độ (FR05)**:
    - Thêm vào [user_remote_datasource.dart](lib/data/datasource/remote/abstract/user_remote_datasource.dart): `getUserProfile()` và `updateUserProfile(UpdateUserProfileRequestDto request)`.
-   - Hiển thị trên `ProfileScreen`: Badge trình độ, điểm tín nhiệm ⭐ `100.0` và Toggle switch *"Sẵn sàng nhận kèo giao lưu"*.
+   - Hiển thị trên `ProfileScreen`: Badge trình độ, điểm tín nhiệm ⭐ `100.0` và Toggle switch *"Sẵn sàng tham gia giao lưu"*.
 2. **Khám phá CLB quanh vị trí GPS (FR06)**:
    - Thêm vào [club_remote_datasource.dart](lib/data/datasource/remote/abstract/club_remote_datasource.dart): `exploreClubs({latitude, longitude, radiusKm, skillLevel, isRecruiting, searchTerm})`.
    - Màn hình `ExploreClubsScreen`: Yêu cầu quyền GPS `Geolocator`, truyền tọa độ để nhận danh sách sắp xếp theo cự ly gần nhất `distanceKm ASC`.
@@ -853,7 +853,7 @@ Swagger Group: `FR13 - Khởi tạo buổi chơi`
 
 > **Nghiệp vụ cốt lõi**:
 > - Khởi tạo buổi chơi định kỳ hoặc đột xuất cho CLB (`POST /api/v1/sessions/club/{clubId}`).
-> - Tự động tính toán sĩ số tối đa (`maxPlayers = courtCount * targetPlayerPerCourt`) và thời hạn biểu quyết (`deadlineBooking = startTime - 2h`).
+> - Tự động tính toán sĩ số tối đa (`maxPlayers = courtCount * targetPlayerPerCourt`) và thời hạn đăng ký (`deadlineBooking = startTime - 2h`).
 > - Theo dõi danh sách lịch sinh hoạt (Sắp diễn ra / Đã qua) và chi tiết người tham gia.
 > - Quản lý vòng đời trạng thái buổi chơi: `OPEN` (Mở vé) -> `LOCKED` (Khóa sổ) -> `PLAYING` (Đang thi đấu) -> `COMPLETED` (Hoàn thành) -> `CANCELLED` (Hủy).
 
@@ -879,7 +879,7 @@ Swagger Group: `FR13 - Khởi tạo buổi chơi`
 - **Request Body JSON**:
   ```json
   {
-    "title": "Kèo tối thứ 4 sân Kỳ Hòa",
+    "title": "Buổi chơi tối thứ 4 sân Kỳ Hòa",
     "startTime": "2026-10-21T18:00:00Z",
     "endTime": "2026-10-21T21:00:00Z",
     "courtLocation": "Sân Cầu Lông Kỳ Hòa, 238 Đường 3/2, Quận 10",
@@ -914,7 +914,7 @@ Swagger Group: `FR13 - Khởi tạo buổi chơi`
       "id": "b480bfe6-43c1-4bf7-9755-e87f2ff8e763",
       "groupId": "b86fa2e7-03b6-4299-923c-a93108ce8968",
       "clubName": "CLB Cầu Lông Legends Quận 7",
-      "title": "Kèo tối thứ 4 sân Kỳ Hòa",
+      "title": "Buổi chơi tối thứ 4 sân Kỳ Hòa",
       "startTime": "2026-10-21T18:00:00Z",
       "endTime": "2026-10-21T21:00:00Z",
       "courtLocation": "Sân Cầu Lông Kỳ Hòa",
@@ -942,7 +942,7 @@ Swagger Group: `FR13 - Khởi tạo buổi chơi`
 | `courtLocation` | `Text(' $courtLocation')` | Địa chỉ sân thi đấu. |
 | `status` | `Chip` trạng thái | - `"OPEN"`: Chip Xanh lá *"Đang nhận đăng ký"* <br>- `"LOCKED"`: Chip Vàng *"Đã khóa sổ"* <br>- `"PLAYING"`: Chip Đỏ *"Đang thi đấu"* <br>- `"COMPLETED"`: Chip Xám *"Đã hoàn thành"*. |
 | `confirmedCount` / `maxPlayers` | `LinearProgressIndicator` | Thanh tiến độ biểu diễn sĩ số (ví dụ: `8/12`). Nếu `confirmedCount >= maxPlayers`, đổi màu cam và hiển thị tag *"Đã kín vé - Đang mở hàng đợi"*. |
-| `isBookedByCurrentUser` & `currentUserBookingStatus` | `Badge` vé cá nhân | - Nếu `CONFIRMED`: Badge xanh lá *"️ Bạn đã có vé chính thức"* <br>- Nếu `WAITING`: Badge cam *"⏳ Bạn đang chờ #queueOrder"* <br>- Nếu `false`: Nút bấm *"Biểu quyết tham gia ngay"*. |
+| `isBookedByCurrentUser` & `currentUserBookingStatus` | `Badge` vé cá nhân | - Nếu `CONFIRMED`: Badge xanh lá *"️ Bạn đã có vé chính thức"* <br>- Nếu `WAITING`: Badge cam *"⏳ Bạn đang chờ #queueOrder"* <br>- Nếu `false`: Nút bấm *"Đăng ký tham gia ngay"*. |
 
 ---
 
@@ -956,7 +956,7 @@ Swagger Group: `FR13 - Khởi tạo buổi chơi`
       "id": "b480bfe6-43c1-4bf7-9755-e87f2ff8e763",
       "groupId": "b86fa2e7-03b6-4299-923c-a93108ce8968",
       "clubName": "CLB Cầu Lông Legends Quận 7",
-      "title": "Kèo tối thứ 4 sân Kỳ Hòa",
+      "title": "Buổi chơi tối thứ 4 sân Kỳ Hòa",
       "startTime": "2026-10-21T18:00:00Z",
       "endTime": "2026-10-21T21:00:00Z",
       "courtLocation": "Sân Cầu Lông Kỳ Hòa",
@@ -1017,10 +1017,10 @@ Swagger Group: `FR13 - Khởi tạo buổi chơi`
 #####  Bảng Điều Khiển Nút Hành Động Đáy Màn Hình (`Bottom Action Bar`):
 | Trạng Thái Cá Nhân | Giao Diện Hiển Thị Phía Mobile | Hành Động Khi Người Dùng Bấm |
 | :--- | :--- | :--- |
-| Chưa đăng ký (`isBookedByCurrentUser == false`) | Nút Xanh Lớn: **"Biểu Quyết Tham Gia (Vote YES) "** | Gọi `POST /api/v1/sessions/{sessionId}/bookings`. |
+| Chưa đăng ký (`isBookedByCurrentUser == false`) | Nút Xanh Lớn: **"Đăng Ký Tham Gia"** | Gọi `POST /api/v1/sessions/{sessionId}/bookings`. |
 | Đã có vé chính thức (`currentUserBookingStatus == CONFIRMED`) | Hàng 2 Nút: <br>1. Card Xanh: *"️ Vé chính thức #X"* <br>2. Nút Đỏ: **"Báo vắng / Hủy vé"** | Bấm Báo vắng -> Mở dialog xác nhận -> Gọi `DELETE /api/v1/sessions/{sessionId}/bookings/me`. |
 | Đang ở hàng đợi (`currentUserBookingStatus == WAITING`) | Hàng 2 Nút: <br>1. Card Cam: *"⏳ Đang chờ vị trí #queueOrder"* <br>2. Nút Xám: **"Hủy hàng đợi"** | Bấm Hủy -> Gọi `DELETE /api/v1/sessions/{sessionId}/bookings/me`. |
-| Buổi chơi đã khóa sổ (`session.status == LOCKED / COMPLETED`) | Nút Disabled Xám: **"Buổi chơi đã khóa sổ biểu quyết"** | Không cho phép bấm. |
+| Buổi chơi đã khóa sổ (`session.status == LOCKED / COMPLETED`) | Nút Disabled Xám: **"Buổi chơi đã khóa sổ đăng ký"** | Không cho phép bấm. |
 
 ---
 
@@ -1031,16 +1031,16 @@ Swagger Group: `FR13 - Khởi tạo buổi chơi`
 - **Vận hành thực tế trên sân**:
   1. **Tới hạn chót (16:00)**: Host chuyển sang `LOCKED` để chốt danh sách đi mua cầu và chia sân.
   2. **Vào giờ đánh (18:00)**: Host chuyển sang `PLAYING` để bắt đầu chia cặp đấu (Matchmaking).
-  3. **Hết giờ (21:00)**: Host chuyển sang `COMPLETED` để chốt tiền sân/cầu và đối soát gạch nợ hội phí.
+  3. **Hết giờ (21:00)**: Host chuyển sang `COMPLETED` để chốt tiền sân/cầu và đối soát xác nhận thanh toán hội phí.
 
 ---
 
-## ️ Module 8: Biểu Quyết Giữ Chỗ & Hàng Đợi Tự Động (FR08, FR09, FR10 - Bookings)
+## ️ Module 8: Đăng Ký Giữ Chỗ & Hàng Đợi Tự Động (FR08, FR09, FR10 - Bookings)
 Prefix: `/api/v1/sessions`  
-Swagger Group: `FR08-FR10 - Biểu quyết giữ chỗ & Hàng đợi`
+Swagger Group: `FR08-FR10 - Đăng ký giữ chỗ & Hàng đợi`
 
 > **Nghiệp vụ cốt lõi**:
-> - **FR08**: Thành viên CLB biểu quyết tham gia buổi chơi (Vote YES). Nếu sĩ số chưa vượt quá `maxPlayers`, hệ thống cấp vé chính thức tức thì (`CONFIRMED`, `queueOrder = 0`).
+> - **FR08**: Thành viên CLB đăng ký tham gia buổi chơi. Nếu sĩ số chưa vượt quá `maxPlayers`, hệ thống cấp vé chính thức tức thì (`CONFIRMED`, `queueOrder = 0`).
 > - **FR09**: Khi số người xác nhận đã đạt trần `maxPlayers`, mọi lượt Vote tiếp theo tự động được xếp vào Hàng đợi chờ (`WAITING`, `queueOrder = 1..N`) theo nguyên tắc người đến trước xếp trước (FIFO).
 > - **FR10**: Bất kỳ thành viên nào đã giữ vé chính thức bấm "Báo vắng" (`DELETE /bookings/me`), hệ thống **tự động đôn người đang chờ ở vị trí số #1 lên vé chính thức** và tự động giảm thứ tự của toàn bộ người chờ còn lại.
 
@@ -1048,18 +1048,18 @@ Swagger Group: `FR08-FR10 - Biểu quyết giữ chỗ & Hàng đợi`
 
 | Method | Endpoint | Yêu Cầu Auth | Swagger Group | Mô Tả Nghiệp Vụ |
 | :--- | :--- | :--- | :--- | :--- |
-| `POST` | `/api/v1/sessions/{sessionId}/bookings` | Đã đăng nhập (Member) | `FR08-FR10` | Biểu quyết giữ chỗ (Vote YES - Cấp vé chính thức hoặc tự vào hàng đợi) |
+| `POST` | `/api/v1/sessions/{sessionId}/bookings` | Đã đăng nhập (Member) | `FR08-FR10` | Đăng ký giữ chỗ (Cấp vé chính thức hoặc tự vào hàng đợi) |
 | `DELETE`| `/api/v1/sessions/{sessionId}/bookings/me`| Người đã có vé / Đang chờ | `FR08-FR10` | Hủy giữ chỗ / Báo vắng (Tự động đôn người chờ đầu hàng đợi lên chính thức) |
 | `GET` | `/api/v1/sessions/{sessionId}/bookings` | Đã đăng nhập | `FR08-FR10` | Lấy danh sách toàn bộ người đã vote & danh sách hàng đợi |
-| `GET` | `/api/v1/sessions/{sessionId}/bookings/me`| Đã đăng nhập | `FR08-FR10` | Kiểm tra trạng thái vé biểu quyết của chính mình |
+| `GET` | `/api/v1/sessions/{sessionId}/bookings/me`| Đã đăng nhập | `FR08-FR10` | Kiểm tra trạng thái vé giữ chỗ của chính mình |
 
 ---
 
 ###  Hướng Dẫn Từng API Module 8 Vào Luồng Mobile
 
-#### 8.1. `POST /api/v1/sessions/{sessionId}/bookings` (Biểu Quyết Giữ Chỗ - FR08 & FR09)
+#### 8.1. `POST /api/v1/sessions/{sessionId}/bookings` (Đăng Ký Giữ Chỗ - FR08 & FR09)
 
-- **Màn hình kích hoạt**: Nhấn nút **"Biểu Quyết Tham Gia (Vote YES)"** trên `SessionDetailScreen`.
+- **Màn hình kích hoạt**: Nhấn nút **"Đăng Ký Tham Gia"** trên `SessionDetailScreen`.
 - **Headers**: `Authorization: Bearer <ACCESS_TOKEN>`
 - **Luồng Xử Lý Phân Nhánh Tại Server & Hiển Thị Mobile**:
 
@@ -1108,17 +1108,17 @@ sequenceDiagram
   - Phía Mobile:
     - Hiển thị SnackBar: *"Bạn đã báo vắng thành công!"*.
     - Invalidate ViewModel: `ref.invalidate(sessionDetailViewModelProvider(sessionId))`.
-    - Giao diện vẽ lại ngay tức khắc: Nút đáy màn hình đổi về nút xanh *"Biểu Quyết Tham Gia"*. Người chờ số #1 biến mất khỏi hàng đợi và xuất hiện ngay trong danh sách chính thức.
+    - Giao diện vẽ lại ngay tức khắc: Nút đáy màn hình đổi về nút xanh *"Đăng Ký Tham Gia"*. Người chờ số #1 biến mất khỏi hàng đợi và xuất hiện ngay trong danh sách chính thức.
 
 ---
 
-##  Module 9: Tuyển Khách Vãng Lai & Kèo Giao Lưu (FR11, FR12 - Recruitments)
+##  Module 9: Tuyển Người Giao Lưu & Khách Vãng Lai (FR11, FR12 - Recruitments)
 Prefix: `/api/v1/sessions`  
 Swagger Group: `FR11 - Phát tín hiệu tìm khách giao lưu` & `FR12 - Khách vãng lai đăng ký tham gia`
 
 > **Nghiệp vụ cốt lõi**:
 > - **FR11 (Host tuyển khách)**: Khi buổi chơi đã gần tới giờ nhưng chưa đủ người (`confirmedCount < maxPlayers`), Host phát tín hiệu tuyển khách vãng lai, định rõ số slot cần tuyển, chi phí chia sẻ sân/cầu và bán kính quét radar.
-> - **FR12 (Khách nhận slot)**: Người chơi tự do ở gần đó quét radar tìm thấy kèo giao lưu, xem cự ly km và bấm nhận suất chơi trực tiếp (`join`). Hệ thống cấp vé chính thức ngay tức thì và tự động đóng bài đăng khi đủ quân.
+> - **FR12 (Khách nhận slot)**: Người chơi tự do ở gần đó quét radar tìm thấy buổi giao lưu, xem cự ly km và bấm nhận suất chơi trực tiếp (`join`). Hệ thống cấp vé chính thức ngay tức thì và tự động đóng bài đăng khi đã đủ người.
 
 ###  Bảng Danh Mục API Module 9
 
@@ -1127,7 +1127,7 @@ Swagger Group: `FR11 - Phát tín hiệu tìm khách giao lưu` & `FR12 - Khách
 | `POST` | `/api/v1/sessions/{sessionId}/recruitments` | `OPERATIONS.RECRUIT.MANAGE` | `FR11` | Host phát tín hiệu tuyển khách giao lưu lân cận khi thiếu người |
 | `GET` | `/api/v1/sessions/{sessionId}/recruitments` | Đã đăng nhập | `FR11` | Xem bài đăng tuyển khách của buổi chơi |
 | `DELETE`| `/api/v1/sessions/{sessionId}/recruitments` | `OPERATIONS.RECRUIT.MANAGE` | `FR11` | Host đóng / hủy bài đăng tuyển khách giao lưu |
-| `GET` | `/api/v1/sessions/recruitments/explore` | Đã đăng nhập | `FR12` | Khách vãng lai quét radar tìm các kèo giao lưu quanh tọa độ GPS |
+| `GET` | `/api/v1/sessions/recruitments/explore` | Đã đăng nhập | `FR12` | Khách vãng lai quét radar tìm các buổi giao lưu quanh tọa độ GPS |
 | `POST` | `/api/v1/sessions/recruitments/{recruitmentId}/join` | Đã đăng nhập | `FR12` | Khách vãng lai nhận trực tiếp suất chơi giao lưu còn trống |
 | `DELETE`| `/api/v1/sessions/recruitments/{recruitmentId}/cancel`| Khách đã nhận suất | `FR12` | Khách vãng lai hủy suất giao lưu đã đăng ký |
 
@@ -1153,14 +1153,14 @@ Swagger Group: `FR11 - Phát tín hiệu tìm khách giao lưu` & `FR12 - Khách
   - `minSkillLevel`: Lấy theo `minSkillLevel` của CLB.
 - **Response `201 Created`**: Trả về `recruitmentId`.
 - **Luồng Mobile Kế Tiếp**:
-  - SnackBar: *"Đã phát tín hiệu tuyển khách thành công! Người chơi trong bán kính 5km sẽ nhìn thấy kèo này "*.
+  - SnackBar: *"Đã phát tín hiệu tuyển khách thành công! Người chơi trong bán kính 5km sẽ nhìn thấy thông tin này "*.
   - Invalidate `sessionDetailViewModelProvider(sessionId)`. Thẻ thông báo tuyển khách màu tím xuất hiện nổi bật trên đầu màn hình chi tiết buổi chơi.
 
 ---
 
-#### 9.2. `GET /api/v1/sessions/recruitments/explore` (Khách Quét Tìm Kèo Giao Lưu - FR12)
+#### 9.2. `GET /api/v1/sessions/recruitments/explore` (Khách Quét Tìm Buổi Giao Lưu - FR12)
 
-- **Màn hình kích hoạt**: Tab "Kèo giao lưu lân cận" (`ExploreRecruitmentsPage`).
+- **Màn hình kích hoạt**: Tab "Buổi giao lưu lân cận" (`ExploreRecruitmentsPage`).
 - **Query Parameters**:
   - `latitude`, `longitude`: Tọa độ vị trí hiện tại lấy từ GPS thiết bị.
   - `radiusKm`: Bán kính quét (mặc định 5km, có thanh trượt Slider từ 1km - 20km).
@@ -1187,12 +1187,12 @@ Swagger Group: `FR11 - Phát tín hiệu tìm khách giao lưu` & `FR12 - Khách
   ]
   ```
 
-#####  Bảng Ánh Xạ Dữ Liệu Vào Thẻ Kèo Giao Lưu (`RecruitmentCard`):
+#####  Bảng Ánh Xạ Dữ Liệu Vào Thẻ Buổi Giao Lưu (`RecruitmentCard`):
 | Trường Dữ Liệu | Widget Mobile Sử Dụng | Cách Dùng & Hiển Thị |
 | :--- | :--- | :--- |
 | `distanceKm` | `Chip(label: Text(' ${distanceKm} km'))` | Cự ly thực tế từ vị trí người chơi tới sân cầu lông. |
 | `clubName` & `courtLocation` | `Text(clubName)` & `Text(courtLocation)` | Tên nhóm đăng tuyển và địa chỉ sân tổ chức. |
-| `startTime` - `endTime` | `Text('18:00 - 21:00 | Hôm nay')` | Giờ sinh hoạt của kèo. |
+| `startTime` - `endTime` | `Text('18:00 - 21:00 | Hôm nay')` | Giờ sinh hoạt của buổi chơi. |
 | `slotsRemaining` | `Badge(label: Text('Còn $slotsRemaining slot'))` | Số lượng vé khách vãng lai còn trống. |
 | `sharedCost` | `Text('${formatCurrency(sharedCost)} / người')` | Chi phí dự kiến chia sẻ (ví dụ: *"50,000 đ / người"*). |
 | Nút "Nhận Suất Ngay" | `ElevatedButton(onPressed: () => joinRecruitment(id))` | Bấm để gọi API nhận chỗ trực tiếp. |
@@ -1201,7 +1201,7 @@ Swagger Group: `FR11 - Phát tín hiệu tìm khách giao lưu` & `FR12 - Khách
 
 #### 9.3. `POST /api/v1/sessions/recruitments/{recruitmentId}/join` (Khách Nhận Suất Chơi - FR12)
 
-- **Màn hình kích hoạt**: Bấm nút **"Nhận Suất Chơi Ngay"** trên thẻ kèo giao lưu.
+- **Màn hình kích hoạt**: Bấm nút **"Nhận Suất Chơi Ngay"** trên thẻ buổi giao lưu.
 - **Headers**: `Authorization: Bearer <ACCESS_TOKEN>`
 - **Response `200 OK`**: Cấp vé thành công.
 - **Luồng Mobile Kế Tiếp**:
@@ -1218,7 +1218,7 @@ Swagger Group: `FR11 - Phát tín hiệu tìm khách giao lưu` & `FR12 - Khách
 - **Luồng Mobile Kế Tiếp**:
   - Trả lại slot trống (`slotsRemaining = slotsRemaining + 1`).
   - Đổi trạng thái vé của khách thành `CANCELLED`.
-  - Invalidate danh sách kèo và điều hướng về trang chủ.
+  - Invalidate danh sách buổi giao lưu và điều hướng về trang chủ.
 
 
 
@@ -1266,7 +1266,7 @@ graph TD
    - `UserProfileViewModel`: Tải & cập nhật hồ sơ cá nhân.
    - `ExploreClubsViewModel`: Quét radar GPS tìm CLB gần đây.
    - `ClubDetailViewModel`: Xem thông tin chi tiết CLB, lịch chơi cố định, gửi đơn xin gia nhập.
-   - `SessionDetailViewModel`: Biểu quyết giữ chỗ, hàng đợi realtime, báo vắng.
+   - `SessionDetailViewModel`: Đăng ký giữ chỗ, hàng đợi realtime, báo vắng.
 5. **Giai đoạn 5: UI Screens**:
    - Màn hình Hồ sơ cá nhân (`ProfileScreen` & `EditProfileScreen`).
    - Màn hình Khám phá CLB quanh đây (`ExploreClubsScreen`).
@@ -1295,7 +1295,7 @@ Bảng mã quyền hạn chuẩn hóa theo hệ thống phân quyền đa nhóm 
 | **FINANCE** | `FINANCE.LEDGER.VIEW` | Xem sổ quỹ thu chi nhóm | Xem báo cáo tài chính CLB |
 | **FINANCE** | `FINANCE.LEDGER.MANAGE` | Lập / sửa phiếu thu chi | Thủ quỹ tạo phiếu thu/chi |
 | **FINANCE** | `FINANCE.FEE.VIEW` | Xem danh sách thu hội phí | Xem tình trạng đóng tiền tháng / buổi |
-| **FINANCE** | `FINANCE.FEE.MANAGE` | Thu phí & đối soát ngân hàng | Xác nhận thanh toán, gạch nợ hội viên |
+| **FINANCE** | `FINANCE.FEE.MANAGE` | Thu phí & đối soát ngân hàng | Xác nhận thanh toán, thu phí hội viên |
 | **FINANCE** | `FINANCE.BANK.MANAGE` | Quản lý tài khoản ngân hàng & đơn giá | Cấu hình tài khoản VietQR và tiền sân/cầu |
 | **MEMBER** | `MEMBER.VIEW` | Xem danh sách thành viên | Danh sách hội viên trong nhóm |
 | **MEMBER** | `MEMBER.JOIN_REQUEST.MANAGE` | Duyệt / từ chối đơn gia nhập | Ban quản trị duyệt thành viên mới |

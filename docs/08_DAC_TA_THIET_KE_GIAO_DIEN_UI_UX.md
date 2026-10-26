@@ -17,7 +17,7 @@ Tất cả component UI bắt buộc sử dụng token qua `context.colors.*` (`
 | :--- | :--- | :--- | :--- |
 | **Brand Primary** | `primary`<br/>`primaryDark`<br/>`primaryContainer` | `#3CC18E`<br/>`#2EA578`<br/>`#E8F9F3` | Màu chủ đạo: Nút chính (CTA), viền sân đang đấu, thanh tiến độ giữ chỗ. Container mờ cho tag và badge. |
 | **Secondary Accent** | `secondary`<br/>`accent` | `#0EA5E9`<br/>`#FFA61E` | Xanh dương: Radar GPS, tag khách vãng lai. Vàng cam: Đánh giá sao, huy hiệu tín nhiệm. |
-| **Semantic Success** | `success`<br/>`successContainer` | `#10B981`<br/>`#ECFDF5` | Đã gạch nợ (`PAID`), Check-in có mặt (`CHECKED_IN`), Sân đang đấu (`PLAYING`). |
+| **Semantic Success** | `success`<br/>`successContainer` | `#10B981`<br/>`#ECFDF5` | Đã thanh toán (`PAID`), Check-in có mặt (`CHECKED_IN`), Sân đang đấu (`PLAYING`). |
 | **Semantic Warning** | `warning`<br/>`warningContainer` | `#F59E0B`<br/>`#FFFBEB` | Hàng đợi chờ (`WAITING`), Đề xuất sân chờ duyệt, Buổi chơi chưa chốt phí. |
 | **Semantic Error** | `error`<br/>`errorContainer` | `#EF4444`<br/>`#FEF2F2` | Báo vắng (`NO_SHOW`), Thao tác hủy slot, Giao dịch nợ quá hạn. |
 | **Neutral Surface** | `surface`<br/>`background`<br/>`cardBorder` | `#FFFFFF`<br/>`#F8FAFC`<br/>`#E2E8F0` | Nền màn hình, nền thẻ Card, đường viền phân cách. |
@@ -36,7 +36,7 @@ Tuân thủ thang đo tại `app_typography.dart`:
 | `bodyMedium` | 14 | Regular (400) | 1.5 | Nội dung mô tả, văn bản hướng dẫn, input field text. |
 | `bodySmall` | 13 | Regular (400) | 1.45 | Thông tin phụ, địa chỉ sân, thời gian check-in. |
 | `labelLarge` | 14 | Bold (700) | 1.4 | Văn bản trên nút bấm chính/phụ (Button label). |
-| `labelSmall` | 11 | Bold (700) | 1.3 | Tag trạng thái (`ĐÃ GẠCH NỢ`, `ĐANG THI ĐẤU`), tag bậc L1–L6. |
+| `labelSmall` | 11 | Bold (700) | 1.3 | Tag trạng thái (`ĐÃ THANH TOÁN`, `ĐANG THI ĐẤU`), tag bậc L1–L6. |
 
 ---
 
@@ -118,7 +118,7 @@ graph TD
 2. **Đang tải (Loading State):**
    - Hiển thị `AppShimmer.card(height: 140)` cho banner và `AppShimmer.line()` lặp lại 6 dòng danh sách người chơi.
 3. **Trống (Empty State):**
-   - Khi chưa có người đăng ký: Icon `Icons.person_outline_rounded`, tiêu đề "Chưa có người chơi chính thức", phụ đề "Hãy là người đầu tiên biểu quyết giữ chỗ cho buổi sinh hoạt này!".
+   - Khi chưa có người đăng ký: Icon `Icons.person_outline_rounded`, tiêu đề "Chưa có người chơi chính thức", phụ đề "Hãy là người đầu tiên đăng ký giữ chỗ cho buổi sinh hoạt này!".
 4. **Báo lỗi (Error State):**
    - Khi mất mạng hoặc server lỗi: Banner đỏ kèm nút "Thử lại", SnackBar thông báo nguyên nhân lỗi.
 
@@ -193,8 +193,8 @@ graph TD
 1. **Mặc định (Default State):**
    - Tổng quan chi phí: Tổng tiền buổi chơi, Số tiền đã thu, Tiền sân, Tiền cầu, Phụ phí nước uống.
    - Nút "Cập nhật số quả cầu bóc mới & phụ phí" (Dành cho Host/Thủ quỹ).
-   - Danh sách chia tiền từng người: Tên, Vai trò, Giảm giá Nữ, Số tiền phải đóng, Badge `ĐÃ GẠCH NỢ` / `CHƯA TRẢ`.
-   - Nút hành động trên từng thẻ: "Mã VietQR" (Mở popup QR cá nhân) và "Xác nhận tiền mặt" (Thủ quỹ gạch nợ tay).
+   - Danh sách chia tiền từng người: Tên, Vai trò, Giảm giá Nữ, Số tiền phải đóng, Badge `ĐÃ THANH TOÁN` / `CHƯA THANH TOÁN`.
+   - Nút hành động trên từng thẻ: "Mã VietQR" (Mở popup QR cá nhân) và "Xác nhận tiền mặt" (Thủ quỹ xác nhận thanh toán tiền mặt).
 2. **Đang tải (Loading State):**
    - Shimmer khung tổng tiền và 4 dòng bảng chi phí hội viên.
 3. **Trống (Empty State):**
@@ -206,7 +206,7 @@ graph TD
 | Phần tử UI | Loại Control | Logic Hiển thị & Ràng buộc | Hành vi khi tương tác (User Action) |
 | :--- | :--- | :--- | :--- |
 | **Nút "Mã VietQR"** | `OutlinedButton` | Hiển thị cho người chưa thanh toán có `vietQrUrl`. | Mở Popup VietQR: Kích thước QR $200 \times 200\text{ dp}$, nhúng sẵn tiền và mã `paymentCode` duy nhất. Hội viên quét bằng app ngân hàng bất kỳ. |
-| **Nút "Xác nhận tiền mặt"** | `ElevatedButton` (Success) | Chỉ hiển thị cho Host/Thủ quỹ khi hội viên trả tiền mặt. | Chạm $\rightarrow$ Mở `AppConfirmDialog`: "Xác nhận đã nhận đủ X đồng từ Y?" $\rightarrow$ Gạch nợ sang `PAID`, kết chuyển 1 dòng thu vào Sổ quỹ mở. |
+| **Nút "Xác nhận tiền mặt"** | `ElevatedButton` (Success) | Chỉ hiển thị cho Host/Thủ quỹ khi hội viên trả tiền mặt. | Chạm $\rightarrow$ Mở `AppConfirmDialog`: "Xác nhận đã nhận đủ X đồng từ Y?" $\rightarrow$ Chuyển trạng thái sang `PAID`, kết chuyển 1 dòng thu vào Sổ quỹ mở. |
 | **Dialog nhập tiêu hao** | `AlertDialog` Form | Host/Thủ quỹ nhập số cầu bóc mới $\ge 0$ và tiền nước $\ge 0$. | Bấm "Tính lại đa hệ số" $\rightarrow$ Hệ thống tự động tính lại số tiền từng người theo biểu phí nhóm và làm tròn tiền. |
 
 ---
@@ -242,6 +242,6 @@ graph TD
 | **Kiến trúc Clean Architecture** | Tầng UI không import trực tiếp Data DTO hay Dio client. Tuân thủ mô hình 3 tầng phân định ranh giới. | `python .agents/skills/verify-architecture/scripts/verify_architecture.py` đạt 100% compliant. |
 | **Phân tích Tĩnh (Static Analysis)** | 0 lỗi biên dịch, 0 cảnh báo lint (`flutter_lints`). | `flutter analyze` báo cáo `No issues found!`. |
 | **Kiểm thử Tự động (Tests)** | 100% unit tests và widget tests pass, bao gồm cả bộ UI Kit component test. | `flutter test` đạt 100% tests passed. |
-| **Công thái học & Phản hồi xúc giác** | Mọi nút chính có touch target $\ge 48\text{dp}$. Các thao tác nhạy cảm (báo vắng, kết thúc trận, gạch nợ tiền mặt) bắt buộc có Modal xác nhận 2 bước và rung Haptic. | Kiểm thử thực tế trên thiết bị vật lý / Emulator. |
+| **Công thái học & Phản hồi xúc giác** | Mọi nút chính có touch target $\ge 48\text{dp}$. Các thao tác nhạy cảm (báo vắng, kết thúc trận, xác nhận thanh toán tiền mặt) bắt buộc có Modal xác nhận 2 bước và rung Haptic. | Kiểm thử thực tế trên thiết bị vật lý / Emulator. |
 | **Đa ngôn ngữ & Zero Emoji** | 100% chuỗi hiển thị đọc qua `context.l10n` hoặc message nghiệp vụ tiếng Việt có dấu chuẩn ngữ pháp. Tuyệt đối không có emoji trong UI hay mã nguồn. | Rà soát tự động qua verify script. |
 | **Độ mượt mà Responsive** | Giao diện tự động co giãn không tràn màn hình (`RenderFlex overflowed`) từ màn hình nhỏ (360dp) đến tablet (1024dp). | Chạy kiểm thử trên widget test đa độ phân giải. |

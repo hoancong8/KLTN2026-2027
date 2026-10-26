@@ -16,6 +16,7 @@ class ClubRoleManagementTablet extends StatefulWidget {
   final ClubMembersViewModel vm;
   final bool isHost;
   final VoidCallback onRefresh;
+  final bool embedded;
 
   const ClubRoleManagementTablet({
     super.key,
@@ -25,6 +26,7 @@ class ClubRoleManagementTablet extends StatefulWidget {
     required this.vm,
     required this.isHost,
     required this.onRefresh,
+    this.embedded = false,
   });
 
   @override
@@ -79,6 +81,58 @@ class _ClubRoleManagementTabletState extends State<ClubRoleManagementTablet> {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
+    final bodyRow = Row(
+      children: [
+        // Left Sidebar: Role List (Discord style side column)
+        Container(
+          width: 320,
+          decoration: BoxDecoration(
+            color: colors.cardBackground,
+            border: Border(right: BorderSide(color: colors.cardBorder)),
+          ),
+          child: ClubRoleListView(
+            roles: widget.roles,
+            members: widget.members,
+            selectedRole: _selectedRole,
+            isHost: widget.isHost,
+            onRoleSelected: (role) => setState(() => _selectedRole = role),
+            onAddRolePressed: _showAddRoleDialog,
+          ),
+        ),
+
+        // Right Editor Pane
+        Expanded(
+          child: _selectedRole != null
+              ? ClubRoleDetailView(
+                  key: ValueKey(_selectedRole!.id),
+                  role: widget.roles.firstWhere(
+                    (r) => r.id == _selectedRole!.id,
+                    orElse: () => _selectedRole!,
+                  ),
+                  allPermissions: widget.allPermissions,
+                  allMembers: widget.members,
+                  vm: widget.vm,
+                  isHost: widget.isHost,
+                  onRoleDeleted: () {
+                    setState(() {
+                      _selectedRole = widget.roles.isNotEmpty ? widget.roles.first : null;
+                    });
+                  },
+                )
+              : Center(
+                  child: Text(
+                    'Chọn một vai trò từ danh sách bên trái để chỉnh sửa',
+                    style: TextStyle(color: colors.textMuted, fontSize: 14),
+                  ),
+                ),
+        ),
+      ],
+    );
+
+    if (widget.embedded) {
+      return bodyRow;
+    }
+
     return Scaffold(
       backgroundColor: colors.background,
       appBar: AppBar(
@@ -104,53 +158,7 @@ class _ClubRoleManagementTabletState extends State<ClubRoleManagementTablet> {
           const SizedBox(width: 8),
         ],
       ),
-      body: Row(
-        children: [
-          // Left Sidebar: Role List (Discord style side column)
-          Container(
-            width: 320,
-            decoration: BoxDecoration(
-              color: colors.cardBackground,
-              border: Border(right: BorderSide(color: colors.cardBorder)),
-            ),
-            child: ClubRoleListView(
-              roles: widget.roles,
-              members: widget.members,
-              selectedRole: _selectedRole,
-              isHost: widget.isHost,
-              onRoleSelected: (role) => setState(() => _selectedRole = role),
-              onAddRolePressed: _showAddRoleDialog,
-            ),
-          ),
-
-          // Right Editor Pane
-          Expanded(
-            child: _selectedRole != null
-                ? ClubRoleDetailView(
-                    key: ValueKey(_selectedRole!.id),
-                    role: widget.roles.firstWhere(
-                      (r) => r.id == _selectedRole!.id,
-                      orElse: () => _selectedRole!,
-                    ),
-                    allPermissions: widget.allPermissions,
-                    allMembers: widget.members,
-                    vm: widget.vm,
-                    isHost: widget.isHost,
-                    onRoleDeleted: () {
-                      setState(() {
-                        _selectedRole = widget.roles.isNotEmpty ? widget.roles.first : null;
-                      });
-                    },
-                  )
-                : Center(
-                    child: Text(
-                      'Chọn một vai trò từ danh sách bên trái để chỉnh sửa',
-                      style: TextStyle(color: colors.textMuted, fontSize: 14),
-                    ),
-                  ),
-          ),
-        ],
-      ),
+      body: bodyRow,
     );
   }
 }

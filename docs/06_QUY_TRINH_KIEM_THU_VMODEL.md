@@ -103,12 +103,12 @@ Kiểm tra sự phối hợp đồng bộ giữa các tầng thành phần kỹ 
 | **UAT-03** | Duyệt đơn gia nhập CLB | 1. Host mở tab Join Requests.<br>2. Bấm "Chấp thuận". | Ứng viên trở thành Thành viên chính thức (`ACTIVE`), được gán vai trò mặc định. |  Đạt |
 | **UAT-04** | Giữ chỗ & Hàng đợi tự động | 1. Host mở buổi chơi 12 người.<br>2. 12 thành viên bấm giữ chỗ.<br>3. Người thứ 13 bấm giữ chỗ. | 12 người đầu tiên có vé `CONFIRMED`. Người thứ 13 vào hàng đợi `WAITING (Top 1)`. |  Đạt |
 | **UAT-05** | Phát radar tìm khách giao lưu | 1. Buổi chơi thiếu 2 người.<br>2. Host phát tín hiệu bán kính 5km.<br>3. Khách vãng lai lân cận nhận thông báo. | Khách vãng lai bấm tham gia trực tiếp, lấp đầy slot trống thành công. |  Đạt |
-| **UAT-06** | Hạch toán chia tiền & Quét VietQR | 1. Host nhập 3 quả cầu bóc mới.<br>2. Bấm chốt sổ buổi chơi.<br>3. Người chơi quét mã VietQR chuyển tiền. | Hệ thống tự động gạch nợ sang `PAID`, Sổ quỹ mở ghi nhận dòng tiền thu tức thì. |  Đạt |
+| **UAT-06** | Hạch toán chia tiền & Quét VietQR | 1. Host nhập 3 quả cầu bóc mới.<br>2. Bấm chốt sổ buổi chơi.<br>3. Người chơi quét mã VietQR chuyển tiền. | Hệ thống tự động xác nhận thanh toán sang `PAID`, Sổ quỹ mở ghi nhận dòng tiền thu tức thì. |  Đạt |
 
 ---
 
 ## 3. KẾT LUẬN ĐÁNH GIÁ CHẤT LƯỢNG HỆ THỐNG
 
 1. **Về độ ổn định & Tính toàn vẹn kiến trúc**: 100% các quy tắc phân tầng Clean Architecture, mã hóa mật khẩu, kiểm soát ngữ cảnh đa nhóm và đóng gói Entity đều được kiểm chứng tự động, không có bất kỳ vi phạm kiến trúc nào.
-2. **Về độ chính xác nghiệp vụ**: Hệ thống khép kín và tự động hóa thành công toàn bộ 4 bài toán điểm đau thực tế: Giữ chỗ không vượt trần, Xoay tua sân công bằng theo thời gian nghỉ, Hạch toán chi phí đa hệ số theo lượng cầu bóc mới và Tự động gạch nợ vào Sổ quỹ mở qua VietQR.
+2. **Về độ chính xác nghiệp vụ**: Hệ thống khép kín và tự động hóa thành công toàn bộ 4 bài toán điểm đau thực tế: Giữ chỗ không vượt trần, Xoay tua sân công bằng theo thời gian nghỉ, Hạch toán chi phí đa hệ số theo lượng cầu bóc mới và Tự động xác nhận thanh toán vào Sổ quỹ mở qua VietQR.
 3. **Mức độ hoàn thiện**: Sản phẩm đã sẵn sàng chuyển giao và nghiệm thu thực tế trên cả nền tảng Backend API và ứng dụng di động Flutter.
