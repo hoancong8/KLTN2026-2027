@@ -56,7 +56,11 @@ class MyBookingItemDto {
       feePerMember: _parseDouble(json['feePerMember']),
       bookedAt: json['bookedAt']?.toString() ?? '',
       checkinAt: json['checkinAt']?.toString(),
-      isGuest: _parseBool(json['isGuest'] ?? json['idRecruitment'] != null || json['recruitmentId'] != null),
+      isGuest: _parseBool(
+        json['isGuest'] ??
+            json['IsGuest'] ??
+            (json['idRecruitment'] != null || json['recruitmentId'] != null || json['RecruitmentId'] != null),
+      ),
       memberType: json['memberType']?.toString() ?? 'MONTHLY',
     );
   }

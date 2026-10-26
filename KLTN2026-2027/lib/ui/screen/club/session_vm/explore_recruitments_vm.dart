@@ -55,7 +55,8 @@ class ExploreRecruitmentsViewModel extends StateNotifier<ExploreRecruitmentsStat
       final joinedClubNames = results[2] as Set<String>;
 
       final available = recruitments.where((r) {
-        if (bookedSessionIds.contains(r.sessionId)) return false;
+        final rSessionId = r.sessionId.trim().toLowerCase();
+        if (bookedSessionIds.contains(rSessionId)) return false;
         final clubName = r.clubName.trim().toLowerCase();
         if (clubName.isNotEmpty && joinedClubNames.contains(clubName)) return false;
         return true;
@@ -76,7 +77,7 @@ class ExploreRecruitmentsViewModel extends StateNotifier<ExploreRecruitmentsStat
       final bookings = await getMyBookingsUseCase.execute();
       return bookings
           .where((b) => !b.isEnded && b.bookingStatus != BookingStatus.absent)
-          .map((b) => b.sessionId)
+          .map((b) => b.sessionId.trim().toLowerCase())
           .toSet();
     } catch (_) {
       return {};

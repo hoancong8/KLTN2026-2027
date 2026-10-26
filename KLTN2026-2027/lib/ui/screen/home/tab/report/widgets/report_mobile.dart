@@ -138,7 +138,7 @@ class _ReportMobileState extends ConsumerState<ReportMobile> {
             children: [
               Expanded(
                 child: _buildMiniStat(
-                  'Vãng lai chờ duyệt',
+                  'Hàng đợi chờ duyệt',
                   '$waiting',
                   colors.warning,
                   Icons.hourglass_top_rounded,
@@ -221,7 +221,7 @@ class _ReportMobileState extends ConsumerState<ReportMobile> {
     final filters = [
       (ReportFilter.all, 'Tất cả (${state.countAll})', Icons.apps_rounded, colors.primary),
       (ReportFilter.confirmed, 'Suất chính thức (${state.countConfirmed})', Icons.verified_rounded, colors.success),
-      (ReportFilter.waiting, 'Vãng lai chờ duyệt (${state.countWaiting})', Icons.hourglass_top_rounded, colors.warning),
+      (ReportFilter.waiting, 'Hàng đợi chờ duyệt (${state.countWaiting})', Icons.hourglass_top_rounded, colors.warning),
       (ReportFilter.completed, 'Đã kết thúc (${state.countCompleted})', Icons.history_rounded, colors.textMuted),
     ];
 
@@ -499,8 +499,9 @@ class _ReportMobileState extends ConsumerState<ReportMobile> {
     final dateStr = DateFormat('EEEE, dd/MM/yyyy', 'vi').format(booking.startTime);
 
     final isEnded = booking.isEnded;
+    final isWaiting = booking.isWaiting && !isEnded;
     final isConfirmed = booking.isConfirmed && !isEnded;
-    final isFixedMember = !booking.isGuest;
+    final isFixedMember = !booking.isGuest && isConfirmed;
 
     Color badgeBg;
     Color badgeBorder;
@@ -518,6 +519,18 @@ class _ReportMobileState extends ConsumerState<ReportMobile> {
       badgeText = 'BUỔI ĐÃ KẾT THÚC';
       explainText = 'Buổi chơi đã hoàn tất${booking.isConfirmed ? ' • Bạn đã hoàn thành buổi này' : ''}';
       explainIcon = Icons.task_alt_rounded;
+    } else if (isWaiting) {
+      badgeBg = colors.warning.withValues(alpha: 0.14);
+      badgeBorder = colors.warning.withValues(alpha: 0.35);
+      badgeFg = colors.warning;
+      badgeIcon = Icons.hourglass_top_rounded;
+      badgeText = booking.isGuest
+          ? (booking.queueOrder > 0 ? 'VÃNG LAI CHỜ DUYỆT (#${booking.queueOrder})' : 'VÃNG LAI CHỜ DUYỆT')
+          : (booking.queueOrder > 0 ? 'HÀNG ĐỢI (#${booking.queueOrder})' : 'DANH SÁCH CHỜ');
+      explainText = booking.isGuest
+          ? 'Đang trong danh sách chờ • Chờ Host xác nhận suất giao lưu'
+          : 'Đang trong hàng đợi • Tự động đôn lên khi có người báo vắng';
+      explainIcon = Icons.access_time_rounded;
     } else if (isFixedMember) {
       badgeBg = colors.primary.withValues(alpha: 0.14);
       badgeBorder = colors.primary.withValues(alpha: 0.35);
@@ -531,16 +544,18 @@ class _ReportMobileState extends ConsumerState<ReportMobile> {
       badgeBorder = colors.success.withValues(alpha: 0.35);
       badgeFg = colors.success;
       badgeIcon = Icons.verified_rounded;
-      badgeText = 'HOST ĐÃ XÁC NHẬN';
-      explainText = 'Host đã duyệt suất vãng lai • Vui lòng đến sân đúng giờ';
+      badgeText = booking.isGuest ? 'VÉ GIAO LƯU CHÍNH THỨC' : 'SUẤT CHÍNH THỨC';
+      explainText = booking.isGuest
+          ? 'Host đã duyệt suất giao lưu • Vui lòng đến sân đúng giờ'
+          : 'Đã giữ chỗ chính thức • Vui lòng đến sân đúng giờ';
       explainIcon = Icons.sports_tennis_rounded;
     } else {
       badgeBg = colors.warning.withValues(alpha: 0.14);
       badgeBorder = colors.warning.withValues(alpha: 0.35);
       badgeFg = colors.warning;
       badgeIcon = Icons.hourglass_top_rounded;
-      badgeText = 'VÃNG LAI CHỜ DUYỆT (#${booking.queueOrder})';
-      explainText = 'Đang trong hàng đợi • Chờ Host xác nhận tham gia';
+      badgeText = 'CHỜ DUYỆT';
+      explainText = 'Đang chờ xử lý';
       explainIcon = Icons.access_time_rounded;
     }
 
@@ -619,19 +634,21 @@ class _ReportMobileState extends ConsumerState<ReportMobile> {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
-                          color: booking.isGuest
+                          color: (booking.isGuest || booking.isWaiting)
                               ? colors.warning.withValues(alpha: 0.12)
                               : colors.primary.withValues(alpha: 0.12),
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text(
-                          booking.isGuest
-                              ? 'Khách vãng lai'
-                              : (booking.isMonthlyMember ? 'Hội viên cố định' : 'Hội viên theo buổi'),
+                          booking.isWaiting
+                              ? (booking.isGuest ? 'Khách vãng lai (Chờ duyệt)' : 'Hàng đợi dự bị')
+                              : (booking.isGuest
+                                  ? 'Khách vãng lai'
+                                  : (booking.isMonthlyMember ? 'Hội viên cố định' : 'Hội viên theo buổi')),
                           style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.bold,
-                            color: booking.isGuest ? colors.warning : colors.primary,
+                            color: (booking.isGuest || booking.isWaiting) ? colors.warning : colors.primary,
                           ),
                         ),
                       ),

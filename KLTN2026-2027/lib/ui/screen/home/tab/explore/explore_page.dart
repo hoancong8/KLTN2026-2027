@@ -75,7 +75,7 @@ class _ExplorePageState extends ConsumerState<ExplorePage>
                   ),
                 ),
                 Text(
-                  'Buổi giao lưu và câu lạc bộ lân cận',
+                  'Kèo giao lưu và câu lạc bộ lân cận',
                   style: AppTypography.bodySmall.copyWith(
                     color: colors.textMuted,
                     fontSize: 11,

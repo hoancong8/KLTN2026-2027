@@ -59,7 +59,7 @@ class _ExploreRecruitmentsPageState extends ConsumerState<ExploreRecruitmentsPag
                   ),
                   const SizedBox(width: AppSpacing.sm),
                   Text(
-                    'Tìm Buổi Giao Lưu',
+                    'Tìm Kèo Giao Lưu',
                     style: AppTypography.titleMedium.copyWith(
                       fontWeight: FontWeight.w700,
                       color: colors.textPrimary,
@@ -96,7 +96,7 @@ class _ExploreRecruitmentsPageState extends ConsumerState<ExploreRecruitmentsPag
                     Icon(Icons.near_me_rounded, size: 16, color: colors.primary),
                     const SizedBox(width: 6),
                     Text(
-                      'Buổi giao lưu quanh bạn',
+                      'Kèo giao lưu quanh bạn',
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.bold,
@@ -471,15 +471,15 @@ class _ExploreRecruitmentsPageState extends ConsumerState<ExploreRecruitmentsPag
                         padding: const EdgeInsets.symmetric(vertical: 13),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
-                      icon: const Icon(Icons.check_circle_rounded, size: 18),
-                      label: const Text('Đăng Ký Tham Gia', style: TextStyle(fontWeight: FontWeight.bold)),
+                      icon: const Icon(Icons.sports_tennis_rounded, size: 18),
+                      label: const Text('Nhận Suất Giao Lưu', style: TextStyle(fontWeight: FontWeight.bold)),
                       onPressed: () async {
                         Navigator.of(ctx).pop();
                         final ok = await vm.joinRecruitment(match.id);
                         if (ok && context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: const Text('Đăng ký tham gia thành công!'),
+                              content: const Text('Nhận suất giao lưu thành công!'),
                               backgroundColor: colors.primary,
                               behavior: SnackBarBehavior.floating,
                             ),
@@ -557,7 +557,7 @@ class _ExploreRecruitmentsPageState extends ConsumerState<ExploreRecruitmentsPag
             ),
             const SizedBox(height: 16),
             Text(
-              isSearching ? 'Không Tìm Thấy Buổi Chơi Phù Hợp' : 'Chưa Tìm Thấy Buổi Giao Lưu Nào',
+              isSearching ? 'Không Tìm Thấy Kèo Giao Lưu Phù Hợp' : 'Chưa Tìm Thấy Kèo Giao Lưu Nào',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: colors.textPrimary),
             ),
             const SizedBox(height: 8),
