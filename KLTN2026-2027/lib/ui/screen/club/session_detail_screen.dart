@@ -14,6 +14,7 @@ import '../../../domain/entities/session/session.dart';
 import '../../../domain/entities/session/session_booking.dart';
 import '../../../domain/enums/session_enums.dart';
 import '../../../domain/usecases/session/session_usecases.dart';
+import 'club_vm/club_context_vm.dart';
 import 'session_vm/session_detail_vm.dart';
 
 class SessionDetailScreen extends ConsumerStatefulWidget {
@@ -483,10 +484,19 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
     final activeContext = ref.watch(activeClubContextProvider);
     final isSameClub = activeContext?.clubId == session.groupId;
     final isHost = isSameClub && activeContext?.role == ClubRole.host;
+    final isTreasurer = isSameClub && activeContext?.role == ClubRole.treasurer;
+    final isDeputy = isSameClub && activeContext?.role == ClubRole.deputy;
     final canManageSession = isHost || (isSameClub && ref.hasClubPermission('OPERATIONS.SESSION.UPDATE'));
     final canDeleteSession = isHost || (isSameClub && ref.hasClubPermission('OPERATIONS.SESSION.DELETE'));
     final canRecruit = isHost || (isSameClub && (ref.hasClubPermission('OPERATIONS.RECRUIT.MANAGE') || ref.hasClubPermission('OPERATIONS.SESSION.UPDATE')));
+    final canOperateAttendance = isHost || isDeputy || isTreasurer || (isSameClub && ref.hasClubPermission('OPERATIONS.BOOKING.MANAGE'));
+    final canOperateRotation = isHost || isDeputy || (isSameClub && ref.hasClubPermission('OPERATIONS.MATCH.MANAGE'));
+    final canOperateSettlement = isHost || isTreasurer || (isSameClub && ref.hasClubPermission('FINANCE.FEE.MANAGE'));
+    final canOperateSession = canOperateAttendance || canOperateRotation || canOperateSettlement || canManageSession;
     final hasAnySessionManagePerm = canManageSession || canDeleteSession || canRecruit;
+
+    final myClubs = ref.watch(clubContextViewModelProvider).myClubs;
+    final isMember = isSameClub || myClubs.any((c) => c.clubId == session.groupId);
 
     return Scaffold(
       backgroundColor: colors.background,
@@ -548,6 +558,11 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                   canRecruit,
                   canDeleteSession,
                   isHost,
+                  canOperateSession: canOperateSession,
+                  canOperateAttendance: canOperateAttendance,
+                  canOperateRotation: canOperateRotation,
+                  canOperateSettlement: canOperateSettlement,
+                  isMember: isMember,
                 ),
               ),
               SliverPersistentHeader(
@@ -712,6 +727,8 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
           const femaleDiscount = 10000;
           final femaleFee = (baseFeePerPlayer - femaleDiscount).clamp(0, baseFeePerPlayer);
           final guestFee = (baseFeePerPlayer * 1.25).round();
+          const femaleGuestDiscount = 10000;
+          final femaleGuestFee = (guestFee - femaleGuestDiscount).clamp(0, guestFee);
 
           return SafeArea(
             child: Padding(
@@ -900,10 +917,18 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                           const Divider(height: 1),
                           ListTile(
                             dense: true,
-                            leading: Icon(Icons.people_outline_rounded, color: colors.warning, size: 20),
-                            title: Text('Khách giao lưu (Guest)', style: AppTypography.bodySmall.bold.colored(colors.textPrimary)),
+                            leading: Icon(Icons.male_rounded, color: colors.warning, size: 20),
+                            title: Text('Khách giao lưu (Nam)', style: AppTypography.bodySmall.bold.colored(colors.textPrimary)),
                             subtitle: Text('Theo suất khách giao lưu', style: AppTypography.labelSmall.copyWith(color: colors.textMuted)),
                             trailing: Text('${NumberFormat('#,###').format(guestFee)} đ', style: AppTypography.bodySmall.bold.colored(colors.warning)),
+                          ),
+                          const Divider(height: 1),
+                          ListTile(
+                            dense: true,
+                            leading: const Icon(Icons.female_rounded, color: AppColors.pink, size: 20),
+                            title: Text('Khách giao lưu (Nữ)', style: AppTypography.bodySmall.bold.colored(colors.textPrimary)),
+                            subtitle: Text('Đã trừ ưu đãi ${NumberFormat('#,###').format(femaleGuestDiscount)} đ', style: AppTypography.labelSmall.copyWith(color: colors.textMuted)),
+                            trailing: Text('${NumberFormat('#,###').format(femaleGuestFee)} đ', style: AppTypography.bodySmall.bold.colored(AppColors.pink)),
                           ),
                         ],
                       ),
@@ -1177,8 +1202,13 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
     bool canManageSession,
     bool canRecruit,
     bool canDeleteSession,
-    bool isHost,
-  ) {
+    bool isHost, {
+    required bool canOperateSession,
+    required bool canOperateAttendance,
+    required bool canOperateRotation,
+    required bool canOperateSettlement,
+    required bool isMember,
+  }) {
     final colors = context.colors;
     final now = DateTime.now();
     final isEnded = session.status == SessionStatus.completed ||
@@ -1411,97 +1441,148 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
           ),
           AppSpacing.gapH12,
 
-          // Bảng phím tắt nghiệp vụ tại sân (Ban Điều Hành) - Chỉ hiển thị cho Host / Ban điều hành
-          if (isHost)
+          // Bảng phím tắt nghiệp vụ tại sân (Ban Điều Hành) - Hiển thị đúng Role & Trạng thái chơi
+          if (canOperateSession) ...[
             Container(
-            padding: AppSpacing.allBase,
-            decoration: BoxDecoration(
-              color: colors.cardBackground,
-              borderRadius: AppRadius.card,
-              border: Border.all(color: colors.primary.withValues(alpha: 0.3)),
-              boxShadow: AppShadows.sm,
+              padding: AppSpacing.allBase,
+              decoration: BoxDecoration(
+                color: colors.cardBackground,
+                borderRadius: AppRadius.card,
+                border: Border.all(color: colors.primary.withValues(alpha: 0.3)),
+                boxShadow: AppShadows.sm,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.sports_tennis_rounded, color: colors.primary, size: 20),
+                          AppSpacing.gapW8,
+                          Text(
+                            'Vận Hành Tại Sân & Thu Phí',
+                            style: AppTypography.titleSmall.bold.colored(colors.textPrimary),
+                          ),
+                        ],
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: colors.primary.withValues(alpha: 0.12),
+                          borderRadius: AppRadius.tag,
+                        ),
+                        child: Text('Ban Điều Hành', style: AppTypography.labelSmall.bold.colored(colors.primary)),
+                      ),
+                    ],
+                  ),
+                  AppSpacing.gapH12,
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      // Điểm danh sân: chỉ khi chưa kết thúc
+                      if (canOperateAttendance && session.status != SessionStatus.completed)
+                        ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: colors.primary,
+                            foregroundColor: AppColors.white,
+                            shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                          ),
+                          icon: const Icon(Icons.how_to_reg_rounded, size: 16),
+                          label: const Text('Điểm danh sân'),
+                          onPressed: () => context.push('/session/${session.id}/attendance'),
+                        ),
+                      // Xoay tua sân: chỉ khi đang trong giờ chơi (playing hoặc locked)
+                      if (canOperateRotation &&
+                          (session.status == SessionStatus.playing || session.status == SessionStatus.locked))
+                        ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: colors.success,
+                            foregroundColor: AppColors.white,
+                            shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                          ),
+                          icon: const Icon(Icons.swap_horiz_rounded, size: 16),
+                          label: const Text('Xoay tua sân'),
+                          onPressed: () => context.push('/session/${session.id}/rotation'),
+                        ),
+                      // Chia tiền & Thu phí: chỉ khi đang chơi hoặc đã kết thúc
+                      if (canOperateSettlement &&
+                          (session.status == SessionStatus.playing ||
+                              session.status == SessionStatus.calculated ||
+                              session.status == SessionStatus.completed))
+                        ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: colors.primary,
+                            foregroundColor: AppColors.white,
+                            shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                          ),
+                          icon: const Icon(Icons.calculate_outlined, size: 16),
+                          label: const Text('Chia tiền & Thu phí'),
+                          onPressed: () => context.push('/session/${session.id}/settlement'),
+                        ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
+            AppSpacing.gapH12,
+          ],
+
+          // Đánh giá buổi chơi: Chỉ hiển thị khi buổi kết thúc VÀ người chơi là khách vãng lai (!isMember)
+          if (session.status == SessionStatus.completed && !isMember) ...[
+            Container(
+              padding: AppSpacing.allBase,
+              decoration: BoxDecoration(
+                color: colors.cardBackground,
+                borderRadius: AppRadius.card,
+                border: Border.all(color: colors.warning.withValues(alpha: 0.35)),
+                boxShadow: AppShadows.sm,
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: colors.warning.withValues(alpha: 0.12),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(Icons.star_rounded, size: 24, color: colors.warning),
+                  ),
+                  AppSpacing.gapW12,
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Icon(Icons.sports_tennis_rounded, color: colors.primary, size: 20),
-                        AppSpacing.gapW8,
                         Text(
-                          'Vận Hành Tại Sân & Thu Phí',
+                          'Đánh giá buổi chơi',
                           style: AppTypography.titleSmall.bold.colored(colors.textPrimary),
+                        ),
+                        AppSpacing.gapH4,
+                        Text(
+                          'Chia sẻ cảm nhận về sân bãi và văn hóa chơi để hoàn tất buổi giao lưu.',
+                          style: AppTypography.bodySmall.colored(colors.textMuted),
                         ),
                       ],
                     ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: colors.primary.withValues(alpha: 0.12),
-                        borderRadius: AppRadius.tag,
-                      ),
-                      child: Text('Ban Điều Hành', style: AppTypography.labelSmall.bold.colored(colors.primary)),
+                  ),
+                  AppSpacing.gapW8,
+                  OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: colors.warning,
+                      side: BorderSide(color: colors.warning),
+                      shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
                     ),
-                  ],
-                ),
-                AppSpacing.gapH12,
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    if (session.status != SessionStatus.completed) ...[
-                      ElevatedButton.icon(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: colors.primary,
-                          foregroundColor: AppColors.white,
-                          shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
-                        ),
-                        icon: const Icon(Icons.how_to_reg_rounded, size: 16),
-                        label: const Text('Điểm danh sân'),
-                        onPressed: () => context.push('/session/${session.id}/attendance'),
-                      ),
-                      ElevatedButton.icon(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: colors.success,
-                          foregroundColor: AppColors.white,
-                          shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
-                        ),
-                        icon: const Icon(Icons.swap_horiz_rounded, size: 16),
-                        label: const Text('Xoay tua sân'),
-                        onPressed: () => context.push('/session/${session.id}/rotation'),
-                      ),
-                    ],
-                    ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: colors.primary,
-                        foregroundColor: AppColors.white,
-                        shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
-                      ),
-                      icon: const Icon(Icons.calculate_outlined, size: 16),
-                      label: const Text('Chia tiền & Thu phí'),
-                      onPressed: () => context.push('/session/${session.id}/settlement'),
-                    ),
-                    if (session.status != SessionStatus.completed)
-                      OutlinedButton.icon(
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: colors.warning,
-                          side: BorderSide(color: colors.warning),
-                          shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
-                        ),
-                        icon: const Icon(Icons.star_outline_rounded, size: 16),
-                        label: const Text('Đánh giá buổi chơi'),
-                        onPressed: () => context.push('/session/${session.id}/reviews'),
-                      ),
-                  ],
-                ),
-              ],
+                    icon: const Icon(Icons.rate_review_outlined, size: 16),
+                    label: const Text('Đánh giá'),
+                    onPressed: () => context.push('/session/${session.id}/reviews'),
+                  ),
+                ],
+              ),
             ),
-          ),
-          AppSpacing.gapH12,
-
+            AppSpacing.gapH12,
+          ],
           // Cơ chế phân bổ chi phí đa hệ số
           Container(
             padding: const EdgeInsets.all(12),

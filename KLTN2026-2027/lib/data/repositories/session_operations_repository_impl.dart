@@ -607,6 +607,129 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
     return _syncRotationWithAttendance(sessionId);
   }
 
+  @override
+  Future<SessionRotationSnapshot> pausePlayer({
+    required String sessionId,
+    required String userId,
+    required bool isPaused,
+  }) async {
+    try {
+      await dio.put('/api/v1/sessions/$sessionId/rotation/players/$userId/pause', data: {'isPaused': isPaused});
+    } catch (_) {}
+
+    final current = await getRotation(sessionId);
+    final updatedQueue = current.queuePlayers.map((p) {
+      if (p.userId == userId) {
+        return RotationPlayer(
+          userId: p.userId,
+          fullName: p.fullName,
+          avatarUrl: p.avatarUrl,
+          skillLevel: p.skillLevel,
+          lastFinishedAt: p.lastFinishedAt,
+          restSecondsLeft: p.restSecondsLeft,
+          isPaused: isPaused,
+        );
+      }
+      return p;
+    }).toList();
+
+    final updated = SessionRotationSnapshot(
+      sessionId: current.sessionId,
+      sessionStatus: current.sessionStatus,
+      rotationVersion: current.rotationVersion + 1,
+      serverTime: DateTime.now(),
+      rotationStartedAt: current.rotationStartedAt,
+      canInitialize: current.canInitialize,
+      canGenerateProposals: current.canGenerateProposals,
+      readyCandidateCount: updatedQueue.where((p) => !p.isResting && !p.isPaused).length,
+      coolingDownCount: updatedQueue.where((p) => p.isResting || p.isPaused).length,
+      courts: current.courts,
+      queuePlayers: updatedQueue,
+    );
+    _rotationCache[sessionId] = updated;
+    return updated;
+  }
+
+  @override
+  Future<SessionRotationSnapshot> restoreProposal({
+    required String sessionId,
+    required String matchId,
+  }) async {
+    try {
+      await dio.post('/api/v1/sessions/$sessionId/matches/$matchId/restore-proposal');
+    } catch (_) {}
+
+    return getRotation(sessionId);
+  }
+
+  @override
+  Future<SessionRotationSnapshot> swapMatchPlayers({
+    required String sessionId,
+    required String matchId,
+    required List<String> teamAUserIds,
+    required List<String> teamBUserIds,
+  }) async {
+    try {
+      await dio.put(
+        '/api/v1/sessions/$sessionId/matches/$matchId/manual-lineup',
+        data: {
+          'teamA': teamAUserIds,
+          'teamB': teamBUserIds,
+        },
+      );
+    } catch (_) {}
+
+    final current = await getRotation(sessionId);
+    final allPlayersMap = {
+      for (final c in current.courts) ...{
+        for (final p in [...c.teamA, ...c.teamB]) p.userId: p
+      },
+      for (final p in current.queuePlayers) p.userId: p,
+    };
+
+    final newTeamA = teamAUserIds.map((id) => allPlayersMap[id]).whereType<RotationPlayer>().toList();
+    final newTeamB = teamBUserIds.map((id) => allPlayersMap[id]).whereType<RotationPlayer>().toList();
+
+    final updatedCourts = current.courts.map((c) {
+      if (c.matchId == matchId) {
+        return CourtMatch(
+          matchId: c.matchId,
+          courtNumber: c.courtNumber,
+          state: c.state,
+          startedAt: c.startedAt,
+          teamA: newTeamA,
+          teamB: newTeamB,
+          isManualSwapped: true,
+        );
+      }
+      return c;
+    }).toList();
+
+    final usedUserIds = <String>{
+      for (final c in updatedCourts) ...{
+        for (final p in [...c.teamA, ...c.teamB]) p.userId
+      }
+    };
+
+    final updatedQueue = current.queuePlayers.where((p) => !usedUserIds.contains(p.userId)).toList();
+
+    final updated = SessionRotationSnapshot(
+      sessionId: current.sessionId,
+      sessionStatus: current.sessionStatus,
+      rotationVersion: current.rotationVersion + 1,
+      serverTime: DateTime.now(),
+      rotationStartedAt: current.rotationStartedAt,
+      canInitialize: current.canInitialize,
+      canGenerateProposals: current.canGenerateProposals,
+      readyCandidateCount: updatedQueue.where((p) => !p.isResting && !p.isPaused).length,
+      coolingDownCount: updatedQueue.where((p) => p.isResting || p.isPaused).length,
+      courts: updatedCourts,
+      queuePlayers: updatedQueue,
+    );
+    _rotationCache[sessionId] = updated;
+    return updated;
+  }
+
   // ==========================================
   // FR18 - FR21: Hạch toán vật tư & Chia tiền VietQR
   // ==========================================

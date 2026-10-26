@@ -1,4 +1,4 @@
-#  Tài Liệu Đặc Tả Toàn Diện API & Kế Hoạch Tích Hợp Mobile (API Specification & Mobile Integration Plan)
+# 📖 Tài Liệu Đặc Tả Toàn Diện API & Kế Hoạch Tích Hợp Mobile (API Specification & Mobile Integration Plan)
 
 > **Dự án**: Hệ thống Quản lý Nhóm Cầu lông Phong trào (**LegendsTeamVN.BadmintonClub**)  
 > **Phiên bản tài liệu**: 2.1 (Cập nhật chuẩn hóa CQRS, Swagger Tags & Đặc tả chi tiết từng FR)  
@@ -7,7 +7,7 @@
 
 ---
 
-##  1. Thông Tin Mạng & Quy Ước Kết Nối Toàn Hệ Thống
+## 📌 1. Thông Tin Mạng & Quy Ước Kết Nối Toàn Hệ Thống
 
 ### 1.1. Bảng cấu hình địa chỉ IP (Base URL)
 Được cấu hình sẵn tại [app_config.dart](lib/app/consts/app_config.dart):
@@ -47,9 +47,10 @@ graph TD
    X-Group-Id: <CLUB_GUID>
    ```
    *(Áp dụng khi endpoint không truyền `{clubId}` trên URL, ví dụ: cập nhật buổi chơi `PUT /api/v1/sessions/{sessionId}`, đăng tin tuyển khách `POST /api/v1/sessions/{sessionId}/recruitments`, cập nhật thông tin CLB `PUT /api/v1/clubs/{id}/info`)*.
-3. **Cơ chế Chuyển Đổi Nhóm (Switch Context - FR04)**:
-   - Khi người dùng bấm vào một CLB trên Mobile UI, Mobile gọi `POST /api/v1/clubs/{id}/switch-context`.
-   - Backend sinh Token mới đã đóng gói `tenantId: clubId` và toàn bộ danh sách `permissions` của vai trò trong CLB đó.
+3. **Cơ chế Ngữ Cảnh Nhóm (Clean Context-Based Authorization - FR04)**:
+   - Hệ thống bỏ hoàn toàn API `switch-context` cấp lại Token.
+   - Khi người dùng chọn CLB trên giao diện, Mobile chỉ cần gán Header HTTP `X-Group-Id: <CLUB_GUID>` hoặc gọi endpoint mang route param `{clubId}`, `{groupId}`, `{sessionId}`.
+   - Backend thẩm tra quyền hạn động qua Redis Cache (`group:perm:{userId}:{groupId}`) tức thì 0ms.
 
 ---
 
@@ -70,30 +71,31 @@ Toàn bộ các phản hồi lỗi từ server đều trả về theo chuẩn **
 
 ---
 
-##  2. Danh Mục Các Module Chức Năng (Phân theo từng FR)
+## 📑 2. Danh Mục Các Module Chức Năng (Phân theo từng FR)
 
->  **DÀNH CHO ĐỘI NGŨ MOBILE**: Xem toàn bộ các API mới triển khai được viết riêng tập trung tại:  
->  [**PHẦN ĐẶC TẢ ĐỘC LẬP: PHÂN HỆ HỒ SƠ CÁ NHÂN & TÌM KIẾM CLB QUANH ĐÂY (FR05 - FR06 - FR07)**](#-phần-đặc-tả-độc-lập-phân-hệ-hồ-sơ-cá-nhân--tìm-kiếm-clb-quanh-đây-fr05---fr06---fr07)  
->  Hoặc đọc file độc lập ngắn gọn: [PHAN_HE_1_HO_SO_VA_TIM_KIEM_CLB_FR05_FR06_FR07.md](docs/PHAN_HE_1_HO_SO_VA_TIM_KIEM_CLB_FR05_FR06_FR07.md)
+> 🌟 **DÀNH CHO ĐỘI NGŨ MOBILE**: Xem toàn bộ các API mới triển khai được viết riêng tập trung tại:  
+> 👉 [**PHẦN ĐẶC TẢ ĐỘC LẬP: PHÂN HỆ HỒ SƠ CÁ NHÂN & TÌM KIẾM CLB QUANH ĐÂY (FR05 - FR06 - FR07)**](#-phần-đặc-tả-độc-lập-phân-hệ-hồ-sơ-cá-nhân--tìm-kiếm-clb-quanh-đây-fr05---fr06---fr07)  
+> 📄 Hoặc đọc file độc lập ngắn gọn: [PHAN_HE_1_HO_SO_VA_TIM_KIEM_CLB_FR05_FR06_FR07.md](docs/PHAN_HE_1_HO_SO_VA_TIM_KIEM_CLB_FR05_FR06_FR07.md)
+> 🏸 Hướng dẫn FE Phân hệ Quản lý Nhóm & CLB (19 APIs): [HUONG_DAN_FE_PHAN_HE_QUAN_LY_NHOM_CLB.md](docs/HUONG_DAN_FE_PHAN_HE_QUAN_LY_NHOM_CLB.md)
 
-1. [ **PHÂN HỆ MỚI: HỒ SƠ & TÌM KIẾM CLB (FR05 - FR06 - FR07)**](#-phần-đặc-tả-độc-lập-phân-hệ-hồ-sơ-cá-nhân--tìm-kiếm-clb-quanh-đây-fr05---fr06---fr07) *(5 APIs - MỚI HOÀN THIỆN)*
+1. [🌟 **PHÂN HỆ MỚI: HỒ SƠ & TÌM KIẾM CLB (FR05 - FR06 - FR07)**](#-phần-đặc-tả-độc-lập-phân-hệ-hồ-sơ-cá-nhân--tìm-kiếm-clb-quanh-đây-fr05---fr06---fr07) *(5 APIs - MỚI HOÀN THIỆN)*
 2. [Module 1: Xác Thực & Đăng Nhập (Auth)](#-module-1-xác-thực--đăng-nhập-auth) *(5 APIs)*
 3. [Module 3: Quản Trị Người Dùng & Vai Trò Toàn Cục (Users & Roles - Admin)](#-module-3-quản-trị-người-dùng--vai-trò-hệ-thống-users--roles) *(16 APIs)*
 4. [Module 4: Quản Trị Đa Nhóm, Gia Nhập & Chuyển Đổi Ngữ Cảnh (FR03, FR04)](#-module-4-quản-trị-đa-nhóm-gia-nhập--chuyển-đổi-ngữ-cảnh-fr03-fr04) *(15 APIs)*
 5. [Module 7: Quản Lý Buổi Sinh Hoạt (FR13 - Sessions)](#-module-7-quản-lý-buổi-sinh-hoạt-fr13---sessions) *(6 APIs)*
 6. [Module 8: Đăng Ký Giữ Chỗ & Hàng Đợi (FR08, FR09, FR10 - Bookings)](#-module-8-biểu-quyết-giữ-chỗ--hàng-đợi-fr08-fr09-fr10---bookings) *(4 APIs)*
-7. [Module 9: Khách Vãng Lai & Buổi Giao Lưu (FR11, FR12 - Recruitments)](#-module-9-tuyển-người-giao-lưu--khách-vãng-lai-fr11-fr12---recruitments) *(6 APIs)*
+7. [Module 9: Khách Vãng Lai & Buổi Giao Lưu (FR11, FR12 - Recruitments)](#-module-9-khách-vãng-lai--tuyển-kèo-giao-lưu-fr11-fr12---recruitments) *(6 APIs)*
 8. [Kế Hoạch Triển Khai Cho Mobile Làm Thông API (Mobile Integration Master Plan)](#-kế-hoạch-triển-khai-cho-mobile-làm-thông-api-chi-tiết-rõ-ràng)
 9. [Bảng Tra Cứu Toàn Bộ Mã Quyền Hạn (`GroupPermissions`)](#-bảng-tra-cứu-toàn-bộ-mã-quyền-hạn-grouppermissions)
 
 ---
 
-##  PHẦN ĐẶC TẢ ĐỘC LẬP: PHÂN HỆ HỒ SƠ CÁ NHÂN & TÌM KIẾM CLB QUANH ĐÂY (FR05 - FR06 - FR07)
+## 🌟 PHẦN ĐẶC TẢ ĐỘC LẬP: PHÂN HỆ HỒ SƠ CÁ NHÂN & TÌM KIẾM CLB QUANH ĐÂY (FR05 - FR06 - FR07)
 
 > **Mục đích**: Viết riêng toàn bộ nghiệp vụ, luồng xử lý và dữ liệu của nhóm chức năng mới: Hồ sơ cá nhân & Trình độ (`FR05`), Tìm kiếm CLB quanh vị trí GPS (`FR06`), và Xem thông tin chi tiết CLB & Lịch định kỳ tuần (`FR07`).  
-> **Tài liệu độc lập dành cho Mobile**: [PHAN_HE_1_HO_SO_VA_TIM_KIEM_CLB_FR05_FR06_FR07.md](docs/PHAN_HE_1_HO_SO_VA_TIM_KIEM_CLB_FR05_FR06_FR07.md)
+> **Tài liệu độc lập dành cho Mobile**: [PHAN_HE_1_HO_SO_VA_TIM_KIEM_CLB_FR05_FR06_FR07.md](docs/PHAN_HE_1_HO_SO_VA_TIM_KIEM_CLB_FR05_FR06_FR07.md) | [HUONG_DAN_FE_PHAN_HE_QUAN_LY_NHOM_CLB.md](docs/HUONG_DAN_FE_PHAN_HE_QUAN_LY_NHOM_CLB.md)
 
-###  Bảng Tổng Hợp 5 API Phân Hệ Mới
+### 📌 Bảng Tổng Hợp 5 API Phân Hệ Mới
 
 | FR | Method | Endpoint | Swagger Group / Tag | Quyền Hạn | Mô Tả Nghiệp Vụ |
 | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -106,7 +108,7 @@ Toàn bộ các phản hồi lỗi từ server đều trả về theo chuẩn **
 
 ---
 
-### ️ Sơ Đồ Luồng Tương Tác Nghiệp Vụ (User Journey)
+### 🗺️ Sơ Đồ Luồng Tương Tác Nghiệp Vụ (User Journey)
 
 ```mermaid
 sequenceDiagram
@@ -140,7 +142,7 @@ sequenceDiagram
 
 ---
 
-###  Hướng Dẫn Chi Tiết Cách Dùng Thông Tin Từng API Vào Luồng Chức Năng Mobile
+### 🔍 Hướng Dẫn Chi Tiết Cách Dùng Thông Tin Từng API Vào Luồng Chức Năng Mobile
 
 ---
 
@@ -165,7 +167,7 @@ sequenceDiagram
   }
   ```
 
-#####  Bảng Ánh Xạ Dữ Liệu Lên Giao Diện Mobile (UI Binding Table):
+##### 📊 Bảng Ánh Xạ Dữ Liệu Lên Giao Diện Mobile (UI Binding Table):
 | Trường Dữ Liệu | Kiểu Dữ Liệu | Widget Mobile Sử Dụng | Cách Dùng & Logic Nghiệp Vụ |
 | :--- | :--- | :--- | :--- |
 | `fullName` | `string` | `Text(fullName, style: textHeader1)` | Hiển thị họ tên lớn ở đầu trang; fill vào `nameController.text` khi bấm sửa. |
@@ -173,10 +175,10 @@ sequenceDiagram
 | `gender` | `short` | `RadioListTile` / `Chip` | `0`: Khác, `1`: Nam, `2`: Nữ; render icon giới tính tương ứng (♂ / ♀). |
 | `skillLevel` | `string` | `SkillBadge(level: skillLevel)` | Mã trình độ (`NB`..`G`); render huy hiệu trình độ với màu tương ứng (ví dụ: `TB` màu xanh dương). |
 | `skillLevelName` | `string` | `Text(skillLevelName)` | Tên tiếng Việt thân thiện (ví dụ: *"Trung bình"*). |
-| `isOpenForGuest` | `bool` | `SwitchListTile(value: ...)` | Toggle switch *"Sẵn sàng tham gia giao lưu"*. Khi người dùng bật, hồ sơ sẽ xuất hiện trên radar tìm khách vãng lai. |
+| `isOpenForGuest` | `bool` | `SwitchListTile(value: ...)` | Toggle switch *"Sẵn sàng nhận kèo giao lưu"*. Khi người dùng bật, hồ sơ sẽ xuất hiện trên radar tìm khách vãng lai. |
 | `reputationScore` | `double` | `Chip(avatar: Icon(Icons.star), ...)` | Điểm uy tín tín nhiệm (mặc định 100.0 điểm). Nếu < 80 đổi sang màu vàng cảnh báo. |
 
-#####  Luồng Dữ Liệu Kế Tiếp (Next Steps Flow):
+##### 🔄 Luồng Dữ Liệu Kế Tiếp (Next Steps Flow):
 1. **Lưu State Toàn Cục**: Phía Mobile lưu `skillLevel` vào `currentUserSkillLevelProvider`.
 2. **Tự Động Gợi Ý CLB (FR06)**: Khi người dùng chuyển sang Tab "Khám phá", Mobile tự động truyền `skillLevel={profile.skillLevel}` vào API `/api/v1/clubs/explore` để ưu tiên các CLB vừa tầm trình độ.
 3. **Mở Màn Hình Sửa Hồ Sơ**: Khi bấm nút "Chỉnh sửa", truyền đối tượng `UserProfileResponseDto` sang `EditProfileScreen` để khởi tạo giá trị ban đầu cho các Controller mà không cần gọi API lần 2.
@@ -198,14 +200,14 @@ sequenceDiagram
   }
   ```
 
-##### ️ Kiểm Tra Dữ Liệu Phía Mobile Trước Khi Gửi (Client Validation):
+##### 🛡️ Kiểm Tra Dữ Liệu Phía Mobile Trước Khi Gửi (Client Validation):
 - `fullName`: Không được để trống, độ dài từ 1 đến 100 ký tự.
 - `gender`: Giá trị thuộc tập `[0, 1, 2]`.
 - `skillLevel`: Bắt buộc chọn từ Dropdown (1 trong 7 mã: `NB, Y, TBY, TB, TBK, K, G`).
 - `avatarUrl`: Nếu người dùng vừa chọn ảnh mới từ thư viện máy -> Gọi API Upload ảnh trước để lấy URL -> gán URL vào trường này.
 
-#####  Luồng Xử Lý Sau Khi Lưu Thành Công (`204 NoContent`):
-1. Mobile hiển thị `SnackBar` xanh lá thông báo: *"Cập nhật hồ sơ và trình độ thành công! "*.
+##### 🔄 Luồng Xử Lý Sau Khi Lưu Thành Công (`204 NoContent`):
+1. Mobile hiển thị `SnackBar` xanh lá thông báo: *"Cập nhật hồ sơ và trình độ thành công! 🎉"*.
 2. Gọi `ref.invalidate(userProfileViewModelProvider)` để trigger lại `GET /api/v1/user/profile`, đồng bộ hóa dữ liệu mới toàn ứng dụng.
 3. Gọi `Navigator.pop(context)` quay về màn hình `ProfileScreen`, toàn bộ Tên, Badge trình độ và Switch trạng thái được vẽ lại tức thì.
 
@@ -217,7 +219,7 @@ sequenceDiagram
 - **Headers**: `Authorization: Bearer <ACCESS_TOKEN>`
 - **Query Parameters**: `latitude`, `longitude`, `radiusKm`, `skillLevel`, `isRecruiting`, `searchTerm`.
 
-##### ️ Quy Trình Lấy Tọa Độ GPS & Xử Lý Fallback Trên Mobile:
+##### 🛰️ Quy Trình Lấy Tọa Độ GPS & Xử Lý Fallback Trên Mobile:
 ```mermaid
 graph TD
     A[Mở ExploreClubsScreen] --> B{Kiểm tra quyền GPS?}
@@ -232,18 +234,18 @@ graph TD
     H --> I
 ```
 
-#####  Bảng Ánh Xạ Dữ Liệu Vào Thẻ CLB (`ClubCardWidget`):
+##### 📊 Bảng Ánh Xạ Dữ Liệu Vào Thẻ CLB (`ClubCardWidget`):
 | Trường Dữ Liệu | Kiểu Dữ Liệu | Widget Mobile Sử Dụng | Cách Dùng & Logic Nghiệp Vụ |
 | :--- | :--- | :--- | :--- |
 | `id` | `Guid` | `onTap: () => context.push('/clubs/$id')` | **Khóa chính**: Bắt sự kiện người dùng bấm vào Card để điều hướng sang `ClubDetailScreen(clubId: id)`. |
 | `groupName` | `string` | `Text(groupName, style: textTitle)` | Tên câu lạc bộ cầu lông. |
 | `avatarUrl` | `string?` | `ClipRRect(child: Image.network(...))` | Ảnh đại diện/logo CLB; nếu null render ảnh sân cầu lông mặc định. |
-| `distanceKm` | `double?` | `Chip(label: Text(' ${distanceKm.toStringAsFixed(1)} km'))` | Cự ly thực tế tính theo giải thuật Haversine. Nếu `null` (do user tắt GPS) thì ẩn Chip này đi. |
+| `distanceKm` | `double?` | `Chip(label: Text('📍 ${distanceKm.toStringAsFixed(1)} km'))` | Cự ly thực tế tính theo giải thuật Haversine. Nếu `null` (do user tắt GPS) thì ẩn Chip này đi. |
 | `fixedVenueName` & `fixedAddress` | `string?` | `Text(fixedVenueName)` & `Text(fixedAddress)` | Tên sân và địa chỉ cụ thể nơi nhóm sinh hoạt cố định. |
 | `schedulesSummary` | `string?` | `Row(children: [Icon(Icons.calendar_today), Text(schedulesSummary)])` | Chuỗi tóm tắt lịch cố định tuần (ví dụ: *"T3, T5, T7 (18:00 - 21:00)"*). |
 | `minSkillLevel` - `maxSkillLevel` | `string?` | `Text('Trình độ: $minSkillLevel - $maxSkillLevel')` | Khoảng trình độ của CLB. So sánh với `profile.skillLevel` của người dùng: Nếu người dùng yếu hơn `minSkillLevel`, hiển thị icon cảnh báo nhẹ: *"Trình độ buổi chơi có thể cao hơn so với bạn"*. |
 | `isRecruiting` | `bool` | `Badge(label: Text(isRecruiting ? 'Đang tuyển' : 'Đã đủ người'))` | `true` = Badge xanh lá; `false` = Badge xám. |
-| `memberCount` | `int` | `Text(' $memberCount thành viên')` | Tổng số thành viên hiện tại của CLB. |
+| `memberCount` | `int` | `Text('👥 $memberCount thành viên')` | Tổng số thành viên hiện tại của CLB. |
 
 ---
 
@@ -293,7 +295,7 @@ graph TD
   }
   ```
 
-#####  Logic Rẽ Nhánh Nút Thao Tác Đáy Màn Hình (`Bottom Action Bar`):
+##### 🚦 Logic Rẽ Nhánh Nút Thao Tác Đáy Màn Hình (`Bottom Action Bar`):
 Đối tượng **`currentUserStatus`** là thông tin sống còn để Mobile quyết định giao diện tương tác:
 
 ```mermaid
@@ -301,7 +303,7 @@ graph TD
     A[Đọc currentUserStatus từ Response] --> B{isMember == true?}
     B -- Đúng --> C[User đã là thành viên CLB]
     C --> D[Hiển thị Nút Xanh: 'Vào Sinh Hoạt CLB']
-    D --> E[Bấm nút: Gọi switch-context & mở ClubHomeScreen]
+    D --> E[Bấm nút: Gán X-Group-Id & mở ClubHomeScreen]
     
     B -- Sai --> F{hasPendingJoinRequest == true?}
     F -- Đúng --> G[Đơn xin gia nhập đang chờ duyệt]
@@ -313,7 +315,7 @@ graph TD
     K --> L[Bấm nút: Mở Dialog nhập tin nhắn & gọi join-requests]
 ```
 
-#####  Cách Sử Dụng Các Trường Thông Tin Khác Trong Màn Hình:
+##### 🎯 Cách Sử Dụng Các Trường Thông Tin Khác Trong Màn Hình:
 - **`code`**: Hiển thị kèm `IconButton(Icons.copy)` cho phép sao chép mã nhóm chia sẻ qua Zalo/Facebook.
 - **`lat`, `lng`**: Nút *"Chỉ đường tới sân"* -> Gọi `url_launcher` mở ứng dụng Google Maps trực tiếp:
   ```dart
@@ -327,7 +329,7 @@ graph TD
 - **`schedules`**: Render danh sách `Card` thể hiện các ngày cố định tuần: Icon bóng cầu, Tên thứ (`dayName`), Khung giờ sinh hoạt (`startTime` - `endTime`).
 - **Phân Quyền Nút Quản Trị Trên AppBar**:
   - Nếu `currentUserStatus.isMember == true` VÀ trong Token có quyền `MEMBER.INFO.UPDATE`: Hiển thị icon ⚙️ "Cài đặt nhóm" (mở màn hình `ClubSettingsScreen`).
-  - Nếu có quyền `OPERATIONS.SCHEDULE.MANAGE`: Hiển thị icon  "Sửa lịch tuần" (mở `ManageClubSchedulesScreen`).
+  - Nếu có quyền `OPERATIONS.SCHEDULE.MANAGE`: Hiển thị icon 📅 "Sửa lịch tuần" (mở `ManageClubSchedulesScreen`).
 
 ---
 
@@ -351,7 +353,7 @@ graph TD
   }
   ```
 
-##### ️ Tích Hợp Bản Đồ Chọn Tọa Độ Sân:
+##### 🗺️ Tích Hợp Bản Đồ Chọn Tọa Độ Sân:
 1. Trên giao diện Mobile, cạnh ô nhập `lat` và `lng` có nút **"Chọn vị trí trên bản đồ"**.
 2. Mở màn hình Google Maps / OpenStreetMap cho Host kéo ghim thả vào vị trí sân cầu lông.
 3. Khi Host bấm "Xác nhận vị trí", tự động gán tọa độ vào `lat` và `lng` của Form.
@@ -387,7 +389,7 @@ graph TD
 
 ---
 
-###  Bảng Tra Cứu Toàn Bộ Mã Trình Độ Chuẩn Hóa (`SkillLevel`)
+### 🏸 Bảng Tra Cứu Toàn Bộ Mã Trình Độ Chuẩn Hóa (`SkillLevel`)
 
 | Mã Chuẩn | Tên Tiếng Việt | Mô Tả Kỹ Thuật Phong Trào | Màu Gợi Ý UI Flutter |
 | :---: | :--- | :--- | :---: |
@@ -402,25 +404,25 @@ graph TD
 
 ---
 
-###  Hướng Dẫn Tích Hợp Nhanh Cho Mobile Flutter
+### 📱 Hướng Dẫn Tích Hợp Nhanh Cho Mobile Flutter
 
->  **Chi tiết mã nguồn mẫu đầy đủ**: Toàn bộ Enums, DTOs (`UserProfileResponseDto`, `ExploreClubResponseDto`, `ClubDetailResponseDto`...), RemoteDataSource implementations và Riverpod ViewModels đã được viết sẵn từng dòng tại:  
->  [**Tài liệu kỹ thuật độc lập Phân hệ 1 cho Mobile**](docs/PHAN_HE_1_HO_SO_VA_TIM_KIEM_CLB_FR05_FR06_FR07.md#5-hướng-dẫn-triển-khai-code-mobile-flutter)
+> 💡 **Chi tiết mã nguồn mẫu đầy đủ**: Toàn bộ Enums, DTOs (`UserProfileResponseDto`, `ExploreClubResponseDto`, `ClubDetailResponseDto`...), RemoteDataSource implementations và Riverpod ViewModels đã được viết sẵn từng dòng tại:  
+> 👉 [**Tài liệu kỹ thuật độc lập Phân hệ 1 cho Mobile**](docs/PHAN_HE_1_HO_SO_VA_TIM_KIEM_CLB_FR05_FR06_FR07.md#5-hướng-dẫn-triển-khai-code-mobile-flutter)
 
 1. **Hồ sơ cá nhân & Trình độ (FR05)**:
-   - Thêm vào [user_remote_datasource.dart](lib/data/datasource/remote/abstract/user_remote_datasource.dart): `getUserProfile()` và `updateUserProfile(UpdateUserProfileRequestDto request)`.
-   - Hiển thị trên `ProfileScreen`: Badge trình độ, điểm tín nhiệm ⭐ `100.0` và Toggle switch *"Sẵn sàng tham gia giao lưu"*.
+   - Thêm vào [user_remote_datasource.dart](file:///c:/code/base_fe/KLTN2026-2027/KLTN2026-2027/lib/data/datasource/remote/abstract/user_remote_datasource.dart): `getUserProfile()` và `updateUserProfile(UpdateUserProfileRequestDto request)`.
+   - Hiển thị trên `ProfileScreen`: Badge trình độ, điểm tín nhiệm ⭐ `100.0` và Toggle switch *"Sẵn sàng nhận kèo giao lưu"*.
 2. **Khám phá CLB quanh vị trí GPS (FR06)**:
-   - Thêm vào [club_remote_datasource.dart](lib/data/datasource/remote/abstract/club_remote_datasource.dart): `exploreClubs({latitude, longitude, radiusKm, skillLevel, isRecruiting, searchTerm})`.
+   - Thêm vào [club_remote_datasource.dart](file:///c:/code/base_fe/KLTN2026-2027/KLTN2026-2027/lib/data/datasource/remote/abstract/club_remote_datasource.dart): `exploreClubs({latitude, longitude, radiusKm, skillLevel, isRecruiting, searchTerm})`.
    - Màn hình `ExploreClubsScreen`: Yêu cầu quyền GPS `Geolocator`, truyền tọa độ để nhận danh sách sắp xếp theo cự ly gần nhất `distanceKm ASC`.
 3. **Chi tiết CLB & Lịch cố định tuần (FR07)**:
-   - Thêm vào [club_remote_datasource.dart](lib/data/datasource/remote/abstract/club_remote_datasource.dart): `getClubDetail(id)`, `updateClubInfo(clubId, request)`, `updateClubSchedules(clubId, request)`.
+   - Thêm vào [club_remote_datasource.dart](file:///c:/code/base_fe/KLTN2026-2027/KLTN2026-2027/lib/data/datasource/remote/abstract/club_remote_datasource.dart): `getClubDetail(id)`, `updateClubInfo(clubId, request)`, `updateClubSchedules(clubId, request)`.
    - Hiển thị trên `ClubDetailScreen`: Sân cố định, chỉ đường Google Maps, các khung giờ lặp lại hàng tuần (T3-T5-T7), và Action Button thông minh theo `currentUserStatus` (`isMember`, `hasPendingJoinRequest`).
 
 ---
 
 
-##  Module 1: Xác Thực & Đăng Nhập (Auth)
+## 🔐 Module 1: Xác Thực & Đăng Nhập (Auth)
 Prefix: `/api/v1/auth`  
 Swagger Group: `Auth`
 
@@ -434,7 +436,7 @@ Swagger Group: `Auth`
 
 ---
 
-###  Hướng Dẫn Từng API Module 1 Vào Luồng Mobile
+### 🔍 Hướng Dẫn Từng API Module 1 Vào Luồng Mobile
 
 #### 1.1. `POST /api/v1/auth/login` (Đăng Nhập)
 
@@ -458,7 +460,7 @@ Swagger Group: `Auth`
   }
   ```
 
-#####  Bảng Ánh Xạ Dữ Liệu & Cách Dùng Phía Mobile:
+##### 📊 Bảng Ánh Xạ Dữ Liệu & Cách Dùng Phía Mobile:
 | Trường Dữ Liệu | Kiểu Dữ Liệu | Nơi Lưu / Widget Sử Dụng | Cách Dùng & Logic Nghiệp Vụ |
 | :--- | :--- | :--- | :--- |
 | `accessToken` | `string` | `SecureStorageService.saveAuthToken()` | Lưu vào bộ nhớ an toàn (Keystore/Keychain). Đưa vào Header `Authorization: Bearer <token>` cho mọi request sau đó. |
@@ -467,11 +469,11 @@ Swagger Group: `Auth`
 | `email` | `string` | `Text(email)` | Email đăng ký, hiển thị trong màn hình Tài khoản. |
 | `roles` | `string[]` | `authRoleProvider` | Quyền toàn cục hệ thống (`User`, `Admin`). Nếu chứa `Admin`, mở thêm tab "Quản trị viên" trên Drawer. |
 
-#####  Luồng Nghiệp Vụ Kế Tiếp (Next Steps Flow):
+##### 🔄 Luồng Nghiệp Vụ Kế Tiếp (Next Steps Flow):
 1. **Lưu Token**: Gán `accessToken` vào `Dio` client header: `dio.options.headers['Authorization'] = 'Bearer $token'`.
 2. **Khởi Tạo Ngữ Cảnh CLB (FR03 & FR04)**: Gọi ngay `GET /api/v1/clubs/my-clubs`:
    - Nếu danh sách trả về **rỗng** (user mới chưa tham gia nhóm nào): Điều hướng sang màn hình Khám phá (`ExploreClubsScreen`) để user quét tìm CLB quanh đây.
-   - Nếu danh sách **có ít nhất 1 CLB**: Lấy CLB đầu tiên hoặc CLB đã chọn gần nhất (`activeClubId`), tự động gọi `POST /api/v1/clubs/{id}/switch-context` để nạp token ngữ cảnh CLB đó và mở thẳng `ClubHomeScreen`.
+   - Nếu danh sách **có ít nhất 1 CLB**: Lấy CLB đầu tiên hoặc CLB đã chọn gần nhất (`activeClubId`), thiết lập Header HTTP mặc định `X-Group-Id: selectedClub.clubId` và mở thẳng `ClubHomeScreen` (không gọi API switch-context).
 3. **Xử Lý Lỗi (Error Handling)**:
    - `400 Bad Request`: Sai tài khoản hoặc mật khẩu -> Hiển thị thông báo đỏ dưới ô nhập hoặc SnackBar: *"Tài khoản hoặc mật khẩu không chính xác."*
    - Tài khoản bị khóa (`isLocked == true`): Hiển thị Dialog cảnh báo: *"Tài khoản của bạn đã bị tạm khóa. Vui lòng liên hệ ban quản trị để được hỗ trợ."*
@@ -547,7 +549,7 @@ Swagger Group: `Auth`
 
 ---
 
-##  Module 3: Quản Trị Người Dùng & Vai Trò Hệ Thống (Users & Roles - Admin)
+## 👥 Module 3: Quản Trị Người Dùng & Vai Trò Hệ Thống (Users & Roles - Admin)
 Prefix: `/api/v1/user` & `/api/v1/roles`  
 Swagger Group: `Users` & `Roles`
 
@@ -574,7 +576,7 @@ Swagger Group: `Users` & `Roles`
 
 ---
 
-##  Module 4: Quản Trị Đa Nhóm, Gia Nhập & Chuyển Đổi Ngữ Cảnh (FR03, FR04)
+## 🏸 Module 4: Quản Trị Đa Nhóm, Gia Nhập & Chuyển Đổi Ngữ Cảnh (FR03, FR04)
 Prefix: `/api/v1/clubs`  
 Swagger Group: `Clubs` & `FR03 - Quản lý CLB & Thành viên`
 
@@ -584,12 +586,12 @@ Swagger Group: `Clubs` & `FR03 - Quản lý CLB & Thành viên`
 > - **Gia nhập CLB**: Người dùng xin vào qua duyệt đơn (`join-requests`) hoặc vào ngay bằng mã Code nhóm (`join`).
 > - **Quản trị thành viên**: Bổ nhiệm vai trò (Host, Phó nhóm, Thủ quỹ, Thành viên), xem danh sách và kick/rời nhóm.
 
-###  Bảng Danh Mục Đầy Đủ Các API Module 4
+### 📌 Bảng Danh Mục Đầy Đủ Các API Module 4
 
 | Method | Endpoint | Quyền Hạn Yêu Cầu | Swagger Group | Mô Tả Nghiệp Vụ |
 | :--- | :--- | :--- | :--- | :--- |
 | `POST` | `/api/v1/clubs` | Bearer Token | `Clubs` | Tạo CLB mới (Người tạo tự động nhận vai trò Host sở hữu 100% quyền hạn) |
-| `POST` | `/api/v1/clubs/{id}/switch-context` | Bearer Token | `Clubs` | **FR04**: Đổi context sang CLB này, cấp Token chứa đúng quyền thực tế |
+| *Header* | `X-Group-Id: <id>` | Bearer Token | `Security` | **FR04**: Header ngữ cảnh nhóm, thay thế API switch-context cũ |
 | `GET` | `/api/v1/clubs/my-clubs` | Bearer Token | `FR03` | **FR03**: Lấy danh sách CLB user đang tham gia kèm vai trò độc lập |
 | `POST` | `/api/v1/clubs/join` | Bearer Token | `FR03` | **FR03**: Tham gia CLB trực tiếp tức thì bằng mã Code nhóm |
 | `POST` | `/api/v1/clubs/{id}/join-requests` | Bearer Token | `FR03` | **FR03**: Gửi đơn xin gia nhập CLB kèm lời giới thiệu bản thân |
@@ -606,12 +608,17 @@ Swagger Group: `Clubs` & `FR03 - Quản lý CLB & Thành viên`
 
 ---
 
-###  Hướng Dẫn Từng API Module 4 Vào Luồng Mobile
+### 🔍 Hướng Dẫn Từng API Module 4 Vào Luồng Mobile
 
-#### 4.1. `POST /api/v1/clubs` (Tạo Câu Lạc Bộ Mới)
+#### 4.1. `POST /api/v1/clubs` (Tạo Câu Lạc Bộ Mới - FR03 & FR13)
+> [!NOTE]
+> Xem hướng dẫn chi tiết toàn trình và code mẫu Flutter tại: [`docs/HUONG_DAN_FE_LUONG_TAO_CLB.md`](HUONG_DAN_FE_LUONG_TAO_CLB.md).
 
-- **Màn hình kích hoạt**: BottomSheet "Tham gia hoặc tạo CLB" -> Chọn **"Tạo câu lạc bộ mới"** (`_showCreateClubDialog`).
-- **Request Body JSON**:
+- **Màn hình kích hoạt**: BottomSheet "Tham gia hoặc tạo CLB" -> Chọn **"Tạo câu lạc bộ mới"** (`_showCreateClubDialog` hoặc `CreateClubScreen`).
+- **Headers**: `Authorization: Bearer <ACCESS_TOKEN>`
+- **Request Body JSON (Hỗ trợ 2 chế độ)**:
+
+  **Chế độ A: Tạo nhanh (Quick Mode)**:
   ```json
   {
     "name": "CLB Cầu Lông Legends Quận 7",
@@ -619,15 +626,53 @@ Swagger Group: `Clubs` & `FR03 - Quản lý CLB & Thành viên`
     "avatarUrl": "https://example.com/club_avatar.png"
   }
   ```
-- **Client Validation**:
-  - `name`: Tên CLB không được để trống, độ dài từ 3 đến 100 ký tự.
+
+  **Chế độ B: Tạo đầy đủ kèm sân & lịch tuần (Full Mode)**:
+  ```json
+  {
+    "name": "CLB Cầu Lông Legends Quận 7",
+    "description": "Sinh hoạt tối thứ 3 - 5 - 7 hàng tuần sân Kim Cương",
+    "avatarUrl": "https://example.com/club_avatar.png",
+    "fixedVenueName": "Sân Cầu Lông Kim Cương",
+    "fixedAddress": "123 Nguyễn Thị Thập, Tân Phú, Quận 7, TP.HCM",
+    "lat": 10.7328,
+    "lng": 106.7154,
+    "minSkillLevel": "NB",
+    "maxSkillLevel": "K",
+    "schedules": [
+      {
+        "dayOfWeek": 2,
+        "startTime": "18:00:00",
+        "endTime": "20:00:00"
+      },
+      {
+        "dayOfWeek": 4,
+        "startTime": "18:00:00",
+        "endTime": "20:00:00"
+      }
+    ]
+  }
+  ```
+
+- **Quy tắc Validation**:
+  - `name`: Bắt buộc, chuỗi không được để trống, tối đa 255 ký tự.
   - `description`: Tùy chọn, tối đa 500 ký tự.
-- **Response `201 Created`**: Trả về `Guid` ID của câu lạc bộ vừa tạo.
-- **Luồng Mobile Kế Tiếp**:
-  1. Hiển thị SnackBar: *"Chúc mừng! Bạn đã tạo CLB thành công và trở thành Chủ nhóm (Host) "*.
-  2. Gọi `await ref.read(clubContextViewModelProvider.notifier).loadMyClubs()` để danh sách CLB của tôi cập nhật nhóm mới.
-  3. Tự động gọi `switchClub(newClubId)` để chuyển context ngay lập tức vào CLB vừa tạo.
-  4. Gợi ý Host mở màn hình "Cài đặt CLB" (`ClubSettingsScreen` - `FR07`) để cấu hình sân cố định và giờ sinh hoạt tuần.
+  - `schedules[].dayOfWeek`: `0..6` (`0 = Chủ nhật, 1 = Thứ 2, ..., 6 = Thứ 7`). Lưu ý: Không dùng dải 1..7.
+  - `schedules[].startTime` < `schedules[].endTime` (`"HH:mm:ss"` hoặc `"HH:mm"`).
+  - `minSkillLevel <= maxSkillLevel` (thang: NB, Y, TBY, TB, TBK, K).
+- **Cơ chế Backend tự động xử lý**:
+  1. Sinh mã code ngắn `CLB-XXXXXX`.
+  2. Sinh 5 vai trò chuẩn: Host (18/18 quyền), Phó nhóm, Thủ quỹ, Thành viên (mặc định), Khách vãng lai.
+  3. Bổ nhiệm người tạo làm Host tối cao với `status: ACTIVE`, `memberType: MONTHLY`.
+  4. Nếu có `schedules`: Tự động tạo trước các buổi chơi (`BadmintonSession`) trong 14 ngày tới.
+  5. Cấu hình quy tắc phí mặc định (`group_fee_rule`: Dynamic mode, làm tròn 1.000 VNĐ).
+- **Response `201 Created`**: Trả về chuỗi `Guid` ID của câu lạc bộ vừa tạo (ví dụ: `"b86fa2e7-03b6-4299-923c-a93108ce8968"`).
+- **Luồng Mobile Kế Tiếp (Context-based `X-Group-Id`)**:
+  1. Hiển thị thông báo thành công: *"Chúc mừng! Bạn đã tạo CLB thành công và trở thành Chủ nhóm (Host)"*.
+  2. Gọi `await ref.read(myClubsViewModelProvider.notifier).loadMyClubs()` để nạp danh sách CLB mới kèm quyền hạn Host.
+  3. Thiết lập biến ngữ cảnh hoạt động `activeClubId = newClubId`.
+  4. Gán header HTTP mặc định cho Dio: `X-Group-Id: <newClubId>`.
+  5. Mở màn hình chính của CLB (`ClubHomeScreen`).
 
 ---
 
@@ -652,7 +697,7 @@ Swagger Group: `Clubs` & `FR03 - Quản lý CLB & Thành viên`
   ]
   ```
 
-#####  Bảng Ánh Xạ Dữ Liệu Lên Giao Diện Mobile:
+##### 📊 Bảng Ánh Xạ Dữ Liệu Lên Giao Diện Mobile:
 | Trường Dữ Liệu | Kiểu Dữ Liệu | Widget Mobile Sử Dụng | Cách Dùng & Hiển Thị |
 | :--- | :--- | :--- | :--- |
 | `groupId` | `Guid` | `ServerIcon(onTap: () => switchClub(groupId))` | Khóa chính của nhóm. Khi bấm vào icon CLB trên thanh Rail bên trái, truyền `groupId` vào hàm `switchClub`. |
@@ -664,43 +709,21 @@ Swagger Group: `Clubs` & `FR03 - Quản lý CLB & Thành viên`
 
 ---
 
-#### 4.3. `POST /api/v1/clubs/{id}/switch-context` (FR04 - Chuyển Đổi Ngữ Cảnh Hoạt Động Của Nhóm)
+#### 4.3. Header `X-Group-Id` (FR04 - Chuyển Đổi Ngữ Cảnh Hoạt Động Của Nhóm)
 
-- **Màn hình kích hoạt**: Bấm vào một icon CLB trên thanh Discord Rail, chọn nhóm từ Dropdown trên AppBar, hoặc bấm nút **"Vào sinh hoạt CLB"** từ màn hình chi tiết CLB (`ClubDetailScreen`).
-- **Headers**: `Authorization: Bearer <ACCESS_TOKEN>`
-- **Response `200 OK`**:
-  ```json
-  {
-    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-    "clubId": "b86fa2e7-03b6-4299-923c-a93108ce8968",
-    "clubName": "CLB Cầu Lông Legends Quận 7",
-    "roleId": "e1586a65-1d02-4fc5-9118-28308bc25752",
-    "roleName": "Chủ phòng (Host)",
-    "permissions": [
-      "OPERATIONS.SESSION.VIEW",
-      "OPERATIONS.SESSION.CREATE",
-      "OPERATIONS.SESSION.UPDATE",
-      "OPERATIONS.SESSION.DELETE",
-      "OPERATIONS.RECRUIT.MANAGE",
-      "MEMBER.VIEW",
-      "MEMBER.ROLE.MANAGE",
-      "MEMBER.INFO.UPDATE",
-      "OPERATIONS.SCHEDULE.MANAGE"
-    ]
-  }
-  ```
+> [!NOTE]
+> **Đã bỏ API `POST /api/v1/clubs/{id}/switch-context`**. Toàn bộ hệ thống chuyển sang kiến trúc **Clean Context-Based Authorization** qua Header `X-Group-Id`.
 
-#####  Luồng Đồng Bộ Toàn Diện Phía Mobile:
-1. **Lưu Token Mới**: Thay thế Token cũ trong `Dio` client và `SecureStorageService`. Token mới này đã chứa claim `tenantId: clubId`.
-2. **Cập Nhật Active Context State**:
-   - `ref.read(clubContextViewModelProvider.notifier).state = state.copyWith(activeContext: response);`
-   - Ghi nhớ `activeClubId` vào local storage để lần mở app tiếp theo tự động vào đúng nhóm này.
-3. **Phân Quyền Động Các Nút Tương Tác Trên Mọi Màn Hình (`Permission-based UI Rendering`)**:
-   - Nút **"Tạo buổi chơi mới (+)"**: Ẩn nếu không có `OPERATIONS.SESSION.CREATE`.
-   - Nút **"Tuyển khách giao lưu"**: Ẩn nếu không có `OPERATIONS.RECRUIT.MANAGE`.
-   - Tab **"Duyệt đơn gia nhập"**: Ẩn nếu không có `MEMBER.JOIN_REQUEST.MANAGE`.
-   - Nút **"Cài đặt sân & giờ sinh hoạt tuần (⚙️)"**: Ẩn nếu không có `MEMBER.INFO.UPDATE`.
-4. **Tải Lại Dữ Liệu**: Gọi `ref.invalidate(clubSessionsViewModelProvider(clubId))` để tải đúng danh sách lịch sinh hoạt của câu lạc bộ vừa chọn.
+- **Màn hình kích hoạt**: Bấm vào icon CLB trên thanh Discord Rail, chọn nhóm từ Dropdown trên AppBar, hoặc bấm nút **"Vào sinh hoạt CLB"** từ màn hình chi tiết CLB (`ClubDetailScreen`).
+- **Cơ chế**:
+  1. Lấy danh sách CLB và mảng quyền hạn của từng CLB từ `GET /api/v1/clubs/my-clubs`.
+  2. Khi người dùng chọn CLB nào, Frontend chỉ cần gán Header HTTP:
+     ```http
+     X-Group-Id: <CLUB_GUID>
+     ```
+  3. Giữ nguyên 1 JWT Access Token toàn cục, không cần gọi API cấp lại token.
+  4. Backend thẩm tra quyền hạn động qua `GroupPermissionHandler` và Redis Cache (`group:perm:{userId}:{groupId}`) với TTL 10 phút.
+  5. Chi tiết hướng dẫn: Xem [`HUONG_DAN_FE_XAC_THUC_VA_NGU_CANH_X_GROUP_ID.md`](HUONG_DAN_FE_XAC_THUC_VA_NGU_CANH_X_GROUP_ID.md).
 
 ---
 
@@ -717,7 +740,7 @@ Swagger Group: `Clubs` & `FR03 - Quản lý CLB & Thành viên`
 - **Client Validation**: Mã Code gồm ký tự chữ hoa và số, tối thiểu 4 ký tự.
 - **Response `200 OK`**: Cấp quyền gia nhập thành công.
 - **Luồng Mobile Kế Tiếp**:
-  - Hiển thị SnackBar xanh: *"Bạn đã tham gia CLB thành công! "*.
+  - Hiển thị SnackBar xanh: *"Bạn đã tham gia CLB thành công! 🏸"*.
   - Gọi `loadMyClubs()` -> Nhóm mới lập tức xuất hiện trên thanh Server Rail.
   - Tự động `switchClub` sang nhóm mới gia nhập.
 
@@ -762,7 +785,7 @@ Swagger Group: `Clubs` & `FR03 - Quản lý CLB & Thành viên`
   ]
   ```
 
-#####  Bảng Ánh Xạ Dữ Liệu Lên Danh Sách Chờ Duyệt (`JoinRequestCard`):
+##### 📊 Bảng Ánh Xạ Dữ Liệu Lên Danh Sách Chờ Duyệt (`JoinRequestCard`):
 | Trường Dữ Liệu | Widget Mobile Sử Dụng | Cách Dùng & Logic |
 | :--- | :--- | :--- |
 | `avatarUrl` & `fullName` | `ListTile(leading: CircleAvatar, title: Text)` | Ảnh đại diện và họ tên người xin gia nhập. |
@@ -779,7 +802,7 @@ Swagger Group: `Clubs` & `FR03 - Quản lý CLB & Thành viên`
 - **Màn hình kích hoạt**: Bấm nút **"Duyệt"** trên thẻ đơn xin gia nhập.
 - **Response `204 NoContent`**.
 - **Luồng Mobile Kế Tiếp**:
-  - Hiển thị SnackBar: *"Đã duyệt thành viên thành công! "*.
+  - Hiển thị SnackBar: *"Đã duyệt thành viên thành công! 👏"*.
   - Xóa item khỏi danh sách chờ trên UI: `state = state.where((item) => item.id != requestId).toList()`.
   - Giảm số lượng Badge thông báo trên Tab "Duyệt đơn" đi 1.
   - Invalidate danh sách thành viên CLB: `ref.invalidate(clubMembersViewModelProvider(clubId))`.
@@ -808,7 +831,7 @@ Swagger Group: `Clubs` & `FR03 - Quản lý CLB & Thành viên`
   ]
   ```
 
-#####  Bảng Ánh Xạ Dữ Liệu & Menu Thao Tác Thành Viên:
+##### 📊 Bảng Ánh Xạ Dữ Liệu & Menu Thao Tác Thành Viên:
 | Trường Dữ Liệu | Widget Mobile Sử Dụng | Cách Dùng & Logic Nghiệp Vụ |
 | :--- | :--- | :--- |
 | `userName` / `nickname` | `Text(nickname ?? userName)` | Tên hiển thị trong nhóm. |
@@ -847,17 +870,17 @@ Swagger Group: `Clubs` & `FR03 - Quản lý CLB & Thành viên`
 
 ---
 
-##  Module 7: Quản Lý Buổi Sinh Hoạt (FR13 - Sessions)
+## 🏸 Module 7: Quản Lý Buổi Sinh Hoạt (FR13 - Sessions)
 Prefix: `/api/v1/sessions`  
 Swagger Group: `FR13 - Khởi tạo buổi chơi`
 
 > **Nghiệp vụ cốt lõi**:
 > - Khởi tạo buổi chơi định kỳ hoặc đột xuất cho CLB (`POST /api/v1/sessions/club/{clubId}`).
-> - Tự động tính toán sĩ số tối đa (`maxPlayers = courtCount * targetPlayerPerCourt`) và thời hạn đăng ký (`deadlineBooking = startTime - 2h`).
+> - Tự động tính toán sĩ số tối đa (`maxPlayers = courtCount * targetPlayerPerCourt`) và thời hạn giữ chỗ (`deadlineBooking = startTime - 2h`).
 > - Theo dõi danh sách lịch sinh hoạt (Sắp diễn ra / Đã qua) và chi tiết người tham gia.
 > - Quản lý vòng đời trạng thái buổi chơi: `OPEN` (Mở vé) -> `LOCKED` (Khóa sổ) -> `PLAYING` (Đang thi đấu) -> `COMPLETED` (Hoàn thành) -> `CANCELLED` (Hủy).
 
-###  Bảng Danh Mục API Module 7
+### 📌 Bảng Danh Mục API Module 7
 
 | Method | Endpoint | Quyền Hạn Yêu Cầu | Swagger Group | Mô Tả Nghiệp Vụ |
 | :--- | :--- | :--- | :--- | :--- |
@@ -870,7 +893,7 @@ Swagger Group: `FR13 - Khởi tạo buổi chơi`
 
 ---
 
-###  Hướng Dẫn Từng API Module 7 Vào Luồng Mobile
+### 🔍 Hướng Dẫn Từng API Module 7 Vào Luồng Mobile
 
 #### 7.1. `POST /api/v1/sessions/club/{clubId}` (Tạo Buổi Chơi Mới)
 
@@ -879,7 +902,7 @@ Swagger Group: `FR13 - Khởi tạo buổi chơi`
 - **Request Body JSON**:
   ```json
   {
-    "title": "Buổi chơi tối thứ 4 sân Kỳ Hòa",
+    "title": "Kèo tối thứ 4 sân Kỳ Hòa",
     "startTime": "2026-10-21T18:00:00Z",
     "endTime": "2026-10-21T21:00:00Z",
     "courtLocation": "Sân Cầu Lông Kỳ Hòa, 238 Đường 3/2, Quận 10",
@@ -891,13 +914,13 @@ Swagger Group: `FR13 - Khởi tạo buổi chơi`
   }
   ```
 
-##### ️ Tự Động Điền Dữ Liệu Thông Minh Phía Mobile:
+##### 🛠️ Tự Động Điền Dữ Liệu Thông Minh Phía Mobile:
 1. `courtLocation`: Tự động lấy từ `fixedVenueName` + `fixedAddress` của CLB (đã nạp từ FR07) để Host không cần nhập lại.
 2. `courtCount`: Mặc định = `2`. Khi Host thay đổi số sân hoặc số người/sân (`targetPlayerPerCourt`), Mobile tự động tính gợi ý: `maxPlayers = courtCount * targetPlayerPerCourt`.
 3. `deadlineBooking`: Khi Host chọn `startTime`, Mobile tự động set `deadlineBooking = startTime.subtract(const Duration(hours: 2))`.
 4. Khi Host bấm **"Tạo Buổi Chơi"**:
    - Nhận `201 Created` kèm `{"sessionId": "..."}`.
-   - SnackBar: *"Khởi tạo buổi chơi thành công! "*.
+   - SnackBar: *"Khởi tạo buổi chơi thành công! 🎉"*.
    - Invalidate: `ref.invalidate(clubSessionsViewModelProvider(clubId))`.
    - Điều hướng: `context.push('/sessions/$sessionId')` mở ngay màn hình chi tiết buổi chơi.
 
@@ -914,7 +937,7 @@ Swagger Group: `FR13 - Khởi tạo buổi chơi`
       "id": "b480bfe6-43c1-4bf7-9755-e87f2ff8e763",
       "groupId": "b86fa2e7-03b6-4299-923c-a93108ce8968",
       "clubName": "CLB Cầu Lông Legends Quận 7",
-      "title": "Buổi chơi tối thứ 4 sân Kỳ Hòa",
+      "title": "Kèo tối thứ 4 sân Kỳ Hòa",
       "startTime": "2026-10-21T18:00:00Z",
       "endTime": "2026-10-21T21:00:00Z",
       "courtLocation": "Sân Cầu Lông Kỳ Hòa",
@@ -933,16 +956,16 @@ Swagger Group: `FR13 - Khởi tạo buổi chơi`
   ]
   ```
 
-#####  Bảng Ánh Xạ Dữ Liệu Lên Thẻ Buổi Chơi (`SessionCard`):
+##### 📊 Bảng Ánh Xạ Dữ Liệu Lên Thẻ Buổi Chơi (`SessionCard`):
 | Trường Dữ Liệu | Widget Mobile Sử Dụng | Cách Dùng & Hiển Thị |
 | :--- | :--- | :--- |
 | `id` | `InkWell(onTap: () => openSession(id))` | Bấm vào Card để mở màn hình chi tiết `SessionDetailScreen`. |
 | `title` | `Text(title, style: titleStyle)` | Tên hoặc chủ đề buổi chơi. |
 | `startTime` & `endTime` | `Row([Icon(Icons.access_time), Text('18:00 - 21:00 | Thứ 4, 21/10')])` | Thời gian diễn ra buổi chơi (được format thân thiện bằng `intl`). |
-| `courtLocation` | `Text(' $courtLocation')` | Địa chỉ sân thi đấu. |
+| `courtLocation` | `Text('📍 $courtLocation')` | Địa chỉ sân thi đấu. |
 | `status` | `Chip` trạng thái | - `"OPEN"`: Chip Xanh lá *"Đang nhận đăng ký"* <br>- `"LOCKED"`: Chip Vàng *"Đã khóa sổ"* <br>- `"PLAYING"`: Chip Đỏ *"Đang thi đấu"* <br>- `"COMPLETED"`: Chip Xám *"Đã hoàn thành"*. |
 | `confirmedCount` / `maxPlayers` | `LinearProgressIndicator` | Thanh tiến độ biểu diễn sĩ số (ví dụ: `8/12`). Nếu `confirmedCount >= maxPlayers`, đổi màu cam và hiển thị tag *"Đã kín vé - Đang mở hàng đợi"*. |
-| `isBookedByCurrentUser` & `currentUserBookingStatus` | `Badge` vé cá nhân | - Nếu `CONFIRMED`: Badge xanh lá *"️ Bạn đã có vé chính thức"* <br>- Nếu `WAITING`: Badge cam *"⏳ Bạn đang chờ #queueOrder"* <br>- Nếu `false`: Nút bấm *"Đăng ký tham gia ngay"*. |
+| `isBookedByCurrentUser` & `currentUserBookingStatus` | `Badge` vé cá nhân | - Nếu `CONFIRMED`: Badge xanh lá *"🎟️ Bạn đã có vé chính thức"* <br>- Nếu `WAITING`: Badge cam *"⏳ Bạn đang chờ #queueOrder"* <br>- Nếu `false`: Nút bấm *"Biểu quyết tham gia ngay"*. |
 
 ---
 
@@ -956,7 +979,7 @@ Swagger Group: `FR13 - Khởi tạo buổi chơi`
       "id": "b480bfe6-43c1-4bf7-9755-e87f2ff8e763",
       "groupId": "b86fa2e7-03b6-4299-923c-a93108ce8968",
       "clubName": "CLB Cầu Lông Legends Quận 7",
-      "title": "Buổi chơi tối thứ 4 sân Kỳ Hòa",
+      "title": "Kèo tối thứ 4 sân Kỳ Hòa",
       "startTime": "2026-10-21T18:00:00Z",
       "endTime": "2026-10-21T21:00:00Z",
       "courtLocation": "Sân Cầu Lông Kỳ Hòa",
@@ -1014,13 +1037,13 @@ Swagger Group: `FR13 - Khởi tạo buổi chơi`
   }
   ```
 
-#####  Bảng Điều Khiển Nút Hành Động Đáy Màn Hình (`Bottom Action Bar`):
+##### 🚦 Bảng Điều Khiển Nút Hành Động Đáy Màn Hình (`Bottom Action Bar`):
 | Trạng Thái Cá Nhân | Giao Diện Hiển Thị Phía Mobile | Hành Động Khi Người Dùng Bấm |
 | :--- | :--- | :--- |
-| Chưa đăng ký (`isBookedByCurrentUser == false`) | Nút Xanh Lớn: **"Đăng Ký Tham Gia"** | Gọi `POST /api/v1/sessions/{sessionId}/bookings`. |
-| Đã có vé chính thức (`currentUserBookingStatus == CONFIRMED`) | Hàng 2 Nút: <br>1. Card Xanh: *"️ Vé chính thức #X"* <br>2. Nút Đỏ: **"Báo vắng / Hủy vé"** | Bấm Báo vắng -> Mở dialog xác nhận -> Gọi `DELETE /api/v1/sessions/{sessionId}/bookings/me`. |
+| Chưa đăng ký (`isBookedByCurrentUser == false`) | Nút Xanh Lớn: **"Biểu Quyết Tham Gia (Vote YES) 🏸"** | Gọi `POST /api/v1/sessions/{sessionId}/bookings`. |
+| Đã có vé chính thức (`currentUserBookingStatus == CONFIRMED`) | Hàng 2 Nút: <br>1. Card Xanh: *"🎟️ Vé chính thức #X"* <br>2. Nút Đỏ: **"Báo vắng / Hủy vé"** | Bấm Báo vắng -> Mở dialog xác nhận -> Gọi `DELETE /api/v1/sessions/{sessionId}/bookings/me`. |
 | Đang ở hàng đợi (`currentUserBookingStatus == WAITING`) | Hàng 2 Nút: <br>1. Card Cam: *"⏳ Đang chờ vị trí #queueOrder"* <br>2. Nút Xám: **"Hủy hàng đợi"** | Bấm Hủy -> Gọi `DELETE /api/v1/sessions/{sessionId}/bookings/me`. |
-| Buổi chơi đã khóa sổ (`session.status == LOCKED / COMPLETED`) | Nút Disabled Xám: **"Buổi chơi đã khóa sổ đăng ký"** | Không cho phép bấm. |
+| Buổi chơi đã khóa sổ (`session.status == LOCKED / COMPLETED`) | Nút Disabled Xám: **"Buổi chơi đã khóa sổ giữ chỗ"** | Không cho phép bấm. |
 
 ---
 
@@ -1031,11 +1054,11 @@ Swagger Group: `FR13 - Khởi tạo buổi chơi`
 - **Vận hành thực tế trên sân**:
   1. **Tới hạn chót (16:00)**: Host chuyển sang `LOCKED` để chốt danh sách đi mua cầu và chia sân.
   2. **Vào giờ đánh (18:00)**: Host chuyển sang `PLAYING` để bắt đầu chia cặp đấu (Matchmaking).
-  3. **Hết giờ (21:00)**: Host chuyển sang `COMPLETED` để chốt tiền sân/cầu và đối soát xác nhận thanh toán hội phí.
+  3. **Hết giờ (21:00)**: Host chuyển sang `COMPLETED` để chốt tiền sân/cầu và đối soát gạch nợ hội phí.
 
 ---
 
-## ️ Module 8: Đăng Ký Giữ Chỗ & Hàng Đợi Tự Động (FR08, FR09, FR10 - Bookings)
+## 🎟️ Module 8: Đăng Ký Giữ Chỗ & Hàng Đợi Tự Động (FR08, FR09, FR10 - Bookings)
 Prefix: `/api/v1/sessions`  
 Swagger Group: `FR08-FR10 - Đăng ký giữ chỗ & Hàng đợi`
 
@@ -1044,22 +1067,22 @@ Swagger Group: `FR08-FR10 - Đăng ký giữ chỗ & Hàng đợi`
 > - **FR09**: Khi số người xác nhận đã đạt trần `maxPlayers`, mọi lượt Vote tiếp theo tự động được xếp vào Hàng đợi chờ (`WAITING`, `queueOrder = 1..N`) theo nguyên tắc người đến trước xếp trước (FIFO).
 > - **FR10**: Bất kỳ thành viên nào đã giữ vé chính thức bấm "Báo vắng" (`DELETE /bookings/me`), hệ thống **tự động đôn người đang chờ ở vị trí số #1 lên vé chính thức** và tự động giảm thứ tự của toàn bộ người chờ còn lại.
 
-###  Bảng Danh Mục API Module 8
+### 📌 Bảng Danh Mục API Module 8
 
 | Method | Endpoint | Yêu Cầu Auth | Swagger Group | Mô Tả Nghiệp Vụ |
 | :--- | :--- | :--- | :--- | :--- |
-| `POST` | `/api/v1/sessions/{sessionId}/bookings` | Đã đăng nhập (Member) | `FR08-FR10` | Đăng ký giữ chỗ (Cấp vé chính thức hoặc tự vào hàng đợi) |
+| `POST` | `/api/v1/sessions/{sessionId}/bookings` | Đã đăng nhập (Member) | `FR08-FR10` | Đăng ký giữ chỗ (Vote YES - Cấp vé chính thức hoặc tự vào hàng đợi) |
 | `DELETE`| `/api/v1/sessions/{sessionId}/bookings/me`| Người đã có vé / Đang chờ | `FR08-FR10` | Hủy giữ chỗ / Báo vắng (Tự động đôn người chờ đầu hàng đợi lên chính thức) |
 | `GET` | `/api/v1/sessions/{sessionId}/bookings` | Đã đăng nhập | `FR08-FR10` | Lấy danh sách toàn bộ người đã vote & danh sách hàng đợi |
-| `GET` | `/api/v1/sessions/{sessionId}/bookings/me`| Đã đăng nhập | `FR08-FR10` | Kiểm tra trạng thái vé giữ chỗ của chính mình |
+| `GET` | `/api/v1/sessions/{sessionId}/bookings/me`| Đã đăng nhập | `FR08-FR10` | Kiểm tra trạng thái giữ chỗ của chính mình |
 
 ---
 
-###  Hướng Dẫn Từng API Module 8 Vào Luồng Mobile
+### 🔍 Hướng Dẫn Từng API Module 8 Vào Luồng Mobile
 
 #### 8.1. `POST /api/v1/sessions/{sessionId}/bookings` (Đăng Ký Giữ Chỗ - FR08 & FR09)
 
-- **Màn hình kích hoạt**: Nhấn nút **"Đăng Ký Tham Gia"** trên `SessionDetailScreen`.
+- **Màn hình kích hoạt**: Nhấn nút **"Biểu Quyết Tham Gia (Vote YES)"** trên `SessionDetailScreen`.
 - **Headers**: `Authorization: Bearer <ACCESS_TOKEN>`
 - **Luồng Xử Lý Phân Nhánh Tại Server & Hiển Thị Mobile**:
 
@@ -1075,7 +1098,7 @@ sequenceDiagram
     alt Còn chỗ trống (FR08)
         API->>DB: Lưu booking (Status: CONFIRMED, QueueOrder: 0)
         API-->>Member: 200 OK (Status: CONFIRMED)
-        Note over Member: Hiển thị SnackBar Xanh: 'Chúc mừng! Bạn đã giữ chỗ chính thức thành công '
+        Note over Member: Hiển thị SnackBar Xanh: 'Chúc mừng! Bạn đã giữ chỗ chính thức thành công 🎉'
     else Đã hết chỗ chính thức (FR09)
         API->>DB: Tính queueOrder tiếp theo (N = waitingCount + 1)
         API->>DB: Lưu booking (Status: WAITING, QueueOrder: N)
@@ -1108,32 +1131,32 @@ sequenceDiagram
   - Phía Mobile:
     - Hiển thị SnackBar: *"Bạn đã báo vắng thành công!"*.
     - Invalidate ViewModel: `ref.invalidate(sessionDetailViewModelProvider(sessionId))`.
-    - Giao diện vẽ lại ngay tức khắc: Nút đáy màn hình đổi về nút xanh *"Đăng Ký Tham Gia"*. Người chờ số #1 biến mất khỏi hàng đợi và xuất hiện ngay trong danh sách chính thức.
+    - Giao diện vẽ lại ngay tức khắc: Nút đáy màn hình đổi về nút xanh *"Biểu Quyết Tham Gia"*. Người chờ số #1 biến mất khỏi hàng đợi và xuất hiện ngay trong danh sách chính thức.
 
 ---
 
-##  Module 9: Tuyển Người Giao Lưu & Khách Vãng Lai (FR11, FR12 - Recruitments)
+## 📢 Module 9: Tuyển Khách Vãng Lai & Kèo Giao Lưu (FR11, FR12 - Recruitments)
 Prefix: `/api/v1/sessions`  
 Swagger Group: `FR11 - Phát tín hiệu tìm khách giao lưu` & `FR12 - Khách vãng lai đăng ký tham gia`
 
 > **Nghiệp vụ cốt lõi**:
 > - **FR11 (Host tuyển khách)**: Khi buổi chơi đã gần tới giờ nhưng chưa đủ người (`confirmedCount < maxPlayers`), Host phát tín hiệu tuyển khách vãng lai, định rõ số slot cần tuyển, chi phí chia sẻ sân/cầu và bán kính quét radar.
-> - **FR12 (Khách nhận slot)**: Người chơi tự do ở gần đó quét radar tìm thấy buổi giao lưu, xem cự ly km và bấm nhận suất chơi trực tiếp (`join`). Hệ thống cấp vé chính thức ngay tức thì và tự động đóng bài đăng khi đã đủ người.
+> - **FR12 (Khách nhận slot)**: Người chơi tự do ở gần đó quét radar tìm thấy kèo giao lưu, xem cự ly km và bấm nhận suất chơi trực tiếp (`join`). Hệ thống cấp vé chính thức ngay tức thì và tự động đóng bài đăng khi đủ quân.
 
-###  Bảng Danh Mục API Module 9
+### 📌 Bảng Danh Mục API Module 9
 
 | Method | Endpoint | Quyền Hạn | Swagger Group | Mô Tả Nghiệp Vụ |
 | :--- | :--- | :--- | :--- | :--- |
 | `POST` | `/api/v1/sessions/{sessionId}/recruitments` | `OPERATIONS.RECRUIT.MANAGE` | `FR11` | Host phát tín hiệu tuyển khách giao lưu lân cận khi thiếu người |
 | `GET` | `/api/v1/sessions/{sessionId}/recruitments` | Đã đăng nhập | `FR11` | Xem bài đăng tuyển khách của buổi chơi |
 | `DELETE`| `/api/v1/sessions/{sessionId}/recruitments` | `OPERATIONS.RECRUIT.MANAGE` | `FR11` | Host đóng / hủy bài đăng tuyển khách giao lưu |
-| `GET` | `/api/v1/sessions/recruitments/explore` | Đã đăng nhập | `FR12` | Khách vãng lai quét radar tìm các buổi giao lưu quanh tọa độ GPS |
+| `GET` | `/api/v1/sessions/recruitments/explore` | Đã đăng nhập | `FR12` | Khách vãng lai quét radar tìm các kèo giao lưu quanh tọa độ GPS |
 | `POST` | `/api/v1/sessions/recruitments/{recruitmentId}/join` | Đã đăng nhập | `FR12` | Khách vãng lai nhận trực tiếp suất chơi giao lưu còn trống |
 | `DELETE`| `/api/v1/sessions/recruitments/{recruitmentId}/cancel`| Khách đã nhận suất | `FR12` | Khách vãng lai hủy suất giao lưu đã đăng ký |
 
 ---
 
-###  Hướng Dẫn Từng API Module 9 Vào Luồng Mobile
+### 🔍 Hướng Dẫn Từng API Module 9 Vào Luồng Mobile
 
 #### 9.1. `POST /api/v1/sessions/{sessionId}/recruitments` (Host Đăng Tin Tuyển Khách - FR11)
 
@@ -1153,14 +1176,14 @@ Swagger Group: `FR11 - Phát tín hiệu tìm khách giao lưu` & `FR12 - Khách
   - `minSkillLevel`: Lấy theo `minSkillLevel` của CLB.
 - **Response `201 Created`**: Trả về `recruitmentId`.
 - **Luồng Mobile Kế Tiếp**:
-  - SnackBar: *"Đã phát tín hiệu tuyển khách thành công! Người chơi trong bán kính 5km sẽ nhìn thấy thông tin này "*.
+  - SnackBar: *"Đã phát tín hiệu tuyển khách thành công! Người chơi trong bán kính 5km sẽ nhìn thấy kèo này 📢"*.
   - Invalidate `sessionDetailViewModelProvider(sessionId)`. Thẻ thông báo tuyển khách màu tím xuất hiện nổi bật trên đầu màn hình chi tiết buổi chơi.
 
 ---
 
-#### 9.2. `GET /api/v1/sessions/recruitments/explore` (Khách Quét Tìm Buổi Giao Lưu - FR12)
+#### 9.2. `GET /api/v1/sessions/recruitments/explore` (Khách Quét Tìm Kèo Giao Lưu - FR12)
 
-- **Màn hình kích hoạt**: Tab "Buổi giao lưu lân cận" (`ExploreRecruitmentsPage`).
+- **Màn hình kích hoạt**: Tab "Kèo giao lưu lân cận" (`ExploreRecruitmentsPage`).
 - **Query Parameters**:
   - `latitude`, `longitude`: Tọa độ vị trí hiện tại lấy từ GPS thiết bị.
   - `radiusKm`: Bán kính quét (mặc định 5km, có thanh trượt Slider từ 1km - 20km).
@@ -1187,12 +1210,12 @@ Swagger Group: `FR11 - Phát tín hiệu tìm khách giao lưu` & `FR12 - Khách
   ]
   ```
 
-#####  Bảng Ánh Xạ Dữ Liệu Vào Thẻ Buổi Giao Lưu (`RecruitmentCard`):
+##### 📊 Bảng Ánh Xạ Dữ Liệu Vào Thẻ Kèo Giao Lưu (`RecruitmentCard`):
 | Trường Dữ Liệu | Widget Mobile Sử Dụng | Cách Dùng & Hiển Thị |
 | :--- | :--- | :--- |
-| `distanceKm` | `Chip(label: Text(' ${distanceKm} km'))` | Cự ly thực tế từ vị trí người chơi tới sân cầu lông. |
+| `distanceKm` | `Chip(label: Text('📍 ${distanceKm} km'))` | Cự ly thực tế từ vị trí người chơi tới sân cầu lông. |
 | `clubName` & `courtLocation` | `Text(clubName)` & `Text(courtLocation)` | Tên nhóm đăng tuyển và địa chỉ sân tổ chức. |
-| `startTime` - `endTime` | `Text('18:00 - 21:00 | Hôm nay')` | Giờ sinh hoạt của buổi chơi. |
+| `startTime` - `endTime` | `Text('18:00 - 21:00 | Hôm nay')` | Giờ sinh hoạt của kèo. |
 | `slotsRemaining` | `Badge(label: Text('Còn $slotsRemaining slot'))` | Số lượng vé khách vãng lai còn trống. |
 | `sharedCost` | `Text('${formatCurrency(sharedCost)} / người')` | Chi phí dự kiến chia sẻ (ví dụ: *"50,000 đ / người"*). |
 | Nút "Nhận Suất Ngay" | `ElevatedButton(onPressed: () => joinRecruitment(id))` | Bấm để gọi API nhận chỗ trực tiếp. |
@@ -1201,12 +1224,12 @@ Swagger Group: `FR11 - Phát tín hiệu tìm khách giao lưu` & `FR12 - Khách
 
 #### 9.3. `POST /api/v1/sessions/recruitments/{recruitmentId}/join` (Khách Nhận Suất Chơi - FR12)
 
-- **Màn hình kích hoạt**: Bấm nút **"Nhận Suất Chơi Ngay"** trên thẻ buổi giao lưu.
+- **Màn hình kích hoạt**: Bấm nút **"Nhận Suất Chơi Ngay"** trên thẻ kèo giao lưu.
 - **Headers**: `Authorization: Bearer <ACCESS_TOKEN>`
 - **Response `200 OK`**: Cấp vé thành công.
 - **Luồng Mobile Kế Tiếp**:
   1. Server tự động tạo vé `CONFIRMED` cho khách vãng lai, giảm `slotsRemaining` đi 1. Nếu hết slot, bài tuyển tự động đổi thành `FILLED`.
-  2. Mobile hiển thị Dialog chúc mừng: *"Bạn đã nhận suất chơi giao lưu thành công! Hãy đến sân đúng giờ nhé "*.
+  2. Mobile hiển thị Dialog chúc mừng: *"Bạn đã nhận suất chơi giao lưu thành công! Hãy đến sân đúng giờ nhé 🏸"*.
   3. Điều hướng khách thẳng vào màn hình chi tiết buổi chơi `SessionDetailScreen(sessionId: response.sessionId)` để xem địa chỉ sân và danh sách đồng đội.
 
 ---
@@ -1218,11 +1241,11 @@ Swagger Group: `FR11 - Phát tín hiệu tìm khách giao lưu` & `FR12 - Khách
 - **Luồng Mobile Kế Tiếp**:
   - Trả lại slot trống (`slotsRemaining = slotsRemaining + 1`).
   - Đổi trạng thái vé của khách thành `CANCELLED`.
-  - Invalidate danh sách buổi giao lưu và điều hướng về trang chủ.
+  - Invalidate danh sách kèo và điều hướng về trang chủ.
 
 
 
-##  Kế Hoạch Triển Khai Cho Mobile Làm Thông API Chi Tiết Rõ Ràng
+## 🚀 Kế Hoạch Triển Khai Cho Mobile Làm Thông API Chi Tiết Rõ Ràng
 
 Kế hoạch này được thiết kế theo đúng kiến trúc kỹ thuật hiện tại của dự án Mobile Flutter tại `c:\code\base_fe\KLTN2026-2027\KLTN2026-2027`:
 - **State Management**: **Flutter Riverpod** (`StateNotifierProvider`, `StateNotifier`).
@@ -1247,7 +1270,7 @@ graph TD
 
 ---
 
-### ️ Lộ Trình Triển Khai Cho Đội Ngũ Mobile
+### 🗺️ Lộ Trình Triển Khai Cho Đội Ngũ Mobile
 
 1. **Giai đoạn 1: Khai báo Enums & DTOs**:
    - `SkillLevel` (`NB, Y, TBY, TB, TBK, K, G`).
@@ -1278,7 +1301,7 @@ graph TD
 
 ---
 
-##  Bảng Tra Cứu Toàn Bộ Mã Quyền Hạn (`GroupPermissions`)
+## 📌 Bảng Tra Cứu Toàn Bộ Mã Quyền Hạn (`GroupPermissions`)
 
 Bảng mã quyền hạn chuẩn hóa theo hệ thống phân quyền đa nhóm (Multi-Group RBAC) tại [GroupPermissions.cs](src/LegendsTeamVN.BadmintonClub.Domain/Constants/GroupPermissions.cs):
 
@@ -1295,7 +1318,7 @@ Bảng mã quyền hạn chuẩn hóa theo hệ thống phân quyền đa nhóm 
 | **FINANCE** | `FINANCE.LEDGER.VIEW` | Xem sổ quỹ thu chi nhóm | Xem báo cáo tài chính CLB |
 | **FINANCE** | `FINANCE.LEDGER.MANAGE` | Lập / sửa phiếu thu chi | Thủ quỹ tạo phiếu thu/chi |
 | **FINANCE** | `FINANCE.FEE.VIEW` | Xem danh sách thu hội phí | Xem tình trạng đóng tiền tháng / buổi |
-| **FINANCE** | `FINANCE.FEE.MANAGE` | Thu phí & đối soát ngân hàng | Xác nhận thanh toán, thu phí hội viên |
+| **FINANCE** | `FINANCE.FEE.MANAGE` | Thu phí & đối soát ngân hàng | Xác nhận thanh toán, gạch nợ hội viên |
 | **FINANCE** | `FINANCE.BANK.MANAGE` | Quản lý tài khoản ngân hàng & đơn giá | Cấu hình tài khoản VietQR và tiền sân/cầu |
 | **MEMBER** | `MEMBER.VIEW` | Xem danh sách thành viên | Danh sách hội viên trong nhóm |
 | **MEMBER** | `MEMBER.JOIN_REQUEST.MANAGE` | Duyệt / từ chối đơn gia nhập | Ban quản trị duyệt thành viên mới |

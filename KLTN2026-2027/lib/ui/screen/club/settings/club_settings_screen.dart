@@ -639,7 +639,7 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
               key: _formKey,
               child: TabBarView(
                 children: [
-                  // Tab 1: Thông tin & Vùng nguy hiểm
+                  // Tab 1: Thông tin chung
                   SingleChildScrollView(
                     padding: const EdgeInsets.symmetric(horizontal: AppSpacing.base, vertical: AppSpacing.md),
                     child: Align(
@@ -740,64 +740,40 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                           ],
                         ),
                         AppSpacing.gapH16,
-
-
-                            AppSpacing.gapH16,
-                        // Section 5: Vùng nhạy cảm (Danger Zone)
-                        _buildSectionCard(
-                          title: 'Vùng Nguy Hiểm',
-                          icon: Icons.warning_rounded,
-                          isDanger: true,
-                          children: [
-                            if (isHost) ...[
-                              Text(
-                                'Tạm dừng hoạt động hoặc khóa câu lạc bộ',
-                                style: AppTypography.titleSmall.bold.colored(colors.textPrimary),
+                        if (isHost) ...[
+                          AppSpacing.gapH16,
+                          SizedBox(
+                            width: double.infinity,
+                            child: OutlinedButton.icon(
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: colors.warning,
+                                side: BorderSide(color: colors.warning),
+                                padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+                                shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
                               ),
-                              AppSpacing.gapH4,
-                              Text(
-                                'Ẩn nhóm khỏi radar tìm kiếm và tạm ngừng các hoạt động sinh hoạt mới.',
-                                style: AppTypography.bodySmall.colored(colors.textMuted),
+                              icon: const Icon(Icons.pause_circle_outline_rounded, size: 18),
+                              label: const Text('Tạm dừng hoạt động CLB'),
+                              onPressed: () => _showLockClubDialog(vm),
+                            ),
+                          ),
+                        ],
+                        if (!isHost) ...[
+                          AppSpacing.gapH16,
+                          SizedBox(
+                            width: double.infinity,
+                            child: OutlinedButton.icon(
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: colors.error,
+                                side: BorderSide(color: colors.error),
+                                padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+                                shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
                               ),
-                              AppSpacing.gapH12,
-                              OutlinedButton.icon(
-                                style: OutlinedButton.styleFrom(
-                                  foregroundColor: colors.warning,
-                                  side: BorderSide(color: colors.warning),
-                                  padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-                                  shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
-                                ),
-                                icon: const Icon(Icons.pause_circle_outline_rounded, size: 18),
-                                label: const Text('Tạm dừng hoạt động CLB'),
-                                onPressed: () => _showLockClubDialog(vm),
-                              ),
-                              AppSpacing.gapH16,
-                            ],
-                            if (!isHost) ...[
-                              Text(
-                                'Rời khỏi câu lạc bộ',
-                                style: AppTypography.titleSmall.bold.colored(colors.textPrimary),
-                              ),
-                              AppSpacing.gapH4,
-                              Text(
-                                'Hủy tư cách thành viên của bạn tại câu lạc bộ này.',
-                                style: AppTypography.bodySmall.colored(colors.textMuted),
-                              ),
-                              AppSpacing.gapH12,
-                              OutlinedButton.icon(
-                                style: OutlinedButton.styleFrom(
-                                  foregroundColor: colors.error,
-                                  side: BorderSide(color: colors.error),
-                                  padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-                                  shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
-                                ),
-                                icon: const Icon(Icons.exit_to_app_rounded, size: 18),
-                                label: const Text('Rời câu lạc bộ'),
-                                onPressed: _showLeaveClubDialog,
-                              ),
-                            ],
-                          ],
-                        ),
+                              icon: const Icon(Icons.exit_to_app_rounded, size: 18),
+                              label: const Text('Rời câu lạc bộ'),
+                              onPressed: _showLeaveClubDialog,
+                            ),
+                          ),
+                        ],
 
                             AppSpacing.gapH32,
                           ],

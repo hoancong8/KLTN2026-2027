@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import 'package:kltn2026_2027/app/theme/theme.dart';
 import '../../../../domain/usecases/session/session_usecases.dart';
 import '../session_vm/club_sessions_vm.dart';
@@ -33,10 +34,11 @@ class _CreateSessionDialogState extends ConsumerState<CreateSessionDialog> {
   final _formKey = GlobalKey<FormState>();
   final _titleCtl = TextEditingController();
   final _courtLocationCtl = TextEditingController();
-  final _rentalCostCtl = TextEditingController(text: '300000');
+  final _rentalCostCtl = TextEditingController(text: '300.000');
 
   DateTime _startTime = DateTime.now().add(const Duration(days: 1, hours: 2)).copyWith(minute: 0, second: 0);
   DateTime _endTime = DateTime.now().add(const Duration(days: 1, hours: 4)).copyWith(minute: 0, second: 0);
+  late DateTime _deadlineBooking;
   int _courtCount = 2;
   int _targetPlayerPerCourt = 6;
   bool _isSubmitting = false;
@@ -48,6 +50,7 @@ class _CreateSessionDialogState extends ConsumerState<CreateSessionDialog> {
     super.initState();
     _titleCtl.text = 'Buổi sinh hoạt ${widget.clubName}';
     _courtLocationCtl.text = 'Sân Cầu Lông Kỳ Hòa, Quận 10';
+    _deadlineBooking = _startTime.subtract(const Duration(hours: 2));
   }
 
   @override
@@ -81,10 +84,41 @@ class _CreateSessionDialogState extends ConsumerState<CreateSessionDialog> {
         if (_endTime.isBefore(_startTime)) {
           _endTime = _startTime.add(const Duration(hours: 2));
         }
+        _deadlineBooking = _startTime.subtract(const Duration(hours: 2));
       } else {
         _endTime = newDt;
       }
     });
+  }
+
+  Future<void> _pickDeadline() async {
+    final date = await showDatePicker(
+      context: context,
+      initialDate: _deadlineBooking.isBefore(DateTime.now()) ? DateTime.now() : _deadlineBooking,
+      firstDate: DateTime.now(),
+      lastDate: _startTime,
+    );
+    if (date == null || !mounted) return;
+
+    final time = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.fromDateTime(_deadlineBooking),
+    );
+    if (time == null || !mounted) return;
+
+    final picked = DateTime(date.year, date.month, date.day, time.hour, time.minute);
+    if (picked.isAfter(_startTime)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Hạn chốt phải trước giờ bắt đầu buổi chơi!'),
+          backgroundColor: colors.error,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    setState(() => _deadlineBooking = picked);
   }
 
   Future<void> _handleSubmit() async {
@@ -101,9 +135,21 @@ class _CreateSessionDialogState extends ConsumerState<CreateSessionDialog> {
       return;
     }
 
+    if (_deadlineBooking.isAfter(_startTime)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Hạn chốt giữ chỗ phải trước giờ bắt đầu!'),
+          backgroundColor: colors.error,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
     setState(() => _isSubmitting = true);
     final vm = ref.read(clubSessionsViewModelProvider(widget.clubId).notifier);
-    final cost = double.tryParse(_rentalCostCtl.text.replaceAll(',', '')) ?? 0.0;
+    final costStr = _rentalCostCtl.text.replaceAll('.', '').replaceAll(',', '').replaceAll(' ', '');
+    final cost = double.tryParse(costStr) ?? 0.0;
 
     final sessionId = await vm.createSession(
       CreateSessionParams(
@@ -115,7 +161,7 @@ class _CreateSessionDialogState extends ConsumerState<CreateSessionDialog> {
         courtCount: _courtCount,
         targetPlayerPerCourt: _targetPlayerPerCourt,
         maxPlayers: _maxPlayers,
-        deadlineBooking: _startTime.subtract(const Duration(hours: 2)),
+        deadlineBooking: _deadlineBooking,
         courtRentalCost: cost,
       ),
     );
@@ -138,11 +184,11 @@ class _CreateSessionDialogState extends ConsumerState<CreateSessionDialog> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shape: const RoundedRectangleBorder(borderRadius: AppRadius.dialog),
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 480),
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
+          padding: AppSpacing.allLg,
           child: Form(
             key: _formKey,
             child: Column(
@@ -155,35 +201,35 @@ class _CreateSessionDialogState extends ConsumerState<CreateSessionDialog> {
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
                         color: colors.primary.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: AppRadius.borderSm,
                       ),
                       child: Icon(Icons.sports_tennis_rounded, color: colors.primary, size: 24),
                     ),
-                    const SizedBox(width: 12),
+                    AppSpacing.gapW12,
                     Expanded(
                       child: Text(
                         'Khởi Tạo Buổi Chơi',
-                        style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: colors.textPrimary),
+                        style: AppTypography.titleMedium.bold.colored(colors.textPrimary),
                       ),
                     ),
                     IconButton(
-                      icon: Icon(Icons.close, color: colors.textMuted),
+                      icon: Icon(Icons.close_rounded, color: colors.textMuted),
                       onPressed: () => Navigator.of(context).pop(),
                     ),
                   ],
                 ),
                 const Divider(height: 24),
 
-                // Title
-                _buildLabel('Tiêu đề buổi sinh hoạt *'),
+                // Tên buổi chơi
+                _buildLabel('Tên buổi chơi *'),
                 TextFormField(
                   controller: _titleCtl,
                   decoration: _inputDecoration(hint: 'VD: Buổi chơi thứ 4 sân Kỳ Hòa'),
-                  validator: (v) => (v == null || v.trim().isEmpty) ? 'Vui lòng nhập tiêu đề' : null,
+                  validator: (v) => (v == null || v.trim().isEmpty) ? 'Vui lòng nhập tên buổi chơi' : null,
                 ),
-                const SizedBox(height: 14),
+                AppSpacing.gapH12,
 
-                // Court Location
+                // Địa điểm sân
                 _buildLabel('Địa điểm sân cầu lông *'),
                 TextFormField(
                   controller: _courtLocationCtl,
@@ -193,9 +239,9 @@ class _CreateSessionDialogState extends ConsumerState<CreateSessionDialog> {
                   ),
                   validator: (v) => (v == null || v.trim().isEmpty) ? 'Vui lòng nhập địa điểm' : null,
                 ),
-                const SizedBox(height: 14),
+                AppSpacing.gapH12,
 
-                // Start and End Time
+                // Giờ bắt đầu & Kết thúc
                 Row(
                   children: [
                     Expanded(
@@ -205,21 +251,21 @@ class _CreateSessionDialogState extends ConsumerState<CreateSessionDialog> {
                           _buildLabel('Bắt đầu'),
                           InkWell(
                             onTap: () => _pickDateTime(isStart: true),
-                            borderRadius: BorderRadius.circular(10),
+                            borderRadius: AppRadius.button,
                             child: Container(
                               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
                               decoration: BoxDecoration(
                                 border: Border.all(color: colors.inputBorder),
-                                borderRadius: BorderRadius.circular(10),
+                                borderRadius: AppRadius.button,
                               ),
                               child: Row(
                                 children: [
                                   Icon(Icons.access_time_rounded, size: 18, color: colors.textMuted),
-                                  const SizedBox(width: 6),
+                                  AppSpacing.gapW8,
                                   Expanded(
                                     child: Text(
-                                      '${_startTime.hour.toString().padLeft(2, '0')}:${_startTime.minute.toString().padLeft(2, '0')} - ${_startTime.day}/${_startTime.month}',
-                                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                                      DateFormat('HH:mm - dd/MM').format(_startTime),
+                                      style: AppTypography.bodySmall.bold.colored(colors.textPrimary),
                                     ),
                                   ),
                                 ],
@@ -229,7 +275,7 @@ class _CreateSessionDialogState extends ConsumerState<CreateSessionDialog> {
                         ],
                       ),
                     ),
-                    const SizedBox(width: 10),
+                    AppSpacing.gapW12,
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -237,21 +283,21 @@ class _CreateSessionDialogState extends ConsumerState<CreateSessionDialog> {
                           _buildLabel('Kết thúc'),
                           InkWell(
                             onTap: () => _pickDateTime(isStart: false),
-                            borderRadius: BorderRadius.circular(10),
+                            borderRadius: AppRadius.button,
                             child: Container(
                               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
                               decoration: BoxDecoration(
                                 border: Border.all(color: colors.inputBorder),
-                                borderRadius: BorderRadius.circular(10),
+                                borderRadius: AppRadius.button,
                               ),
                               child: Row(
                                 children: [
                                   Icon(Icons.access_time_filled_rounded, size: 18, color: colors.textMuted),
-                                  const SizedBox(width: 6),
+                                  AppSpacing.gapW8,
                                   Expanded(
                                     child: Text(
-                                      '${_endTime.hour.toString().padLeft(2, '0')}:${_endTime.minute.toString().padLeft(2, '0')} - ${_endTime.day}/${_endTime.month}',
-                                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                                      DateFormat('HH:mm - dd/MM').format(_endTime),
+                                      style: AppTypography.bodySmall.bold.colored(colors.textPrimary),
                                     ),
                                   ),
                                 ],
@@ -263,9 +309,40 @@ class _CreateSessionDialogState extends ConsumerState<CreateSessionDialog> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 14),
+                AppSpacing.gapH12,
 
-                // Court Count & Capacity Calculator
+                // Hạn chốt giữ chỗ
+                _buildLabel('Hạn chốt giữ chỗ (Tự động khóa đăng ký)'),
+                InkWell(
+                  onTap: _pickDeadline,
+                  borderRadius: AppRadius.button,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: colors.inputBorder),
+                      borderRadius: AppRadius.button,
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.timer_outlined, size: 18, color: colors.warning),
+                        AppSpacing.gapW8,
+                        Expanded(
+                          child: Text(
+                            DateFormat('HH:mm - dd/MM/yyyy').format(_deadlineBooking),
+                            style: AppTypography.bodySmall.bold.colored(colors.textPrimary),
+                          ),
+                        ),
+                        Text(
+                          'Thay đổi',
+                          style: AppTypography.labelSmall.bold.colored(colors.primary),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                AppSpacing.gapH12,
+
+                // Số lượng sân & Số người / sân
                 Row(
                   children: [
                     Expanded(
@@ -286,7 +363,7 @@ class _CreateSessionDialogState extends ConsumerState<CreateSessionDialog> {
                         ],
                       ),
                     ),
-                    const SizedBox(width: 10),
+                    AppSpacing.gapW12,
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -307,27 +384,28 @@ class _CreateSessionDialogState extends ConsumerState<CreateSessionDialog> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 10),
+                AppSpacing.gapH8,
 
                 // Max Players Auto-Calculation Callout
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   decoration: BoxDecoration(
                     color: colors.surfaceSubtle,
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: AppRadius.borderSm,
+                    border: Border.all(color: colors.primary.withValues(alpha: 0.2)),
                   ),
                   child: Row(
                     children: [
-                      Icon(Icons.info_outline, size: 16, color: colors.primary),
-                      const SizedBox(width: 8),
+                      Icon(Icons.info_outline_rounded, size: 16, color: colors.primary),
+                      AppSpacing.gapW8,
                       Text(
-                        'Số lượng người tối đa: $_maxPlayers slot chính thức',
-                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: colors.textPrimary),
+                        'Số người tối đa: $_maxPlayers người chính thức',
+                        style: AppTypography.bodySmall.bold.colored(colors.textPrimary),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 14),
+                AppSpacing.gapH12,
 
                 // Court Rental Cost
                 _buildLabel('Tổng chi phí thuê sân (VNĐ)'),
@@ -335,11 +413,12 @@ class _CreateSessionDialogState extends ConsumerState<CreateSessionDialog> {
                   controller: _rentalCostCtl,
                   keyboardType: TextInputType.number,
                   decoration: _inputDecoration(
-                    hint: '300,000',
-                    prefixIcon: Icons.attach_money_rounded,
+                    hint: '300.000',
+                    suffixText: 'VNĐ',
+                    prefixIcon: Icons.payments_outlined,
                   ),
                 ),
-                const SizedBox(height: 22),
+                AppSpacing.gapH24,
 
                 // Submit Button
                 ElevatedButton(
@@ -347,8 +426,8 @@ class _CreateSessionDialogState extends ConsumerState<CreateSessionDialog> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: colors.primary,
                     foregroundColor: AppColors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 13),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
                   ),
                   child: _isSubmitting
                       ? const SizedBox(
@@ -356,7 +435,7 @@ class _CreateSessionDialogState extends ConsumerState<CreateSessionDialog> {
                           width: 20,
                           child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.white),
                         )
-                      : const Text('Tạo Buổi Chơi Ngay', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+                      : const Text('Tạo buổi chơi', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
                 ),
               ],
             ),
@@ -369,19 +448,21 @@ class _CreateSessionDialogState extends ConsumerState<CreateSessionDialog> {
   Widget _buildLabel(String text) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 6),
-      child: Text(text, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: colors.textPrimary)),
+      child: Text(text, style: AppTypography.labelSmall.bold.colored(colors.textPrimary)),
     );
   }
 
-  InputDecoration _inputDecoration({String? hint, IconData? prefixIcon}) {
+  InputDecoration _inputDecoration({String? hint, String? suffixText, IconData? prefixIcon}) {
     return InputDecoration(
       hintText: hint,
-      hintStyle: TextStyle(color: colors.textMuted, fontSize: 13),
+      hintStyle: AppTypography.bodySmall.colored(colors.textMuted),
       prefixIcon: prefixIcon != null ? Icon(prefixIcon, size: 18, color: colors.textMuted) : null,
+      suffixText: suffixText,
+      suffixStyle: AppTypography.bodySmall.bold.colored(colors.textSecondary),
       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: colors.inputBorder)),
-      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: colors.inputBorder)),
-      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: colors.primary, width: 1.5)),
+      border: OutlineInputBorder(borderRadius: AppRadius.button, borderSide: BorderSide(color: colors.inputBorder)),
+      enabledBorder: OutlineInputBorder(borderRadius: AppRadius.button, borderSide: BorderSide(color: colors.inputBorder)),
+      focusedBorder: OutlineInputBorder(borderRadius: AppRadius.button, borderSide: BorderSide(color: colors.primary, width: 1.5)),
     );
   }
 }

@@ -1,4 +1,4 @@
-#  BẢNG TỔNG HỢP VÀ TIẾN ĐỘ TOÀN BỘ CÁC YÊU CẦU CHỨC NĂNG (FR01 - FR23)
+# 🏸 BẢNG TỔNG HỢP VÀ TIẾN ĐỘ TOÀN BỘ CÁC YÊU CẦU CHỨC NĂNG (FR01 - FR23)
 > **Dự án**: Hệ thống quản lý nhóm cầu lông phong trào (Badminton Club Management System)  
 > **Tài liệu tham chiếu gốc**: `KLHK1262714_BC1_Hệ thống quản lý nhóm cầu lông phong trào.docx`  
 > **Cập nhật ngày**: 14/10/2026  
@@ -6,14 +6,14 @@
 
 ---
 
-##  BẢNG TỔNG KẾT TỔNG QUAN TIẾN ĐỘ 23 FR
+## 📊 BẢNG TỔNG KẾT TỔNG QUAN TIẾN ĐỘ 23 FR
 
 | Mã FR | Tên Yêu Cầu Chức Năng | Phân Hệ Nghiệp Vụ | Trạng Thái Backend | Số Lượng API |
 | :---: | :--- | :--- | :---: | :---: |
 | **FR01** | Đăng ký tài khoản định danh | Quản trị Tài khoản & Đa nhóm (F1) |  **Đã xong 100%** | 1 API |
 | **FR02** | Đăng nhập, duy trì phiên an toàn & Đăng xuất | Quản trị Tài khoản & Đa nhóm (F1) |  **Đã xong 100%** | 3 APIs |
 | **FR03** | Tham gia đồng thời nhiều nhóm với vai trò độc lập | Quản trị Tài khoản & Đa nhóm (F1) |  **Đã xong 100%** | 11 APIs |
-| **FR04** | Chuyển đổi ngữ cảnh nhóm trên ứng dụng di động | Quản trị Tài khoản & Đa nhóm (F1) |  **Đã xong 100%** | 1 API |
+| **FR04** | Chuyển đổi ngữ cảnh nhóm trên ứng dụng di động | Quản trị Tài khoản & Đa nhóm (F1) |  **Đã xong 100%** | Header `X-Group-Id` (Clean Context) |
 | **FR05** | Quản lý hồ sơ cá nhân & Trình độ chuyên môn tự đánh giá | Quản trị Tài khoản & Đa nhóm (F1) |  **Đã xong 100%** | 2 APIs |
 | **FR06** | Tìm kiếm & Khám phá CLB quanh vị trí GPS & Bán kính | Khám phá, Giữ chỗ & Kết nối (F2) |  **Đã xong 100%** | 1 API |
 | **FR07** | Xem chi tiết thông tin CLB & Lịch sinh hoạt định kỳ tuần | Khám phá, Giữ chỗ & Kết nối (F2) |  **Đã xong 100%** | 3 APIs |
@@ -23,10 +23,10 @@
 | **FR11** | Host phát tín hiệu tìm người giao lưu lân cận khi thiếu quân | Khám phá, Giữ chỗ & Kết nối (F2) |  **Đã xong 100%** | 3 APIs |
 | **FR12** | Khách vãng lai quét radar & Đăng ký trực tiếp slot giao lưu | Khám phá, Giữ chỗ & Kết nối (F2) |  **Đã xong 100%** | 3 APIs |
 | **FR13** | Cấu hình nhóm, phân quyền & Khởi tạo buổi chơi | Vận hành Buổi chơi & Điều phối (F3) |  **Đã xong 100%** | 6 APIs |
-| **FR14** | Điểm danh nhanh danh sách người chơi thực tế có mặt tại sân | Vận hành Buổi chơi & Điều phối (F3) | ⏳ *Sẵn sàng DB, cần thêm Endpoint* | 0 API |
-| **FR15** | Giải thuật tự động đề xuất xoay tua sân (Nghỉ lâu + Trình độ) | Vận hành Buổi chơi & Điều phối (F3) | ⏳ *Sẵn sàng DB, cần thêm Engine* | 0 API |
-| **FR16** | Host can thiệp điều chỉnh danh sách thi đấu thủ công | Vận hành Buổi chơi & Điều phối (F3) | ⏳ *Sẵn sàng DB, cần thêm Endpoint* | 0 API |
-| **FR17** | Người chơi theo dõi lượt thi đấu cá nhân theo thời gian thực | Vận hành Buổi chơi & Điều phối (F3) | ⏳ *Sẵn sàng DB, cần thêm Endpoint* | 0 API |
+| **FR14** | Điểm danh nhanh danh sách người chơi thực tế có mặt tại sân | Vận hành Buổi chơi & Điều phối (F3) |  **Đã xong 100%** | 4 APIs |
+| **FR15** | Giải thuật tự động đề xuất xoay tua sân (Nghỉ lâu + Trình độ) | Vận hành Buổi chơi & Điều phối (F3) |  **Đã xong 100%** | 5 APIs |
+| **FR16** | Host can thiệp điều chỉnh danh sách thi đấu thủ công | Vận hành Buổi chơi & Điều phối (F3) |  **Đã xong 100%** | 4 APIs |
+| **FR17** | Người chơi theo dõi lượt thi đấu cá nhân theo thời gian thực | Vận hành Buổi chơi & Điều phối (F3) | ⏳ *Sẵn sàng DB & Hub, cần hoàn thiện UI* | 0 API |
 | **FR18** | Ghi nhận số quả cầu bóc mới và phụ phí phát sinh buổi chơi | Hạch toán Vật tư & Sổ quỹ (F4) | ⏳ *Sẵn sàng DB, cần thêm Endpoint* | 0 API |
 | **FR19** | Hạch toán chi phí đa hệ số tự động (Nam, Nữ, Tháng, Ngày) | Hạch toán Vật tư & Sổ quỹ (F4) | ⏳ *Sẵn sàng DB, cần thêm Engine* | 0 API |
 | **FR20** | Khởi tạo mã VietQR thanh toán nhúng sẵn tiền & mã duy nhất | Hạch toán Vật tư & Sổ quỹ (F4) | ⏳ *Sẵn sàng DB, cần thêm Engine* | 0 API |
@@ -35,13 +35,13 @@
 | **FR23** | Đánh giá tín nhiệm hai chiều (Điểm thành viên & Điểm CLB) | Đánh giá & Tín nhiệm (F5) | ⏳ *Sẵn sàng DB, cần thêm Endpoint* | 0 API |
 
 > **Thống kê hiện tại**:
-> - **Đã hoàn thành và chạy thực tế**: **13 / 23 FR** (FR01 → FR13).
-> - **Tổng số API Backend đã hoàn thiện**: **35 Endpoints RESTful**, kiểm thử tự động đạt 37/37 Architecture Tests, có dữ liệu mẫu (Seeder) thực tế.
-> - **Các FR tiếp theo cần làm**: FR14 → FR23 (Điểm danh sân, Xoay tua sân tự động, Hạch toán chi phí cầu/sân đa hệ số, VietQR, Sổ quỹ, Đánh giá).
+> - **Đã hoàn thành và chạy thực tế**: **16 / 23 FR** (FR01 → FR16).
+> - **Tổng số API Backend đã hoàn thiện**: **48 Endpoints RESTful**, kiểm thử tự động đạt 37/37 Architecture Tests, 312/312 bài test toàn hệ thống passed.
+> - **Các FR tiếp theo cần làm**: FR17 → FR23 (Giao diện Realtime lượt đấu, Hạch toán chi phí cầu/sân đa hệ số, VietQR, Webhook SePay, Sổ quỹ, Đánh giá).
 
 ---
 
-##  PHẦN I: CHI TIẾT CÁC FR ĐÃ HOÀN THÀNH (BACKEND PRODUCTION READY)
+## 🌟 PHẦN I: CHI TIẾT CÁC FR ĐÃ HOÀN THÀNH (BACKEND PRODUCTION READY)
 
 ### 1. FR01 & FR02: Định Danh, Đăng Ký, Đăng Nhập & Phiên Làm Việc
 - **Mục tiêu**: Quản lý tài khoản duy nhất, cấp Access Token (JWT) và Refresh Token an toàn, duy trì phiên trên thiết bị.
@@ -71,12 +71,13 @@
 
 ---
 
-### 3. FR04: Chuyển Đổi Ngữ Cảnh Nhóm Trên Ứng Dụng Di Động
-- **Mục tiêu**: Chuyển đổi nhóm làm việc trên thanh Server-Rail / Drawer của Mobile. Toàn bộ quyền hạn, dữ liệu và giao diện tự động đồng bộ theo vai trò của người dùng tại nhóm đang chọn tức thì dưới 300ms mà không phải đăng nhập lại.
-- **Swagger Group**: `Clubs`
-- **Danh sách API**:
-  1. `POST /api/v1/clubs/{id}/switch-context`: Đổi ngữ cảnh sang CLB chỉ định. Backend tự động cấp ngay JWT Access Token mới chứa claim `tenantId` tương ứng và mảng danh sách `permissions` thực tế mà người dùng sở hữu trong nhóm đó.
-
+### 3. FR04: Chuyển Đổi Ngữ Cảnh Nhóm (Clean Context-Based Authorization qua Header X-Group-Id)
+- **Mục tiêu**: Chuyển đổi nhóm làm việc trên thanh Server-Rail / Drawer của Mobile. Toàn bộ quyền hạn, dữ liệu và giao diện tự động đồng bộ theo vai trò của người dùng tại nhóm đang chọn tức thì 0ms mà không phải gọi API cấp lại JWT.
+- **Cơ chế triển khai chính thức**:
+  - **Bỏ hoàn toàn API switch-context cấp lại Token**: Client đăng nhập 1 lần nhận 1 JWT toàn cục duy nhất.
+  - **Đính kèm Header X-Group-Id: <clubId>**: Khi người dùng chọn CLB trên giao diện, Client tự động gán Header này (hoặc truyền qua route parameter {clubId}, {groupId}, {sessionId}).
+  - **Thẩm tra quyền động Realtime**: GroupPermissionHandler tự động đọc Header X-Group-Id và kiểm tra quyền qua IGroupAuthorizationService (Redis cache 10 phút, tự động invalidate khi Host đổi role).
+  - Chi tiết tích hợp: Xem [HUONG_DAN_FE_XAC_THUC_VA_NGU_CANH_X_GROUP_ID.md](HUONG_DAN_FE_XAC_THUC_VA_NGU_CANH_X_GROUP_ID.md).
 ---
 
 ### 4. FR05: Quản Lý Hồ Sơ Cá Nhân & Trình Độ Tự Đánh Giá
@@ -116,7 +117,7 @@
 
 ### 7. FR08, FR09, FR10: Đăng Ký Giữ Chỗ, Hàng Đợi & Tự Động Đôn Hàng
 - **Mục tiêu**:
-  - **FR08**: Thành viên đăng ký giữ chỗ trước hạn đóng sổ.
+  - **FR08**: Thành viên đăng ký giữ chỗ (`Vote YES`) trước hạn đóng sổ.
   - **FR09 (Hàng đợi tự động)**: Khi số lượng vé chính thức chạm trần tối đa theo số sân (`maxPlayers = courtCount * playersPerCourt`), các lượt vote tiếp theo tự động chuyển vào Hàng đợi dự bị (`WAITING_LIST`) theo thứ tự thời gian (`queueNumber = 1, 2, 3...`).
   - **FR10 (Tự động đôn hàng)**: Khi một người có vé chính thức báo vắng (`Cancel Booking`), hệ thống tự động đôn người chờ ở vị trí số #1 lên vé chính thức (`CONFIRMED`) và tự động đẩy các thứ tự còn lại lên trước.
 - **Swagger Group**: `FR08-FR10 - Đăng ký giữ chỗ & Hàng đợi`
@@ -124,12 +125,12 @@
   1. `POST /api/v1/sessions/{sessionId}/bookings`: Đăng ký giữ chỗ tham gia buổi chơi (Hệ thống tự động phân nhánh cấp vé `CONFIRMED` hoặc đưa vào `WAITING_LIST`).
   2. `DELETE /api/v1/sessions/{sessionId}/bookings/me`: Hủy giữ chỗ / Báo vắng (Tự động đôn người đầu hàng đợi lên chính thức).
   3. `GET /api/v1/sessions/{sessionId}/bookings`: Lấy danh sách toàn bộ người đã giữ vé chính thức và danh sách hàng đợi của buổi chơi.
-  4. `GET /api/v1/sessions/{sessionId}/bookings/me`: Kiểm tra trạng thái vé giữ chỗ của chính mình.
+  4. `GET /api/v1/sessions/{sessionId}/bookings/me`: Kiểm tra trạng thái vé đăng ký giữ chỗ của chính mình.
 
 ---
 
 ### 8. FR11: Host Phát Tín Hiệu Tìm Người Giao Lưu Lân Cận
-- **Mục tiêu**: Khi buổi chơi gần đến giờ diễn ra nhưng chưa đủ người (`confirmedCount < maxPlayers`), Host phát tín hiệu tuyển khách vãng lai, định mức số slot cần tuyển, chi phí chia sẻ sân/cầu và bán kính quét radar (km).
+- **Mục tiêu**: Khi buổi chơi gần đến giờ diễn ra nhưng chưa đủ quân (`confirmedCount < maxPlayers`), Host phát tín hiệu tuyển khách vãng lai, định mức số slot cần tuyển, chi phí chia sẻ sân/cầu và bán kính quét radar (km).
 - **Swagger Group**: `FR11 - Phát tín hiệu tìm khách giao lưu`
 - **Danh sách API**:
   1. `POST /api/v1/sessions/{sessionId}/recruitments`: Host phát tín hiệu tuyển khách giao lưu lân cận khi thiếu người.
@@ -139,17 +140,17 @@
 ---
 
 ### 9. FR12: Tiếp Nhận & Đăng Ký Slot Giao Lưu Cho Khách Vãng Lai
-- **Mục tiêu**: Các tay vợt tự do xung quanh mở tab Radar "Tìm buổi giao lưu", thấy các buổi chơi đang tuyển khách quanh tọa độ GPS của mình kèm khoảng cách cự ly (km), mức phí chia sẻ và bấm nhận slot trực tiếp (`Join`). Hệ thống tự động cấp vé và đóng bài đăng khi đủ slot.
+- **Mục tiêu**: Các tay vợt tự do xung quanh mở tab Radar "Tìm kèo giao lưu", thấy các buổi chơi đang tuyển khách quanh tọa độ GPS của mình kèm khoảng cách cự ly (km), mức phí chia sẻ và bấm nhận slot trực tiếp (`Join`). Hệ thống tự động cấp vé và đóng bài đăng khi đủ slot.
 - **Swagger Group**: `FR12 - Khách vãng lai đăng ký tham gia`
 - **Danh sách API**:
-  1. `GET /api/v1/sessions/recruitments/explore`: Khách vãng lai quét tìm các buổi giao lưu quanh vị trí GPS trong bán kính `radiusKm`.
+  1. `GET /api/v1/sessions/recruitments/explore`: Khách vãng lai quét tìm các kèo giao lưu quanh vị trí GPS trong bán kính `radiusKm`.
   2. `POST /api/v1/sessions/recruitments/{recruitmentId}/join`: Khách vãng lai xác nhận nhận trực tiếp suất chơi giao lưu còn trống.
   3. `DELETE /api/v1/sessions/recruitments/{recruitmentId}/cancel`: Khách vãng lai hủy suất giao lưu đã đăng ký.
 
 ---
 
 ### 10. FR13: Cấu Hình Nhóm, Phân Quyền & Vận Hành Buổi Chơi
-- **Mục tiêu**: Cho phép Host khởi tạo buổi chơi mới (khung giờ, số lượng sân thuê, định mức người/sân, trần sĩ số tiếp nhận, hạn chốt đăng ký), cập nhật thông tin vận hành và chuyển đổi trạng thái buổi chơi (`OPEN` -> `LOCKED` -> `PLAYING` -> `COMPLETED`).
+- **Mục tiêu**: Cho phép Host khởi tạo buổi chơi mới (khung giờ, số lượng sân thuê, định mức người/sân, trần sĩ số tiếp nhận, hạn chốt giữ chỗ), cập nhật thông tin vận hành và chuyển đổi trạng thái buổi chơi (`OPEN` -> `LOCKED` -> `PLAYING` -> `COMPLETED`).
 - **Swagger Group**: `FR13 - Khởi tạo buổi chơi`
 - **Danh sách API**:
   1. `POST /api/v1/sessions/club/{clubId}`: Host khởi tạo buổi chơi mới cho câu lạc bộ.
@@ -161,7 +162,41 @@
 
 ---
 
-## ⏳ PHẦN II: CÁC FR KẾ TIẾP CẦN XÂY DỰNG (FR14 - FR23)
+---
+
+### 11. FR14: Điểm Danh Thành Viên Tại Sân
+- **Mục tiêu**: Xác nhận danh sách những người thực tế có mặt tại sân, xử lý người đến vãng lai (walk-in) và chốt danh sách sẵn sàng cho điều phối xoay tua sân.
+- **Swagger Group**: `FR14 - Điểm danh tại sân`
+- **Danh sách API**:
+  1. `GET /api/v1/sessions/{sessionId}/attendance`: Xem danh sách điểm danh và sĩ số thực tế tại sân.
+  2. `PUT /api/v1/sessions/{sessionId}/attendance/{userId}`: Đánh dấu có mặt hoặc vắng mặt cho người chơi.
+  3. `POST /api/v1/sessions/{sessionId}/attendance/walk-ins`: Thêm nhanh người chơi vãng lai và xác nhận có mặt.
+  4. `POST /api/v1/sessions/{sessionId}/attendance/complete`: Hoàn tất điểm danh, chốt danh sách sẵn sàng cho điều phối.
+
+---
+
+### 12. FR15: Điều Phối Xoay Tua Sân Tự Động
+- **Mục tiêu**: Giải thuật tự động đề xuất 4 người chơi vào sân trống dựa trên 2 tiêu chí tối thượng: (1) Ưu tiên người nghỉ lâu nhất (chống ngồi ngoài liên tiếp 2 trận), (2) Cân bằng tổng điểm trình độ giữa 2 cặp đấu.
+- **Swagger Group**: `FR15 - Điều phối xoay tua sân`
+- **Danh sách API**:
+  1. `GET /api/v1/sessions/{sessionId}/rotation`: Xem trạng thái các sân và đề xuất điều phối.
+  2. `POST /api/v1/sessions/{sessionId}/rotation/initialize`: Khởi tạo điều phối sau khi hoàn tất điểm danh.
+  3. `POST /api/v1/sessions/{sessionId}/rotation/proposals`: Sinh đề xuất bổ sung cho các sân trống.
+  4. `POST /api/v1/sessions/{sessionId}/matches/{matchId}/start`: Xác nhận bắt đầu trận đấu đã đề xuất.
+  5. `POST /api/v1/sessions/{sessionId}/matches/{matchId}/finish`: Kết thúc trận và kích hoạt tính toán lượt kế tiếp.
+
+---
+
+### 13. FR16: Can Thiệp Điều Chỉnh Danh Sách Thi Đấu Thủ Công
+- **Mục tiêu**: Cho phép Host hoán đổi cặp đấu, chỉnh người vào sân, tạm nghỉ hoặc khôi phục đề xuất ban đầu với kiểm soát version chống ghi đè chéo.
+- **Swagger Group**: `FR16 - Can thiệp đội hình thủ công`
+- **Danh sách API**:
+  1. `PUT /api/v1/sessions/{sessionId}/matches/{matchId}/manual-lineup`: Host điều chỉnh đội hình trước khi bắt đầu trận.
+  2. `POST /api/v1/sessions/{sessionId}/matches/{matchId}/restore-proposal`: Khôi phục gợi ý đội hình tự động ban đầu.
+  3. `PUT /api/v1/sessions/{sessionId}/rotation/players/{userId}/pause`: Host đặt tạm nghỉ hoặc sẵn sàng trở lại cho vận động viên.
+  4. `POST /api/v1/sessions/{sessionId}/matches/{matchId}/confirm-manual-start`: Host xác nhận đội hình và bắt đầu trận kèm kiểm soát version.
+
+## ⏳ PHẦN II: CÁC FR KẾ TIẾP CẦN XÂY DỰNG (FR17 - FR23)
 
 Các phân hệ dưới đây đã có sẵn cấu trúc bảng và mô hình thực thể Entity Framework Core trong cơ sở dữ liệu (`BadmintonDbContext`), bước tiếp theo sẽ xây dựng Command/Query/Handler và Endpoint API tương ứng:
 
@@ -169,15 +204,15 @@ Các phân hệ dưới đây đã có sẵn cấu trúc bảng và mô hình th
 ┌────────────────────────────────────────────────────────────────────────┐
 │                        LỘ TRÌNH 10 FR TIẾP THEO                         │
 ├──────────────────────────┬─────────────────────────────────────────────┤
-│ Nhóm Vận Hành Tại Sân    │ • FR14: Điểm danh thành viên tại sân (QR)   │
-│                          │ • FR15: Thuật toán xoay tua sân tự động     │
-│                          │ • FR16: Can thiệp xếp cặp đấu thủ công      │
-│                          │ • FR17: Màn hình theo dõi lượt thi đấu      │
+│ Nhóm Vận Hành Tại Sân    │ • FR14: Đã xong (Điểm danh sân)             │
+│                          │ • FR15: Đã xong (Xoay tua tự động)          │
+│                          │ • FR16: Đã xong (Can thiệp thủ công)        │
+│                          │ • FR17: Màn hình theo dõi realtime (SignalR)│
 ├──────────────────────────┼─────────────────────────────────────────────┤
 │ Nhóm Tài Chính & Sổ Quỹ  │ • FR18: Ghi nhận số quả cầu bóc & Phụ phí   │
 │                          │ • FR19: Hạch toán chia tiền đa hệ số        │
 │                          │ • FR20: Khởi tạo mã VietQR thanh toán       │
-│                          │ • FR21: Webhook ngân hàng tự động xác nhận  │
+│                          │ • FR21: Webhook ngân hàng tự động xác nhận thanh toán   │
 │                          │ • FR22: Quản trị Sổ quỹ mở minh bạch        │
 ├──────────────────────────┼─────────────────────────────────────────────┤
 │ Nhóm Đánh Giá & Tín Nhiệm│ • FR23: Đánh giá uy tín 2 chiều (User & CLB)│
@@ -191,10 +226,11 @@ Các phân hệ dưới đây đã có sẵn cấu trúc bảng và mô hình th
 - **FR15 - Điều phối xoay tua sân tự động**:
   - *Mục tiêu*: Khi một sân trống, giải thuật tự động chọn 4 người chơi tiếp theo ưu tiên theo: (1) Thời gian nghỉ lâu nhất (chống ngồi ngoài liên tiếp 2 trận), (2) Cân bằng tổng trình độ giữa 2 cặp đấu.
   - *Bảng dữ liệu đã có*: `session_match`, `match_player`.
-  - *Endpoint dự kiến*: `POST /api/v1/sessions/{sessionId}/matches/next`.
+  - *API BE hiện có*: GET `/api/v1/sessions/{sessionId}/rotation`, POST `/api/v1/sessions/{sessionId}/rotation/initialize`, POST `/api/v1/sessions/{sessionId}/rotation/proposals`, POST `/api/v1/sessions/{sessionId}/matches/{matchId}/start`, POST `/api/v1/sessions/{sessionId}/matches/{matchId}/finish`. Xem [UC13-BE.md](Detail%20Design/UC13-BE.md); endpoint matches/next cũ là dự kiến, không phải API đã triển khai.
 - **FR16 - Can thiệp xếp trận thủ công**:
   - *Mục tiêu*: Cho phép Host hoán đổi cặp đấu, đổi người vào sân bằng thao tác kéo thả trên mobile khi có yêu cầu phát sinh.
-  - *Endpoint dự kiến*: `PUT /api/v1/sessions/matches/{matchId}/swap-players`.
+  - *Đã triển khai C/D/E, kiểm chứng sandbox*: PUT `/api/v1/sessions/{sessionId}/matches/{matchId}/manual-lineup`; mở rộng GET rotation với baseline, chênh lệch, manual flags/capability. Mặc định ManualEditingEnabled=false; chỉ Host theo DB hiện hành và MatchManage được chỉnh/reset/pause/resume.
+  - *Đã triển khai D*: POST `/api/v1/sessions/{sessionId}/matches/{matchId}/restore-proposal`, PUT `/api/v1/sessions/{sessionId}/rotation/players/{userId}/pause`. *Đã triển khai E*: POST `/api/v1/sessions/{sessionId}/matches/{matchId}/confirm-manual-start`; start UC13 cũ bị 409 với baseline, untouched giữ nguyên; retry Playing không thêm bản ghi. F/G đã đạt trên sandbox; bộ review SQL/backup/rollback chuẩn bị tại D:/KhoaLuan/PLan_agent/UC14-DB-REVIEW/. Chưa chạy DB đích hoặc deploy. Xem [UC14-BE.md](Detail%20Design/UC14-BE.md). Endpoint swap-players cũ được thay bằng contract này. DB đích chưa nâng cấp.
 - **FR17 - Theo dõi lịch thi đấu thời gian thực**:
   - *Mục tiêu*: Cung cấp màn hình hiển thị trực quan cho người chơi: sân sắp đánh, bạn cùng chơi/đối thủ ở lượt tiếp theo và thời gian nghỉ dự kiến.
   - *Endpoint dự kiến*: `GET /api/v1/sessions/{sessionId}/my-matches`.
@@ -229,22 +265,23 @@ Các phân hệ dưới đây đã có sẵn cấu trúc bảng và mô hình th
 ### 3. Phân hệ Đánh giá uy tín & Chất lượng nhóm (FR23)
 - **FR23 - Đánh giá tín nhiệm hai chiều & Điểm uy tín**:
   - *Mục tiêu*:
-    - **Điểm uy tín thành viên**: Tự động tăng khi tham gia đúng giờ, thanh toán sòng phẳng; tự động trừ điểm khi hủy hẹn sát giờ (báo vắng cận giờ hoặc không đến).
+    - **Điểm uy tín thành viên**: Tự động tăng khi tham gia đúng giờ, thanh toán sòng phẳng; tự động trừ điểm khi hủy hẹn sát giờ (báo vắng sát giờ hoặc không đến).
     - **Điểm chất lượng hội nhóm**: Tính theo điểm đánh giá của thành viên sau buổi chơi kết hợp tính minh bạch của sổ quỹ.
   - *Bảng dữ liệu đã có*: `member_review`, `group_review`.
   - *Endpoint dự kiến*: `POST /api/v1/reviews/member`, `POST /api/v1/reviews/club`.
 
 ---
 
-## ️ HƯỚNG DẪN DÀNH CHO PHÍA MOBILE (FLUTTER)
+## 🛠️ HƯỚNG DẪN DÀNH CHO PHÍA MOBILE (FLUTTER)
 
 1. **Swagger UI trực quan**:
    - Khi Backend đang chạy, truy cập đường dẫn: **`http://localhost:54796/swagger`**
    - Toàn bộ các API đều được phân nhóm rõ ràng theo Tag từng FR (ví dụ: `FR03 - Quản lý CLB & Thành viên`, `FR05 - Quản lý hồ sơ cá nhân & Trình độ`, `FR06 - Khám phá nhóm theo vị trí`, `FR07 - Thông tin chi tiết & Lịch sinh hoạt nhóm`, `FR08-FR10 - Đăng ký giữ chỗ & Hàng đợi`, `FR11 - Phát tín hiệu tìm khách giao lưu`, `FR12 - Khách vãng lai đăng ký tham gia`, `FR13 - Khởi tạo buổi chơi`).
 
 2. **Tài liệu đặc tả chi tiết chuyên sâu**:
-   - Đặc tả luồng dữ liệu, JSON Request/Response, logic Flutter mẫu: [docs/API_DOCUMENTATION.md](docs/API_DOCUMENTATION.md)
+   - Đặc tả luồng dữ liệu, JSON Request/Response, logic Flutter mẫu: [docs/API_DOCUMENTATION.md](file:///c:/code/abp_be/KLTN2026/docs/API_DOCUMENTATION.md)
    - Đặc tả độc lập cho Phân hệ 1 (FR05, FR06, FR07): [docs/PHAN_HE_1_HO_SO_VA_TIM_KIEM_CLB_FR05_FR06_FR07.md](docs/PHAN_HE_1_HO_SO_VA_TIM_KIEM_CLB_FR05_FR06_FR07.md)
+   - Hướng dẫn FE Phân hệ Quản lý Nhóm & CLB (19 APIs): [docs/HUONG_DAN_FE_PHAN_HE_QUAN_LY_NHOM_CLB.md](docs/HUONG_DAN_FE_PHAN_HE_QUAN_LY_NHOM_CLB.md)
 
 3. **Tài khoản kiểm thử có sẵn dữ liệu**:
    - Mật khẩu tất cả tài khoản: **`admin`**

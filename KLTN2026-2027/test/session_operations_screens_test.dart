@@ -96,6 +96,27 @@ class FakeSessionOperationsRepository implements SessionOperationsRepository {
   Future<SessionRotationSnapshot> finishMatch({required String sessionId, required String matchId}) async => getRotation(sessionId);
 
   @override
+  Future<SessionRotationSnapshot> pausePlayer({
+    required String sessionId,
+    required String userId,
+    required bool isPaused,
+  }) async => getRotation(sessionId);
+
+  @override
+  Future<SessionRotationSnapshot> restoreProposal({
+    required String sessionId,
+    required String matchId,
+  }) async => getRotation(sessionId);
+
+  @override
+  Future<SessionRotationSnapshot> swapMatchPlayers({
+    required String sessionId,
+    required String matchId,
+    required List<String> teamAUserIds,
+    required List<String> teamBUserIds,
+  }) async => getRotation(sessionId);
+
+  @override
   Future<SessionSettlement> getSettlement(String sessionId) async {
     return const SessionSettlement(
       sessionId: 's1',

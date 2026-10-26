@@ -63,6 +63,47 @@ class SessionRotationNotifier extends StateNotifier<AsyncValue<SessionRotationSn
       state = AsyncValue.error(e, st);
     }
   }
+
+  Future<void> initializeRotation() async {
+    try {
+      final updated = await _repo.initializeRotation(sessionId);
+      state = AsyncValue.data(updated);
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+    }
+  }
+
+  Future<void> restoreProposal(String matchId) async {
+    try {
+      final updated = await _repo.restoreProposal(sessionId: sessionId, matchId: matchId);
+      state = AsyncValue.data(updated);
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+    }
+  }
+
+  Future<void> pausePlayer(String userId, bool isPaused) async {
+    try {
+      final updated = await _repo.pausePlayer(sessionId: sessionId, userId: userId, isPaused: isPaused);
+      state = AsyncValue.data(updated);
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+    }
+  }
+
+  Future<void> swapPlayers(String matchId, List<String> teamAUserIds, List<String> teamBUserIds) async {
+    try {
+      final updated = await _repo.swapMatchPlayers(
+        sessionId: sessionId,
+        matchId: matchId,
+        teamAUserIds: teamAUserIds,
+        teamBUserIds: teamBUserIds,
+      );
+      state = AsyncValue.data(updated);
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+    }
+  }
 }
 
 class SessionRotationScreen extends ConsumerWidget {
@@ -225,19 +266,19 @@ class SessionRotationScreen extends ConsumerWidget {
                               final cardWidth = (constraints.maxWidth - 48) / 2;
                               return SizedBox(
                                 width: cardWidth,
-                                child: _buildCourtCard(context, court, vm),
+                                child: _buildCourtCard(context, court, snapshot.queuePlayers, vm),
                               );
                             }).toList(),
                           )
                         else
-                          ...snapshot.courts.map((court) => _buildCourtCard(context, court, vm)),
+                          ...snapshot.courts.map((court) => _buildCourtCard(context, court, snapshot.queuePlayers, vm)),
                         AppSpacing.gapH16,
 
                         // 3. Resting / Waiting Queue
                         Text('Hàng đợi sẵn sàng vào sân (${snapshot.queuePlayers.length})',
                             style: AppTypography.titleSmall.bold.colored(colors.textPrimary)),
                         AppSpacing.gapH8,
-                        _buildQueueSection(context, snapshot.queuePlayers),
+                        _buildQueueSection(context, snapshot.queuePlayers, vm),
 
                         AppSpacing.gapH48,
                       ],
@@ -299,12 +340,74 @@ class SessionRotationScreen extends ConsumerWidget {
             'Giải thuật tự động phân phối 4 tay vợt có thời gian nghỉ lâu nhất vào sân trống tiếp theo và cân bằng chênh lệch tổng trình độ nhỏ nhất.',
             style: AppTypography.bodySmall.colored(colors.textMuted),
           ),
+          AppSpacing.gapH12,
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: colors.primary,
+                    side: BorderSide(color: colors.primary.withValues(alpha: 0.5)),
+                    shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                  ),
+                  icon: const Icon(Icons.bolt_rounded, size: 18),
+                  label: const Text('Tạo Đề Xuất Mới'),
+                  onPressed: () {
+                    HapticFeedback.lightImpact();
+                    vm.generateProposals();
+                  },
+                ),
+              ),
+              AppSpacing.gapW8,
+              OutlinedButton.icon(
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: colors.textSecondary,
+                  side: BorderSide(color: colors.cardBorder),
+                  shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                ),
+                icon: const Icon(Icons.restart_alt_rounded, size: 18),
+                label: const Text('Khởi Tạo Lại'),
+                onPressed: () => _confirmInitializeRotation(context, vm),
+              ),
+            ],
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildCourtCard(BuildContext context, CourtMatch court, SessionRotationNotifier vm) {
+  void _confirmInitializeRotation(BuildContext context, SessionRotationNotifier vm) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Khởi tạo lại bảng xoay tua?'),
+        content: const Text(
+          'Hệ thống sẽ đồng bộ lại toàn bộ danh sách điểm danh và phân bổ sân từ đầu.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Hủy'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: context.colors.primary,
+              foregroundColor: AppColors.white,
+            ),
+            onPressed: () {
+              HapticFeedback.mediumImpact();
+              vm.initializeRotation();
+              Navigator.of(ctx).pop();
+            },
+            child: const Text('Đồng ý'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCourtCard(
+      BuildContext context, CourtMatch court, List<RotationPlayer> queuePlayers, SessionRotationNotifier vm) {
     final colors = context.colors;
     final isPlaying = court.isPlaying;
     final isProposed = court.isProposed;
@@ -313,7 +416,9 @@ class SessionRotationScreen extends ConsumerWidget {
     if (isPlaying) {
       badgeWidget = const AppStatusBadge.success(label: 'Đang thi đấu');
     } else if (isProposed) {
-      badgeWidget = const AppStatusBadge.warning(label: 'Đề xuất sẵn sàng');
+      badgeWidget = AppStatusBadge.warning(
+        label: court.isManualSwapped ? 'Đã đổi thủ công' : 'Đề xuất sẵn sàng',
+      );
     } else {
       badgeWidget = const AppStatusBadge.neutral(label: 'Trống');
     }
@@ -446,7 +551,44 @@ class SessionRotationScreen extends ConsumerWidget {
           AppSpacing.gapH12,
 
           // Action Buttons with touch target >= 48dp
-          if (isProposed)
+          if (isProposed) ...[
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: colors.primary,
+                      side: BorderSide(color: colors.primary.withValues(alpha: 0.5)),
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      minimumSize: const Size(0, 44),
+                      shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                    ),
+                    icon: const Icon(Icons.swap_horiz_rounded, size: 18),
+                    label: const Text('Đổi người'),
+                    onPressed: () => _showSwapLineupDialog(context, court, queuePlayers, vm),
+                  ),
+                ),
+                if (court.isManualSwapped) ...[
+                  AppSpacing.gapW8,
+                  OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: colors.warning,
+                      side: BorderSide(color: colors.warning.withValues(alpha: 0.5)),
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      minimumSize: const Size(0, 44),
+                      shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                    ),
+                    icon: const Icon(Icons.restore_rounded, size: 18),
+                    label: const Text('Gợi ý gốc'),
+                    onPressed: () {
+                      HapticFeedback.lightImpact();
+                      vm.restoreProposal(court.matchId);
+                    },
+                  ),
+                ],
+              ],
+            ),
+            AppSpacing.gapH8,
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
@@ -457,14 +599,14 @@ class SessionRotationScreen extends ConsumerWidget {
                   shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
                 ),
                 icon: const Icon(Icons.play_arrow_rounded),
-                label: const Text('Bắt đầu trận đấu trên sân này'),
+                label: Text(court.isManualSwapped ? 'Xác nhận bắt đầu trận đã đổi' : 'Bắt đầu trận đấu trên sân này'),
                 onPressed: () {
                   HapticFeedback.mediumImpact();
                   vm.startMatch(court.matchId);
                 },
               ),
-            )
-          else if (isPlaying)
+            ),
+          ] else if (isPlaying)
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
@@ -514,7 +656,7 @@ class SessionRotationScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildQueueSection(BuildContext context, List<RotationPlayer> queue) {
+  Widget _buildQueueSection(BuildContext context, List<RotationPlayer> queue, SessionRotationNotifier vm) {
     final colors = context.colors;
 
     if (queue.isEmpty) {
@@ -536,43 +678,235 @@ class SessionRotationScreen extends ConsumerWidget {
       spacing: 8,
       runSpacing: 8,
       children: queue.map((p) {
-        return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-          decoration: BoxDecoration(
-            color: colors.surfaceSubtle,
-            borderRadius: AppRadius.tag,
-            border: Border.all(color: colors.cardBorder),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.person_outline_rounded, size: 14, color: colors.primary),
-              AppSpacing.gapW4,
-              Text(p.fullName, style: AppTypography.labelSmall.bold.colored(colors.textPrimary)),
-              const SizedBox(width: 6),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-                decoration: BoxDecoration(
-                  color: colors.primary.withValues(alpha: 0.15),
-                  borderRadius: AppRadius.tag,
-                ),
-                child: Text('L${p.skillLevel}', style: AppTypography.labelSmall.colored(colors.primary)),
+        return InkWell(
+          borderRadius: AppRadius.tag,
+          onTap: () => _showPlayerPauseDialog(context, p, vm),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: p.isPaused ? colors.cardBorder.withValues(alpha: 0.3) : colors.surfaceSubtle,
+              borderRadius: AppRadius.tag,
+              border: Border.all(
+                color: p.isPaused ? colors.warning.withValues(alpha: 0.6) : colors.cardBorder,
               ),
-              if (p.isResting) ...[
-                const SizedBox(width: 4),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  p.isPaused ? Icons.pause_circle_outline_rounded : Icons.person_outline_rounded,
+                  size: 14,
+                  color: p.isPaused ? colors.warning : colors.primary,
+                ),
+                AppSpacing.gapW4,
+                Text(
+                  p.fullName,
+                  style: AppTypography.labelSmall.bold.colored(
+                    p.isPaused ? colors.textMuted : colors.textPrimary,
+                  ),
+                ),
+                const SizedBox(width: 6),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
                   decoration: BoxDecoration(
-                    color: colors.warning.withValues(alpha: 0.15),
+                    color: colors.primary.withValues(alpha: 0.15),
                     borderRadius: AppRadius.tag,
                   ),
-                  child: Text('Nghỉ 5p', style: AppTypography.labelSmall.colored(colors.warning)),
+                  child: Text('L${p.skillLevel}', style: AppTypography.labelSmall.colored(colors.primary)),
                 ),
+                if (p.isPaused) ...[
+                  const SizedBox(width: 4),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                    decoration: BoxDecoration(
+                      color: colors.warning.withValues(alpha: 0.15),
+                      borderRadius: AppRadius.tag,
+                    ),
+                    child: Text('Tạm nghỉ', style: AppTypography.labelSmall.bold.colored(colors.warning)),
+                  ),
+                ] else if (p.isResting) ...[
+                  const SizedBox(width: 4),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                    decoration: BoxDecoration(
+                      color: colors.warning.withValues(alpha: 0.15),
+                      borderRadius: AppRadius.tag,
+                    ),
+                    child: Text('Nghỉ 5p', style: AppTypography.labelSmall.colored(colors.warning)),
+                  ),
+                ],
               ],
-            ],
+            ),
           ),
         );
       }).toList(),
+    );
+  }
+
+  void _showPlayerPauseDialog(BuildContext context, RotationPlayer player, SessionRotationNotifier vm) {
+    final colors = context.colors;
+    final isPaused = player.isPaused;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(player.fullName),
+        content: Text(
+          isPaused
+              ? 'Chuyển trạng thái người chơi sang "Sẵn sàng" để tiếp tục nhận lượt thi đấu?'
+              : 'Chuyển trạng thái sang "Tạm nghỉ"? Thuật toán sẽ bỏ qua người chơi này khi đề xuất trận.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Đóng'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: isPaused ? colors.primary : colors.warning,
+              foregroundColor: AppColors.white,
+            ),
+            onPressed: () {
+              HapticFeedback.mediumImpact();
+              vm.pausePlayer(player.userId, !isPaused);
+              Navigator.of(ctx).pop();
+            },
+            child: Text(isPaused ? 'Sẵn sàng thi đấu' : 'Đặt tạm nghỉ'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showSwapLineupDialog(
+    BuildContext context,
+    CourtMatch court,
+    List<RotationPlayer> queuePlayers,
+    SessionRotationNotifier vm,
+  ) {
+    final courtPlayers = [...court.teamA, ...court.teamB];
+    if (courtPlayers.length < 4) return;
+
+    final candidatePool = [
+      ...courtPlayers,
+      ...queuePlayers.where((q) => !q.isPaused),
+    ];
+
+    final uniqueCandidates = <String, RotationPlayer>{};
+    for (final p in candidatePool) {
+      uniqueCandidates[p.userId] = p;
+    }
+    final candidateList = uniqueCandidates.values.toList();
+
+    String a1 = court.teamA[0].userId;
+    String a2 = court.teamA[1].userId;
+    String b1 = court.teamB[0].userId;
+    String b2 = court.teamB[1].userId;
+
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (dialogContext, setStateDialog) {
+            final colors = dialogContext.colors;
+
+            Widget buildDropdown(String label, String currentVal, ValueChanged<String?> onChanged) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(label, style: AppTypography.labelSmall.bold.colored(colors.textSecondary)),
+                  const SizedBox(height: 4),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: colors.cardBorder),
+                      borderRadius: AppRadius.borderSm,
+                    ),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<String>(
+                        value: currentVal,
+                        isExpanded: true,
+                        items: candidateList.map((p) {
+                          return DropdownMenuItem(
+                            value: p.userId,
+                            child: Text(
+                              '${p.fullName} (L${p.skillLevel})',
+                              style: AppTypography.bodySmall.colored(colors.textPrimary),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          );
+                        }).toList(),
+                        onChanged: onChanged,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                ],
+              );
+            }
+
+            return AlertDialog(
+              title: Text('Đổi Đội Hình Sân ${court.courtNumber}'),
+              content: SingleChildScrollView(
+                child: SizedBox(
+                  width: 380,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Chọn 4 tay vợt cho 2 đội (có thể đổi từ hàng đợi):',
+                          style: AppTypography.bodySmall.colored(colors.textMuted)),
+                      const SizedBox(height: 12),
+                      Text('ĐỘI 1', style: AppTypography.labelMedium.bold.colored(colors.primary)),
+                      const SizedBox(height: 6),
+                      buildDropdown('Tay vợt 1A', a1, (v) {
+                        if (v != null) setStateDialog(() => a1 = v);
+                      }),
+                      buildDropdown('Tay vợt 2A', a2, (v) {
+                        if (v != null) setStateDialog(() => a2 = v);
+                      }),
+                      const Divider(),
+                      Text('ĐỘI 2', style: AppTypography.labelMedium.bold.colored(colors.warning)),
+                      const SizedBox(height: 6),
+                      buildDropdown('Tay vợt 1B', b1, (v) {
+                        if (v != null) setStateDialog(() => b1 = v);
+                      }),
+                      buildDropdown('Tay vợt 2B', b2, (v) {
+                        if (v != null) setStateDialog(() => b2 = v);
+                      }),
+                    ],
+                  ),
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(ctx).pop(),
+                  child: const Text('Hủy'),
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: colors.primary,
+                    foregroundColor: AppColors.white,
+                  ),
+                  onPressed: () {
+                    final selectedSet = {a1, a2, b1, b2};
+                    if (selectedSet.length < 4) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Vui lòng chọn 4 tay vợt khác nhau')),
+                      );
+                      return;
+                    }
+                    HapticFeedback.mediumImpact();
+                    vm.swapPlayers(court.matchId, [a1, a2], [b1, b2]);
+                    Navigator.of(ctx).pop();
+                  },
+                  child: const Text('Lưu thay đổi'),
+                ),
+              ],
+            );
+          },
+        );
+      },
     );
   }
 }

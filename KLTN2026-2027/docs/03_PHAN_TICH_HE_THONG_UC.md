@@ -100,7 +100,7 @@ graph TD
 ### UC05: Chuyển đổi ngữ cảnh nhóm (Switch Context)
 - **FR đáp ứng**: FR03, FR04 (F1.3) | **Tác nhân**: Toàn bộ người dùng.
 - **Tiền điều kiện**: Người dùng đang tham gia ít nhất 1 hội nhóm.
-- **Luồng chính**: Người dùng chọn nhóm muốn làm việc trên thanh trượt ➔ Hệ thống kiểm tra tư cách thành viên (`group_member.status == ACTIVE`) ➔ Lấy toàn bộ quyền hạn thực tế của vai trò người dùng tại nhóm đó ➔ Phát hành Access Token mới có claim `tenantId` và mảng `permissions` tương ứng ➔ Ứng dụng cập nhật giao diện và quyền hạn tức thì (< 300ms) mà không bắt đăng nhập lại.
+- **Luồng chính**: Người dùng chọn nhóm muốn làm việc trên thanh trượt/Server-Rail ➔ Ứng dụng thiết lập Header HTTP ngữ cảnh `X-Group-Id = <clubId>` (hoặc truyền qua Route parameter) ➔ Giữ nguyên 1 JWT Access Token toàn cục duy nhất ➔ Hệ thống thẩm tra quyền hạn động qua `GroupPermissionHandler` và Redis Cache (`group:perm:{userId}:{groupId}`) ➔ Ứng dụng cập nhật giao diện và dữ liệu theo nhóm vừa chọn tức thì mà không cần xin cấp lại Token.
 - **Hậu điều kiện**: Ngữ cảnh làm việc được đồng bộ chính xác theo vai trò tại nhóm vừa chọn.
 
 ### UC06: Tìm kiếm & Gửi yêu cầu gia nhập nhóm
@@ -144,7 +144,7 @@ graph TD
 - **FR đáp ứng**: FR11 (F2.4) | **Tác nhân**: Trưởng nhóm (Host).
 - **Tiền điều kiện**: Buổi chơi chuẩn bị diễn ra nhưng bị thiếu người (nguy cơ lẻ sân).
 - **Luồng chính**: Host chọn số suất cần tuyển, trình độ tối thiểu, chi phí chia sẻ/suất và bán kính quét GPS (mặc định 5km) ➔ Hệ thống tạo bản ghi `guest_recruitment` (`ACTIVE`) ➔ Phát thông báo đẩy đến các tay vợt đang bật `isOpenForGuest = true` trong bán kính sân.
-- **Hậu điều kiện**: Tín hiệu tìm người giao lưu được lan tỏa tức thì.
+- **Hậu điều kiện**: Tín hiệu tìm kèo được lan tỏa tức thì.
 
 ### UC11: Tiếp nhận & Đăng ký slot giao lưu lân cận
 - **FR đáp ứng**: FR12 (F2.5) | **Tác nhân**: Khách vãng lai lân cận.
@@ -190,6 +190,14 @@ graph TD
 - **Luồng chính**: Host dùng thao tác kéo thả trên ứng dụng để hoán đổi người chơi hoặc đổi bạn cùng chơi/đối thủ theo yêu cầu riêng ➔ Đánh dấu cờ `is_manual_swapped = true` ➔ Bấm bắt đầu trận.
 - **Hậu điều kiện**: Cặp đấu được cập nhật theo ý muốn của Host.
 
+**Hợp đồng BE đã duyệt, triển khai theo từng đợt (20/10/2026):** xem [UC14-BE.md](Detail%20Design/UC14-BE.md). UC14 BE A–G đã hoàn tất trên sandbox: chỉnh/reset/pause/resume/confirm kèm version, guard start cũ, tranh chấp hai writer, rollback và SignalR hai instance đều được kiểm chứng. Lời mời tới đúng 4 người cuối, retry không tạo thêm bản ghi. Flutter chưa triển khai; DB đích chưa nâng cấp.
+
+- Host được nhận diện bằng tên role Host hoặc IsHostRole theo cơ chế hiện có, kèm MatchManage trong CLB sở hữu buổi. Không thay quyền UC13.
+- No-op không chụp gợi ý gốc, tăng version hoặc phát event. Chỉ thay đổi thực sự đầu tiên mới chụp baseline; các lần chỉnh/reset sau giữ nguyên baseline.
+- Khôi phục phải kiểm tra lại người chơi còn hợp lệ, không pause/cooldown hoặc ở sân khác; xung đột trả 409, không khôi phục một phần.
+- Tạm nghỉ tới khi Host bật lại; có người thay hợp lệ thì thay, không chỉ định người thay thì SKIPPED proposal và xét lại. Chưa bắt đầu trận mới được chỉnh/pause người trong đội hình.
+- Trận chỉ bắt đầu khi đủ 4 người hợp lệ, mỗi đội 2 người; start lấy giờ server và mời đúng đội hình cuối. Phần Flutter kéo thả không nằm trong đợt BE.
+
 ### UC15: Theo dõi lịch thi đấu cá nhân theo thời gian thực
 - **FR đáp ứng**: FR17 (F3.5) | **Tác nhân**: Hội viên, Khách tại sân.
 - **Tiền điều kiện**: Người chơi đã được điểm danh `CHECKED_IN`.
@@ -221,7 +229,7 @@ graph TD
 - **Luồng chính**: Người chơi mở chi tiết khoản thu ➔ Màn hình hiển thị mã VietQR động chuẩn ngân hàng NAPAS đã **nhúng sẵn số tiền chính xác** và **nội dung chuyển khoản định danh (`payment_code`)** ➔ Người chơi dùng ứng dụng ngân hàng bất kỳ quét mã và xác nhận chuyển tiền.
 - **Hậu điều kiện**: Giao dịch chuyển tiền được thực hiện thành công.
 
-### UC18: Đối soát & Tự động xác nhận thanh toán qua Webhook ngân hàng
+### UC18: Đối soát & Tự động gạch nợ qua Webhook ngân hàng
 - **FR đáp ứng**: FR21 (F4.4) | **Tác nhân**: Cổng thanh toán ngân hàng (SePay), Hệ thống.
 - **Tiền điều kiện**: Người chơi đã chuyển khoản; bản ghi `session_fee` đang ở trạng thái `UNPAID`.
 - **Luồng chính**:
@@ -232,7 +240,7 @@ graph TD
   5. Tạo bản ghi giao dịch ngân hàng đối soát `bank_transaction` (`MATCHED`).
   6. Tự động kết chuyển một dòng thu tiền vào Sổ quỹ mở của nhóm (`group_ledger`).
   7. Bắn thông báo đẩy (FCM) xác nhận thanh toán thành công đến điện thoại của người chơi.
-- **Hậu điều kiện**: Xác nhận thanh toán tự động 100%, thủ quỹ không cần kiểm tra sao kê thủ công.
+- **Hậu điều kiện**: Tự động xác nhận thanh toán 100%, thủ quỹ không cần kiểm tra sao kê thủ công.
 
 ---
 
