@@ -52,10 +52,13 @@ class ReportViewModel extends StateNotifier<ReportState> {
         state.selectedDate!.year == date.year &&
         state.selectedDate!.month == date.month &&
         state.selectedDate!.day == date.day) {
-      // Unselect if tapped again
       state = state.copyWith(clearSelectedDate: true);
     } else {
       state = state.copyWith(selectedDate: date);
     }
+  }
+
+  void setFilter(ReportFilter filter) {
+    state = state.copyWith(filter: filter);
   }
 }

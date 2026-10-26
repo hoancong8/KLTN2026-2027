@@ -29,6 +29,8 @@ class MyBookingMapper {
       feePerMember: dto.feePerMember,
       bookedAt: _parseDateTime(dto.bookedAt),
       checkinAt: dto.checkinAt != null ? _parseDateTime(dto.checkinAt) : null,
+      isGuest: dto.isGuest,
+      memberType: dto.memberType,
     );
   }
 }

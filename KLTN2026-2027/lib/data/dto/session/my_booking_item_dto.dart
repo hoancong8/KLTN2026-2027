@@ -16,6 +16,8 @@ class MyBookingItemDto {
   final double feePerMember;
   final String bookedAt;
   final String? checkinAt;
+  final bool isGuest;
+  final String memberType;
 
   MyBookingItemDto({
     required this.bookingId,
@@ -33,6 +35,8 @@ class MyBookingItemDto {
     required this.feePerMember,
     required this.bookedAt,
     this.checkinAt,
+    this.isGuest = false,
+    this.memberType = 'MONTHLY',
   });
 
   factory MyBookingItemDto.fromJson(Map<String, dynamic> json) {
@@ -52,7 +56,19 @@ class MyBookingItemDto {
       feePerMember: _parseDouble(json['feePerMember']),
       bookedAt: json['bookedAt']?.toString() ?? '',
       checkinAt: json['checkinAt']?.toString(),
+      isGuest: _parseBool(json['isGuest'] ?? json['idRecruitment'] != null || json['recruitmentId'] != null),
+      memberType: json['memberType']?.toString() ?? 'MONTHLY',
     );
+  }
+
+  static bool _parseBool(dynamic val) {
+    if (val is bool) return val;
+    if (val is num) return val != 0;
+    if (val is String) {
+      final s = val.toLowerCase().trim();
+      return s == 'true' || s == '1';
+    }
+    return false;
   }
 
   static int _parseInt(dynamic val) {
