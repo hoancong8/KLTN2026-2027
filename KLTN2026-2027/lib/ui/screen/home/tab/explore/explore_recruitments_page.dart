@@ -28,7 +28,6 @@ class ExploreRecruitmentsPage extends ConsumerStatefulWidget {
 class _ExploreRecruitmentsPageState extends ConsumerState<ExploreRecruitmentsPage> {
   final _searchController = TextEditingController();
 
-  static const List<double> _quickRadii = [3.0, 5.0, 10.0, 20.0];
 
   @override
   void dispose() {
@@ -230,79 +229,7 @@ class _ExploreRecruitmentsPageState extends ConsumerState<ExploreRecruitmentsPag
           ),
           const SizedBox(height: 10),
 
-          // 2. GPS Location & Quick Radius Pills
-          Row(
-            children: [
-              // GPS indicator
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: colors.primaryContainer,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      state.isLocating ? Icons.sync_rounded : Icons.my_location_rounded,
-                      size: 13,
-                      color: colors.primary,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      state.isLocating ? 'Đang định vị' : 'GPS',
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
-                        color: colors.primary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 8),
-
-              // Radius Pills
-              Expanded(
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: _quickRadii.map((r) {
-                      final isSelected = (state.radiusKm - r).abs() < 0.1;
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 6),
-                        child: InkWell(
-                          onTap: () => vm.setRadius(r),
-                          borderRadius: BorderRadius.circular(20),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4.5),
-                            decoration: BoxDecoration(
-                              color: isSelected ? colors.primary : colors.cardBackground,
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(
-                                color: isSelected ? colors.primary : colors.cardBorder,
-                              ),
-                            ),
-                            child: Text(
-                              '${r.toStringAsFixed(0)} km',
-                              style: TextStyle(
-                                fontSize: 11.5,
-                                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                                color: isSelected ? AppColors.white : colors.textPrimary,
-                              ),
-                            ),
-                          ),
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-
-          // 3. Skill Level Chips
+          // Skill Level Chips
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
@@ -637,7 +564,7 @@ class _ExploreRecruitmentsPageState extends ConsumerState<ExploreRecruitmentsPag
             Text(
               isSearching
                   ? 'Không có bài tuyển khách nào khớp với từ khóa "${state.searchTerm}". Hãy thử từ khóa khác hoặc xóa lọc.'
-                  : 'Hiện không có buổi chơi nào tuyển khách trong bán kính ${state.radiusKm.toStringAsFixed(0)} km. Hãy thử mở rộng bán kính quét.',
+                  : 'Hiện chưa có bài tuyển khách giao lưu nào. Hãy thử tìm theo tên sân hoặc tải lại danh sách.',
               style: TextStyle(fontSize: 13, color: colors.textMuted, height: 1.4),
               textAlign: TextAlign.center,
             ),
@@ -653,16 +580,10 @@ class _ExploreRecruitmentsPageState extends ConsumerState<ExploreRecruitmentsPag
                 label: const Text('Xóa bộ lọc tìm kiếm'),
               )
             else
-              ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: colors.primary,
-                  foregroundColor: AppColors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 11),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                ),
-                onPressed: () => vm.setRadius(20.0),
-                icon: const Icon(Icons.zoom_out_map_rounded, size: 18),
-                label: const Text('Mở rộng bán kính 20km', style: TextStyle(fontWeight: FontWeight.bold)),
+              OutlinedButton.icon(
+                onPressed: vm.explore,
+                icon: const Icon(Icons.refresh_rounded, size: 18),
+                label: const Text('Tải lại danh sách'),
               ),
           ],
         ),

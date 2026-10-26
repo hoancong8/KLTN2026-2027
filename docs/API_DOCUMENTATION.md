@@ -105,6 +105,8 @@ Toàn bộ các phản hồi lỗi từ server đều trả về theo chuẩn **
 | **FR07** | `GET` | `/api/v1/clubs/{id}` | `FR07 - Thông tin chi tiết & Lịch sinh hoạt nhóm` | `Bearer Token` | Xem chi tiết CLB đầy đủ: sân cố định, lịch định kỳ tuần, Host, sĩ số, trạng thái cá nhân |
 | **FR07** | `PUT` | `/api/v1/clubs/{id}/info` | `FR07 - Thông tin chi tiết & Lịch sinh hoạt nhóm` | `MEMBER.INFO.UPDATE` | Host cấu hình sân sinh hoạt cố định, địa chỉ, GPS, tiêu chuẩn tuyển chọn |
 | **FR07** | `PUT` | `/api/v1/clubs/{id}/schedules` | `FR07 - Thông tin chi tiết & Lịch sinh hoạt nhóm` | `OPERATIONS.SCHEDULE.MANAGE` | Host thiết lập các khung giờ sinh hoạt cố định lặp lại hàng tuần của nhóm |
+| **FR19** | `GET` | `/api/v1/clubs/{id}/fee-rule` | `FR19 - Hạch toán biểu phí và Quỹ nhóm` | `Bearer Token` | Xem cấu hình biểu phí và mức ưu đãi của câu lạc bộ |
+| **FR19** | `PUT` | `/api/v1/clubs/{id}/fee-rule` | `FR19 - Hạch toán biểu phí và Quỹ nhóm` | `FINANCE.BANK.MANAGE` | Host/Thủ quỹ cập nhật biểu phí (tháng, ngày, khách, ưu đãi Nữ) |
 
 ---
 
@@ -386,6 +388,48 @@ graph TD
 
 ---
 
+#### 7. `GET /api/v1/clubs/{id}/fee-rule` (FR19 - Xem Cấu Hình Biểu Phí & Ưu Đãi)
+
+- **Mục đích**: Lấy thông tin cấu hình quy tắc tính phí hiện tại của câu lạc bộ.
+- **Headers**: `Authorization: Bearer <TOKEN>`, `Content-Type: application/json`
+- **Response `200 OK`**:
+  ```json
+  {
+    "id": "e4414bc9-a5f1-432a-bc9a-0e9603ef8902",
+    "clubId": "b86fa2e7-03b6-4299-923c-a93108ce8968",
+    "feeMode": "DYNAMIC",
+    "monthlyFee": 350000.00,
+    "dailyMemberFee": 40000.00,
+    "guestFee": 50000.00,
+    "femaleDiscountMonthly": 0.00,
+    "femaleDiscountDaily": 5000.00,
+    "femaleDiscountGuest": 10000.00,
+    "roundRule": 1000,
+    "appliedAt": "2026-10-26T17:00:00Z"
+  }
+  ```
+
+---
+
+#### 8. `PUT /api/v1/clubs/{id}/fee-rule` (FR19 - Host/Thủ Quỹ Cập Nhật Biểu Phí & Ưu Đãi)
+
+- **Màn hình kích hoạt**: Màn hình "Cấu hình biểu phí & Ưu đãi" (`ClubFeeRuleSettingsScreen`), dành cho Host/Thủ quỹ có quyền `FINANCE.BANK.MANAGE`.
+- **Headers**: `Authorization: Bearer <TOKEN>`, `X-Group-Id: <CLUB_ID>`, `Content-Type: application/json`
+- **Request Body JSON**:
+  ```json
+  {
+    "feeMode": 0,
+    "monthlyFee": 350000.00,
+    "dailyMemberFee": 40000.00,
+    "guestFee": 50000.00,
+    "femaleDiscountMonthly": 0.00,
+    "femaleDiscountDaily": 5000.00,
+    "femaleDiscountGuest": 10000.00,
+    "roundRule": 1000
+  }
+  ```
+  *(Ghi chú: `feeMode`: `0` = DYNAMIC, `1` = FIXED).*
+- **Response `200 OK`**: Trả về `ClubFeeRuleResponse` đã cập nhật thành công.
 
 ---
 
@@ -876,7 +920,7 @@ Swagger Group: `FR13 - Khởi tạo buổi chơi`
 
 > **Nghiệp vụ cốt lõi**:
 > - Khởi tạo buổi chơi định kỳ hoặc đột xuất cho CLB (`POST /api/v1/sessions/club/{clubId}`).
-> - Tự động tính toán sĩ số tối đa (`maxPlayers = courtCount * targetPlayerPerCourt`) và thời hạn giữ chỗ (`deadlineBooking = startTime - 2h`).
+> - Tự động tính toán sĩ số tối đa (`maxPlayers = courtCount * targetPlayerPerCourt`) và thời hạn biểu quyết (`deadlineBooking = startTime - 2h`).
 > - Theo dõi danh sách lịch sinh hoạt (Sắp diễn ra / Đã qua) và chi tiết người tham gia.
 > - Quản lý vòng đời trạng thái buổi chơi: `OPEN` (Mở vé) -> `LOCKED` (Khóa sổ) -> `PLAYING` (Đang thi đấu) -> `COMPLETED` (Hoàn thành) -> `CANCELLED` (Hủy).
 
@@ -1043,7 +1087,7 @@ Swagger Group: `FR13 - Khởi tạo buổi chơi`
 | Chưa đăng ký (`isBookedByCurrentUser == false`) | Nút Xanh Lớn: **"Biểu Quyết Tham Gia (Vote YES) 🏸"** | Gọi `POST /api/v1/sessions/{sessionId}/bookings`. |
 | Đã có vé chính thức (`currentUserBookingStatus == CONFIRMED`) | Hàng 2 Nút: <br>1. Card Xanh: *"🎟️ Vé chính thức #X"* <br>2. Nút Đỏ: **"Báo vắng / Hủy vé"** | Bấm Báo vắng -> Mở dialog xác nhận -> Gọi `DELETE /api/v1/sessions/{sessionId}/bookings/me`. |
 | Đang ở hàng đợi (`currentUserBookingStatus == WAITING`) | Hàng 2 Nút: <br>1. Card Cam: *"⏳ Đang chờ vị trí #queueOrder"* <br>2. Nút Xám: **"Hủy hàng đợi"** | Bấm Hủy -> Gọi `DELETE /api/v1/sessions/{sessionId}/bookings/me`. |
-| Buổi chơi đã khóa sổ (`session.status == LOCKED / COMPLETED`) | Nút Disabled Xám: **"Buổi chơi đã khóa sổ giữ chỗ"** | Không cho phép bấm. |
+| Buổi chơi đã khóa sổ (`session.status == LOCKED / COMPLETED`) | Nút Disabled Xám: **"Buổi chơi đã khóa sổ biểu quyết"** | Không cho phép bấm. |
 
 ---
 
@@ -1063,7 +1107,7 @@ Prefix: `/api/v1/sessions`
 Swagger Group: `FR08-FR10 - Đăng ký giữ chỗ & Hàng đợi`
 
 > **Nghiệp vụ cốt lõi**:
-> - **FR08**: Thành viên CLB đăng ký tham gia buổi chơi. Nếu sĩ số chưa vượt quá `maxPlayers`, hệ thống cấp vé chính thức tức thì (`CONFIRMED`, `queueOrder = 0`).
+> - **FR08**: Thành viên CLB biểu quyết tham gia buổi chơi (Vote YES). Nếu sĩ số chưa vượt quá `maxPlayers`, hệ thống cấp vé chính thức tức thì (`CONFIRMED`, `queueOrder = 0`).
 > - **FR09**: Khi số người xác nhận đã đạt trần `maxPlayers`, mọi lượt Vote tiếp theo tự động được xếp vào Hàng đợi chờ (`WAITING`, `queueOrder = 1..N`) theo nguyên tắc người đến trước xếp trước (FIFO).
 > - **FR10**: Bất kỳ thành viên nào đã giữ vé chính thức bấm "Báo vắng" (`DELETE /bookings/me`), hệ thống **tự động đôn người đang chờ ở vị trí số #1 lên vé chính thức** và tự động giảm thứ tự của toàn bộ người chờ còn lại.
 
@@ -1074,7 +1118,7 @@ Swagger Group: `FR08-FR10 - Đăng ký giữ chỗ & Hàng đợi`
 | `POST` | `/api/v1/sessions/{sessionId}/bookings` | Đã đăng nhập (Member) | `FR08-FR10` | Đăng ký giữ chỗ (Vote YES - Cấp vé chính thức hoặc tự vào hàng đợi) |
 | `DELETE`| `/api/v1/sessions/{sessionId}/bookings/me`| Người đã có vé / Đang chờ | `FR08-FR10` | Hủy giữ chỗ / Báo vắng (Tự động đôn người chờ đầu hàng đợi lên chính thức) |
 | `GET` | `/api/v1/sessions/{sessionId}/bookings` | Đã đăng nhập | `FR08-FR10` | Lấy danh sách toàn bộ người đã vote & danh sách hàng đợi |
-| `GET` | `/api/v1/sessions/{sessionId}/bookings/me`| Đã đăng nhập | `FR08-FR10` | Kiểm tra trạng thái giữ chỗ của chính mình |
+| `GET` | `/api/v1/sessions/{sessionId}/bookings/me`| Đã đăng nhập | `FR08-FR10` | Kiểm tra trạng thái vé biểu quyết của chính mình |
 
 ---
 

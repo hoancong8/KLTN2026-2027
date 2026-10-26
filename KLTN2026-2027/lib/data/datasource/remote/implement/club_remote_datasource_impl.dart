@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import '../../../../app/consts/app_config.dart';
 import '../../../dto/club/approve_join_request_dto.dart';
 import '../../../dto/club/club_detail_dto.dart';
+import '../../../dto/club/club_fee_rule_dto.dart';
 import '../../../dto/club/club_member_response_dto.dart';
 import '../../../dto/club/club_response_dto.dart';
 import '../../../dto/club/club_role_response_dto.dart';
@@ -335,6 +336,34 @@ class ClubRemoteDatasourceImpl extends BaseRemoteDatasource implements ClubRemot
         data: request.toJson(),
         options: Options(headers: {'X-Group-Id': clubId}),
       );
+    } catch (e) {
+      throw handleError(e);
+    }
+  }
+
+  // --- FR19: Hạch toán biểu phí và Quỹ nhóm ---
+  @override
+  Future<ClubFeeRuleResponseDto> getClubFeeRule(String clubId) async {
+    try {
+      final response = await dio.get(AppConfig.clubFeeRulePath(clubId));
+      return handleResponse(response, (data) => ClubFeeRuleResponseDto.fromJson(data));
+    } catch (e) {
+      throw handleError(e);
+    }
+  }
+
+  @override
+  Future<ClubFeeRuleResponseDto> updateClubFeeRule(
+    String clubId,
+    UpdateClubFeeRuleRequestDto request,
+  ) async {
+    try {
+      final response = await dio.put(
+        AppConfig.clubFeeRulePath(clubId),
+        data: request.toJson(),
+        options: Options(headers: {'X-Group-Id': clubId}),
+      );
+      return handleResponse(response, (data) => ClubFeeRuleResponseDto.fromJson(data));
     } catch (e) {
       throw handleError(e);
     }

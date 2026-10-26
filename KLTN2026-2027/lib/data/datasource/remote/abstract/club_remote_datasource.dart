@@ -1,5 +1,6 @@
 import '../../../dto/club/approve_join_request_dto.dart';
 import '../../../dto/club/club_detail_dto.dart';
+import '../../../dto/club/club_fee_rule_dto.dart';
 import '../../../dto/club/club_member_response_dto.dart';
 import '../../../dto/club/club_response_dto.dart';
 import '../../../dto/club/club_role_response_dto.dart';
@@ -65,4 +66,9 @@ abstract class ClubRemoteDatasource {
   Future<void> updateClubInfo(String clubId, UpdateClubInfoRequestDto request);
 
   Future<void> updateClubSchedules(String clubId, UpdateClubSchedulesRequestDto request);
+
+  // --- FR19: Hạch toán biểu phí và Quỹ nhóm ---
+  Future<ClubFeeRuleResponseDto> getClubFeeRule(String clubId);
+
+  Future<ClubFeeRuleResponseDto> updateClubFeeRule(String clubId, UpdateClubFeeRuleRequestDto request);
 }

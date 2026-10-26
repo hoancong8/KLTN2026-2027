@@ -9,6 +9,7 @@ import '../../../../../../app/theme/theme.dart';
 import '../../../../../../app/provider/localization_provider.dart';
 import '../../../../../../app/l10n_gen/app_localizations.dart';
 import '../../../../../../domain/enums/club_role.dart';
+import '../../../../../../domain/entities/club/club_fee_rule.dart';
 import '../../../../club/club_management_vm/club_members_vm.dart';
 import '../../../../club/club_vm/club_context_vm.dart';
 import '../../../../club_detail/club_detail_vm/club_detail_vm.dart';
@@ -276,7 +277,7 @@ class _ClubOverviewTabState extends ConsumerState<ClubOverviewTab> {
           AppSpacing.gapH16,
 
           // 3. Tiền sân & Đóng quỹ nhóm (Biểu phí sinh hoạt)
-          _buildClubFeeCard(club, canManageClub),
+          _buildClubFeeCard(club, canManageClub, state.feeRule),
 
           AppSpacing.gapH16,
 
@@ -409,7 +410,38 @@ class _ClubOverviewTabState extends ConsumerState<ClubOverviewTab> {
     );
   }
 
-  Widget _buildClubFeeCard(dynamic club, bool canManageClub) {
+  String _formatVnd(num value) {
+    final intVal = value.toInt();
+    final str = intVal.toString();
+    final buffer = StringBuffer();
+    for (int i = 0; i < str.length; i++) {
+      if (i > 0 && (str.length - i) % 3 == 0) {
+        buffer.write('.');
+      }
+      buffer.write(str[i]);
+    }
+    return buffer.toString();
+  }
+
+  Widget _buildClubFeeCard(dynamic club, bool canManageClub, [ClubFeeRule? feeRule]) {
+    final isDynamic = feeRule?.isDynamic ?? true;
+    final monthlyFee = feeRule?.monthlyFee ?? 500000;
+    final monthlyDiscount = feeRule?.femaleDiscountMonthly ?? 50000;
+    final dailyMemberFee = feeRule?.dailyMemberFee ?? 50000;
+    final dailyDiscount = feeRule?.femaleDiscountDaily ?? 10000;
+    final guestFee = feeRule?.guestFee ?? 70000;
+    final guestDiscount = feeRule?.femaleDiscountGuest ?? 10000;
+    final roundRule = feeRule?.roundRule ?? 1000;
+
+    final monthlyFemale = (monthlyFee - monthlyDiscount).clamp(0, monthlyFee);
+    final dailyFemale = (dailyMemberFee - dailyDiscount).clamp(0, dailyMemberFee);
+    final guestFemale = (guestFee - guestDiscount).clamp(0, guestFee);
+
+    final roundText = canManageClub ? ' (Làm tròn: ${_formatVnd(roundRule)}đ khi quét VietQR).' : '';
+    final modeDesc = isDynamic
+        ? 'Tổng tiền sân + Cầu bóc mới thực tế + Nước uống phát sinh, chia đều theo đầu người tham gia buổi chơi.$roundText'
+        : 'Thu theo đơn giá buổi cố định đã thiết lập cho từng nhóm đối tượng.$roundText';
+
     return Container(
       padding: AppSpacing.allBase,
       decoration: BoxDecoration(
@@ -472,9 +504,7 @@ class _ClubOverviewTabState extends ConsumerState<ClubOverviewTab> {
                       ),
                       AppSpacing.gapH4,
                       Text(
-                        canManageClub
-                            ? 'Tổng tiền sân + Cầu bóc mới thực tế + Nước uống phát sinh, chia đều theo đầu người tham gia. (Quy tắc làm tròn hóa đơn: 1.000đ - 5.000đ khi quét VietQR).'
-                            : 'Tổng tiền sân + Cầu bóc mới thực tế + Nước uống phát sinh, chia đều theo đầu người tham gia buổi chơi.',
+                        modeDesc,
                         style: AppTypography.bodySmall.colored(colors.textSecondary),
                       ),
                     ],
@@ -487,28 +517,28 @@ class _ClubOverviewTabState extends ConsumerState<ClubOverviewTab> {
           // Bảng mức đóng theo từng người
           _buildInfoRow(
             'Hội viên cố định (tháng)',
-            '500.000 đ/tháng (Nữ: 450.000 đ)',
+            '${_formatVnd(monthlyFee)} đ/tháng (Nữ: ${_formatVnd(monthlyFemale)} đ)',
             icon: Icons.card_membership_rounded,
             iconColor: colors.primary,
           ),
           Divider(height: AppSpacing.base, color: colors.cardBorder),
           _buildInfoRow(
             'Hội viên đóng theo buổi',
-            '50.000 đ/buổi (Nữ: 40.000 đ)',
+            '${_formatVnd(dailyMemberFee)} đ/buổi (Nữ: ${_formatVnd(dailyFemale)} đ)',
             icon: Icons.person_outline_rounded,
             iconColor: colors.success,
           ),
           Divider(height: AppSpacing.base, color: colors.cardBorder),
           _buildInfoRow(
             'Khách vãng lai giao lưu',
-            '70.000 đ/buổi (Nữ: 60.000 đ)',
+            '${_formatVnd(guestFee)} đ/buổi (Nữ: ${_formatVnd(guestFemale)} đ)',
             icon: Icons.sports_tennis_rounded,
             iconColor: colors.warning,
           ),
           Divider(height: AppSpacing.base, color: colors.cardBorder),
           _buildInfoRow(
             'Ưu đãi cho Nữ (mọi đối tượng)',
-            'Giảm 50.000 đ/tháng hoặc 10.000 đ/buổi (kể cả khách vãng lai)',
+            'Giảm ${_formatVnd(monthlyDiscount)} đ/tháng, ${_formatVnd(dailyDiscount)} đ/buổi cố định, ${_formatVnd(guestDiscount)} đ/buổi khách vãng lai',
             icon: Icons.favorite_outline_rounded,
             iconColor: colors.error,
             valueColor: colors.error,

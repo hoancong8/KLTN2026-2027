@@ -251,7 +251,7 @@ class SessionSettlementScreen extends ConsumerWidget {
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
-                                  'Tiền sân (' + currencyFormat.format(settlement.courtFee) + ' đ) + Cầu bóc mới (' + settlement.shuttlecockUsed.toString() + ' quả) + Phụ phí (' + currencyFormat.format(settlement.extraFee) + ' đ) chia theo số người chơi thực tế. Hội viên tháng miễn phí tiền sân, khách vãng lai và thành viên theo buổi đóng tiền kèm ưu đãi giảm giá riêng cho Nữ (áp dụng cho cả hội viên và khách vãng lai).',
+                                  'Tiền sân (${currencyFormat.format(settlement.courtFee)} đ) + Cầu bóc mới (${settlement.shuttlecockUsed} quả) + Phụ phí (${currencyFormat.format(settlement.extraFee)} đ) chia theo số người chơi thực tế. Hội viên tháng miễn phí tiền sân, khách vãng lai và thành viên theo buổi đóng tiền kèm ưu đãi giảm giá riêng cho Nữ (áp dụng cho cả hội viên và khách vãng lai).',
                                   style: AppTypography.bodySmall.colored(colors.textSecondary),
                                 ),
                               ],
@@ -260,7 +260,7 @@ class SessionSettlementScreen extends ConsumerWidget {
                         ],
                       ),
                     ),
-                    Text('Tiền đóng từng người & Mã quét VietQR (' + settlement.memberFees.length.toString() + ')',
+                    Text('Tiền đóng từng người & Mã quét VietQR (${settlement.memberFees.length})',
                         style: AppTypography.titleSmall.bold.colored(colors.textPrimary)),
                     AppSpacing.gapH8,
 

@@ -95,6 +95,7 @@ import '../domain/usecases/club/explore_clubs_usecase.dart';
 import '../domain/usecases/club/get_club_detail_usecase.dart';
 import '../domain/usecases/club/update_club_info_usecase.dart';
 import '../domain/usecases/club/update_club_schedules_usecase.dart';
+import '../domain/usecases/club/club_fee_rule_usecases.dart';
 import '../domain/usecases/auth/register_usecase.dart';
 
 // Session imports
@@ -590,6 +591,15 @@ final updateClubInfoUseCaseProvider = Provider<UpdateClubInfoUseCase>((ref) {
 
 final updateClubSchedulesUseCaseProvider = Provider<UpdateClubSchedulesUseCase>((ref) {
   return UpdateClubSchedulesUseCase(ref.watch(clubRepositoryProvider));
+});
+
+// --- FR19: Hạch toán biểu phí và Quỹ nhóm ---
+final getClubFeeRuleUseCaseProvider = Provider<GetClubFeeRuleUseCase>((ref) {
+  return GetClubFeeRuleUseCase(ref.watch(clubRepositoryProvider));
+});
+
+final updateClubFeeRuleUseCaseProvider = Provider<UpdateClubFeeRuleUseCase>((ref) {
+  return UpdateClubFeeRuleUseCase(ref.watch(clubRepositoryProvider));
 });
 
 // Registration

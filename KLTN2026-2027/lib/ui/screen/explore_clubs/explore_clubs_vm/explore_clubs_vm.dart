@@ -16,11 +16,7 @@ class ExploreClubsViewModel extends StateNotifier<ExploreClubsState> {
   final ExploreClubsUseCase exploreClubsUseCase;
 
   ExploreClubsViewModel({required this.exploreClubsUseCase})
-      : super(const ExploreClubsState(
-          latitude: 10.7769, // Default Tọa độ TP.HCM
-          longitude: 106.6958,
-          radiusKm: 15.0,
-        )) {
+      : super(const ExploreClubsState()) {
     loadClubs();
   }
 
@@ -28,9 +24,9 @@ class ExploreClubsViewModel extends StateNotifier<ExploreClubsState> {
     state = state.copyWith(isLoading: true, error: null);
     try {
       final clubs = await exploreClubsUseCase.execute(ExploreClubsParams(
-        latitude: state.latitude,
-        longitude: state.longitude,
-        radiusKm: state.radiusKm,
+        latitude: null,
+        longitude: null,
+        radiusKm: null,
         skillLevel: state.selectedSkillLevel,
         isRecruiting: state.isRecruitingOnly,
         searchTerm: state.searchTerm.trim().isNotEmpty ? state.searchTerm.trim() : null,
@@ -48,11 +44,6 @@ class ExploreClubsViewModel extends StateNotifier<ExploreClubsState> {
 
   void setSearchTerm(String term) {
     state = state.copyWith(searchTerm: term);
-    loadClubs();
-  }
-
-  void setRadius(double radiusKm) {
-    state = state.copyWith(radiusKm: radiusKm);
     loadClubs();
   }
 

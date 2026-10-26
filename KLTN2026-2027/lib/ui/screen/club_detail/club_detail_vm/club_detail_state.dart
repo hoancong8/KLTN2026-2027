@@ -1,4 +1,5 @@
 import '../../../../domain/entities/club/club_detail.dart';
+import '../../../../domain/entities/club/club_fee_rule.dart';
 import '../../../../domain/exceptions/app_exception.dart';
 
 class ClubDetailState {
@@ -7,6 +8,7 @@ class ClubDetailState {
   final AppException? error;
   final String? successMessage;
   final ClubDetail? club;
+  final ClubFeeRule? feeRule;
 
   const ClubDetailState({
     this.isLoading = false,
@@ -14,6 +16,7 @@ class ClubDetailState {
     this.error,
     this.successMessage,
     this.club,
+    this.feeRule,
   });
 
   ClubDetailState copyWith({
@@ -22,6 +25,7 @@ class ClubDetailState {
     AppException? error,
     String? successMessage,
     ClubDetail? club,
+    ClubFeeRule? feeRule,
   }) {
     return ClubDetailState(
       isLoading: isLoading ?? this.isLoading,
@@ -29,6 +33,7 @@ class ClubDetailState {
       error: error,
       successMessage: successMessage,
       club: club ?? this.club,
+      feeRule: feeRule ?? this.feeRule,
     );
   }
 }

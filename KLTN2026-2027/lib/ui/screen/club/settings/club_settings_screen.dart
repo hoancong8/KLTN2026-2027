@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:kltn2026_2027/app/provider.dart';
 import 'package:kltn2026_2027/app/theme/theme.dart';
 import '../../../../domain/entities/club/club_detail.dart';
+import '../../../../domain/entities/club/club_fee_rule.dart';
 import '../../../../domain/enums/club_role.dart';
 import '../../../../domain/enums/session_enums.dart';
 import '../club_vm/club_context_vm.dart';
@@ -114,7 +115,7 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
     super.dispose();
   }
 
-  void _populateData(ClubDetail club) {
+  void _populateData(ClubDetail club, [ClubFeeRule? feeRule]) {
     if (_initialized) return;
     _initialized = true;
 
@@ -138,6 +139,22 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
           endTime: _parseTime(s.endTime),
         ),
       );
+    }
+
+    if (feeRule != null) {
+      _feeMode = feeRule.feeMode;
+      _roundRule = feeRule.roundRule;
+      _monthlyFeeController.text = _formatCurrency(feeRule.monthlyFee.toInt());
+      final monthlyFemale = (feeRule.monthlyFee - feeRule.femaleDiscountMonthly).clamp(0.0, feeRule.monthlyFee).toInt();
+      _monthlyFemaleFeeController.text = _formatCurrency(monthlyFemale);
+
+      _dailyMemberFeeController.text = _formatCurrency(feeRule.dailyMemberFee.toInt());
+      final dailyFemale = (feeRule.dailyMemberFee - feeRule.femaleDiscountDaily).clamp(0.0, feeRule.dailyMemberFee).toInt();
+      _dailyFemaleFeeController.text = _formatCurrency(dailyFemale);
+
+      _guestFeeController.text = _formatCurrency(feeRule.guestFee.toInt());
+      final guestFemale = (feeRule.guestFee - feeRule.femaleDiscountGuest).clamp(0.0, feeRule.guestFee).toInt();
+      _guestFemaleFeeController.text = _formatCurrency(guestFemale);
     }
   }
 
@@ -193,9 +210,10 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
     ClubDetailViewModel vm, {
     required bool canManageInfo,
     required bool canManageSchedule,
+    required bool canManageFee,
   }) async {
     if (!_formKey.currentState!.validate()) return;
-    if (!canManageInfo && !canManageSchedule) return;
+    if (!canManageInfo && !canManageSchedule && !canManageFee) return;
 
     setState(() => _isSaving = true);
     try {
@@ -225,6 +243,31 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
             )
             .toList();
         await vm.updateSchedules(scheduleInputs);
+      }
+
+      if (canManageFee) {
+        final feeModeInt = _feeMode == 'DYNAMIC' ? 0 : 1;
+        final monthlyFee = (int.tryParse(_monthlyFeeController.text.replaceAll('.', '').trim()) ?? 0).toDouble();
+        final monthlyFemaleFee = (int.tryParse(_monthlyFemaleFeeController.text.replaceAll('.', '').trim()) ?? 0).toDouble();
+        final dailyMemberFee = (int.tryParse(_dailyMemberFeeController.text.replaceAll('.', '').trim()) ?? 0).toDouble();
+        final dailyFemaleFee = (int.tryParse(_dailyFemaleFeeController.text.replaceAll('.', '').trim()) ?? 0).toDouble();
+        final guestFee = (int.tryParse(_guestFeeController.text.replaceAll('.', '').trim()) ?? 0).toDouble();
+        final guestFemaleFee = (int.tryParse(_guestFemaleFeeController.text.replaceAll('.', '').trim()) ?? 0).toDouble();
+
+        final femaleDiscountMonthly = (monthlyFee - monthlyFemaleFee).clamp(0.0, monthlyFee);
+        final femaleDiscountDaily = (dailyMemberFee - dailyFemaleFee).clamp(0.0, dailyMemberFee);
+        final femaleDiscountGuest = (guestFee - guestFemaleFee).clamp(0.0, guestFee);
+
+        await vm.updateFeeRule(
+          feeMode: feeModeInt,
+          monthlyFee: monthlyFee,
+          dailyMemberFee: dailyMemberFee,
+          guestFee: guestFee,
+          femaleDiscountMonthly: femaleDiscountMonthly,
+          femaleDiscountDaily: femaleDiscountDaily,
+          femaleDiscountGuest: femaleDiscountGuest,
+          roundRule: _roundRule,
+        );
       }
 
       await ref.read(clubContextViewModelProvider.notifier).loadMyClubs();
@@ -282,7 +325,7 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
             onPressed: () async {
               Navigator.of(ctx).pop();
               setState(() => _isRecruiting = false);
-              await _saveAllChanges(vm, canManageInfo: true, canManageSchedule: false);
+              await _saveAllChanges(vm, canManageInfo: true, canManageSchedule: false, canManageFee: false);
             },
             child: const Text('Xác nhận khóa'),
           ),
@@ -476,7 +519,7 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
 
     final club = state.club;
     if (club != null) {
-      _populateData(club);
+      _populateData(club, state.feeRule);
     }
 
     final currentProfile = ref.watch(currentUserProfileProvider);
@@ -487,9 +530,10 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
     final canManageInfo = isHost || (isSameClub && ref.hasClubPermission('MEMBER.INFO.UPDATE'));
     final canManageSchedule = isHost || (isSameClub && ref.hasClubPermission('OPERATIONS.SCHEDULE.MANAGE'));
     final canManageRoles = isHost || (isSameClub && ref.hasClubPermission('MEMBER.ROLE.MANAGE'));
-    final canSave = canManageInfo || canManageSchedule;
+    final canManageFee = isHost || (isSameClub && ref.hasClubPermission('FINANCE.BANK.MANAGE'));
+    final canSave = canManageInfo || canManageSchedule || canManageFee;
 
-    if (club != null && !isHost && !canManageInfo && !canManageSchedule && !canManageRoles) {
+    if (club != null && !isHost && !canManageInfo && !canManageSchedule && !canManageRoles && !canManageFee) {
       return Scaffold(
         backgroundColor: colors.background,
         appBar: AppBar(
@@ -562,7 +606,7 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                       : Icon(Icons.done_all_rounded, color: colors.primary),
                   onPressed: _isSaving
                       ? null
-                      : () => _saveAllChanges(vm, canManageInfo: canManageInfo, canManageSchedule: canManageSchedule),
+                      : () => _saveAllChanges(vm, canManageInfo: canManageInfo, canManageSchedule: canManageSchedule, canManageFee: canManageFee),
                 ),
               ),
           ],
@@ -625,7 +669,7 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                         ),
                         onPressed: _isSaving
                             ? null
-                            : () => _saveAllChanges(vm, canManageInfo: canManageInfo, canManageSchedule: canManageSchedule),
+                            : () => _saveAllChanges(vm, canManageInfo: canManageInfo, canManageSchedule: canManageSchedule, canManageFee: canManageFee),
                       ),
                     ),
                   ),

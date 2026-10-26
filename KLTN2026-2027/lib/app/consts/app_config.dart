@@ -50,6 +50,7 @@ class AppConfig {
   static String clubDetailPath(String id) => '$clubsPath/$id';
   static String clubInfoPath(String id) => '$clubsPath/$id/info';
   static String clubSchedulesPath(String id) => '$clubsPath/$id/schedules';
+  static String clubFeeRulePath(String id) => '$clubsPath/$id/fee-rule';
   static String clubMembersPath(String id) => '$clubsPath/$id/members';
   static String clubMemberRolePath(String id, String userId) =>
       '$clubsPath/$id/members/$userId/role';

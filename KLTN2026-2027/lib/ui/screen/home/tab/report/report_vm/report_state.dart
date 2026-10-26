@@ -44,7 +44,6 @@ class ReportState {
       case ReportFilter.completed:
         return base.where((b) => b.sessionStatus == SessionStatus.completed || b.isPast).toList();
       case ReportFilter.all:
-      default:
         return base;
     }
   }

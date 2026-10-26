@@ -25,7 +25,6 @@ class ExploreClubsScreen extends ConsumerStatefulWidget {
 class _ExploreClubsScreenState extends ConsumerState<ExploreClubsScreen> {
   final _searchController = TextEditingController();
 
-  static const List<double> _quickRadii = [5.0, 10.0, 20.0, 50.0];
 
   @override
   void dispose() {
@@ -240,42 +239,11 @@ class _ExploreClubsScreenState extends ConsumerState<ExploreClubsScreen> {
           ),
           const SizedBox(height: 10),
 
-          // 2. Quick Radius Pills & Recruiting Toggle
+          // 2. Filter Toggles
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
               children: [
-                // Radius Pills
-                ..._quickRadii.map((r) {
-                  final isSelected = (state.radiusKm - r).abs() < 0.1;
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 6),
-                    child: InkWell(
-                      onTap: () => vm.setRadius(r),
-                      borderRadius: BorderRadius.circular(20),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4.5),
-                        decoration: BoxDecoration(
-                          color: isSelected ? colors.primary : colors.cardBackground,
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: isSelected ? colors.primary : colors.cardBorder,
-                          ),
-                        ),
-                        child: Text(
-                          '${r.toInt()} km',
-                          style: TextStyle(
-                            fontSize: 11.5,
-                            fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                            color: isSelected ? AppColors.white : colors.textPrimary,
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
-                }),
-                const SizedBox(width: 4),
-
                 // Recruiting Toggle Pill
                 InkWell(
                   onTap: () => vm.toggleRecruitingOnly(state.isRecruitingOnly == true ? null : true),
@@ -413,7 +381,7 @@ class _ExploreClubsScreenState extends ConsumerState<ExploreClubsScreen> {
             Text(
               isSearching
                   ? 'Không có CLB nào khớp với từ khóa "${_searchController.text}". Hãy thử từ khóa khác hoặc xóa lọc.'
-                  : 'Hiện không có CLB nào trong bán kính ${state.radiusKm.toInt()} km. Hãy thử mở rộng bán kính quét.',
+                  : 'Hiện chưa có câu lạc bộ nào phù hợp. Hãy thử tìm theo tên hoặc khu vực.',
               style: TextStyle(fontSize: 13, color: colors.textMuted, height: 1.4),
               textAlign: TextAlign.center,
             ),
@@ -429,20 +397,10 @@ class _ExploreClubsScreenState extends ConsumerState<ExploreClubsScreen> {
                 label: const Text('Xóa bộ lọc tìm kiếm'),
               )
             else
-              ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: colors.primary,
-                  foregroundColor: AppColors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 11),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                ),
-                onPressed: () {
-                  vm.setSkillLevel(null);
-                  vm.toggleRecruitingOnly(null);
-                  vm.setRadius(50.0);
-                },
-                icon: const Icon(Icons.zoom_out_map_rounded, size: 18),
-                label: const Text('Mở rộng bán kính 50km', style: TextStyle(fontWeight: FontWeight.bold)),
+              OutlinedButton.icon(
+                onPressed: vm.loadClubs,
+                icon: const Icon(Icons.refresh_rounded, size: 18),
+                label: const Text('Tải lại danh sách'),
               ),
           ],
         ),

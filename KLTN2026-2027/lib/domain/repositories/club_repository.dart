@@ -3,6 +3,7 @@
 import '../entities/club/active_club_context.dart';
 import '../entities/club/club.dart';
 import '../entities/club/club_detail.dart';
+import '../entities/club/club_fee_rule.dart';
 import '../entities/club/club_member.dart';
 import '../entities/club/club_role_item.dart';
 import '../entities/club/explore_club.dart';
@@ -133,4 +134,19 @@ abstract class ClubRepository {
     String clubId,
     List<ClubScheduleInput> schedules,
   );
+
+  // --- FR19: Hạch toán biểu phí và Quỹ nhóm ---
+  Future<ClubFeeRule> getClubFeeRule(String clubId);
+
+  Future<ClubFeeRule> updateClubFeeRule(
+    String clubId, {
+    required int feeMode,
+    required double monthlyFee,
+    required double dailyMemberFee,
+    required double guestFee,
+    required double femaleDiscountMonthly,
+    required double femaleDiscountDaily,
+    required double femaleDiscountGuest,
+    required int roundRule,
+  });
 }
