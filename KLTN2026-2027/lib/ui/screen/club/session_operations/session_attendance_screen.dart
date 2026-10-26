@@ -114,12 +114,20 @@ class SessionAttendanceScreen extends ConsumerWidget {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showAddWalkInDialog(context, vm),
-        backgroundColor: colors.primary,
-        foregroundColor: AppColors.white,
-        icon: const Icon(Icons.person_add_rounded),
-        label: const Text('Thêm khách vãng lai'),
+      floatingActionButton: asyncState.maybeWhen(
+        data: (snapshot) {
+          final now = DateTime.now();
+          final isOngoing = now.isAfter(snapshot.startTime) && now.isBefore(snapshot.endTime) && !snapshot.isCompleted;
+          if (!isOngoing) return null;
+          return FloatingActionButton.extended(
+            onPressed: () => _showAddWalkInDialog(context, vm),
+            backgroundColor: colors.primary,
+            foregroundColor: AppColors.white,
+            icon: const Icon(Icons.person_add_rounded),
+            label: const Text('Thêm khách vãng lai'),
+          );
+        },
+        orElse: () => null,
       ),
       body: Center(
         child: ConstrainedBox(
@@ -164,6 +172,10 @@ class SessionAttendanceScreen extends ConsumerWidget {
               ),
             ),
             data: (snapshot) {
+              final now = DateTime.now();
+              final isOngoing = now.isAfter(snapshot.startTime) && now.isBefore(snapshot.endTime);
+              final isUpcoming = now.isBefore(snapshot.startTime);
+              final isExpired = now.isAfter(snapshot.endTime);
               final timeStr =
                   '${DateFormat('HH:mm').format(snapshot.startTime)} - ${DateFormat('HH:mm').format(snapshot.endTime)}';
 
@@ -196,7 +208,11 @@ class SessionAttendanceScreen extends ConsumerWidget {
                               ),
                               snapshot.isCompleted
                                   ? const AppStatusBadge.success(label: 'Đã hoàn tất điểm danh')
-                                  : const AppStatusBadge.warning(label: 'Đang mở điểm danh'),
+                                  : isUpcoming
+                                      ? const AppStatusBadge.neutral(label: 'Chưa tới giờ chơi')
+                                      : isOngoing
+                                          ? const AppStatusBadge.warning(label: 'Đang mở điểm danh')
+                                          : const AppStatusBadge.neutral(label: 'Đã kết thúc giờ chơi'),
                             ],
                           ),
                           AppSpacing.gapH16,
@@ -218,6 +234,51 @@ class SessionAttendanceScreen extends ConsumerWidget {
                         ],
                       ),
                     ),
+                    if (isUpcoming) ...[
+                      AppSpacing.gapH12,
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        decoration: BoxDecoration(
+                          color: colors.warning.withValues(alpha: 0.1),
+                          borderRadius: AppRadius.card,
+                          border: Border.all(color: colors.warning.withValues(alpha: 0.3)),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(Icons.info_outline_rounded, size: 20, color: colors.warning),
+                            AppSpacing.gapW12,
+                            Expanded(
+                              child: Text(
+                                'Buổi chơi chưa diễn ra. Điểm danh tại sân chỉ mở khi buổi chơi bắt đầu.',
+                                style: AppTypography.bodySmall.medium.colored(colors.warning),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ] else if (isExpired && !snapshot.isCompleted) ...[
+                      AppSpacing.gapH12,
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        decoration: BoxDecoration(
+                          color: colors.error.withValues(alpha: 0.1),
+                          borderRadius: AppRadius.card,
+                          border: Border.all(color: colors.error.withValues(alpha: 0.3)),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(Icons.schedule_rounded, size: 20, color: colors.error),
+                            AppSpacing.gapW12,
+                            Expanded(
+                              child: Text(
+                                'Buổi chơi đã kết thúc thời gian thi đấu.',
+                                style: AppTypography.bodySmall.medium.colored(colors.error),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                     AppSpacing.gapH16,
 
                     // 2. Action to Switch to Rotation or Complete
@@ -245,7 +306,7 @@ class SessionAttendanceScreen extends ConsumerWidget {
                       children: [
                         Text('Danh sách tay vợt (${snapshot.players.length})',
                             style: AppTypography.titleSmall.bold.colored(colors.textPrimary)),
-                        if (!snapshot.isCompleted)
+                        if (!snapshot.isCompleted && isOngoing)
                           TextButton.icon(
                             icon: const Icon(Icons.check_circle_outline_rounded, size: 16),
                             label: const Text('Khóa điểm danh'),
@@ -271,7 +332,7 @@ class SessionAttendanceScreen extends ConsumerWidget {
                         ),
                       )
                     else
-                      ...snapshot.players.map((p) => _buildPlayerCard(context, p, vm)),
+                      ...snapshot.players.map((p) => _buildPlayerCard(context, p, vm, isOngoing && !snapshot.isCompleted)),
                     const SizedBox(height: 80),
                   ],
                 ),
@@ -301,7 +362,7 @@ class SessionAttendanceScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildPlayerCard(BuildContext context, AttendancePlayer player, SessionAttendanceNotifier vm) {
+  Widget _buildPlayerCard(BuildContext context, AttendancePlayer player, SessionAttendanceNotifier vm, bool canCheckIn) {
     final colors = context.colors;
     final isCheckedIn = player.isCheckedIn;
     final isNoShow = player.isNoShow;
@@ -367,54 +428,62 @@ class SessionAttendanceScreen extends ConsumerWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               InkWell(
-                onTap: () {
-                  HapticFeedback.lightImpact();
-                  vm.markStatus(player.userId, 'CHECKED_IN');
-                },
+                onTap: canCheckIn
+                    ? () {
+                        HapticFeedback.lightImpact();
+                        vm.markStatus(player.userId, 'CHECKED_IN');
+                      }
+                    : null,
                 borderRadius: AppRadius.tag,
-                child: Container(
-                  constraints: const BoxConstraints(minHeight: 44, minWidth: 68),
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: isCheckedIn ? colors.success : colors.success.withValues(alpha: 0.1),
-                    borderRadius: AppRadius.tag,
-                    border: Border.all(color: colors.success.withValues(alpha: 0.4)),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.check_rounded, size: 16, color: isCheckedIn ? AppColors.white : colors.success),
-                      const SizedBox(width: 4),
-                      Text(
-                        'Có mặt',
-                        style: AppTypography.labelSmall.bold.colored(isCheckedIn ? AppColors.white : colors.success),
-                      ),
-                    ],
+                child: Opacity(
+                  opacity: canCheckIn ? 1.0 : 0.45,
+                  child: Container(
+                    constraints: const BoxConstraints(minHeight: 44, minWidth: 68),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: isCheckedIn ? colors.success : colors.success.withValues(alpha: 0.1),
+                      borderRadius: AppRadius.tag,
+                      border: Border.all(color: colors.success.withValues(alpha: 0.4)),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.check_rounded, size: 16, color: isCheckedIn ? AppColors.white : colors.success),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Có mặt',
+                          style: AppTypography.labelSmall.bold.colored(isCheckedIn ? AppColors.white : colors.success),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
               const SizedBox(width: 8),
               InkWell(
-                onTap: () => _confirmMarkNoShow(context, player, vm),
+                onTap: canCheckIn ? () => _confirmMarkNoShow(context, player, vm) : null,
                 borderRadius: AppRadius.tag,
-                child: Container(
-                  constraints: const BoxConstraints(minHeight: 44, minWidth: 64),
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: isNoShow ? colors.error : colors.error.withValues(alpha: 0.1),
-                    borderRadius: AppRadius.tag,
-                    border: Border.all(color: colors.error.withValues(alpha: 0.4)),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.close_rounded, size: 16, color: isNoShow ? AppColors.white : colors.error),
-                      const SizedBox(width: 4),
-                      Text(
-                        'Vắng',
-                        style: AppTypography.labelSmall.bold.colored(isNoShow ? AppColors.white : colors.error),
-                      ),
-                    ],
+                child: Opacity(
+                  opacity: canCheckIn ? 1.0 : 0.45,
+                  child: Container(
+                    constraints: const BoxConstraints(minHeight: 44, minWidth: 64),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: isNoShow ? colors.error : colors.error.withValues(alpha: 0.1),
+                      borderRadius: AppRadius.tag,
+                      border: Border.all(color: colors.error.withValues(alpha: 0.4)),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.close_rounded, size: 16, color: isNoShow ? AppColors.white : colors.error),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Vắng',
+                          style: AppTypography.labelSmall.bold.colored(isNoShow ? AppColors.white : colors.error),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),

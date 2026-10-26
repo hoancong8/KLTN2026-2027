@@ -849,6 +849,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
     final shuttleCostCtl = TextEditingController(text: '4');
     final shuttleUnitPriceCtl = TextEditingController(text: '25,000');
     final extraExpenseCtl = TextEditingController(text: '0');
+    final femaleDiscountCtl = TextEditingController(text: '10,000');
 
     showModalBottomSheet(
       context: context,
@@ -863,13 +864,10 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
           final totalShuttle = shuttleCount * shuttleUnitPrice;
           final totalSessionCost = courtCost + totalShuttle + extraExpense;
 
+          final femaleDiscount = double.tryParse(femaleDiscountCtl.text.replaceAll(',', ''))?.round() ?? 10000;
           final totalPlayers = session.confirmedCount > 0 ? session.confirmedCount : (session.maxPlayers > 0 ? session.maxPlayers : 1);
           final baseFeePerPlayer = (totalSessionCost / totalPlayers).round();
-          const femaleDiscount = 10000;
           final femaleFee = (baseFeePerPlayer - femaleDiscount).clamp(0, baseFeePerPlayer);
-          final guestFee = (baseFeePerPlayer * 1.25).round();
-          const femaleGuestDiscount = 10000;
-          final femaleGuestFee = (guestFee - femaleGuestDiscount).clamp(0, guestFee);
 
           return SafeArea(
             child: Padding(
@@ -957,20 +955,54 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                       ],
                     ),
                     AppSpacing.gapH12,
-                    Text('Phụ phí phát sinh (nước uống, thảm - VNĐ)', style: AppTypography.labelMedium.copyWith(color: colors.textPrimary)),
-                    AppSpacing.gapH4,
-                    TextFormField(
-                      controller: extraExpenseCtl,
-                      keyboardType: TextInputType.number,
-                      style: AppTypography.bodyMedium.copyWith(color: colors.textPrimary),
-                      decoration: InputDecoration(
-                        hintText: '0',
-                        filled: true,
-                        fillColor: colors.inputFill,
-                        border: OutlineInputBorder(borderRadius: AppRadius.input, borderSide: BorderSide(color: colors.inputBorder)),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                      ),
-                      onChanged: (_) => setModalState(() {}),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('Phụ phí phát sinh (VNĐ)', style: AppTypography.labelMedium.copyWith(color: colors.textPrimary)),
+                              AppSpacing.gapH4,
+                              TextFormField(
+                                controller: extraExpenseCtl,
+                                keyboardType: TextInputType.number,
+                                style: AppTypography.bodyMedium.copyWith(color: colors.textPrimary),
+                                decoration: InputDecoration(
+                                  hintText: '0',
+                                  filled: true,
+                                  fillColor: colors.inputFill,
+                                  border: OutlineInputBorder(borderRadius: AppRadius.input, borderSide: BorderSide(color: colors.inputBorder)),
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                ),
+                                onChanged: (_) => setModalState(() {}),
+                              ),
+                            ],
+                          ),
+                        ),
+                        AppSpacing.gapW12,
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('Ưu đãi giảm Nữ (VNĐ)', style: AppTypography.labelMedium.copyWith(color: colors.textPrimary)),
+                              AppSpacing.gapH4,
+                              TextFormField(
+                                controller: femaleDiscountCtl,
+                                keyboardType: TextInputType.number,
+                                style: AppTypography.bodyMedium.copyWith(color: colors.textPrimary),
+                                decoration: InputDecoration(
+                                  hintText: '10,000',
+                                  filled: true,
+                                  fillColor: colors.inputFill,
+                                  border: OutlineInputBorder(borderRadius: AppRadius.input, borderSide: BorderSide(color: colors.inputBorder)),
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                ),
+                                onChanged: (_) => setModalState(() {}),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                     AppSpacing.gapH16,
                     Container(
@@ -1042,34 +1074,18 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                           const Divider(height: 1),
                           ListTile(
                             dense: true,
-                            leading: Icon(Icons.male_rounded, color: colors.primary, size: 20),
-                            title: Text('Hội viên ngày (Nam)', style: AppTypography.bodySmall.bold.colored(colors.textPrimary)),
-                            subtitle: Text('Chia đều tiền sân + cầu', style: AppTypography.labelSmall.copyWith(color: colors.textMuted)),
+                            leading: Icon(Icons.group_rounded, color: colors.primary, size: 20),
+                            title: Text('Người chơi (Nam & chung)', style: AppTypography.bodySmall.bold.colored(colors.textPrimary)),
+                            subtitle: Text('Chia đều toàn bộ chi phí ($totalPlayers người)', style: AppTypography.labelSmall.copyWith(color: colors.textMuted)),
                             trailing: Text('${NumberFormat('#,###').format(baseFeePerPlayer)} đ', style: AppTypography.bodySmall.bold.colored(colors.primary)),
                           ),
                           const Divider(height: 1),
                           ListTile(
                             dense: true,
                             leading: const Icon(Icons.female_rounded, color: AppColors.pink, size: 20),
-                            title: Text('Hội viên ngày (Nữ)', style: AppTypography.bodySmall.bold.colored(colors.textPrimary)),
-                            subtitle: Text('Đã trừ ưu đãi ${NumberFormat('#,###').format(femaleDiscount)} đ', style: AppTypography.labelSmall.copyWith(color: colors.textMuted)),
+                            title: Text('Người chơi (Nữ)', style: AppTypography.bodySmall.bold.colored(colors.textPrimary)),
+                            subtitle: Text('Chia đều và giảm ${NumberFormat('#,###').format(femaleDiscount)} đ', style: AppTypography.labelSmall.copyWith(color: colors.textMuted)),
                             trailing: Text('${NumberFormat('#,###').format(femaleFee)} đ', style: AppTypography.bodySmall.bold.colored(AppColors.pink)),
-                          ),
-                          const Divider(height: 1),
-                          ListTile(
-                            dense: true,
-                            leading: Icon(Icons.male_rounded, color: colors.warning, size: 20),
-                            title: Text('Khách giao lưu (Nam)', style: AppTypography.bodySmall.bold.colored(colors.textPrimary)),
-                            subtitle: Text('Theo suất khách giao lưu', style: AppTypography.labelSmall.copyWith(color: colors.textMuted)),
-                            trailing: Text('${NumberFormat('#,###').format(guestFee)} đ', style: AppTypography.bodySmall.bold.colored(colors.warning)),
-                          ),
-                          const Divider(height: 1),
-                          ListTile(
-                            dense: true,
-                            leading: const Icon(Icons.female_rounded, color: AppColors.pink, size: 20),
-                            title: Text('Khách giao lưu (Nữ)', style: AppTypography.bodySmall.bold.colored(colors.textPrimary)),
-                            subtitle: Text('Đã trừ ưu đãi ${NumberFormat('#,###').format(femaleGuestDiscount)} đ', style: AppTypography.labelSmall.copyWith(color: colors.textMuted)),
-                            trailing: Text('${NumberFormat('#,###').format(femaleGuestFee)} đ', style: AppTypography.bodySmall.bold.colored(AppColors.pink)),
                           ),
                         ],
                       ),
@@ -1158,6 +1174,13 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
   }) {
     final colors = context.colors;
     final vm = ref.read(sessionDetailViewModelProvider(widget.sessionId).notifier);
+    final now = DateTime.now();
+    final isEnded = session.status == SessionStatus.completed ||
+        session.status == SessionStatus.calculated ||
+        session.endTime.isBefore(now);
+    final isPlaying = !isEnded && (session.status == SessionStatus.playing ||
+        (session.startTime.isBefore(now) && session.endTime.isAfter(now)));
+    final isExpired = session.isExpired || session.deadlineBooking.isBefore(now);
 
     showModalBottomSheet(
       context: context,
@@ -1193,7 +1216,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                 ],
               ),
               AppSpacing.gapH16,
-              if (canRecruit)
+              if (canRecruit && session.status == SessionStatus.open && !isEnded && !isPlaying && !isExpired)
                 _buildActionTile(
                   icon: Icons.radar_rounded,
                   color: colors.primary,
@@ -1249,16 +1272,19 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                       vm.updateStatus('COMPLETED');
                     },
                   ),
-                _buildActionTile(
-                  icon: Icons.calculate_rounded,
-                  color: colors.primary,
-                  label: 'Chốt sổ & Phân bổ chi phí',
-                  subtitle: 'Tính tiền thực tế sân, cầu bóc mới, ưu đãi Nữ',
-                  onTap: () {
-                    Navigator.of(ctx).pop();
-                    _showSettlementModal(context, session);
-                  },
-                ),
+                if (isEnded ||
+                    session.status == SessionStatus.calculated ||
+                    session.status == SessionStatus.completed)
+                  _buildActionTile(
+                    icon: Icons.calculate_rounded,
+                    color: colors.primary,
+                    label: 'Chốt sổ & Phân bổ chi phí',
+                    subtitle: 'Tính tiền thực tế sân, cầu bóc mới, ưu đãi Nữ',
+                    onTap: () {
+                      Navigator.of(ctx).pop();
+                      _showSettlementModal(context, session);
+                    },
+                  ),
               ],
               if (canDeleteSession) ...[
                 const Divider(),
@@ -1357,6 +1383,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
         session.endTime.isBefore(now);
     final isPlaying = !isEnded && (session.status == SessionStatus.playing ||
         (session.startTime.isBefore(now) && session.endTime.isAfter(now)));
+    final isExpired = session.endTime.isBefore(now) || (session.status != SessionStatus.open && session.status != SessionStatus.locked);
 
     final dateFormat = DateFormat('HH:mm, dd/MM/yyyy');
     final timeStr = '${DateFormat('HH:mm').format(session.startTime)} - ${dateFormat.format(session.endTime)}';
@@ -1623,8 +1650,10 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                     spacing: 8,
                     runSpacing: 8,
                     children: [
-                      // Điểm danh sân: chỉ khi chưa kết thúc
-                      if (canOperateAttendance && session.status != SessionStatus.completed)
+                      // Điểm danh sân: chỉ khi buổi chơi đang diễn ra
+                      if (canOperateAttendance &&
+                          session.status != SessionStatus.completed &&
+                          (session.status == SessionStatus.playing || session.status == SessionStatus.locked || (now.isAfter(session.startTime) && now.isBefore(session.endTime))))
                         ElevatedButton.icon(
                           style: ElevatedButton.styleFrom(
                             backgroundColor: colors.primary,
@@ -1648,9 +1677,9 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                           label: const Text('Xoay tua sân'),
                           onPressed: () => context.push('/session/${session.id}/rotation'),
                         ),
-                      // Chia tiền & Thu phí: chỉ khi đang chơi hoặc đã kết thúc
+                      // Chia tiền & Thu phí: chỉ khi buổi chơi đã kết thúc
                       if (canOperateSettlement &&
-                          (session.status == SessionStatus.playing ||
+                          (isEnded ||
                               session.status == SessionStatus.calculated ||
                               session.status == SessionStatus.completed))
                         ElevatedButton.icon(
@@ -2012,7 +2041,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                     spacing: 8,
                     runSpacing: 8,
                     children: [
-                      if (canRecruit)
+                      if (canRecruit && session.status == SessionStatus.open && !isEnded && !isPlaying && !isExpired)
                         ActionChip(
                           avatar: Icon(Icons.radar_rounded, size: 16, color: colors.primary),
                           label: Text(
@@ -2073,17 +2102,20 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                             shape: const RoundedRectangleBorder(borderRadius: AppRadius.tag),
                             onPressed: () => ref.read(sessionDetailViewModelProvider(widget.sessionId).notifier).updateStatus('COMPLETED'),
                           ),
-                        ActionChip(
-                          avatar: Icon(Icons.calculate_rounded, size: 16, color: colors.primary),
-                          label: Text(
-                            'Quyết toán',
-                            style: AppTypography.labelSmall.semiBold.colored(colors.primary),
+                        if (isEnded ||
+                            session.status == SessionStatus.calculated ||
+                            session.status == SessionStatus.completed)
+                          ActionChip(
+                            avatar: Icon(Icons.calculate_rounded, size: 16, color: colors.primary),
+                            label: Text(
+                              'Quyết toán',
+                              style: AppTypography.labelSmall.semiBold.colored(colors.primary),
+                            ),
+                            backgroundColor: colors.primary.withValues(alpha: 0.1),
+                            side: BorderSide(color: colors.primary.withValues(alpha: 0.3)),
+                            shape: const RoundedRectangleBorder(borderRadius: AppRadius.tag),
+                            onPressed: () => _showSettlementModal(context, session),
                           ),
-                          backgroundColor: colors.primary.withValues(alpha: 0.1),
-                          side: BorderSide(color: colors.primary.withValues(alpha: 0.3)),
-                          shape: const RoundedRectangleBorder(borderRadius: AppRadius.tag),
-                          onPressed: () => _showSettlementModal(context, session),
-                        ),
                       ],
                     ],
                   ),
@@ -2217,7 +2249,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                         ),
                         AppSpacing.gapH4,
                         Text(
-                          canRecruit
+                          (canRecruit && session.status == SessionStatus.open && !isEnded && !isPlaying && !isExpired)
                               ? 'Chưa mở tuyển vãng lai. Bấm "Tuyển vãng lai" nếu cần thêm người chơi.'
                               : 'Buổi chơi dành riêng cho thành viên trong nhóm.',
                           style: AppTypography.labelSmall.colored(colors.textMuted),
@@ -2225,7 +2257,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                       ],
                     ),
                   ),
-                  if (canRecruit && session.status == SessionStatus.open)
+                  if (canRecruit && session.status == SessionStatus.open && !isEnded && !isPlaying && !isExpired)
                     ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.roleViolet,
