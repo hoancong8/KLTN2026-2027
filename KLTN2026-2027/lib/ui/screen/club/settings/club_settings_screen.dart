@@ -1327,7 +1327,7 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                                             AppSpacing.gapW8,
                                             Flexible(
                                               child: Text(
-                                                'Khách vãng lai / Giao lưu',
+                                                'Khách giao lưu',
                                                 style: AppTypography.labelMedium.bold.colored(colors.textPrimary),
                                                 overflow: TextOverflow.ellipsis,
                                               ),
@@ -1343,7 +1343,7 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                                           borderRadius: AppRadius.tag,
                                         ),
                                         child: Text(
-                                          'Vé giao lưu',
+                                          'Phí giao lưu',
                                           style: AppTypography.labelSmall.bold.colored(colors.warning),
                                         ),
                                       ),
@@ -1356,7 +1356,7 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                                         child: Column(
                                           crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [
-                                            Text('Vé vãng lai chuẩn (Nam)', style: AppTypography.labelSmall.bold.colored(colors.textSecondary)),
+                                            Text('Phí vãng lai chuẩn (Nam)', style: AppTypography.labelSmall.bold.colored(colors.textSecondary)),
                                             AppSpacing.gapH4,
                                             TextFormField(
                                               controller: _guestFeeController,
@@ -1379,7 +1379,7 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                                         child: Column(
                                           crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [
-                                            Text('Vé vãng lai (Nữ)', style: AppTypography.labelSmall.bold.colored(colors.textSecondary)),
+                                            Text('Phí vãng lai (Nữ)', style: AppTypography.labelSmall.bold.colored(colors.textSecondary)),
                                             AppSpacing.gapH4,
                                             TextFormField(
                                               controller: _guestFemaleFeeController,
@@ -1675,7 +1675,7 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
           ),
           AppSpacing.gapH4,
           _buildPreviewRow(
-            label: 'Khách vãng lai (Nam / Nữ)',
+            label: 'Khách giao lưu (Nam / Nữ)',
             value: '${_formatCurrency(guestFee)} đ / ${_formatCurrency(guestFemale)} đ mỗi buổi',
           ),
           AppSpacing.gapH4,

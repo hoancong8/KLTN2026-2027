@@ -178,7 +178,7 @@ class _CreateSessionDialogState extends ConsumerState<CreateSessionDialog> {
                 _buildLabel('Tiêu đề buổi sinh hoạt *'),
                 TextFormField(
                   controller: _titleCtl,
-                  decoration: _inputDecoration(hint: 'VD: Kèo thứ 4 sân Kỳ Hòa'),
+                  decoration: _inputDecoration(hint: 'VD: Buổi chơi thứ 4 sân Kỳ Hòa'),
                   validator: (v) => (v == null || v.trim().isEmpty) ? 'Vui lòng nhập tiêu đề' : null,
                 ),
                 const SizedBox(height: 14),

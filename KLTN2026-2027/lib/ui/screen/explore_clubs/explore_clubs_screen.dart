@@ -299,7 +299,7 @@ class _ExploreClubsScreenState extends ConsumerState<ExploreClubsScreen> {
                         ),
                         const SizedBox(width: 4),
                         Text(
-                          'Đang tuyển quân',
+                          'Đang tuyển thành viên',
                           style: TextStyle(
                             fontSize: 11.5,
                             fontWeight: state.isRecruitingOnly == true ? FontWeight.bold : FontWeight.w500,

@@ -165,7 +165,7 @@ Hệ thống tách biệt hoàn toàn giữa **Authentication** và **Group Auth
 1 Người Dùng (UserId)
    ├── Tham gia CLB A: Vai trò "Chủ phòng"  --> Full quyền OPERATIONS, FINANCE, MEMBER
    ├── Tham gia CLB B: Vai trò "Thủ quỹ"   --> Quyền FINANCE + Xem thành viên, buổi chơi
-   └── Tham gia CLB C: Vai trò "Thành viên" --> Quyền xem lịch, đặt chỗ kèo đấu
+   └── Tham gia CLB C: Vai trò "Thành viên" --> Quyền xem lịch, đăng ký giữ chỗ buổi chơi
 ```
 
 ### 3.1. Danh Mục Quyền Chuẩn Hóa (`GroupPermissions`):

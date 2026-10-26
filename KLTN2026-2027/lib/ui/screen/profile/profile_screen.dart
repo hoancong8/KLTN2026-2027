@@ -413,7 +413,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             Icon(Icons.radar_rounded, color: colors.primary, size: 20),
             SizedBox(width: 8),
             Text(
-              'Sẵn sàng nhận kèo giao lưu',
+              'Sẵn sàng tham gia giao lưu',
               style: TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w700,
@@ -425,7 +425,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         subtitle: Padding(
           padding: EdgeInsets.only(top: 4),
           child: Text(
-            'Bật tùy chọn này để các CLB và nhóm vãng lai xung quanh có thể tìm thấy bạn qua Radar tuyển khách.',
+            'Bật tùy chọn này để các câu lạc bộ xung quanh có thể tìm thấy bạn khi tuyển người giao lưu.',
             style: TextStyle(fontSize: 12, color: colors.textMuted),
           ),
         ),
@@ -477,7 +477,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Hệ thống ghép kèo tự động dựa trên trình độ bạn khai báo để phân chia sân cân bằng nhất.',
+            'Hệ thống tự động xếp sân dựa trên trình độ bạn khai báo để phân chia cặp đấu cân bằng nhất.',
             style: TextStyle(fontSize: 12, color: colors.textMuted),
           ),
           const SizedBox(height: 12),
@@ -790,7 +790,7 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
                 contentPadding: EdgeInsets.zero,
                 activeThumbColor: colors.primary,
                 title: Text(
-                  'Nhận kèo giao lưu khách vãng lai',
+                  'Nhận lời mời tham gia giao lưu',
                   style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: colors.textPrimary),
                 ),
                 subtitle: Text(

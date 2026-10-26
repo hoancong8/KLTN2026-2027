@@ -203,10 +203,10 @@
   },
   "nav_home": "Trang chủ",
   "nav_clubs": "CLB của tôi",
-  "nav_explore": "Kèo đấu",
+  "nav_explore": "Giao lưu",
   "nav_report": "Lịch chơi",
   "nav_settings": "Cá nhân",
-  "explore_tab_recruitments": "Kèo giao lưu",
+  "explore_tab_recruitments": "Buổi giao lưu",
   "explore_tab_clubs": "Khám phá CLB",
   "com_close": "Đóng",
   "com_copy": "Sao chép",
@@ -356,7 +356,7 @@
   "club_join_request_intro_hint": "Gửi đôi lời giới thiệu về bạn và trình độ để Trưởng nhóm dễ duyệt đơn nhé:",
   "club_join_request_example": "Ví dụ: Mình đánh cầu được 2 năm, trình độ TB, muốn tìm nhóm sinh hoạt cố định...",
   "club_join_request_send": "Gửi đơn",
-  "club_config_venue_recruit": "Cấu hình sân & tuyển quân",
+  "club_config_venue_recruit": "Cấu hình sân & tuyển thành viên",
   "club_fixed_venue_name": "Tên sân cố định",
   "club_fixed_venue_hint": "Ví dụ: Sân Cầu Lông Kỳ Hòa",
   "club_fixed_address": "Địa chỉ sân",
@@ -366,17 +366,17 @@
   "club_schedule_save": "Lưu lịch sinh hoạt",
   "club_min_skill_level": "Trình độ tối thiểu",
   "club_max_skill_level": "Trình độ tối đa",
-  "club_recruiting_status": "Trạng thái tuyển quân",
+  "club_recruiting_status": "Trạng thái tuyển thành viên",
   "club_copy_code_success": "Đã sao chép mã nhóm!",
   "club_no_description": "Chưa có mô tả cho nhóm này",
   "home_my_schedule": "Lịch của tôi",
-  "home_find_match": "Kèo giao lưu",
+  "home_find_match": "Buổi giao lưu",
   "home_my_clubs": "CLB của tôi",
   "home_explore_clubs": "Khám phá CLB",
   "home_upcoming_sessions": "Buổi chơi sắp tới",
   "home_no_upcoming_sessions": "Bạn chưa có lịch chơi sắp tới",
-  "home_find_matches_now": "Tìm kèo ngay",
-  "home_radar_recruitments": "Kèo giao lưu quanh bạn",
+  "home_find_matches_now": "Tìm buổi giao lưu",
+  "home_radar_recruitments": "Giao lưu quanh bạn",
   "home_nearby_clubs": "Câu lạc bộ gần bạn",
   "home_slots_remaining": "Còn {count} slot",
   "@home_slots_remaining": {
@@ -405,7 +405,7 @@
   "home_stat_clubs": "CLB",
   "home_stat_sessions": "Buổi sắp tới",
   "home_stat_reputation": "Uy tín",
-  "home_open_guest": "Nhận kèo",
+  "home_open_guest": "Nhận giao lưu",
   "home_queue_order": "Hàng đợi #{order}",
   "@home_queue_order": {
     "placeholders": {
@@ -414,7 +414,7 @@
       }
     }
   },
-  "home_join_match": "Ghép kèo",
+  "home_join_match": "Ghép sân",
   "home_joined_match_success": "Đăng ký slot giao lưu thành công!",
   "home_syncing_permissions": "Đang đồng bộ phân quyền tài khoản...",
   "home_retry": "Thử lại",
@@ -427,6 +427,6 @@
       }
     }
   },
-  "home_recruiting_badge": "Tuyển quân",
+  "home_recruiting_badge": "Tuyển thành viên",
   "home_search_hint": "Tìm kiếm câu lạc bộ, sân đấu..."
 }

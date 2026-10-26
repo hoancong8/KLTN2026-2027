@@ -94,7 +94,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
               ],
             ),
             content: Text(
-              'Buổi chơi đã đủ slot chính thức. Bạn đang ở vị trí chờ số #${booking.queueOrder} trong hàng đợi.\nHệ thống sẽ tự động đôn bạn lên chính thức khi có thành viên báo vắng.',
+              'Buổi chơi đã đủ slot chính thức. Bạn đang ở vị trí chờ số #${booking.queueOrder} trong hàng đợi.\nHệ thống sẽ tự động chuyển bạn lên danh sách chính thức khi có thành viên báo vắng.',
               style: AppTypography.bodyMedium.copyWith(color: colors.textSecondary),
             ),
             actions: [
@@ -369,7 +369,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                       ),
                     ),
                     subtitle: Text(
-                      'Khách vãng lai chỉ thấy số lượng slot trống, không xem được danh tính các thành viên trong nhóm.',
+                      'Khách giao lưu chỉ thấy số lượng slot trống, không xem được danh tính các thành viên trong nhóm.',
                       style: AppTypography.bodySmall.copyWith(color: colors.textMuted),
                     ),
                     value: hidePlayerList,
@@ -901,7 +901,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                           ListTile(
                             dense: true,
                             leading: Icon(Icons.people_outline_rounded, color: colors.warning, size: 20),
-                            title: Text('Khách vãng lai (Guest)', style: AppTypography.bodySmall.bold.colored(colors.textPrimary)),
+                            title: Text('Khách giao lưu (Guest)', style: AppTypography.bodySmall.bold.colored(colors.textPrimary)),
                             subtitle: Text('Theo suất khách giao lưu', style: AppTypography.labelSmall.copyWith(color: colors.textMuted)),
                             trailing: Text('${NumberFormat('#,###').format(guestFee)} đ', style: AppTypography.bodySmall.bold.colored(colors.warning)),
                           ),
@@ -1245,7 +1245,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                       const Icon(Icons.radar_rounded, size: 12, color: AppColors.roleViolet),
                       AppSpacing.gapW4,
                       Text(
-                        'Tuyển khách vãng lai',
+                        'Tuyển khách giao lưu',
                         style: AppTypography.labelSmall.bold.colored(AppColors.roleViolet),
                       ),
                     ],
@@ -1633,7 +1633,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                                 AppSpacing.gapW4,
                                 Expanded(
                                   child: Text(
-                                    'Khách Vãng Lai',
+                                    'Khách Giao Lưu',
                                     style: AppTypography.labelSmall.copyWith(fontWeight: FontWeight.bold, color: colors.textPrimary),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
@@ -1898,7 +1898,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                         Row(
                           children: [
                             Text(
-                              'ĐANG TUYỂN KHÁCH VÃNG LAI',
+                              'ĐANG TUYỂN KHÁCH GIAO LƯU',
                               style: AppTypography.labelSmall.bold.colored(AppColors.roleViolet),
                             ),
                             AppSpacing.gapW8,
@@ -1969,7 +1969,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                         AppSpacing.gapH4,
                         Text(
                           canRecruit
-                              ? 'Chưa mở tuyển khách vãng lai. Bấm "Tuyển khách" nếu cần bù slot thiếu.'
+                              ? 'Chưa mở tuyển khách giao lưu. Bấm "Tuyển khách" nếu cần bù slot thiếu.'
                               : 'Buổi chơi dành riêng cho thành viên nội bộ CLB.',
                           style: AppTypography.labelSmall.colored(colors.textMuted),
                         ),

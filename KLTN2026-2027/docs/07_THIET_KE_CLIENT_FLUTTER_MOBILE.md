@@ -205,4 +205,4 @@ Thay vì thiết kế rời rạc từng màn hình, ứng dụng phân loại t
 
 ### 6.4. Archetype 4: Tích Hợp Ngoại Vi & Thời Gian Thực (Hardware / Realtime)
 - **Đặc trưng:** Tương tác với cảm biến phần cứng (GPS, Camera quét QR, Sinh trắc học Biometrics) và luồng dữ liệu thời gian thực (SignalR, FCM).
-- **Ứng dụng:** Quét QR điểm danh buổi chơi, Nhận biến động gạch nợ VietQR/SePay, Bảng điểm trực tiếp trận đấu (Live Match Board).
+- **Ứng dụng:** Quét QR điểm danh buổi chơi, Nhận biến động xác nhận thanh toán VietQR/SePay, Bảng điểm trực tiếp trận đấu (Live Match Board).

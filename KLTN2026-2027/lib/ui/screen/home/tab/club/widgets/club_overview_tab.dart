@@ -299,7 +299,7 @@ class _ClubOverviewTabState extends ConsumerState<ClubOverviewTab> {
                 ),
                 Divider(height: AppSpacing.base, color: colors.cardBorder),
                 _buildInfoRow(
-                  'Sĩ số thành viên',
+                  'Số lượng thành viên',
                   club != null ? '${club.memberCount} thành viên' : 'Đang tải...',
                   icon: Icons.people_outline_rounded,
                 ),

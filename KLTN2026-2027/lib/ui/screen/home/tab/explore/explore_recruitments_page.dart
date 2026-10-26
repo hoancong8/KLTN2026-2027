@@ -60,7 +60,7 @@ class _ExploreRecruitmentsPageState extends ConsumerState<ExploreRecruitmentsPag
                   ),
                   const SizedBox(width: AppSpacing.sm),
                   Text(
-                    'Tìm Kèo Giao Lưu',
+                    'Tìm Buổi Giao Lưu',
                     style: AppTypography.titleMedium.copyWith(
                       fontWeight: FontWeight.w700,
                       color: colors.textPrimary,
@@ -97,7 +97,7 @@ class _ExploreRecruitmentsPageState extends ConsumerState<ExploreRecruitmentsPag
                     Icon(Icons.near_me_rounded, size: 16, color: colors.primary),
                     const SizedBox(width: 6),
                     Text(
-                      'Kèo giao lưu quanh bạn',
+                      'Buổi giao lưu quanh bạn',
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.bold,
@@ -113,7 +113,7 @@ class _ExploreRecruitmentsPageState extends ConsumerState<ExploreRecruitmentsPag
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Text(
-                    '${filteredList.length} kèo khả dụng',
+                    '${filteredList.length} buổi chơi khả dụng',
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.bold,
@@ -630,7 +630,7 @@ class _ExploreRecruitmentsPageState extends ConsumerState<ExploreRecruitmentsPag
             ),
             const SizedBox(height: 16),
             Text(
-              isSearching ? 'Không Tìm Thấy Kèo Phù Hợp' : 'Chưa Tìm Thấy Kèo Giao Lưu Nào',
+              isSearching ? 'Không Tìm Thấy Buổi Chơi Phù Hợp' : 'Chưa Tìm Thấy Buổi Giao Lưu Nào',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: colors.textPrimary),
             ),
             const SizedBox(height: 8),

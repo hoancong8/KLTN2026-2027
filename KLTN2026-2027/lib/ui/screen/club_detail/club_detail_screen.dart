@@ -448,7 +448,7 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
               _buildHeaderStat('Thành viên', '${club.memberCount}', Icons.groups_rounded, AppColors.roleDeputy),
               _buildHeaderStat('Chất lượng', club.qualityScore.toStringAsFixed(1), Icons.star_rounded, AppColors.warning),
               _buildHeaderStat(
-                'Tuyển quân',
+                'Tuyển thành viên',
                 club.isRecruiting ? 'Đang mở' : 'Đã đủ',
                 Icons.how_to_reg_rounded,
                 club.isRecruiting ? AppColors.success : colors.textMuted,

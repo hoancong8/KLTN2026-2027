@@ -777,7 +777,7 @@ class DashboardPage extends ConsumerWidget {
             ),
             child: Center(
               child: Text(
-                'Chưa có bài đăng tuyển quân quanh khu vực',
+                'Chưa có bài đăng tuyển người quanh khu vực',
                 style: AppTypography.bodySmall.copyWith(color: colors.textSecondary),
               ),
             ),

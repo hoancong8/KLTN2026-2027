@@ -82,18 +82,18 @@ class ClubEmptyState extends ConsumerWidget {
             _buildActionCard(
               context,
               title: 'Tìm CLB Quanh Đây (Radar GPS)',
-              description: 'Quét bán kính xung quanh tìm các CLB cầu lông đang hoạt động và tuyển quân',
+              description: 'Quét bán kính xung quanh tìm các CLB cầu lông đang hoạt động và tuyển thành viên',
               icon: Icons.radar_rounded,
               accentColor: AppColors.roleViolet,
               onTap: () => ref.read(homeTabProvider.notifier).state = 2,
             ),
             AppSpacing.gapH12,
 
-            // Card 4: Khám Phá Kèo Giao Lưu (FR12)
+            // Card 4: Khám Phá Buổi Giao Lưu (FR12)
             _buildActionCard(
               context,
-              title: 'Tìm Kèo Giao Lưu Gần Bạn',
-              description: 'Quét radar tìm kiếm các buổi tập đang tuyển người vãng lai trong khu vực',
+              title: 'Tìm Buổi Giao Lưu Gần Bạn',
+              description: 'Quét tìm kiếm các buổi tập đang tuyển người giao lưu trong khu vực',
               icon: Icons.sports_tennis_rounded,
               accentColor: colors.warning,
               onTap: () => ref.read(homeTabProvider.notifier).state = 2,
