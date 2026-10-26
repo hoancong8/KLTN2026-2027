@@ -276,7 +276,7 @@ class _ClubOverviewTabState extends ConsumerState<ClubOverviewTab> {
           AppSpacing.gapH16,
 
           // 3. Tiền sân & Đóng quỹ nhóm (Biểu phí sinh hoạt)
-          _buildClubFeeCard(club),
+          _buildClubFeeCard(club, canManageClub),
 
           AppSpacing.gapH16,
 
@@ -409,7 +409,7 @@ class _ClubOverviewTabState extends ConsumerState<ClubOverviewTab> {
     );
   }
 
-  Widget _buildClubFeeCard(dynamic club) {
+  Widget _buildClubFeeCard(dynamic club, bool canManageClub) {
     return Container(
       padding: AppSpacing.allBase,
       decoration: BoxDecoration(
@@ -472,7 +472,9 @@ class _ClubOverviewTabState extends ConsumerState<ClubOverviewTab> {
                       ),
                       AppSpacing.gapH4,
                       Text(
-                        'Tổng tiền sân + Cầu bóc mới thực tế + Nước uống phát sinh, chia đều theo đầu người tham gia. Tiền lẻ tự động làm tròn 1.000đ - 5.000đ khi quét VietQR.',
+                        canManageClub
+                            ? 'Tổng tiền sân + Cầu bóc mới thực tế + Nước uống phát sinh, chia đều theo đầu người tham gia. (Quy tắc làm tròn hóa đơn: 1.000đ - 5.000đ khi quét VietQR).'
+                            : 'Tổng tiền sân + Cầu bóc mới thực tế + Nước uống phát sinh, chia đều theo đầu người tham gia buổi chơi.',
                         style: AppTypography.bodySmall.colored(colors.textSecondary),
                       ),
                     ],
