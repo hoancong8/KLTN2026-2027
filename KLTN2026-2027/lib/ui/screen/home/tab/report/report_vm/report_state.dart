@@ -1,5 +1,4 @@
 import 'package:kltn2026_2027/domain/entities/session/my_booking_item.dart';
-import 'package:kltn2026_2027/domain/enums/session_enums.dart';
 
 enum ReportFilter { all, confirmed, waiting, completed }
 
@@ -27,22 +26,30 @@ class ReportState {
     }).toList();
   }
 
-  List<MyBookingItem> get bookingsOnSelectedDate {
-    final base = (selectedDate == null)
+  List<MyBookingItem> get baseBookings {
+    return (selectedDate == null)
         ? bookingsInFocusedMonth
         : myBookings.where((b) {
             return b.startTime.year == selectedDate!.year &&
                 b.startTime.month == selectedDate!.month &&
                 b.startTime.day == selectedDate!.day;
           }).toList();
+  }
 
+  int get countAll => baseBookings.length;
+  int get countConfirmed => baseBookings.where((b) => b.isConfirmed && !b.isEnded).length;
+  int get countWaiting => baseBookings.where((b) => b.isWaiting && !b.isEnded).length;
+  int get countCompleted => baseBookings.where((b) => b.isEnded).length;
+
+  List<MyBookingItem> get bookingsOnSelectedDate {
+    final base = baseBookings;
     switch (filter) {
       case ReportFilter.confirmed:
-        return base.where((b) => b.isConfirmed && b.sessionStatus != SessionStatus.completed).toList();
+        return base.where((b) => b.isConfirmed && !b.isEnded).toList();
       case ReportFilter.waiting:
-        return base.where((b) => b.isWaiting).toList();
+        return base.where((b) => b.isWaiting && !b.isEnded).toList();
       case ReportFilter.completed:
-        return base.where((b) => b.sessionStatus == SessionStatus.completed || b.isPast).toList();
+        return base.where((b) => b.isEnded).toList();
       case ReportFilter.all:
         return base;
     }

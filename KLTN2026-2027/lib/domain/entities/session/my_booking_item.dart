@@ -45,6 +45,7 @@ class MyBookingItem {
   bool get isOngoing => startTime.isBefore(DateTime.now()) && endTime.isAfter(DateTime.now());
   bool get isUpcomingOrOngoing => endTime.isAfter(DateTime.now());
   bool get isPast => endTime.isBefore(DateTime.now());
+  bool get isEnded => sessionStatus == SessionStatus.completed || sessionStatus == SessionStatus.calculated || isPast;
   bool get isConfirmed => bookingStatus == BookingStatus.confirmed;
   bool get isWaiting => bookingStatus == BookingStatus.waiting;
   bool get isCheckedIn => bookingStatus == BookingStatus.checkedIn;
