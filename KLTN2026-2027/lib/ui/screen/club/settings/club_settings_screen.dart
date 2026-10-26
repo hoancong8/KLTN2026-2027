@@ -246,7 +246,7 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
       }
 
       if (canManageFee) {
-        final feeModeInt = _feeMode == 'DYNAMIC' ? 0 : 1;
+        final feeModeInt = _feeMode == 'DYNAMIC' ? 1 : 2;
         final monthlyFee = (int.tryParse(_monthlyFeeController.text.replaceAll('.', '').trim()) ?? 0).toDouble();
         final monthlyFemaleFee = (int.tryParse(_monthlyFemaleFeeController.text.replaceAll('.', '').trim()) ?? 0).toDouble();
         final dailyMemberFee = (int.tryParse(_dailyMemberFeeController.text.replaceAll('.', '').trim()) ?? 0).toDouble();

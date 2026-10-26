@@ -123,7 +123,7 @@ class _ReportMobileState extends ConsumerState<ReportMobile> {
               AppSpacing.gapW8,
               Expanded(
                 child: _buildMiniStat(
-                  'Host đã duyệt',
+                  'Suất chính thức',
                   '$confirmed',
                   colors.success,
                   Icons.verified_rounded,
@@ -138,7 +138,7 @@ class _ReportMobileState extends ConsumerState<ReportMobile> {
             children: [
               Expanded(
                 child: _buildMiniStat(
-                  'Đăng ký chờ duyệt',
+                  'Vãng lai chờ duyệt',
                   '$waiting',
                   colors.warning,
                   Icons.hourglass_top_rounded,
@@ -220,8 +220,8 @@ class _ReportMobileState extends ConsumerState<ReportMobile> {
   Widget _buildFilterChips(ReportState state, ReportViewModel vm) {
     final filters = [
       (ReportFilter.all, 'Tất cả (${state.countAll})', Icons.apps_rounded, colors.primary),
-      (ReportFilter.confirmed, 'Host đã xác nhận (${state.countConfirmed})', Icons.verified_rounded, colors.success),
-      (ReportFilter.waiting, 'Đăng ký chờ duyệt (${state.countWaiting})', Icons.hourglass_top_rounded, colors.warning),
+      (ReportFilter.confirmed, 'Suất chính thức (${state.countConfirmed})', Icons.verified_rounded, colors.success),
+      (ReportFilter.waiting, 'Vãng lai chờ duyệt (${state.countWaiting})', Icons.hourglass_top_rounded, colors.warning),
       (ReportFilter.completed, 'Đã kết thúc (${state.countCompleted})', Icons.history_rounded, colors.textMuted),
     ];
 
@@ -500,6 +500,7 @@ class _ReportMobileState extends ConsumerState<ReportMobile> {
 
     final isEnded = booking.isEnded;
     final isConfirmed = booking.isConfirmed && !isEnded;
+    final isFixedMember = !booking.isGuest;
 
     Color badgeBg;
     Color badgeBorder;
@@ -517,21 +518,29 @@ class _ReportMobileState extends ConsumerState<ReportMobile> {
       badgeText = 'BUỔI ĐÃ KẾT THÚC';
       explainText = 'Buổi chơi đã hoàn tất${booking.isConfirmed ? ' • Bạn đã hoàn thành buổi này' : ''}';
       explainIcon = Icons.task_alt_rounded;
+    } else if (isFixedMember) {
+      badgeBg = colors.primary.withValues(alpha: 0.14);
+      badgeBorder = colors.primary.withValues(alpha: 0.35);
+      badgeFg = colors.primary;
+      badgeIcon = Icons.verified_user_rounded;
+      badgeText = 'SUẤT CỐ ĐỊNH';
+      explainText = 'Lịch sinh hoạt định kỳ • Tự động giữ chỗ không cần duyệt';
+      explainIcon = Icons.calendar_today_rounded;
     } else if (isConfirmed) {
       badgeBg = colors.success.withValues(alpha: 0.14);
       badgeBorder = colors.success.withValues(alpha: 0.35);
       badgeFg = colors.success;
       badgeIcon = Icons.verified_rounded;
       badgeText = 'HOST ĐÃ XÁC NHẬN';
-      explainText = 'Suất chơi chính thức • Vui lòng đến sân đúng giờ';
+      explainText = 'Host đã duyệt suất vãng lai • Vui lòng đến sân đúng giờ';
       explainIcon = Icons.sports_tennis_rounded;
     } else {
       badgeBg = colors.warning.withValues(alpha: 0.14);
       badgeBorder = colors.warning.withValues(alpha: 0.35);
       badgeFg = colors.warning;
       badgeIcon = Icons.hourglass_top_rounded;
-      badgeText = 'ĐĂNG KÝ CHỜ DUYỆT (#${booking.queueOrder})';
-      explainText = 'Đang trong hàng đợi • Chờ Host xác nhận hoặc có người nhường slot';
+      badgeText = 'VÃNG LAI CHỜ DUYỆT (#${booking.queueOrder})';
+      explainText = 'Đang trong hàng đợi • Chờ Host xác nhận tham gia';
       explainIcon = Icons.access_time_rounded;
     }
 

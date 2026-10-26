@@ -7,6 +7,7 @@ import 'package:kltn2026_2027/domain/entities/club/my_club.dart';
 import 'package:kltn2026_2027/domain/entities/player_profile.dart';
 import 'package:kltn2026_2027/domain/entities/session/guest_recruitment.dart';
 import 'package:kltn2026_2027/domain/entities/session/my_booking_item.dart';
+import 'package:kltn2026_2027/domain/enums/session_enums.dart';
 import 'package:kltn2026_2027/domain/services/i_location_service.dart';
 import 'package:kltn2026_2027/domain/usecases/club/explore_clubs_usecase.dart';
 import 'package:kltn2026_2027/domain/usecases/club/get_my_clubs_usecase.dart';
@@ -80,13 +81,18 @@ class DashboardViewModel extends StateNotifier<DashboardState> {
       ]);
 
       if (!mounted) return;
+      final upcoming = results[1] as List<MyBookingItem>;
+      final rawRecruitments = results[2] as List<GuestRecruitment>;
+      final rawClubs = results[3] as List<ExploreClub>;
+      final myClubs = results[4] as List<MyClub>;
+
       state = state.copyWith(
         isLoading: false,
         playerProfile: results[0] as PlayerProfile?,
-        upcomingBookings: results[1] as List<MyBookingItem>,
-        nearbyRecruitments: results[2] as List<GuestRecruitment>,
-        nearbyClubs: results[3] as List<ExploreClub>,
-        myClubs: results[4] as List<MyClub>,
+        upcomingBookings: upcoming,
+        nearbyRecruitments: _filterAvailableRecruitments(rawRecruitments, upcoming),
+        nearbyClubs: _filterUnjoinedClubs(rawClubs, myClubs),
+        myClubs: myClubs,
       );
     } catch (e) {
       if (!mounted) return;
@@ -113,13 +119,18 @@ class DashboardViewModel extends StateNotifier<DashboardState> {
       ]);
 
       if (!mounted) return;
+      final upcoming = results[1] as List<MyBookingItem>;
+      final rawRecruitments = results[2] as List<GuestRecruitment>;
+      final rawClubs = results[3] as List<ExploreClub>;
+      final myClubs = results[4] as List<MyClub>;
+
       state = state.copyWith(
         isRefreshing: false,
         playerProfile: results[0] as PlayerProfile?,
-        upcomingBookings: results[1] as List<MyBookingItem>,
-        nearbyRecruitments: results[2] as List<GuestRecruitment>,
-        nearbyClubs: results[3] as List<ExploreClub>,
-        myClubs: results[4] as List<MyClub>,
+        upcomingBookings: upcoming,
+        nearbyRecruitments: _filterAvailableRecruitments(rawRecruitments, upcoming),
+        nearbyClubs: _filterUnjoinedClubs(rawClubs, myClubs),
+        myClubs: myClubs,
       );
     } catch (e) {
       if (!mounted) return;
@@ -128,6 +139,25 @@ class DashboardViewModel extends StateNotifier<DashboardState> {
         errorMessage: e.toString(),
       );
     }
+  }
+
+  List<GuestRecruitment> _filterAvailableRecruitments(
+    List<GuestRecruitment> recruitments,
+    List<MyBookingItem> bookings,
+  ) {
+    final bookedSessionIds = bookings
+        .where((b) => !b.isEnded && b.bookingStatus != BookingStatus.absent)
+        .map((b) => b.sessionId)
+        .toSet();
+    return recruitments.where((r) => !bookedSessionIds.contains(r.sessionId)).toList();
+  }
+
+  List<ExploreClub> _filterUnjoinedClubs(
+    List<ExploreClub> clubs,
+    List<MyClub> myClubs,
+  ) {
+    final joinedClubIds = myClubs.map((c) => c.clubId).toSet();
+    return clubs.where((c) => !joinedClubIds.contains(c.id)).toList();
   }
 
   Future<PlayerProfile?> _fetchProfile() async {

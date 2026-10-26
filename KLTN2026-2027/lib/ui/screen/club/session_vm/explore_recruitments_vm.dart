@@ -2,6 +2,9 @@
 
 import 'package:flutter_riverpod/legacy.dart';
 import '../../../../app/provider.dart';
+import '../../../../domain/entities/session/guest_recruitment.dart';
+import '../../../../domain/enums/session_enums.dart';
+import '../../../../domain/usecases/session/get_my_bookings_usecase.dart';
 import '../../../../domain/usecases/session/session_usecases.dart';
 import 'explore_recruitments_state.dart';
 
@@ -11,6 +14,7 @@ final exploreRecruitmentsViewModelProvider =
     exploreRecruitmentsUseCase: ref.watch(exploreRecruitmentsUseCaseProvider),
     joinRecruitmentUseCase: ref.watch(joinRecruitmentUseCaseProvider),
     cancelRecruitmentBookingUseCase: ref.watch(cancelRecruitmentBookingUseCaseProvider),
+    getMyBookingsUseCase: ref.watch(getMyBookingsUseCaseProvider),
   );
 });
 
@@ -18,11 +22,13 @@ class ExploreRecruitmentsViewModel extends StateNotifier<ExploreRecruitmentsStat
   final ExploreRecruitmentsUseCase exploreRecruitmentsUseCase;
   final JoinRecruitmentUseCase joinRecruitmentUseCase;
   final CancelRecruitmentBookingUseCase cancelRecruitmentBookingUseCase;
+  final GetMyBookingsUseCase getMyBookingsUseCase;
 
   ExploreRecruitmentsViewModel({
     required this.exploreRecruitmentsUseCase,
     required this.joinRecruitmentUseCase,
     required this.cancelRecruitmentBookingUseCase,
+    required this.getMyBookingsUseCase,
   }) : super(const ExploreRecruitmentsState(isLocating: false)) {
     explore();
   }
@@ -30,19 +36,38 @@ class ExploreRecruitmentsViewModel extends StateNotifier<ExploreRecruitmentsStat
   Future<void> explore() async {
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
-      final results = await exploreRecruitmentsUseCase.execute(
-        latitude: null,
-        longitude: null,
-        radiusKm: null,
-        minSkillLevel: state.selectedSkillLevel,
-      );
-      state = state.copyWith(isLoading: false, recruitments: results);
+      final results = await Future.wait([
+        exploreRecruitmentsUseCase.execute(
+          latitude: null,
+          longitude: null,
+          radiusKm: null,
+          minSkillLevel: state.selectedSkillLevel,
+        ),
+        _fetchActiveBookedSessionIds(),
+      ]);
+      final recruitments = results[0] as List<GuestRecruitment>;
+      final bookedSessionIds = results[1] as Set<String>;
+
+      final available = recruitments.where((r) => !bookedSessionIds.contains(r.sessionId)).toList();
+      state = state.copyWith(isLoading: false, recruitments: available);
     } catch (e) {
       state = state.copyWith(isLoading: false, errorMessage: e.toString());
     } finally {
       if (state.isLoading) {
         state = state.copyWith(isLoading: false);
       }
+    }
+  }
+
+  Future<Set<String>> _fetchActiveBookedSessionIds() async {
+    try {
+      final bookings = await getMyBookingsUseCase.execute();
+      return bookings
+          .where((b) => !b.isEnded && b.bookingStatus != BookingStatus.absent)
+          .map((b) => b.sessionId)
+          .toSet();
+    } catch (_) {
+      return {};
     }
   }
 

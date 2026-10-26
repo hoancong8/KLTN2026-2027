@@ -51,10 +51,10 @@ class ClubFeeRuleResponseDto {
   static String _parseFeeMode(dynamic value) {
     if (value == null) return 'DYNAMIC';
     if (value is int) {
-      return value == 1 ? 'FIXED' : 'DYNAMIC';
+      return value == 2 ? 'FIXED' : 'DYNAMIC';
     }
     final str = value.toString().toUpperCase();
-    if (str == 'FIXED' || str == '1') return 'FIXED';
+    if (str == 'FIXED' || str == '2') return 'FIXED';
     return 'DYNAMIC';
   }
 
@@ -81,7 +81,7 @@ class ClubFeeRuleResponseDto {
 }
 
 class UpdateClubFeeRuleRequestDto {
-  final int feeMode; // 0 = DYNAMIC, 1 = FIXED
+  final int feeMode; // 1 = DYNAMIC, 2 = FIXED
   final double monthlyFee;
   final double dailyMemberFee;
   final double guestFee;
