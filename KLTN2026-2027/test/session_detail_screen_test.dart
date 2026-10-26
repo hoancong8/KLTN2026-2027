@@ -175,6 +175,5 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Hủy Giữ Chỗ'), findsOneWidget);
-    expect(find.text('Bạn đã có slot chính thức'), findsOneWidget);
   });
 }

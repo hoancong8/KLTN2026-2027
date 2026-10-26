@@ -2521,65 +2521,40 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
             child: Padding(
               padding: AppSpacing.screen,
               child: isBooked
-                  ? Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
+                  ? SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: isSubmitting ? null : _handleCancelBooking,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: colors.error,
+                          foregroundColor: AppColors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                          elevation: 0,
+                        ),
+                        child: isSubmitting
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.white),
+                              )
+                            : Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Icon(
-                                    isConfirmed ? Icons.check_circle_rounded : Icons.schedule_rounded,
-                                    size: 16,
-                                    color: isConfirmed ? colors.primary : colors.warning,
-                                  ),
+                                  const Icon(Icons.cancel_outlined, size: 18, color: AppColors.white),
                                   AppSpacing.gapW8,
-                                  Expanded(
-                                    child: Text(
-                                      isConfirmed ? 'Bạn đã có slot chính thức' : 'Đang ở hàng đợi số #$waitingOrder',
-                                      style: AppTypography.titleSmall.copyWith(
-                                        fontWeight: FontWeight.bold,
-                                        color: isConfirmed ? colors.primary : colors.warning,
-                                      ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
+                                  Text(
+                                    isOpen
+                                        ? (isConfirmed ? 'Hủy Giữ Chỗ' : 'Hủy Hàng Đợi (#$waitingOrder)')
+                                        : (isConfirmed ? 'Báo Vắng' : 'Rút Hàng Đợi (#$waitingOrder)'),
+                                    style: AppTypography.titleSmall.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      color: AppColors.white,
                                     ),
                                   ),
                                 ],
                               ),
-                              AppSpacing.gapH4,
-                              Text(
-                                isOpen
-                                    ? (isConfirmed
-                                        ? 'Hủy giữ chỗ để nhường slot cho hàng đợi'
-                                        : 'Hủy để rút khỏi danh sách chờ')
-                                    : 'Báo vắng để tự động nhường slot cho hàng đợi',
-                                style: AppTypography.bodySmall.copyWith(color: colors.textMuted),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ],
-                          ),
-                        ),
-                        AppSpacing.gapW12,
-                        ElevatedButton.icon(
-                          onPressed: isSubmitting ? null : _handleCancelBooking,
-                          icon: const Icon(Icons.cancel_outlined, size: 18),
-                          label: Text(
-                            isOpen
-                                ? (isConfirmed ? 'Hủy Giữ Chỗ' : 'Hủy Hàng Đợi')
-                                : (isConfirmed ? 'Báo Vắng' : 'Rút Hàng Đợi'),
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: colors.error,
-                            foregroundColor: AppColors.white,
-                            shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                          ),
-                        ),
-                      ],
+                      ),
                     )
                   : SizedBox(
                       width: double.infinity,
