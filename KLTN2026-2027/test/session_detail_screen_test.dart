@@ -42,13 +42,13 @@ void main() {
       groupId: 'club-1',
       clubName: 'CLB Cầu Lông Chiến Binh Quận 10',
       title: 'Buổi sinh hoạt Thứ 2 (19:00 - 22:00)',
-      startTime: DateTime(2026, 10, 26, 19, 0),
-      endTime: DateTime(2026, 10, 26, 22, 0),
+      startTime: DateTime(2026, 10, 29, 19, 0),
+      endTime: DateTime(2026, 10, 29, 22, 0),
       courtLocation: 'Sân Cầu Lông Kỳ Hòa, 238 Đường 3/2, Phường 12, Quận 10, TP.HCM',
       courtCount: 2,
       targetPlayerPerCourt: 6,
       maxPlayers: 12,
-      deadlineBooking: DateTime(2026, 10, 26, 17, 0),
+      deadlineBooking: DateTime(2026, 10, 29, 17, 0),
       courtRentalCost: 300000,
       status: SessionStatus.open,
       confirmedCount: 1,
@@ -175,5 +175,155 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Hủy Giữ Chỗ'), findsOneWidget);
+  });
+
+  testWidgets('Disables cancel action and shows ongoing banner when session is currently playing', (tester) async {
+    tester.view.physicalSize = const Size(1024, 496);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+
+    final now = DateTime.now();
+    final session = Session(
+      id: 'session-playing',
+      groupId: 'club-1',
+      clubName: 'CLB Cầu Lông Chiến Binh Quận 10',
+      title: 'Buổi sinh hoạt đang diễn ra',
+      startTime: now.subtract(const Duration(minutes: 30)),
+      endTime: now.add(const Duration(hours: 2)),
+      courtLocation: 'Sân Cầu Lông Kỳ Hòa',
+      courtCount: 2,
+      targetPlayerPerCourt: 6,
+      maxPlayers: 12,
+      deadlineBooking: now.subtract(const Duration(hours: 1)),
+      courtRentalCost: 300000,
+      status: SessionStatus.playing,
+      confirmedCount: 1,
+      waitingCount: 0,
+      isBookedByCurrentUser: true,
+      currentUserBookingStatus: BookingStatus.confirmed,
+      currentUserQueueOrder: 0,
+    );
+
+    final detail = SessionDetail(
+      session: session,
+      confirmedPlayers: [
+        SessionBooking(
+          bookingId: 'b-playing',
+          sessionId: 'session-playing',
+          userId: 'user-me',
+          fullName: 'Nguyễn Văn A',
+          skillLevel: 'TB',
+          status: BookingStatus.confirmed,
+          queueOrder: 0,
+          bookedAt: now.subtract(const Duration(days: 1)),
+        ),
+      ],
+      waitingQueue: [],
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          sessionDetailViewModelProvider('session-playing').overrideWith(
+            (ref) => FakeSessionDetailNotifier('session-playing', detail),
+          ),
+        ],
+        child: const MaterialApp(
+          localizationsDelegates: [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: Locale('vi'),
+          home: SessionDetailScreen(sessionId: 'session-playing'),
+        ),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+
+    expect(find.text('Buổi chơi đang diễn ra • Không thể hủy slot'), findsOneWidget);
+    expect(find.text('Báo Vắng'), findsNothing);
+    expect(find.text('Hủy Giữ Chỗ'), findsNothing);
+  });
+
+  testWidgets('Disables cancel action and shows deadline passed banner when session registration is expired', (tester) async {
+    tester.view.physicalSize = const Size(1024, 496);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+
+    final now = DateTime.now();
+    final session = Session(
+      id: 'session-expired',
+      groupId: 'club-1',
+      clubName: 'CLB Cầu Lông Chiến Binh Quận 10',
+      title: 'Buổi sinh hoạt đã khóa sổ',
+      startTime: now.add(const Duration(minutes: 30)),
+      endTime: now.add(const Duration(hours: 3)),
+      courtLocation: 'Sân Cầu Lông Kỳ Hòa',
+      courtCount: 2,
+      targetPlayerPerCourt: 6,
+      maxPlayers: 12,
+      deadlineBooking: now.subtract(const Duration(minutes: 10)),
+      courtRentalCost: 300000,
+      status: SessionStatus.locked,
+      confirmedCount: 1,
+      waitingCount: 0,
+      isBookedByCurrentUser: true,
+      currentUserBookingStatus: BookingStatus.confirmed,
+      currentUserQueueOrder: 0,
+    );
+
+    final detail = SessionDetail(
+      session: session,
+      confirmedPlayers: [
+        SessionBooking(
+          bookingId: 'b-expired',
+          sessionId: 'session-expired',
+          userId: 'user-me',
+          fullName: 'Nguyễn Văn A',
+          skillLevel: 'TB',
+          status: BookingStatus.confirmed,
+          queueOrder: 0,
+          bookedAt: now.subtract(const Duration(days: 1)),
+        ),
+      ],
+      waitingQueue: [],
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          sessionDetailViewModelProvider('session-expired').overrideWith(
+            (ref) => FakeSessionDetailNotifier('session-expired', detail),
+          ),
+        ],
+        child: const MaterialApp(
+          localizationsDelegates: [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: Locale('vi'),
+          home: SessionDetailScreen(sessionId: 'session-expired'),
+        ),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+
+    expect(find.text('Đã hết hạn đổi vé • Vui lòng liên hệ Host'), findsOneWidget);
+    expect(find.text('Báo Vắng'), findsNothing);
+    expect(find.text('Hủy Giữ Chỗ'), findsNothing);
   });
 }

@@ -118,12 +118,36 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
   Future<void> _handleCancelBooking() async {
     final colors = context.colors;
     final detail = ref.read(sessionDetailViewModelProvider(widget.sessionId)).detail;
-    final isOpen = detail?.session.status == SessionStatus.open;
-    final dialogTitle = isOpen ? 'Hủy giữ chỗ tham gia' : context.l10n.session_cancel_join;
-    final dialogContent = isOpen
-        ? 'Bạn có chắc chắn muốn hủy xác nhận tham gia buổi chơi này? Suất của bạn sẽ tự động được nhường cho người tiếp theo trong hàng đợi.'
-        : context.l10n.session_cancel_confirm;
-    final confirmBtnLabel = isOpen ? 'Hủy giữ chỗ' : context.l10n.session_cancel_join;
+    final session = detail?.session;
+    final now = DateTime.now();
+    final isEnded = session?.status == SessionStatus.completed ||
+        session?.status == SessionStatus.calculated ||
+        (session != null && session.endTime.isBefore(now));
+    final isPlaying = !isEnded && (session?.status == SessionStatus.playing ||
+        (session != null && session.startTime.isBefore(now) && session.endTime.isAfter(now)));
+    final isExpired = session?.isExpired == true ||
+        (session != null && session.deadlineBooking.isBefore(now));
+    final isOpen = session?.status == SessionStatus.open;
+    final canCancel = isOpen && !isEnded && !isPlaying && !isExpired;
+
+    if (!canCancel) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            isPlaying
+                ? 'Buổi chơi đang diễn ra, không thể hủy giữ chỗ.'
+                : 'Đã hết hạn thay đổi đăng ký. Vui lòng liên hệ Host.',
+          ),
+          backgroundColor: colors.warning,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    final dialogTitle = 'Hủy giữ chỗ tham gia';
+    final dialogContent = 'Bạn có chắc chắn muốn hủy xác nhận tham gia buổi chơi này? Suất của bạn sẽ tự động được nhường cho người tiếp theo trong hàng đợi.';
+    final confirmBtnLabel = 'Hủy giữ chỗ';
 
     final confirm = await showDialog<bool>(
       context: context,
@@ -2273,6 +2297,11 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
     final isEnded = session?.status == SessionStatus.completed ||
         session?.status == SessionStatus.calculated ||
         (session != null && session.endTime.isBefore(now));
+    final isPlaying = !isEnded && (session?.status == SessionStatus.playing ||
+        (session != null && session.startTime.isBefore(now) && session.endTime.isAfter(now)));
+    final isExpired = session?.isExpired == true ||
+        (session != null && session.deadlineBooking.isBefore(now));
+    final canCancel = isOpen && !isEnded && !isPlaying && !isExpired;
     final isSubmitting = ref.watch(sessionDetailViewModelProvider(widget.sessionId)).isSubmitting;
 
     if (players.isEmpty) {
@@ -2447,7 +2476,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                   ),
                   AppSpacing.gapW8,
                 ],
-                if (isMe && isOpen && !isEnded) ...[
+                if (isMe && canCancel) ...[
                   OutlinedButton.icon(
                     onPressed: isSubmitting ? null : _handleCancelBooking,
                     icon: Icon(Icons.cancel_outlined, size: 14, color: colors.error),
@@ -2505,6 +2534,10 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
         detail.waitingQueue.any((p) => p.userId.toLowerCase() == currentUserId.toLowerCase());
 
     final isBooked = session.isBookedByCurrentUser || isUserInConfirmed || isUserInWaiting;
+    final isPlaying = !isEnded && (session.status == SessionStatus.playing ||
+        (session.startTime.isBefore(now) && session.endTime.isAfter(now)));
+    final isExpired = session.isExpired || session.deadlineBooking.isBefore(now);
+
     final isConfirmed = session.currentUserBookingStatus == BookingStatus.confirmed ||
         session.currentUserBookingStatus == BookingStatus.checkedIn ||
         isUserInConfirmed;
@@ -2512,6 +2545,8 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
         ? session.currentUserQueueOrder
         : (detail?.waitingQueue.where((p) => p.userId.toLowerCase() == currentUserId?.toLowerCase()).firstOrNull?.queueOrder ?? 1);
     final isOpen = session.status == SessionStatus.open;
+    final canCancel = isOpen && !isEnded && !isPlaying && !isExpired;
+    final canJoin = isOpen && !isEnded && !isPlaying && !isExpired;
 
     // 1. Buổi chơi đã kết thúc
     if (isEnded) {
@@ -2604,48 +2639,78 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
             child: Padding(
               padding: AppSpacing.screen,
               child: isBooked
-                  ? SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: isSubmitting ? null : _handleCancelBooking,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: colors.error,
-                          foregroundColor: AppColors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
-                          elevation: 0,
-                        ),
-                        child: isSubmitting
-                            ? const SizedBox(
-                                height: 20,
-                                width: 20,
-                                child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.white),
-                              )
-                            : Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  const Icon(Icons.cancel_outlined, size: 18, color: AppColors.white),
-                                  AppSpacing.gapW8,
-                                  Text(
-                                    isOpen
-                                        ? (isConfirmed ? 'Hủy Giữ Chỗ' : 'Hủy Hàng Đợi (#$waitingOrder)')
-                                        : (isConfirmed ? 'Báo Vắng' : 'Rút Hàng Đợi (#$waitingOrder)'),
-                                    style: AppTypography.titleSmall.copyWith(
-                                      fontWeight: FontWeight.bold,
-                                      color: AppColors.white,
-                                    ),
+                  ? (canCancel
+                      ? SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: isSubmitting ? null : _handleCancelBooking,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: colors.error,
+                              foregroundColor: AppColors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                              elevation: 0,
+                            ),
+                            child: isSubmitting
+                                ? const SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.white),
+                                  )
+                                : Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      const Icon(Icons.cancel_outlined, size: 18, color: AppColors.white),
+                                      AppSpacing.gapW8,
+                                      Text(
+                                        isConfirmed ? 'Hủy Giữ Chỗ' : 'Hủy Hàng Đợi (#$waitingOrder)',
+                                        style: AppTypography.titleSmall.copyWith(
+                                          fontWeight: FontWeight.bold,
+                                          color: AppColors.white,
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                ],
+                          ),
+                        )
+                      : Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          decoration: BoxDecoration(
+                            color: colors.surfaceSubtle,
+                            borderRadius: AppRadius.button,
+                            border: Border.all(color: colors.cardBorder),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                isPlaying ? Icons.sports_tennis_rounded : Icons.lock_clock_rounded,
+                                size: 18,
+                                color: isPlaying ? colors.primary : colors.textMuted,
                               ),
-                      ),
-                    )
+                              AppSpacing.gapW8,
+                              Text(
+                                isPlaying
+                                    ? 'Buổi chơi đang diễn ra • Không thể hủy slot'
+                                    : 'Đã hết hạn đổi vé • Vui lòng liên hệ Host',
+                                style: AppTypography.titleSmall.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: colors.textSecondary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ))
                   : SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: (!isOpen || isSubmitting) ? null : _handleVote,
+                        onPressed: (!canJoin || isSubmitting) ? null : _handleVote,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: session.isFull ? colors.warning : colors.primary,
-                          foregroundColor: AppColors.white,
+                          backgroundColor: (!canJoin)
+                              ? colors.surfaceSubtle
+                              : (session.isFull ? colors.warning : colors.primary),
+                          foregroundColor: (!canJoin) ? colors.textMuted : AppColors.white,
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
                           elevation: 0,
@@ -2656,22 +2721,26 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Icon(
-                                    !isOpen
+                                    !canJoin
                                         ? Icons.lock_outline_rounded
                                         : (session.isFull ? Icons.queue_rounded : Icons.sports_tennis_rounded),
                                     size: 18,
-                                    color: AppColors.white,
+                                    color: (!canJoin) ? colors.textMuted : AppColors.white,
                                   ),
                                   AppSpacing.gapW8,
                                   Text(
                                     !isOpen
                                         ? 'Buổi chơi đã đóng đăng ký'
-                                        : (session.isFull
-                                            ? 'Vào Hàng Đợi Chờ (Slot #${session.waitingCount + 1})'
-                                            : 'Đăng Ký Tham Gia'),
+                                        : (isPlaying
+                                            ? 'Buổi chơi đang diễn ra'
+                                            : (isExpired
+                                                ? 'Đã hết hạn đăng ký'
+                                                : (session.isFull
+                                                    ? 'Vào Hàng Đợi Chờ (Slot #${session.waitingCount + 1})'
+                                                    : 'Đăng Ký Tham Gia'))),
                                     style: AppTypography.titleSmall.copyWith(
                                       fontWeight: FontWeight.bold,
-                                      color: AppColors.white,
+                                      color: (!canJoin) ? colors.textMuted : AppColors.white,
                                     ),
                                   ),
                                 ],
