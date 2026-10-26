@@ -265,11 +265,19 @@ class _ReportTabletState extends ConsumerState<ReportTablet> {
                       if (hasBookings) ...[
                         const SizedBox(height: 2),
                         Container(
-                          width: 5,
-                          height: 5,
+                          padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 1),
                           decoration: BoxDecoration(
-                            color: isSelected ? AppColors.white : colors.primary,
-                            shape: BoxShape.circle,
+                            color: isSelected ? AppColors.white.withValues(alpha: 0.25) : colors.primary,
+                            borderRadius: BorderRadius.circular(3),
+                          ),
+                          child: Text(
+                            '${DateFormat('HH:mm').format(dayBookings.first.startTime)} - ${DateFormat('HH:mm').format(dayBookings.first.endTime)}',
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              fontSize: 7.5,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.white,
+                            ),
                           ),
                         ),
                       ],

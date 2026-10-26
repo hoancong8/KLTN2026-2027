@@ -11,7 +11,6 @@ import '../../../../../../app/l10n_gen/app_localizations.dart';
 import '../../../../../../domain/enums/club_role.dart';
 import '../../../../club/club_management_vm/club_members_vm.dart';
 import '../../../../club/club_vm/club_context_vm.dart';
-import '../../../../club/role_management/club_role_management_screen.dart';
 import '../../../../club_detail/club_detail_vm/club_detail_vm.dart';
 import 'club_qr_dialog.dart';
 
@@ -63,6 +62,7 @@ class _ClubOverviewTabState extends ConsumerState<ClubOverviewTab> {
     final isHost = isHostOwner || (isSameClub && activeContext?.role == ClubRole.host) || widget.userRole == ClubRole.host;
     final canManageInfo = isHost || (isSameClub && ref.hasClubPermission('MEMBER.INFO.UPDATE'));
     final canManageRoles = isHost || (isSameClub && ref.hasClubPermission('MEMBER.ROLE.MANAGE'));
+    final canManageClub = isHost || canManageInfo || canManageRoles;
 
     if (state.isLoading && state.club == null) {
       return const Center(child: CircularProgressIndicator(color: AppColors.primary));
@@ -340,8 +340,8 @@ class _ClubOverviewTabState extends ConsumerState<ClubOverviewTab> {
 
           AppSpacing.gapH16,
 
-          // 6. Host Quick Action Shortcuts
-          if (canManageRoles) ...[
+          // 6. Host Quick Action Shortcuts: Cài đặt nhóm
+          if (canManageClub) ...[
             Container(
               padding: AppSpacing.allBase,
               decoration: BoxDecoration(
@@ -353,24 +353,24 @@ class _ClubOverviewTabState extends ConsumerState<ClubOverviewTab> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Quản trị ban điều hành',
+                    'Cài đặt & Quản trị',
                     style: AppTypography.titleSmall.bold.colored(colors.textPrimary),
                   ),
                   AppSpacing.gapH12,
                   ElevatedButton.icon(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.roleHost,
+                      backgroundColor: colors.primary,
                       foregroundColor: AppColors.white,
                       minimumSize: const Size(double.infinity, 44),
                       shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
                     ),
-                    icon: const Icon(Icons.shield_rounded, size: AppSpacing.iconSm),
+                    icon: const Icon(Icons.settings_outlined, size: AppSpacing.iconSm),
                     label: Text(
-                      'Vai Trò & Cây Phân Quyền Nhóm',
+                      'Cài đặt nhóm',
                       style: AppTypography.labelLarge.bold.colored(AppColors.white),
                     ),
                     onPressed: () {
-                      ClubRoleManagementScreen.show(context, clubId: widget.clubId);
+                      context.push('/club/${widget.clubId}/settings');
                     },
                   ),
                 ],

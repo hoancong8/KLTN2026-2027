@@ -529,7 +529,7 @@ class _ClubMemberSectionState extends ConsumerState<ClubMemberSection> {
                   subtitle: Text(
                     m.isMonthlyMember
                         ? 'Hiện tại: Hội viên Cố định (Gói Tháng - 0đ/buổi)'
-                        : 'Hiện tại: Hội viên Đóng theo buổi (DAILY)',
+                        : 'Hiện tại: Hội viên Đóng theo buổi',
                     style: AppTypography.labelSmall.colored(colors.textMuted),
                   ),
                   onTap: () {
@@ -684,7 +684,7 @@ class _ClubMemberSectionState extends ConsumerState<ClubMemberSection> {
                   selectedType == 'DAILY' ? Icons.radio_button_checked : Icons.radio_button_off,
                   color: selectedType == 'DAILY' ? colors.primary : colors.textMuted,
                 ),
-                title: Text('Hội viên Đóng theo buổi (DAILY)', style: AppTypography.bodyMedium.bold.colored(colors.textPrimary)),
+                title: Text('Hội viên Đóng theo buổi', style: AppTypography.bodyMedium.bold.colored(colors.textPrimary)),
                 subtitle: Text(
                   'Tham gia buổi nào tính phí buổi đó theo biểu phí thành viên ngày (có áp dụng ưu đãi Nữ).',
                   style: AppTypography.labelSmall.colored(colors.textMuted),

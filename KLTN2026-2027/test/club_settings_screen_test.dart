@@ -110,6 +110,9 @@ void main() {
 
     await tester.pumpAndSettle();
     expect(find.text('Cài Đặt Câu Lạc Bộ'), findsOneWidget);
+    // Tap Tab Biểu Phí & QR to view fees
+    await tester.tap(find.text('Biểu Phí & QR'));
+    await tester.pumpAndSettle();
     expect(find.text('500.000'), findsOneWidget);
     final btn = tester.getRect(find.text('Lưu Thay Đổi Cài Đặt'));
     final form = tester.getRect(find.byType(Form));
