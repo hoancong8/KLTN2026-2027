@@ -227,7 +227,40 @@ class SessionSettlementScreen extends ConsumerWidget {
                     AppSpacing.gapH16,
 
                     // 2. Members Fees Breakdown
-                    Text('Bảng chia tiền đa hệ số & VietQR cá nhân (${settlement.memberFees.length})',
+                    // Cách chia tiền buổi chơi giải thích cho người chơi
+                    Container(
+                      margin: const EdgeInsets.only(bottom: AppSpacing.md),
+                      padding: const EdgeInsets.all(AppSpacing.sm),
+                      decoration: BoxDecoration(
+                        color: colors.surfaceSubtle,
+                        borderRadius: AppRadius.borderMd,
+                        border: Border.all(color: colors.cardBorder),
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(Icons.info_outline_rounded, color: colors.primary, size: 18),
+                          AppSpacing.gapW8,
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Cách tính tiền buổi chơi này:',
+                                  style: AppTypography.labelSmall.bold.colored(colors.textPrimary),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  'Tiền sân (' + currencyFormat.format(settlement.courtFee) + ' đ) + Cầu bóc mới (' + settlement.shuttlecockUsed.toString() + ' quả) + Phụ phí (' + currencyFormat.format(settlement.extraFee) + ' đ) chia theo số người chơi thực tế. Hội viên tháng miễn phí tiền sân, khách vãng lai và thành viên theo buổi đóng tiền kèm ưu đãi riêng cho Nữ.',
+                                  style: AppTypography.bodySmall.colored(colors.textSecondary),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Text('Tiền đóng từng người & Mã quét VietQR (' + settlement.memberFees.length.toString() + ')',
                         style: AppTypography.titleSmall.bold.colored(colors.textPrimary)),
                     AppSpacing.gapH8,
 

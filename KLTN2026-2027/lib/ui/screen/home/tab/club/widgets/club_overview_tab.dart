@@ -275,6 +275,11 @@ class _ClubOverviewTabState extends ConsumerState<ClubOverviewTab> {
 
           AppSpacing.gapH16,
 
+          // 3. Tiền sân & Đóng quỹ nhóm (Biểu phí sinh hoạt)
+          _buildClubFeeCard(club),
+
+          AppSpacing.gapH16,
+
           // 4. Club Quality & Details Card (FR23)
           Container(
             padding: AppSpacing.allBase,
@@ -399,6 +404,113 @@ class _ClubOverviewTabState extends ConsumerState<ClubOverviewTab> {
             ),
           ],
           AppSpacing.gapH24,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildClubFeeCard(dynamic club) {
+    return Container(
+      padding: AppSpacing.allBase,
+      decoration: BoxDecoration(
+        color: colors.cardBackground,
+        borderRadius: AppRadius.card,
+        border: Border.all(color: colors.cardBorder),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: colors.primary.withValues(alpha: 0.12),
+                  borderRadius: AppRadius.borderSm,
+                ),
+                child: Icon(Icons.payments_outlined, color: colors.primary, size: 18),
+              ),
+              AppSpacing.gapW8,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Tiền sân & Đóng quỹ nhóm',
+                      style: AppTypography.titleSmall.bold.colored(colors.textPrimary),
+                    ),
+                    Text(
+                      'Cách tính tiền buổi chơi & quỹ tháng của CLB',
+                      style: AppTypography.labelSmall.colored(colors.textMuted),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          AppSpacing.gapH12,
+          // Banner cách tính tiền buổi chơi
+          Container(
+            padding: const EdgeInsets.all(AppSpacing.sm),
+            decoration: BoxDecoration(
+              color: colors.surfaceSubtle,
+              borderRadius: AppRadius.borderMd,
+              border: Border.all(color: colors.cardBorder),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(Icons.calculate_outlined, color: colors.primary, size: 18),
+                AppSpacing.gapW8,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Cách chia tiền mỗi buổi chơi:',
+                        style: AppTypography.labelSmall.bold.colored(colors.textPrimary),
+                      ),
+                      AppSpacing.gapH4,
+                      Text(
+                        'Tổng tiền sân + Cầu bóc mới thực tế + Nước uống phát sinh, chia đều theo đầu người tham gia. Tiền lẻ tự động làm tròn 1.000đ - 5.000đ khi quét VietQR.',
+                        style: AppTypography.bodySmall.colored(colors.textSecondary),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          AppSpacing.gapH12,
+          // Bảng mức đóng theo từng người
+          _buildInfoRow(
+            'Hội viên cố định (tháng)',
+            '500.000 đ/tháng (Nữ: 450.000 đ)',
+            icon: Icons.card_membership_rounded,
+            iconColor: colors.primary,
+          ),
+          Divider(height: AppSpacing.base, color: colors.cardBorder),
+          _buildInfoRow(
+            'Hội viên đóng theo buổi',
+            '50.000 đ/buổi (Nữ: 40.000 đ)',
+            icon: Icons.person_outline_rounded,
+            iconColor: colors.success,
+          ),
+          Divider(height: AppSpacing.base, color: colors.cardBorder),
+          _buildInfoRow(
+            'Khách vãng lai giao lưu',
+            '70.000 đ/buổi',
+            icon: Icons.sports_tennis_rounded,
+            iconColor: colors.warning,
+          ),
+          Divider(height: AppSpacing.base, color: colors.cardBorder),
+          _buildInfoRow(
+            'Ưu đãi thành viên Nữ',
+            'Giảm 50.000 đ/tháng hoặc 10.000 đ/buổi',
+            icon: Icons.favorite_outline_rounded,
+            iconColor: colors.error,
+            valueColor: colors.error,
+          ),
         ],
       ),
     );
