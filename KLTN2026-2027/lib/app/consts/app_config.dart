@@ -113,6 +113,10 @@ class AppConfig {
       '$sessionsPath/recruitments/$recruitmentId/join';
   static String cancelRecruitmentPath(String recruitmentId) =>
       '$sessionsPath/recruitments/$recruitmentId/cancel';
+  static String sessionSettlementPath(String sessionId) =>
+      '$sessionsPath/$sessionId/settlement';
+  static String sessionMarkPaidPath(String sessionId, String userId) =>
+      '$sessionsPath/$sessionId/settlement/members/$userId/pay';
 
   // ===== [ROUTER] Routes App (GoRouter) =====
   static const splashPath = '/';

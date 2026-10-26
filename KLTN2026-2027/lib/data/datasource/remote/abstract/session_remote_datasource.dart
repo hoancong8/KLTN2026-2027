@@ -7,6 +7,7 @@ import '../../../dto/session/my_booking_item_dto.dart';
 import '../../../dto/session/session_booking_dto.dart';
 import '../../../dto/session/session_detail_dto.dart';
 import '../../../dto/session/session_dto.dart';
+import '../../../dto/session/session_settlement_dto.dart';
 import '../../../dto/session/update_session_request_dto.dart';
 
 abstract class SessionRemoteDataSource {
@@ -50,4 +51,19 @@ abstract class SessionRemoteDataSource {
   Future<SessionBookingDto> joinRecruitment(String recruitmentId);
 
   Future<void> cancelRecruitmentBooking(String recruitmentId);
+
+  Future<SessionSettlementDto> getSettlement(String sessionId);
+
+  Future<SessionSettlementDto> calculateSettlement({
+    required String sessionId,
+    required int shuttlecockUsed,
+    required int shuttlecockPrice,
+    required int extraFee,
+    int? courtFee,
+  });
+
+  Future<SessionSettlementDto> markMemberPaid({
+    required String sessionId,
+    required String userId,
+  });
 }

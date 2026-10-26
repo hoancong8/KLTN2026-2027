@@ -14,6 +14,7 @@ import '../../../domain/entities/club/club_fee_rule.dart';
 import '../../../domain/entities/session/session.dart';
 import '../../../domain/entities/session/session_booking.dart';
 import '../../common/player_gender_helper.dart';
+import '../../../domain/utils/session_fee_calculator.dart';
 import '../../../domain/enums/session_enums.dart';
 import '../../../domain/usecases/session/session_usecases.dart';
 import 'club_vm/club_context_vm.dart';
@@ -916,9 +917,20 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
           final totalSessionCost = courtCost + totalShuttle + extraExpense;
 
           final femaleDiscount = double.tryParse(femaleDiscountCtl.text.replaceAll(',', ''))?.round() ?? 10000;
-          final totalPlayers = session.confirmedCount > 0 ? session.confirmedCount : (session.maxPlayers > 0 ? session.maxPlayers : 1);
-          final baseFeePerPlayer = (totalSessionCost / totalPlayers).round();
-          final femaleFee = (baseFeePerPlayer - femaleDiscount).clamp(0, baseFeePerPlayer);
+          final detail = ref.watch(sessionDetailViewModelProvider(widget.sessionId)).detail;
+          final confirmedPlayers = detail?.confirmedPlayers ?? [];
+          final totalPlayers = confirmedPlayers.isNotEmpty
+              ? confirmedPlayers.length
+              : (session.confirmedCount > 0 ? session.confirmedCount : (session.maxPlayers > 0 ? session.maxPlayers : 1));
+          final femaleCount = confirmedPlayers.where((p) => PlayerGenderHelper.isFemale(explicitGender: p.gender)).length;
+
+          final feeResult = SessionFeeCalculator.calculate(
+            totalCost: totalSessionCost.toInt(),
+            totalPlayers: totalPlayers,
+            femaleCount: femaleCount,
+            femaleDiscount: femaleDiscount,
+            roundRule: 1000,
+          );
 
           return SafeArea(
             child: Padding(
@@ -1101,6 +1113,17 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                               ),
                             ],
                           ),
+                          AppSpacing.gapH4,
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text('Tổng thu dự kiến (${feeResult.maleCount} Nam, ${feeResult.femaleCount} Nữ):', style: AppTypography.labelSmall.copyWith(color: colors.textMuted)),
+                              Text(
+                                '${NumberFormat('#,###').format(feeResult.totalExpectedCollection)} đ (Bảo toàn đủ)',
+                                style: AppTypography.labelSmall.copyWith(fontWeight: FontWeight.bold, color: colors.success),
+                              ),
+                            ],
+                          ),
                         ],
                       ),
                     ),
@@ -1127,16 +1150,16 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                             dense: true,
                             leading: Icon(Icons.group_rounded, color: colors.primary, size: 20),
                             title: Text('Người chơi (Nam & chung)', style: AppTypography.bodySmall.bold.colored(colors.textPrimary)),
-                            subtitle: Text('Chia đều toàn bộ chi phí ($totalPlayers người)', style: AppTypography.labelSmall.copyWith(color: colors.textMuted)),
-                            trailing: Text('${NumberFormat('#,###').format(baseFeePerPlayer)} đ', style: AppTypography.bodySmall.bold.colored(colors.primary)),
+                            subtitle: Text('Đã gánh bù ưu đãi Nữ để bảo toàn quỹ ($totalPlayers người)', style: AppTypography.labelSmall.copyWith(color: colors.textMuted)),
+                            trailing: Text('${NumberFormat('#,###').format(feeResult.maleFee)} đ', style: AppTypography.bodySmall.bold.colored(colors.primary)),
                           ),
                           const Divider(height: 1),
                           ListTile(
                             dense: true,
                             leading: const Icon(Icons.female_rounded, color: AppColors.pink, size: 20),
                             title: Text('Người chơi (Nữ)', style: AppTypography.bodySmall.bold.colored(colors.textPrimary)),
-                            subtitle: Text('Chia đều và giảm ${NumberFormat('#,###').format(femaleDiscount)} đ', style: AppTypography.labelSmall.copyWith(color: colors.textMuted)),
-                            trailing: Text('${NumberFormat('#,###').format(femaleFee)} đ', style: AppTypography.bodySmall.bold.colored(AppColors.pink)),
+                            subtitle: Text('Được ưu đãi giảm ${NumberFormat('#,###').format(femaleDiscount)} đ', style: AppTypography.labelSmall.copyWith(color: colors.textMuted)),
+                            trailing: Text('${NumberFormat('#,###').format(feeResult.femaleFee)} đ', style: AppTypography.bodySmall.bold.colored(AppColors.pink)),
                           ),
                         ],
                       ),
@@ -1610,57 +1633,152 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
           ),
           AppSpacing.gapH8,
 
-          // Quy mô sân & Tiền sân gốc
-          Row(
-            children: [
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: colors.surfaceSubtle,
-                    borderRadius: AppRadius.borderSm,
-                    border: Border.all(color: colors.cardBorder),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+          // Quy mô sân, Tiền sân gốc & Chi phí phát sinh
+          Builder(
+            builder: (context) {
+              final settlementAsync = isFeeDynamic ? ref.watch(sessionSettlementProvider(session.id)) : null;
+              final settlement = settlementAsync?.asData?.value;
+              final shuttleCost = (settlement != null && settlement.shuttlecockUsed > 0)
+                  ? settlement.shuttlecockUsed * settlement.shuttlecockPrice
+                  : 0;
+              final extraFee = settlement?.extraFee ?? 0;
+              final hasExtraCosts = shuttleCost > 0 || extraFee > 0;
+
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
                     children: [
-                      Text('Quy mô sân đấu', style: AppTypography.labelSmall.copyWith(color: colors.textMuted)),
-                      AppSpacing.gapH4,
-                      Text(
-                        '${session.courtCount} sân (${session.targetPlayerPerCourt} ng/sân)',
-                        style: AppTypography.bodySmall.copyWith(fontWeight: FontWeight.bold, color: colors.textPrimary),
+                      Expanded(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: colors.surfaceSubtle,
+                            borderRadius: AppRadius.borderSm,
+                            border: Border.all(color: colors.cardBorder),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('Quy mô sân đấu', style: AppTypography.labelSmall.copyWith(color: colors.textMuted)),
+                              AppSpacing.gapH4,
+                              Text(
+                                '${session.courtCount} sân (${session.targetPlayerPerCourt} ng/sân)',
+                                style: AppTypography.bodySmall.copyWith(fontWeight: FontWeight.bold, color: colors.textPrimary),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
-                    ],
-                  ),
-                ),
-              ),
-              if (isFeeDynamic) ...[
-                AppSpacing.gapW8,
-                Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: colors.surfaceSubtle,
-                      borderRadius: AppRadius.borderSm,
-                      border: Border.all(color: colors.cardBorder),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Tiền thuê sân', style: AppTypography.labelSmall.copyWith(color: colors.textMuted)),
-                        AppSpacing.gapH4,
-                        Text(
-                          session.courtRentalCost > 0 ? '${NumberFormat('#,###').format(session.courtRentalCost)} đ' : '0 đ (Chờ chốt)',
-                          style: AppTypography.bodySmall.copyWith(fontWeight: FontWeight.bold, color: colors.primary),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                      if (isFeeDynamic) ...[
+                        AppSpacing.gapW8,
+                        Expanded(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: colors.surfaceSubtle,
+                              borderRadius: AppRadius.borderSm,
+                              border: Border.all(color: colors.cardBorder),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('Tiền thuê sân', style: AppTypography.labelSmall.copyWith(color: colors.textMuted)),
+                                AppSpacing.gapH4,
+                                Text(
+                                  session.courtRentalCost > 0 ? '${NumberFormat('#,###').format(session.courtRentalCost)} đ' : '0 đ (Chờ chốt)',
+                                  style: AppTypography.bodySmall.copyWith(fontWeight: FontWeight.bold, color: colors.primary),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
                       ],
-                    ),
+                    ],
                   ),
-                ),
-              ],
-            ],
+                  if (isFeeDynamic && hasExtraCosts) ...[
+                    AppSpacing.gapH8,
+                    Row(
+                      children: [
+                        if (shuttleCost > 0)
+                          Expanded(
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                              decoration: BoxDecoration(
+                                color: colors.surfaceSubtle,
+                                borderRadius: AppRadius.borderSm,
+                                border: Border.all(color: colors.cardBorder),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      const Icon(Icons.sports_tennis_rounded, size: 12, color: AppColors.info),
+                                      AppSpacing.gapW4,
+                                      Expanded(
+                                        child: Text(
+                                          'Tiền cầu (${settlement!.shuttlecockUsed} quả)',
+                                          style: AppTypography.labelSmall.copyWith(color: colors.textMuted),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  AppSpacing.gapH4,
+                                  Text(
+                                    '${NumberFormat('#,###').format(shuttleCost)} đ',
+                                    style: AppTypography.bodySmall.copyWith(fontWeight: FontWeight.bold, color: colors.textPrimary),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        if (shuttleCost > 0 && extraFee > 0) AppSpacing.gapW8,
+                        if (extraFee > 0)
+                          Expanded(
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                              decoration: BoxDecoration(
+                                color: colors.surfaceSubtle,
+                                borderRadius: AppRadius.borderSm,
+                                border: Border.all(color: colors.cardBorder),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Icon(Icons.local_drink_rounded, size: 12, color: colors.warning),
+                                      AppSpacing.gapW4,
+                                      Expanded(
+                                        child: Text(
+                                          'Phụ phí phát sinh',
+                                          style: AppTypography.labelSmall.copyWith(color: colors.textMuted),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  AppSpacing.gapH4,
+                                  Text(
+                                    '${NumberFormat('#,###').format(extraFee)} đ',
+                                    style: AppTypography.bodySmall.copyWith(fontWeight: FontWeight.bold, color: colors.textPrimary),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ],
+                ],
+              );
+            },
           ),
           AppSpacing.gapH12,
 
@@ -1939,8 +2057,27 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                 else if (isFeeDynamic)
                   Builder(
                     builder: (context) {
-                      final confirmedCount = session.confirmedCount > 0 ? session.confirmedCount : (session.maxPlayers > 0 ? session.maxPlayers : 1);
-                      final actualFinalFee = (session.courtRentalCost / confirmedCount).round();
+                      final detail = ref.watch(sessionDetailViewModelProvider(widget.sessionId)).detail;
+                      final confirmedPlayers = detail?.confirmedPlayers ?? [];
+                      final confirmedCount = confirmedPlayers.isNotEmpty
+                          ? confirmedPlayers.length
+                          : (session.confirmedCount > 0 ? session.confirmedCount : (session.maxPlayers > 0 ? session.maxPlayers : 1));
+                      final femaleCount = confirmedPlayers.where((p) => PlayerGenderHelper.isFemale(explicitGender: p.gender)).length;
+                      final disc = feeRule?.femaleDiscountDaily.toInt() ?? 10000;
+
+                      final settlementAsync = ref.watch(sessionSettlementProvider(session.id));
+                      final settlement = settlementAsync.asData?.value;
+                      final totalCost = settlement?.totalCost ?? session.courtRentalCost.round();
+
+                      final feeResult = SessionFeeCalculator.calculate(
+                        totalCost: totalCost,
+                        totalPlayers: confirmedCount,
+                        femaleCount: femaleCount,
+                        femaleDiscount: disc,
+                        roundRule: 1000,
+                      );
+
+                      final actualFinalFee = feeResult.maleFee;
                       final displayFee = isEnded && actualFinalFee > 0 ? actualFinalFee : (feePerPlayer > 0 ? feePerPlayer : 40000);
                       final feeTitle = isEnded ? 'Chia thực tế (Chốt)' : 'Chia đều tay vợt';
                       final feePrefix = isEnded ? '' : '~';
@@ -2009,7 +2146,9 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                                   ),
                                   AppSpacing.gapH4,
                                   Text(
-                                    '-${NumberFormat('#,###').format(feeRule?.femaleDiscountDaily.toInt() ?? 10000)} đ/người',
+                                    isEnded && feeResult.femaleFee > 0
+                                        ? '${NumberFormat('#,###').format(feeResult.femaleFee)} đ/người'
+                                        : '-${NumberFormat('#,###').format(disc)} đ/người',
                                     style: AppTypography.labelSmall.copyWith(color: AppColors.pink, fontWeight: FontWeight.bold),
                                   ),
                                 ],
@@ -2948,10 +3087,23 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                                     explicitGender: myConfirmedBooking?.gender,
                                   );
                                   final feeRule = ref.watch(clubFeeRuleProvider(session.groupId)).asData?.value;
-                                  final totalP = session.confirmedCount > 0 ? session.confirmedCount : (session.maxPlayers > 0 ? session.maxPlayers : 1);
-                                  final baseF = (session.courtRentalCost / totalP).round();
+                                  final confirmedPlayers = detail?.confirmedPlayers ?? [];
+                                  final totalP = confirmedPlayers.isNotEmpty
+                                      ? confirmedPlayers.length
+                                      : (session.confirmedCount > 0 ? session.confirmedCount : (session.maxPlayers > 0 ? session.maxPlayers : 1));
+                                  final femaleCount = confirmedPlayers.where((p) => PlayerGenderHelper.isFemale(explicitGender: p.gender)).length;
                                   final disc = feeRule?.femaleDiscountDaily.toInt() ?? 10000;
-                                  computedFee = isFem ? (baseF - disc).clamp(0, baseF) : baseF;
+                                  final totalCost = settlement?.totalCost ?? session.courtRentalCost.round();
+
+                                  final feeResult = SessionFeeCalculator.calculate(
+                                    totalCost: totalCost,
+                                    totalPlayers: totalP,
+                                    femaleCount: femaleCount,
+                                    femaleDiscount: disc,
+                                    roundRule: 1000,
+                                  );
+
+                                  computedFee = isFem ? feeResult.femaleFee : feeResult.maleFee;
                                 }
 
                                 final feeLabel = computedFee > 0 ? '${NumberFormat('#,###').format(computedFee)} đ' : '0 đ (Miễn phí)';

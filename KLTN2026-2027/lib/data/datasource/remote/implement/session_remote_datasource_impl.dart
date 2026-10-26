@@ -9,6 +9,7 @@ import '../../../dto/session/my_booking_item_dto.dart';
 import '../../../dto/session/session_booking_dto.dart';
 import '../../../dto/session/session_detail_dto.dart';
 import '../../../dto/session/session_dto.dart';
+import '../../../dto/session/session_settlement_dto.dart';
 import '../../../dto/session/update_session_request_dto.dart';
 import '../abstract/session_remote_datasource.dart';
 import '../base_remote_datasource.dart';
@@ -72,7 +73,7 @@ class SessionRemoteDataSourceImpl extends BaseRemoteDatasource implements Sessio
   @override
   Future<void> updateSessionStatus(String sessionId, String status) async {
     try {
-      await dio.patch(
+      await dio.put(
         AppConfig.sessionStatusPath(sessionId),
         data: {'status': status},
       );
@@ -132,12 +133,10 @@ class SessionRemoteDataSourceImpl extends BaseRemoteDatasource implements Sessio
   Future<SessionBookingDto?> getMyBooking(String sessionId) async {
     try {
       final response = await dio.get(AppConfig.sessionMyBookingPath(sessionId));
-      return handleResponse(response, (data) => SessionBookingDto.fromJson(data));
-    } on DioException catch (dioErr) {
-      if (dioErr.response?.statusCode == 404) {
-        return null;
-      }
-      throw handleError(dioErr);
+      return handleResponse(response, (data) {
+        if (data == null) return null;
+        return SessionBookingDto.fromJson(data);
+      });
     } catch (e) {
       throw handleError(e);
     }
@@ -175,12 +174,10 @@ class SessionRemoteDataSourceImpl extends BaseRemoteDatasource implements Sessio
   Future<GuestRecruitmentDto?> getSessionRecruitment(String sessionId) async {
     try {
       final response = await dio.get(AppConfig.sessionRecruitmentsPath(sessionId));
-      return handleResponse(response, (data) => GuestRecruitmentDto.fromJson(data));
-    } on DioException catch (dioErr) {
-      if (dioErr.response?.statusCode == 404) {
-        return null;
-      }
-      throw handleError(dioErr);
+      return handleResponse(response, (data) {
+        if (data == null) return null;
+        return GuestRecruitmentDto.fromJson(data);
+      });
     } catch (e) {
       throw handleError(e);
     }
@@ -232,6 +229,53 @@ class SessionRemoteDataSourceImpl extends BaseRemoteDatasource implements Sessio
   Future<void> cancelRecruitmentBooking(String recruitmentId) async {
     try {
       await dio.delete(AppConfig.cancelRecruitmentPath(recruitmentId));
+    } catch (e) {
+      throw handleError(e);
+    }
+  }
+
+  @override
+  Future<SessionSettlementDto> getSettlement(String sessionId) async {
+    try {
+      final response = await dio.get(AppConfig.sessionSettlementPath(sessionId));
+      return handleResponse(response, (data) => SessionSettlementDto.fromJson(data));
+    } catch (e) {
+      throw handleError(e);
+    }
+  }
+
+  @override
+  Future<SessionSettlementDto> calculateSettlement({
+    required String sessionId,
+    required int shuttlecockUsed,
+    required int shuttlecockPrice,
+    required int extraFee,
+    int? courtFee,
+  }) async {
+    try {
+      final response = await dio.post(
+        AppConfig.sessionSettlementPath(sessionId),
+        data: {
+          'shuttlecockUsed': shuttlecockUsed,
+          'shuttlecockPrice': shuttlecockPrice,
+          'extraFee': extraFee,
+          ...?courtFee == null ? null : {'courtFee': courtFee},
+        },
+      );
+      return handleResponse(response, (data) => SessionSettlementDto.fromJson(data));
+    } catch (e) {
+      throw handleError(e);
+    }
+  }
+
+  @override
+  Future<SessionSettlementDto> markMemberPaid({
+    required String sessionId,
+    required String userId,
+  }) async {
+    try {
+      final response = await dio.post(AppConfig.sessionMarkPaidPath(sessionId, userId));
+      return handleResponse(response, (data) => SessionSettlementDto.fromJson(data));
     } catch (e) {
       throw handleError(e);
     }
