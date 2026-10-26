@@ -10,6 +10,7 @@ import 'package:kltn2026_2027/app/theme/theme.dart';
 import '../../../app/provider.dart';
 import '../../../domain/enums/club_role.dart';
 import '../../../domain/entities/session/guest_recruitment.dart';
+import '../../../domain/entities/club/club_fee_rule.dart';
 import '../../../domain/entities/session/session.dart';
 import '../../../domain/entities/session/session_booking.dart';
 import '../../../domain/enums/session_enums.dart';
@@ -692,18 +693,27 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
           child: NestedScrollView(
             headerSliverBuilder: (context, innerBoxIsScrolled) => [
               SliverToBoxAdapter(
-                child: _buildSessionHeaderCard(
-                  session,
-                  detail.activeRecruitment,
-                  canManageSession,
-                  canRecruit,
-                  canDeleteSession,
-                  isHost,
-                  canOperateSession: canOperateSession,
-                  canOperateAttendance: canOperateAttendance,
-                  canOperateRotation: canOperateRotation,
-                  canOperateSettlement: canOperateSettlement,
-                  isMember: isMember,
+                child: Builder(
+                  builder: (context) {
+                    final feeRuleAsync = ref.watch(clubFeeRuleProvider(session.groupId));
+                    final feeRule = feeRuleAsync.asData?.value;
+                    final isFeeDynamic = feeRule?.isDynamic ?? true;
+                    return _buildSessionHeaderCard(
+                      session,
+                      detail.activeRecruitment,
+                      canManageSession,
+                      canRecruit,
+                      canDeleteSession,
+                      isHost,
+                      canOperateSession: canOperateSession,
+                      canOperateAttendance: canOperateAttendance,
+                      canOperateRotation: canOperateRotation,
+                      canOperateSettlement: canOperateSettlement,
+                      isMember: isMember,
+                      isFeeDynamic: isFeeDynamic,
+                      feeRule: feeRule,
+                    );
+                  },
                 ),
               ),
               SliverPersistentHeader(
@@ -1375,6 +1385,8 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
     required bool canOperateRotation,
     required bool canOperateSettlement,
     required bool isMember,
+    bool isFeeDynamic = true,
+    ClubFeeRule? feeRule,
   }) {
     final colors = context.colors;
     final now = DateTime.now();
@@ -1581,30 +1593,32 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                   ),
                 ),
               ),
-              AppSpacing.gapW8,
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: colors.surfaceSubtle,
-                    borderRadius: AppRadius.borderSm,
-                    border: Border.all(color: colors.cardBorder),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Tiền thuê sân cố định', style: AppTypography.labelSmall.copyWith(color: colors.textMuted)),
-                      AppSpacing.gapH4,
-                      Text(
-                        session.courtRentalCost > 0 ? '${NumberFormat('#,###').format(session.courtRentalCost)} đ' : 'Miễn phí',
-                        style: AppTypography.bodySmall.copyWith(fontWeight: FontWeight.bold, color: colors.primary),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
+              if (isFeeDynamic) ...[
+                AppSpacing.gapW8,
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: colors.surfaceSubtle,
+                      borderRadius: AppRadius.borderSm,
+                      border: Border.all(color: colors.cardBorder),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Tiền thuê sân', style: AppTypography.labelSmall.copyWith(color: colors.textMuted)),
+                        AppSpacing.gapH4,
+                        Text(
+                          session.courtRentalCost > 0 ? '${NumberFormat('#,###').format(session.courtRentalCost)} đ' : '0 đ (Chờ chốt)',
+                          style: AppTypography.bodySmall.copyWith(fontWeight: FontWeight.bold, color: colors.primary),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
+              ],
             ],
           ),
           AppSpacing.gapH12,
@@ -1753,7 +1767,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
             ),
             AppSpacing.gapH12,
           ],
-          // Cơ chế phân bổ chi phí đa hệ số
+          // Cơ chế phân bổ chi phí
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
@@ -1780,7 +1794,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                         borderRadius: AppRadius.tag,
                       ),
                       child: Text(
-                        'Thực tế',
+                        isFeeDynamic ? 'Chia thực tế' : 'Định mức cố định',
                         style: AppTypography.labelSmall.bold.colored(colors.primary),
                       ),
                     ),
@@ -1788,125 +1802,201 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                 ),
                 AppSpacing.gapH8,
                 Text(
-                  'Tổng tiền cuối buổi = Tiền thuê sân + Tiền cầu bóc mới thực tế + Phụ phí.',
+                  isFeeDynamic
+                      ? 'Chia đều toàn bộ chi phí thực tế (sân, cầu bóc mới, phụ phí) cho các tay vợt. Ưu đãi giảm trừ thẳng cho Nữ.'
+                      : 'Áp dụng biểu giá cố định: Hội viên tháng (trọn gói), Hội viên ngày và Khách vãng lai tính theo mức cố định của CLB.',
                   style: AppTypography.bodySmall.copyWith(color: colors.textSecondary),
                 ),
                 AppSpacing.gapH8,
-                // Breakdown 3 nhóm đối tượng
-                Row(
-                  children: [
-                    Expanded(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: colors.cardBackground,
-                          borderRadius: AppRadius.borderSm,
-                          border: Border.all(color: colors.cardBorder),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Icon(Icons.verified_user_outlined, size: 12, color: colors.success),
-                                AppSpacing.gapW4,
-                                Expanded(
-                                  child: Text(
-                                    'HV Tháng',
-                                    style: AppTypography.labelSmall.copyWith(fontWeight: FontWeight.bold, color: colors.textPrimary),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
+                if (isFeeDynamic)
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: colors.cardBackground,
+                            borderRadius: AppRadius.borderSm,
+                            border: Border.all(color: colors.cardBorder),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(Icons.groups_rounded, size: 12, color: colors.primary),
+                                  AppSpacing.gapW4,
+                                  Expanded(
+                                    child: Text(
+                                      'Chia đều tay vợt',
+                                      style: AppTypography.labelSmall.copyWith(fontWeight: FontWeight.bold, color: colors.textPrimary),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
                                   ),
-                                ),
-                              ],
-                            ),
-                            AppSpacing.gapH4,
-                            Text(
-                              '0 đ (Trọn gói)',
-                              style: AppTypography.labelSmall.copyWith(color: colors.success, fontWeight: FontWeight.bold),
-                            ),
-                          ],
+                                ],
+                              ),
+                              AppSpacing.gapH4,
+                              Text(
+                                '~${NumberFormat('#,###').format(feePerPlayer > 0 ? feePerPlayer : 40000)} đ/người',
+                                style: AppTypography.labelSmall.copyWith(color: colors.primary, fontWeight: FontWeight.bold),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                    AppSpacing.gapW8,
-                    Expanded(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: colors.cardBackground,
-                          borderRadius: AppRadius.borderSm,
-                          border: Border.all(color: colors.cardBorder),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Icon(Icons.sports_tennis_rounded, size: 12, color: colors.primary),
-                                AppSpacing.gapW4,
-                                Expanded(
-                                  child: Text(
-                                    'HV Ngày',
-                                    style: AppTypography.labelSmall.copyWith(fontWeight: FontWeight.bold, color: colors.textPrimary),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
+                      AppSpacing.gapW8,
+                      Expanded(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: colors.cardBackground,
+                            borderRadius: AppRadius.borderSm,
+                            border: Border.all(color: colors.cardBorder),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  const Icon(Icons.female_rounded, size: 12, color: AppColors.pink),
+                                  AppSpacing.gapW4,
+                                  Expanded(
+                                    child: Text(
+                                      'Ưu đãi Nữ',
+                                      style: AppTypography.labelSmall.copyWith(fontWeight: FontWeight.bold, color: AppColors.pink),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
                                   ),
-                                ),
-                              ],
-                            ),
-                            AppSpacing.gapH4,
-                            Text(
-                              '~${NumberFormat('#,###').format(feePerPlayer)} đ (Ưu đãi Nữ)',
-                              style: AppTypography.labelSmall.copyWith(color: colors.primary, fontWeight: FontWeight.bold),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ],
+                                ],
+                              ),
+                              AppSpacing.gapH4,
+                              Text(
+                                '-${NumberFormat('#,###').format(feeRule?.femaleDiscountDaily.toInt() ?? 10000)} đ/người',
+                                style: AppTypography.labelSmall.copyWith(color: AppColors.pink, fontWeight: FontWeight.bold),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                    AppSpacing.gapW8,
-                    Expanded(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: colors.cardBackground,
-                          borderRadius: AppRadius.borderSm,
-                          border: Border.all(color: colors.cardBorder),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Icon(Icons.people_outline_rounded, size: 12, color: colors.warning),
-                                AppSpacing.gapW4,
-                                Expanded(
-                                  child: Text(
-                                    'Khách Giao Lưu',
-                                    style: AppTypography.labelSmall.copyWith(fontWeight: FontWeight.bold, color: colors.textPrimary),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
+                    ],
+                  )
+                else
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: colors.cardBackground,
+                            borderRadius: AppRadius.borderSm,
+                            border: Border.all(color: colors.cardBorder),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(Icons.verified_user_outlined, size: 12, color: colors.success),
+                                  AppSpacing.gapW4,
+                                  Expanded(
+                                    child: Text(
+                                      'HV Tháng',
+                                      style: AppTypography.labelSmall.copyWith(fontWeight: FontWeight.bold, color: colors.textPrimary),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
                                   ),
-                                ),
-                              ],
-                            ),
-                            AppSpacing.gapH4,
-                            Text(
-                              activeRecruitment != null
-                                  ? 'Nam: ${NumberFormat('#,###').format(activeRecruitment.maleCost)} đ | Nữ: ${NumberFormat('#,###').format(activeRecruitment.femaleCost)} đ'
-                                  : '~${NumberFormat('#,###').format(feePerPlayer > 0 ? (feePerPlayer * 1.25).round() : 50000)} đ',
-                              style: AppTypography.labelSmall.copyWith(color: colors.warning, fontWeight: FontWeight.bold),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ],
+                                ],
+                              ),
+                              AppSpacing.gapH4,
+                              Text(
+                                '0 đ (Trọn gói)',
+                                style: AppTypography.labelSmall.copyWith(color: colors.success, fontWeight: FontWeight.bold),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
+                      AppSpacing.gapW8,
+                      Expanded(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: colors.cardBackground,
+                            borderRadius: AppRadius.borderSm,
+                            border: Border.all(color: colors.cardBorder),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(Icons.sports_tennis_rounded, size: 12, color: colors.primary),
+                                  AppSpacing.gapW4,
+                                  Expanded(
+                                    child: Text(
+                                      'HV Ngày',
+                                      style: AppTypography.labelSmall.copyWith(fontWeight: FontWeight.bold, color: colors.textPrimary),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              AppSpacing.gapH4,
+                              Text(
+                                '${NumberFormat('#,###').format(feeRule?.dailyMemberFee.toInt() ?? 50000)} đ',
+                                style: AppTypography.labelSmall.copyWith(color: colors.primary, fontWeight: FontWeight.bold),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      AppSpacing.gapW8,
+                      Expanded(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: colors.cardBackground,
+                            borderRadius: AppRadius.borderSm,
+                            border: Border.all(color: colors.cardBorder),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(Icons.people_outline_rounded, size: 12, color: colors.warning),
+                                  AppSpacing.gapW4,
+                                  Expanded(
+                                    child: Text(
+                                      'Khách Giao Lưu',
+                                      style: AppTypography.labelSmall.copyWith(fontWeight: FontWeight.bold, color: colors.textPrimary),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              AppSpacing.gapH4,
+                              Text(
+                                activeRecruitment != null
+                                    ? '${NumberFormat('#,###').format(activeRecruitment.maleCost)} đ'
+                                    : '${NumberFormat('#,###').format(feeRule?.guestFee.toInt() ?? 70000)} đ',
+                                style: AppTypography.labelSmall.copyWith(color: colors.warning, fontWeight: FontWeight.bold),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
               ],
             ),
           ),

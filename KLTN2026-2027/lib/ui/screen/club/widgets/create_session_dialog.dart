@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:kltn2026_2027/app/theme/theme.dart';
+import '../../../../app/provider.dart';
 import '../../../../domain/usecases/session/session_usecases.dart';
 import '../session_vm/club_sessions_vm.dart';
 
@@ -407,16 +408,33 @@ class _CreateSessionDialogState extends ConsumerState<CreateSessionDialog> {
                 ),
                 AppSpacing.gapH12,
 
-                // Court Rental Cost
-                _buildLabel('Tổng chi phí thuê sân (VNĐ)'),
-                TextFormField(
-                  controller: _rentalCostCtl,
-                  keyboardType: TextInputType.number,
-                  decoration: _inputDecoration(
-                    hint: '300.000',
-                    suffixText: 'VNĐ',
-                    prefixIcon: Icons.payments_outlined,
-                  ),
+                // Court Rental Cost (An neu CLB dung phi co dinh)
+                Builder(
+                  builder: (context) {
+                    final feeRuleAsync = ref.watch(clubFeeRuleProvider(widget.clubId));
+                    final isDynamic = feeRuleAsync.asData?.value.isDynamic ?? true;
+                    if (!isDynamic) return const SizedBox.shrink();
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildLabel('Tổng chi phí thuê sân (VNĐ)'),
+                        TextFormField(
+                          controller: _rentalCostCtl,
+                          keyboardType: TextInputType.number,
+                          decoration: _inputDecoration(
+                            hint: '300.000',
+                            suffixText: 'VNĐ',
+                            prefixIcon: Icons.payments_outlined,
+                          ),
+                        ),
+                        AppSpacing.gapH4,
+                        Text(
+                          'CLB chia thực tế: tiền thuê sân sẽ được cộng với tiền cầu và phụ phí để chia đều cuối buổi.',
+                          style: AppTypography.bodySmall.colored(colors.textMuted),
+                        ),
+                      ],
+                    );
+                  },
                 ),
                 AppSpacing.gapH24,
 

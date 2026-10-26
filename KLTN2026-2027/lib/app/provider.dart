@@ -96,6 +96,7 @@ import '../domain/usecases/club/get_club_detail_usecase.dart';
 import '../domain/usecases/club/update_club_info_usecase.dart';
 import '../domain/usecases/club/update_club_schedules_usecase.dart';
 import '../domain/usecases/club/club_fee_rule_usecases.dart';
+import '../domain/entities/club/club_fee_rule.dart';
 import '../domain/usecases/auth/register_usecase.dart';
 
 // Session imports
@@ -596,6 +597,10 @@ final updateClubSchedulesUseCaseProvider = Provider<UpdateClubSchedulesUseCase>(
 // --- FR19: Hạch toán biểu phí và Quỹ nhóm ---
 final getClubFeeRuleUseCaseProvider = Provider<GetClubFeeRuleUseCase>((ref) {
   return GetClubFeeRuleUseCase(ref.watch(clubRepositoryProvider));
+});
+
+final clubFeeRuleProvider = FutureProvider.autoDispose.family<ClubFeeRule, String>((ref, clubId) async {
+  return ref.watch(getClubFeeRuleUseCaseProvider).execute(clubId);
 });
 
 final updateClubFeeRuleUseCaseProvider = Provider<UpdateClubFeeRuleUseCase>((ref) {
