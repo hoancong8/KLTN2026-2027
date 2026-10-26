@@ -1937,78 +1937,88 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                     },
                   )
                 else if (isFeeDynamic)
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: colors.cardBackground,
-                            borderRadius: AppRadius.borderSm,
-                            border: Border.all(color: colors.cardBorder),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
+                  Builder(
+                    builder: (context) {
+                      final confirmedCount = session.confirmedCount > 0 ? session.confirmedCount : (session.maxPlayers > 0 ? session.maxPlayers : 1);
+                      final actualFinalFee = (session.courtRentalCost / confirmedCount).round();
+                      final displayFee = isEnded && actualFinalFee > 0 ? actualFinalFee : (feePerPlayer > 0 ? feePerPlayer : 40000);
+                      final feeTitle = isEnded ? 'Chia thực tế (Chốt)' : 'Chia đều tay vợt';
+                      final feePrefix = isEnded ? '' : '~';
+
+                      return Row(
+                        children: [
+                          Expanded(
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: colors.cardBackground,
+                                borderRadius: AppRadius.borderSm,
+                                border: Border.all(color: colors.cardBorder),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Icon(Icons.groups_rounded, size: 12, color: colors.primary),
-                                  AppSpacing.gapW4,
-                                  Expanded(
-                                    child: Text(
-                                      'Chia đều tay vợt',
-                                      style: AppTypography.labelSmall.copyWith(fontWeight: FontWeight.bold, color: colors.textPrimary),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
+                                  Row(
+                                    children: [
+                                      Icon(Icons.groups_rounded, size: 12, color: colors.primary),
+                                      AppSpacing.gapW4,
+                                      Expanded(
+                                        child: Text(
+                                          feeTitle,
+                                          style: AppTypography.labelSmall.copyWith(fontWeight: FontWeight.bold, color: colors.textPrimary),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  AppSpacing.gapH4,
+                                  Text(
+                                    '$feePrefix${NumberFormat('#,###').format(displayFee)} đ/người',
+                                    style: AppTypography.labelSmall.copyWith(color: colors.primary, fontWeight: FontWeight.bold),
                                   ),
                                 ],
                               ),
-                              AppSpacing.gapH4,
-                              Text(
-                                '~${NumberFormat('#,###').format(feePerPlayer > 0 ? feePerPlayer : 40000)} đ/người',
-                                style: AppTypography.labelSmall.copyWith(color: colors.primary, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                          AppSpacing.gapW8,
+                          Expanded(
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: colors.cardBackground,
+                                borderRadius: AppRadius.borderSm,
+                                border: Border.all(color: colors.cardBorder),
                               ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      AppSpacing.gapW8,
-                      Expanded(
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: colors.cardBackground,
-                            borderRadius: AppRadius.borderSm,
-                            border: Border.all(color: colors.cardBorder),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Icon(Icons.female_rounded, size: 12, color: AppColors.pink),
-                                  AppSpacing.gapW4,
-                                  Expanded(
-                                    child: Text(
-                                      'Ưu đãi Nữ',
-                                      style: AppTypography.labelSmall.copyWith(fontWeight: FontWeight.bold, color: AppColors.pink),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
+                                  Row(
+                                    children: [
+                                      const Icon(Icons.female_rounded, size: 12, color: AppColors.pink),
+                                      AppSpacing.gapW4,
+                                      Expanded(
+                                        child: Text(
+                                          'Ưu đãi Nữ',
+                                          style: AppTypography.labelSmall.copyWith(fontWeight: FontWeight.bold, color: AppColors.pink),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  AppSpacing.gapH4,
+                                  Text(
+                                    '-${NumberFormat('#,###').format(feeRule?.femaleDiscountDaily.toInt() ?? 10000)} đ/người',
+                                    style: AppTypography.labelSmall.copyWith(color: AppColors.pink, fontWeight: FontWeight.bold),
                                   ),
                                 ],
                               ),
-                              AppSpacing.gapH4,
-                              Text(
-                                '-${NumberFormat('#,###').format(feeRule?.femaleDiscountDaily.toInt() ?? 10000)} đ/người',
-                                style: AppTypography.labelSmall.copyWith(color: AppColors.pink, fontWeight: FontWeight.bold),
-                              ),
-                            ],
+                            ),
                           ),
-                        ),
-                      ),
-                    ],
+                        ],
+                      );
+                    },
                   )
                 else
                   Row(
