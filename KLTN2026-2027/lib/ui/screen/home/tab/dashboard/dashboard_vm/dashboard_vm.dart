@@ -90,7 +90,7 @@ class DashboardViewModel extends StateNotifier<DashboardState> {
         isLoading: false,
         playerProfile: results[0] as PlayerProfile?,
         upcomingBookings: upcoming,
-        nearbyRecruitments: _filterAvailableRecruitments(rawRecruitments, upcoming),
+        nearbyRecruitments: _filterAvailableRecruitments(rawRecruitments, upcoming, myClubs),
         nearbyClubs: _filterUnjoinedClubs(rawClubs, myClubs),
         myClubs: myClubs,
       );
@@ -128,7 +128,7 @@ class DashboardViewModel extends StateNotifier<DashboardState> {
         isRefreshing: false,
         playerProfile: results[0] as PlayerProfile?,
         upcomingBookings: upcoming,
-        nearbyRecruitments: _filterAvailableRecruitments(rawRecruitments, upcoming),
+        nearbyRecruitments: _filterAvailableRecruitments(rawRecruitments, upcoming, myClubs),
         nearbyClubs: _filterUnjoinedClubs(rawClubs, myClubs),
         myClubs: myClubs,
       );
@@ -144,20 +144,43 @@ class DashboardViewModel extends StateNotifier<DashboardState> {
   List<GuestRecruitment> _filterAvailableRecruitments(
     List<GuestRecruitment> recruitments,
     List<MyBookingItem> bookings,
+    List<MyClub> myClubs,
   ) {
     final bookedSessionIds = bookings
         .where((b) => !b.isEnded && b.bookingStatus != BookingStatus.absent)
         .map((b) => b.sessionId)
         .toSet();
-    return recruitments.where((r) => !bookedSessionIds.contains(r.sessionId)).toList();
+    final joinedClubNames = myClubs
+        .map((c) => c.clubName.trim().toLowerCase())
+        .where((s) => s.isNotEmpty)
+        .toSet();
+
+    return recruitments.where((r) {
+      if (bookedSessionIds.contains(r.sessionId)) return false;
+      final clubName = r.clubName.trim().toLowerCase();
+      if (clubName.isNotEmpty && joinedClubNames.contains(clubName)) return false;
+      return true;
+    }).toList();
   }
 
   List<ExploreClub> _filterUnjoinedClubs(
     List<ExploreClub> clubs,
     List<MyClub> myClubs,
   ) {
-    final joinedClubIds = myClubs.map((c) => c.clubId).toSet();
-    return clubs.where((c) => !joinedClubIds.contains(c.id)).toList();
+    final joinedIds = myClubs.map((c) => c.clubId.trim().toLowerCase()).where((s) => s.isNotEmpty).toSet();
+    final joinedCodes = myClubs.map((c) => c.clubCode.trim().toUpperCase()).where((s) => s.isNotEmpty).toSet();
+    final joinedNames = myClubs.map((c) => c.clubName.trim().toLowerCase()).where((s) => s.isNotEmpty).toSet();
+
+    return clubs.where((c) {
+      final id = c.id.trim().toLowerCase();
+      final code = c.code.trim().toUpperCase();
+      final name = c.groupName.trim().toLowerCase();
+
+      if (id.isNotEmpty && joinedIds.contains(id)) return false;
+      if (code.isNotEmpty && joinedCodes.contains(code)) return false;
+      if (name.isNotEmpty && joinedNames.contains(name)) return false;
+      return true;
+    }).toList();
   }
 
   Future<PlayerProfile?> _fetchProfile() async {

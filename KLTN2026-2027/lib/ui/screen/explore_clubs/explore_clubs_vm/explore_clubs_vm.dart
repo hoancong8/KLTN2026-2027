@@ -7,6 +7,18 @@ import '../../../../domain/usecases/club/explore_clubs_usecase.dart';
 import '../../../../domain/usecases/club/get_my_clubs_usecase.dart';
 import 'explore_clubs_state.dart';
 
+class _JoinedClubIdentifiers {
+  final Set<String> ids;
+  final Set<String> codes;
+  final Set<String> names;
+
+  const _JoinedClubIdentifiers({
+    required this.ids,
+    required this.codes,
+    required this.names,
+  });
+}
+
 final exploreClubsViewModelProvider =
     StateNotifierProvider.autoDispose<ExploreClubsViewModel, ExploreClubsState>((ref) {
   return ExploreClubsViewModel(
@@ -38,13 +50,23 @@ class ExploreClubsViewModel extends StateNotifier<ExploreClubsState> {
           isRecruiting: state.isRecruitingOnly,
           searchTerm: state.searchTerm.trim().isNotEmpty ? state.searchTerm.trim() : null,
         )),
-        _fetchJoinedClubIds(),
+        _fetchJoinedClubIdentifiers(),
       ]);
 
       final clubs = results[0] as List<ExploreClub>;
-      final joinedClubIds = results[1] as Set<String>;
+      final joined = results[1] as _JoinedClubIdentifiers;
 
-      final availableClubs = clubs.where((c) => !joinedClubIds.contains(c.id)).toList();
+      final availableClubs = clubs.where((c) {
+        final id = c.id.trim().toLowerCase();
+        final code = c.code.trim().toUpperCase();
+        final name = c.groupName.trim().toLowerCase();
+
+        if (id.isNotEmpty && joined.ids.contains(id)) return false;
+        if (code.isNotEmpty && joined.codes.contains(code)) return false;
+        if (name.isNotEmpty && joined.names.contains(name)) return false;
+        return true;
+      }).toList();
+
       state = state.copyWith(isLoading: false, clubs: availableClubs);
     } on AppException catch (e) {
       state = state.copyWith(isLoading: false, error: e);
@@ -56,12 +78,25 @@ class ExploreClubsViewModel extends StateNotifier<ExploreClubsState> {
     }
   }
 
-  Future<Set<String>> _fetchJoinedClubIds() async {
+  Future<_JoinedClubIdentifiers> _fetchJoinedClubIdentifiers() async {
     try {
       final myClubs = await getMyClubsUseCase.execute();
-      return myClubs.map((c) => c.clubId).toSet();
+      return _JoinedClubIdentifiers(
+        ids: myClubs
+            .map((c) => c.clubId.trim().toLowerCase())
+            .where((s) => s.isNotEmpty)
+            .toSet(),
+        codes: myClubs
+            .map((c) => c.clubCode.trim().toUpperCase())
+            .where((s) => s.isNotEmpty)
+            .toSet(),
+        names: myClubs
+            .map((c) => c.clubName.trim().toLowerCase())
+            .where((s) => s.isNotEmpty)
+            .toSet(),
+      );
     } catch (_) {
-      return {};
+      return const _JoinedClubIdentifiers(ids: {}, codes: {}, names: {});
     }
   }
 

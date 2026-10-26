@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/legacy.dart';
 import '../../../../app/provider.dart';
 import '../../../../domain/entities/session/guest_recruitment.dart';
 import '../../../../domain/enums/session_enums.dart';
+import '../../../../domain/usecases/club/get_my_clubs_usecase.dart';
 import '../../../../domain/usecases/session/get_my_bookings_usecase.dart';
 import '../../../../domain/usecases/session/session_usecases.dart';
 import 'explore_recruitments_state.dart';
@@ -15,6 +16,7 @@ final exploreRecruitmentsViewModelProvider =
     joinRecruitmentUseCase: ref.watch(joinRecruitmentUseCaseProvider),
     cancelRecruitmentBookingUseCase: ref.watch(cancelRecruitmentBookingUseCaseProvider),
     getMyBookingsUseCase: ref.watch(getMyBookingsUseCaseProvider),
+    getMyClubsUseCase: ref.watch(getMyClubsUseCaseProvider),
   );
 });
 
@@ -23,12 +25,14 @@ class ExploreRecruitmentsViewModel extends StateNotifier<ExploreRecruitmentsStat
   final JoinRecruitmentUseCase joinRecruitmentUseCase;
   final CancelRecruitmentBookingUseCase cancelRecruitmentBookingUseCase;
   final GetMyBookingsUseCase getMyBookingsUseCase;
+  final GetMyClubsUseCase getMyClubsUseCase;
 
   ExploreRecruitmentsViewModel({
     required this.exploreRecruitmentsUseCase,
     required this.joinRecruitmentUseCase,
     required this.cancelRecruitmentBookingUseCase,
     required this.getMyBookingsUseCase,
+    required this.getMyClubsUseCase,
   }) : super(const ExploreRecruitmentsState(isLocating: false)) {
     explore();
   }
@@ -44,11 +48,19 @@ class ExploreRecruitmentsViewModel extends StateNotifier<ExploreRecruitmentsStat
           minSkillLevel: state.selectedSkillLevel,
         ),
         _fetchActiveBookedSessionIds(),
+        _fetchJoinedClubNames(),
       ]);
       final recruitments = results[0] as List<GuestRecruitment>;
       final bookedSessionIds = results[1] as Set<String>;
+      final joinedClubNames = results[2] as Set<String>;
 
-      final available = recruitments.where((r) => !bookedSessionIds.contains(r.sessionId)).toList();
+      final available = recruitments.where((r) {
+        if (bookedSessionIds.contains(r.sessionId)) return false;
+        final clubName = r.clubName.trim().toLowerCase();
+        if (clubName.isNotEmpty && joinedClubNames.contains(clubName)) return false;
+        return true;
+      }).toList();
+
       state = state.copyWith(isLoading: false, recruitments: available);
     } catch (e) {
       state = state.copyWith(isLoading: false, errorMessage: e.toString());
@@ -65,6 +77,18 @@ class ExploreRecruitmentsViewModel extends StateNotifier<ExploreRecruitmentsStat
       return bookings
           .where((b) => !b.isEnded && b.bookingStatus != BookingStatus.absent)
           .map((b) => b.sessionId)
+          .toSet();
+    } catch (_) {
+      return {};
+    }
+  }
+
+  Future<Set<String>> _fetchJoinedClubNames() async {
+    try {
+      final clubs = await getMyClubsUseCase.execute();
+      return clubs
+          .map((c) => c.clubName.trim().toLowerCase())
+          .where((s) => s.isNotEmpty)
           .toSet();
     } catch (_) {
       return {};
@@ -98,12 +122,14 @@ class ExploreRecruitmentsViewModel extends StateNotifier<ExploreRecruitmentsStat
   }
 
   Future<bool> cancelRecruitment(String recruitmentId) async {
+    state = state.copyWith(isJoining: true, errorMessage: null);
     try {
       await cancelRecruitmentBookingUseCase.execute(recruitmentId);
       await explore();
+      state = state.copyWith(isJoining: false, successMessage: 'Đã hủy suất giao lưu thành công!');
       return true;
     } catch (e) {
-      state = state.copyWith(errorMessage: e.toString());
+      state = state.copyWith(isJoining: false, errorMessage: e.toString());
       return false;
     }
   }
