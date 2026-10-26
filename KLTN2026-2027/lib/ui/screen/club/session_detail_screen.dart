@@ -272,13 +272,21 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
 
   void _showRecruitmentModal(BuildContext context, Session session) {
     final colors = context.colors;
+    final feeRule = ref.read(clubFeeRuleProvider(session.groupId)).asData?.value;
+    final isDynamic = feeRule?.feeMode.toUpperCase() == 'DYNAMIC';
     final slotsNeeded = (session.maxPlayers - session.confirmedCount).clamp(1, session.maxPlayers);
     final slotsCtl = TextEditingController(text: slotsNeeded.toString());
-    final suggestedCost = session.maxPlayers > 0 && session.courtRentalCost > 0
+    final dynamicSuggested = session.maxPlayers > 0 && session.courtRentalCost > 0
         ? ((session.courtRentalCost / session.maxPlayers) / 1000).ceil() * 1000
-        : 50000;
+        : 30000;
+    final suggestedCost = isDynamic
+        ? dynamicSuggested
+        : (feeRule?.guestFee.toInt() ?? (session.maxPlayers > 0 && session.courtRentalCost > 0
+            ? ((session.courtRentalCost / session.maxPlayers) / 1000).ceil() * 1000
+            : 50000));
     final costCtl = TextEditingController(text: suggestedCost.toString());
-    final suggestedFemaleCost = (suggestedCost - 10000).clamp(0, suggestedCost);
+    final femDiscount = feeRule?.femaleDiscountDaily.toInt() ?? 5000;
+    final suggestedFemaleCost = (suggestedCost - femDiscount).clamp(0, suggestedCost);
     final femaleCostCtl = TextEditingController(text: suggestedFemaleCost.toString());
     SkillLevel selectedLevel = SkillLevel.tb;
     double radiusKm = 5.0;
@@ -357,84 +365,116 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                   ],
                 ),
                 AppSpacing.gapH12,
-                Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
+                if (isDynamic)
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: colors.primary.withValues(alpha: 0.08),
+                      borderRadius: AppRadius.card,
+                      border: Border.all(color: colors.primary.withValues(alpha: 0.2)),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.pie_chart_rounded, size: 20, color: colors.primary),
+                        AppSpacing.gapW8,
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Icon(Icons.male_rounded, size: 16, color: colors.primary),
-                              AppSpacing.gapW4,
                               Text(
-                                'Phí Nam (VNĐ)',
-                                style: AppTypography.labelMedium.copyWith(color: colors.textPrimary),
+                                'Buổi chơi áp dụng chia đều chi phí thực tế',
+                                style: AppTypography.labelSmall.bold.colored(colors.primary),
+                              ),
+                              AppSpacing.gapH4,
+                              Text(
+                                'Chi phí ước tính ~${NumberFormat('#,###').format(dynamicSuggested)} đ/người (chia theo đầu người thực tế sau buổi chơi, Nữ ưu đãi: -${NumberFormat('#,###').format(femDiscount)} đ).',
+                                style: AppTypography.bodySmall.copyWith(color: colors.textSecondary, fontSize: 11),
                               ),
                             ],
                           ),
-                          AppSpacing.gapH4,
-                          TextFormField(
-                            controller: costCtl,
-                            keyboardType: TextInputType.number,
-                            style: AppTypography.bodyMedium.copyWith(color: colors.textPrimary),
-                            decoration: InputDecoration(
-                              hintText: '50,000',
-                              hintStyle: AppTypography.bodyMedium.copyWith(color: colors.textPlaceholder),
-                              filled: true,
-                              fillColor: colors.inputFill,
-                              border: OutlineInputBorder(
-                                borderRadius: AppRadius.input,
-                                borderSide: BorderSide(color: colors.inputBorder),
-                              ),
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                            ),
-                            onChanged: (val) {
-                              final maleCost = int.tryParse(val.replaceAll(',', '').trim()) ?? 0;
-                              final femCost = (maleCost - 10000).clamp(0, maleCost);
-                              femaleCostCtl.text = femCost.toString();
-                            },
-                          ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
-                    AppSpacing.gapW12,
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Icon(Icons.female_rounded, size: 16, color: colors.secondary),
-                              AppSpacing.gapW4,
-                              Text(
-                                'Phí Nữ (VNĐ)',
-                                style: AppTypography.labelMedium.copyWith(color: colors.textPrimary),
-                              ),
-                            ],
-                          ),
-                          AppSpacing.gapH4,
-                          TextFormField(
-                            controller: femaleCostCtl,
-                            keyboardType: TextInputType.number,
-                            style: AppTypography.bodyMedium.copyWith(color: colors.textPrimary),
-                            decoration: InputDecoration(
-                              hintText: '40,000',
-                              hintStyle: AppTypography.bodyMedium.copyWith(color: colors.textPlaceholder),
-                              filled: true,
-                              fillColor: colors.inputFill,
-                              border: OutlineInputBorder(
-                                borderRadius: AppRadius.input,
-                                borderSide: BorderSide(color: colors.inputBorder),
-                              ),
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  )
+                else
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(Icons.male_rounded, size: 16, color: colors.primary),
+                                AppSpacing.gapW4,
+                                Text(
+                                  'Phí Nam (VNĐ)',
+                                  style: AppTypography.labelMedium.copyWith(color: colors.textPrimary),
+                                ),
+                              ],
                             ),
-                          ),
-                        ],
+                            AppSpacing.gapH4,
+                            TextFormField(
+                              controller: costCtl,
+                              keyboardType: TextInputType.number,
+                              style: AppTypography.bodyMedium.copyWith(color: colors.textPrimary),
+                              decoration: InputDecoration(
+                                hintText: '50,000',
+                                hintStyle: AppTypography.bodyMedium.copyWith(color: colors.textPlaceholder),
+                                filled: true,
+                                fillColor: colors.inputFill,
+                                border: OutlineInputBorder(
+                                  borderRadius: AppRadius.input,
+                                  borderSide: BorderSide(color: colors.inputBorder),
+                                ),
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                              ),
+                              onChanged: (val) {
+                                final maleCost = int.tryParse(val.replaceAll(',', '').trim()) ?? 0;
+                                final femCost = (maleCost - femDiscount).clamp(0, maleCost);
+                                femaleCostCtl.text = femCost.toString();
+                              },
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
-                ),
+                      AppSpacing.gapW12,
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(Icons.female_rounded, size: 16, color: colors.secondary),
+                                AppSpacing.gapW4,
+                                Text(
+                                  'Phí Nữ (VNĐ)',
+                                  style: AppTypography.labelMedium.copyWith(color: colors.textPrimary),
+                                ),
+                              ],
+                            ),
+                            AppSpacing.gapH4,
+                            TextFormField(
+                              controller: femaleCostCtl,
+                              keyboardType: TextInputType.number,
+                              style: AppTypography.bodyMedium.copyWith(color: colors.textPrimary),
+                              decoration: InputDecoration(
+                                hintText: '40,000',
+                                hintStyle: AppTypography.bodyMedium.copyWith(color: colors.textPlaceholder),
+                                filled: true,
+                                fillColor: colors.inputFill,
+                                border: OutlineInputBorder(
+                                  borderRadius: AppRadius.input,
+                                  borderSide: BorderSide(color: colors.inputBorder),
+                                ),
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 AppSpacing.gapH16,
                 Text(
                   'Trình độ tối thiểu yêu cầu',
@@ -2381,37 +2421,79 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                           ],
                         ),
                         AppSpacing.gapH4,
-                        Wrap(
-                          crossAxisAlignment: WrapCrossAlignment.center,
-                          spacing: 8,
-                          runSpacing: 2,
-                          children: [
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(Icons.male_rounded, size: 14, color: colors.primary),
-                                Text(
-                                  'Nam: ${NumberFormat('#,###').format(activeRecruitment.maleCost)} đ',
-                                  style: AppTypography.bodySmall.copyWith(fontWeight: FontWeight.bold, color: colors.textPrimary),
-                                ),
-                              ],
-                            ),
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(Icons.female_rounded, size: 14, color: colors.secondary),
-                                Text(
-                                  'Nữ: ${NumberFormat('#,###').format(activeRecruitment.femaleCost)} đ',
-                                  style: AppTypography.bodySmall.copyWith(fontWeight: FontWeight.bold, color: colors.textPrimary),
-                                ),
-                              ],
-                            ),
-                            Text(
-                              '• Yêu cầu: ${activeRecruitment.minSkillLevel.displayName}',
-                              style: AppTypography.bodySmall.copyWith(color: colors.textSecondary),
-                            ),
-                          ],
-                        ),
+                        if (isFeeDynamic) ...[
+                          Wrap(
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            spacing: 8,
+                            runSpacing: 2,
+                            children: [
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.pie_chart_rounded, size: 14, color: colors.primary),
+                                  AppSpacing.gapW4,
+                                  Text(
+                                    'Chia đều thực tế (~${NumberFormat('#,###').format(feePerPlayer > 0 ? feePerPlayer : 40000)} đ/người)',
+                                    style: AppTypography.bodySmall.copyWith(fontWeight: FontWeight.bold, color: colors.textPrimary),
+                                  ),
+                                ],
+                              ),
+                              Builder(
+                                builder: (context) {
+                                  final femDisc = feeRule?.femaleDiscountDaily.toInt() ?? 10000;
+                                  if (femDisc <= 0) return const SizedBox.shrink();
+                                  return Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(Icons.female_rounded, size: 14, color: AppColors.pink),
+                                      AppSpacing.gapW4,
+                                      Text(
+                                        'Nữ: -${NumberFormat('#,###').format(femDisc)} đ',
+                                        style: AppTypography.bodySmall.copyWith(fontWeight: FontWeight.bold, color: AppColors.pink),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              ),
+                              Text(
+                                '• Yêu cầu: ${activeRecruitment.minSkillLevel.displayName}',
+                                style: AppTypography.bodySmall.copyWith(color: colors.textSecondary),
+                              ),
+                            ],
+                          ),
+                        ] else ...[
+                          Wrap(
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            spacing: 8,
+                            runSpacing: 2,
+                            children: [
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.male_rounded, size: 14, color: colors.primary),
+                                  Text(
+                                    'Nam: ${NumberFormat('#,###').format(activeRecruitment.maleCost)} đ',
+                                    style: AppTypography.bodySmall.copyWith(fontWeight: FontWeight.bold, color: colors.textPrimary),
+                                  ),
+                                ],
+                              ),
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.female_rounded, size: 14, color: colors.secondary),
+                                  Text(
+                                    'Nữ: ${NumberFormat('#,###').format(activeRecruitment.femaleCost)} đ',
+                                    style: AppTypography.bodySmall.copyWith(fontWeight: FontWeight.bold, color: colors.textPrimary),
+                                  ),
+                                ],
+                              ),
+                              Text(
+                                '• Yêu cầu: ${activeRecruitment.minSkillLevel.displayName}',
+                                style: AppTypography.bodySmall.copyWith(color: colors.textSecondary),
+                              ),
+                            ],
+                          ),
+                        ],
                       ],
                     ),
                   ),
