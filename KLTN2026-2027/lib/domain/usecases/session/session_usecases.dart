@@ -157,6 +157,8 @@ class CreateRecruitmentParams {
   final double sharedCost;
   final double scanRadiusKm;
   final bool hidePlayerList;
+  final double? femaleDiscount;
+  final double? femaleSharedCost;
 
   const CreateRecruitmentParams({
     required this.sessionId,
@@ -165,6 +167,8 @@ class CreateRecruitmentParams {
     this.sharedCost = 0.0,
     this.scanRadiusKm = 5.0,
     this.hidePlayerList = false,
+    this.femaleDiscount,
+    this.femaleSharedCost,
   });
 }
 
@@ -180,6 +184,8 @@ class CreateRecruitmentUseCase {
       sharedCost: params.sharedCost,
       scanRadiusKm: params.scanRadiusKm,
       hidePlayerList: params.hidePlayerList,
+      femaleDiscount: params.femaleDiscount,
+      femaleSharedCost: params.femaleSharedCost,
     );
   }
 }

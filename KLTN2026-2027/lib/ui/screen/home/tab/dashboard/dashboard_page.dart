@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import 'package:kltn2026_2027/app/consts/app_config.dart';
 import 'package:kltn2026_2027/app/provider.dart';
 import 'package:kltn2026_2027/app/provider/localization_provider.dart';
@@ -777,7 +778,7 @@ class DashboardPage extends ConsumerWidget {
             ),
             child: Center(
               child: Text(
-                'Chưa có bài đăng tuyển người quanh khu vực',
+                'Chưa có buổi nào tuyển vãng lai quanh đây',
                 style: AppTypography.bodySmall.copyWith(color: colors.textSecondary),
               ),
             ),
@@ -904,6 +905,34 @@ class DashboardPage extends ConsumerWidget {
                         style: AppTypography.bodySmall.copyWith(color: colors.textSecondary),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+                AppSpacing.gapH4,
+                Row(
+                  children: [
+                    Icon(Icons.payments_outlined, size: 13, color: colors.textSecondary),
+                    AppSpacing.gapW4,
+                    Text(
+                      'Tiền sân: ',
+                      style: AppTypography.labelSmall.copyWith(color: colors.textSecondary),
+                    ),
+                    Icon(Icons.male_rounded, size: 13, color: colors.primary),
+                    Text(
+                      '${NumberFormat('#,###').format(item.maleCost)} đ',
+                      style: AppTypography.labelSmall.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: colors.primary,
+                      ),
+                    ),
+                    AppSpacing.gapW8,
+                    Icon(Icons.female_rounded, size: 13, color: colors.secondary),
+                    Text(
+                      '${NumberFormat('#,###').format(item.femaleCost)} đ',
+                      style: AppTypography.labelSmall.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: colors.secondary,
                       ),
                     ),
                   ],

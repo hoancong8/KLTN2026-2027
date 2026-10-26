@@ -16,6 +16,8 @@ class GuestRecruitmentDto {
   final String broadcastAt;
   final double? distanceKm;
   final bool hidePlayerList;
+  final double? femaleDiscount;
+  final double? femaleSharedCost;
 
   GuestRecruitmentDto({
     required this.id,
@@ -33,6 +35,8 @@ class GuestRecruitmentDto {
     required this.broadcastAt,
     this.distanceKm,
     this.hidePlayerList = false,
+    this.femaleDiscount,
+    this.femaleSharedCost,
   });
 
   static int _parseInt(dynamic value) {
@@ -73,6 +77,12 @@ class GuestRecruitmentDto {
       broadcastAt: json['broadcastAt']?.toString() ?? '',
       distanceKm: json['distanceKm'] != null ? _parseDouble(json['distanceKm']) : null,
       hidePlayerList: _parseBool(json['hidePlayerList']),
+      femaleDiscount: json['femaleDiscount'] != null
+          ? _parseDouble(json['femaleDiscount'])
+          : (json['femaleDiscountGuest'] != null ? _parseDouble(json['femaleDiscountGuest']) : null),
+      femaleSharedCost: json['femaleSharedCost'] != null
+          ? _parseDouble(json['femaleSharedCost'])
+          : (json['femaleCost'] != null ? _parseDouble(json['femaleCost']) : null),
     );
   }
 
@@ -92,5 +102,7 @@ class GuestRecruitmentDto {
     'broadcastAt': broadcastAt,
     'distanceKm': distanceKm,
     'hidePlayerList': hidePlayerList,
+    if (femaleDiscount != null) 'femaleDiscount': femaleDiscount,
+    if (femaleSharedCost != null) 'femaleSharedCost': femaleSharedCost,
   };
 }

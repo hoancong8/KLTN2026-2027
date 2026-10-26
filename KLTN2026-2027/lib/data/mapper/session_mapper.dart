@@ -70,6 +70,8 @@ class SessionMapper {
       broadcastAt: (DateTime.tryParse(dto.broadcastAt) ?? DateTime.now()).toLocal(),
       distanceKm: dto.distanceKm,
       hidePlayerList: dto.hidePlayerList,
+      femaleDiscount: dto.femaleDiscount,
+      femaleSharedCost: dto.femaleSharedCost,
     );
   }
 

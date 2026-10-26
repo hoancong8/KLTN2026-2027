@@ -56,6 +56,8 @@ abstract class SessionRepository {
     double sharedCost = 0.0,
     double scanRadiusKm = 5.0,
     bool hidePlayerList = false,
+    double? femaleDiscount,
+    double? femaleSharedCost,
   });
 
   Future<GuestRecruitment?> getSessionRecruitment(String sessionId);

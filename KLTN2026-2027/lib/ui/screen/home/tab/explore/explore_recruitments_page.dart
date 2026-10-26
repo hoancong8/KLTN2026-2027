@@ -408,8 +408,8 @@ class _ExploreRecruitmentsPageState extends ConsumerState<ExploreRecruitmentsPag
                     _buildDetailRow(
                       context,
                       icon: Icons.payments_rounded,
-                      label: 'Chi phí chia sẻ',
-                      value: '${NumberFormat('#,###').format(match.sharedCost)} đ / người',
+                      label: 'Tiền sân',
+                      value: 'Nam: ${NumberFormat('#,###').format(match.maleCost)} đ • Nữ: ${NumberFormat('#,###').format(match.femaleCost)} đ',
                       valueColor: colors.primary,
                       isBold: true,
                     ),
@@ -433,7 +433,7 @@ class _ExploreRecruitmentsPageState extends ConsumerState<ExploreRecruitmentsPag
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        'Cam kết văn hóa sân cầu: Hãy đến sân đúng giờ để giao lưu cùng mọi người. Tiền sân & cầu thanh toán trực tiếp qua VietQR tại sân sau buổi chơi. Nếu có việc bận đột xuất, vui lòng hủy suất sớm để nhường chỗ cho người khác.',
+                        'Lưu ý: Vui lòng đến sân đúng giờ. Tiền sân thanh toán trực tiếp tại sân sau buổi chơi. Nếu bận đột xuất, vui lòng hủy chỗ sớm để nhường người khác.',
                         style: TextStyle(
                           fontSize: 12,
                           color: colors.textPrimary,
@@ -472,14 +472,14 @@ class _ExploreRecruitmentsPageState extends ConsumerState<ExploreRecruitmentsPag
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
                       icon: const Icon(Icons.check_circle_rounded, size: 18),
-                      label: const Text('Xác Nhận Tham Gia', style: TextStyle(fontWeight: FontWeight.bold)),
+                      label: const Text('Đăng Ký Tham Gia', style: TextStyle(fontWeight: FontWeight.bold)),
                       onPressed: () async {
                         Navigator.of(ctx).pop();
                         final ok = await vm.joinRecruitment(match.id);
                         if (ok && context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: const Text('Nhận suất giao lưu thành công! Hãy đến sân đúng giờ nhé.'),
+                              content: const Text('Đăng ký tham gia thành công!'),
                               backgroundColor: colors.primary,
                               behavior: SnackBarBehavior.floating,
                             ),
@@ -877,24 +877,41 @@ class _RecruitmentMatchCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Chi phí:',
+                        'Tiền sân:',
                         style: TextStyle(fontSize: 10.5, color: colors.textMuted),
                       ),
+                      const SizedBox(height: 2),
                       Row(
-                        crossAxisAlignment: CrossAxisAlignment.baseline,
-                        textBaseline: TextBaseline.alphabetic,
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          Text(
-                            NumberFormat('#,###').format(match.sharedCost),
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: colors.primary,
-                            ),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.male_rounded, size: 13, color: colors.primary),
+                              Text(
+                                '${NumberFormat('#,###').format(match.maleCost)} đ',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.bold,
+                                  color: colors.primary,
+                                ),
+                              ),
+                            ],
                           ),
-                          Text(
-                            ' đ/người',
-                            style: TextStyle(fontSize: 11, color: colors.textMuted),
+                          AppSpacing.gapW8,
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.female_rounded, size: 13, color: colors.secondary),
+                              Text(
+                                '${NumberFormat('#,###').format(match.femaleCost)} đ',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.bold,
+                                  color: colors.secondary,
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
@@ -911,7 +928,7 @@ class _RecruitmentMatchCard extends StatelessWidget {
                       visualDensity: VisualDensity.compact,
                     ),
                     icon: const Icon(Icons.sports_tennis_rounded, size: 14),
-                    label: const Text('Nhận Suất Giao Lưu', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                    label: const Text('Tham gia ngay', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
                   ),
                 ],
               ),

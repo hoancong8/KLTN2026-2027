@@ -18,6 +18,8 @@ class GuestRecruitment {
   final DateTime broadcastAt;
   final double? distanceKm;
   final bool hidePlayerList;
+  final double? femaleDiscount;
+  final double? femaleSharedCost;
 
   const GuestRecruitment({
     required this.id,
@@ -35,8 +37,19 @@ class GuestRecruitment {
     required this.broadcastAt,
     this.distanceKm,
     this.hidePlayerList = false,
+    this.femaleDiscount,
+    this.femaleSharedCost,
   });
 
   bool get isActive => status == RecruitmentStatus.active;
   bool get isFilled => status == RecruitmentStatus.filled;
+
+  double get maleCost => sharedCost;
+  double get femaleCost {
+    if (femaleSharedCost != null && femaleSharedCost! > 0) {
+      return femaleSharedCost!;
+    }
+    final discount = femaleDiscount ?? 10000.0;
+    return (sharedCost - discount).clamp(0.0, sharedCost);
+  }
 }

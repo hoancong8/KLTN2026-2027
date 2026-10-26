@@ -6,6 +6,8 @@ class CreateRecruitmentRequestDto {
   final double sharedCost;
   final double scanRadiusKm;
   final bool hidePlayerList;
+  final double? femaleDiscount;
+  final double? femaleSharedCost;
 
   CreateRecruitmentRequestDto({
     required this.slotsNeeded,
@@ -13,6 +15,8 @@ class CreateRecruitmentRequestDto {
     this.sharedCost = 0.0,
     this.scanRadiusKm = 5.0,
     this.hidePlayerList = false,
+    this.femaleDiscount,
+    this.femaleSharedCost,
   });
 
   Map<String, dynamic> toJson() => {
@@ -21,5 +25,7 @@ class CreateRecruitmentRequestDto {
     'sharedCost': sharedCost,
     'scanRadiusKm': scanRadiusKm,
     'hidePlayerList': hidePlayerList,
+    if (femaleDiscount != null) 'femaleDiscount': femaleDiscount,
+    if (femaleSharedCost != null) 'femaleSharedCost': femaleSharedCost,
   };
 }
