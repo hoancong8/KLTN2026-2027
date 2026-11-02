@@ -10,6 +10,9 @@ class Session {
   final DateTime startTime;
   final DateTime endTime;
   final String courtLocation;
+  final String? address;
+  final double? lat;
+  final double? lng;
   final int courtCount;
   final int targetPlayerPerCourt;
   final int maxPlayers;
@@ -30,6 +33,9 @@ class Session {
     required this.startTime,
     required this.endTime,
     required this.courtLocation,
+    this.address,
+    this.lat,
+    this.lng,
     required this.courtCount,
     required this.targetPlayerPerCourt,
     required this.maxPlayers,

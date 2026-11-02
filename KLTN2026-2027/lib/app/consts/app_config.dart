@@ -17,7 +17,7 @@ class AppConfig {
   // URL mặc định theo environment và platform
   static String get _defaultBaseUrl {
     if (env == 'prod') {
-      return 'http://192.168.1.13:54796'; // Production (IP máy tính hiện tại)
+      return 'http://192.168.1.22:54796'; // Production (IP máy tính hiện tại)
     }
 
     if (kIsWeb) {

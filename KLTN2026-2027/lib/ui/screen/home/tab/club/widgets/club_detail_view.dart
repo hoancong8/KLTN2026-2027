@@ -31,10 +31,7 @@ class ClubDetailView extends ConsumerStatefulWidget {
   ConsumerState<ClubDetailView> createState() => _ClubDetailViewState();
 }
 
-class _ClubDetailViewState extends ConsumerState<ClubDetailView> with SingleTickerProviderStateMixin {
-  TabController? _tabController;
-  bool _canManageJoinRequests = false;
-
+class _ClubDetailViewState extends ConsumerState<ClubDetailView> {
   @override
   void initState() {
     super.initState();
@@ -43,27 +40,12 @@ class _ClubDetailViewState extends ConsumerState<ClubDetailView> with SingleTick
     });
   }
 
-  void _onTabChanged() {
-    if (_tabController != null && !_tabController!.indexIsChanging) {
-      if (_canManageJoinRequests && _tabController!.index == 3) {
-        ref.read(clubContextViewModelProvider.notifier).switchClub(widget.club.clubId);
-      }
-    }
-  }
-
   @override
   void didUpdateWidget(covariant ClubDetailView oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.club.clubId != widget.club.clubId) {
       ref.read(clubMembersViewModelProvider.notifier).loadForClub(widget.club.clubId);
     }
-  }
-
-  @override
-  void dispose() {
-    _tabController?.removeListener(_onTabChanged);
-    _tabController?.dispose();
-    super.dispose();
   }
 
   void _copyClubCode(BuildContext context) {
@@ -96,132 +78,132 @@ class _ClubDetailViewState extends ConsumerState<ClubDetailView> with SingleTick
             (ref.hasClubPermission('MEMBER.INFO.UPDATE') ||
                 ref.hasClubPermission('OPERATIONS.SCHEDULE.MANAGE') ||
                 ref.hasClubPermission('MEMBER.ROLE.MANAGE')));
-    _canManageJoinRequests = canManageJoinRequests;
 
     final expectedLength = canManageJoinRequests ? 5 : 4;
-    if (_tabController == null || _tabController!.length != expectedLength) {
-      _tabController?.removeListener(_onTabChanged);
-      _tabController?.dispose();
-      _tabController = TabController(length: expectedLength, vsync: this);
-      _tabController!.addListener(_onTabChanged);
-    }
 
-    return Column(
-      children: [
-        // 1. Club Header Banner (Avatar, Name, Role, Switch Context, Copy Code, QR)
-        _buildClubHeader(context, contextVm, isHost, canManageClub),
+    return DefaultTabController(
+      key: ValueKey('club_${widget.club.clubId}_$expectedLength'),
+      length: expectedLength,
+      child: Column(
+        children: [
+          // 1. Club Header Banner (Avatar, Name, Role, Switch Context, Copy Code, QR)
+          _buildClubHeader(context, contextVm, isHost, canManageClub),
 
-        // 2. Navigation Tabs
-        Container(
-          width: double.infinity,
-          decoration: BoxDecoration(
-            color: colors.cardBackground,
-            border: Border(bottom: BorderSide(color: colors.cardBorder)),
-          ),
-          child: TabBar(
-            controller: _tabController,
-            isScrollable: true,
-            tabAlignment: TabAlignment.start,
-            labelColor: colors.primary,
-            unselectedLabelColor: colors.textMuted,
-            indicatorColor: colors.primary,
-            indicatorWeight: 3,
-            labelStyle: AppTypography.titleSmall.bold,
-            unselectedLabelStyle: AppTypography.titleSmall,
-            tabs: [
-              const Tab(
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.sports_tennis_rounded, size: AppSpacing.iconSm),
-                    AppSpacing.gapW8,
-                    Text('Lịch Sinh Hoạt'),
-                  ],
-                ),
-              ),
-              const Tab(
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.people_alt_rounded, size: AppSpacing.iconSm),
-                    AppSpacing.gapW8,
-                    Text('Thành Viên'),
-                  ],
-                ),
-              ),
-              const Tab(
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.account_balance_wallet_rounded, size: AppSpacing.iconSm),
-                    AppSpacing.gapW8,
-                    Text('Sổ Quỹ'),
-                  ],
-                ),
-              ),
-              if (canManageJoinRequests)
+          // 2. Navigation Tabs
+          Container(
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: colors.cardBackground,
+              border: Border(bottom: BorderSide(color: colors.cardBorder)),
+            ),
+            child: TabBar(
+              onTap: (index) {
+                if (canManageJoinRequests && index == 3) {
+                  ref.read(clubContextViewModelProvider.notifier).switchClub(widget.club.clubId);
+                }
+              },
+              isScrollable: true,
+              tabAlignment: TabAlignment.start,
+              labelColor: colors.primary,
+              unselectedLabelColor: colors.textMuted,
+              indicatorColor: colors.primary,
+              indicatorWeight: 3,
+              labelStyle: AppTypography.titleSmall.bold,
+              unselectedLabelStyle: AppTypography.titleSmall,
+              tabs: [
                 const Tab(
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.how_to_reg_rounded, size: AppSpacing.iconSm),
+                      Icon(Icons.sports_tennis_rounded, size: AppSpacing.iconSm),
                       AppSpacing.gapW8,
-                      Text('Đơn Gia Nhập'),
+                      Text('Lịch Sinh Hoạt'),
                     ],
                   ),
                 ),
-              const Tab(
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.info_outline_rounded, size: AppSpacing.iconSm),
-                    AppSpacing.gapW8,
-                    Text('Giới Thiệu Nhóm'),
-                  ],
+                const Tab(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.people_alt_rounded, size: AppSpacing.iconSm),
+                      AppSpacing.gapW8,
+                      Text('Thành Viên'),
+                    ],
+                  ),
                 ),
-              ),
-            ],
-          ),
-        ),
-
-        // 3. Tab Views
-        Expanded(
-          child: TabBarView(
-            controller: _tabController!,
-            children: [
-              // Tab 1: Sessions (FR13)
-              ClubSessionsTab(
-                clubId: widget.club.clubId,
-                clubName: widget.club.clubName,
-                isHost: isHost,
-              ),
-
-              // Tab 2: Member List (Discord Roles)
-              membersState.isLoading
-                  ? Center(child: CircularProgressIndicator(color: colors.primary))
-                  : ClubMemberSection(
-                      members: membersState.members,
-                      isHost: isHost,
-                      vm: membersVm,
+                const Tab(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.account_balance_wallet_rounded, size: AppSpacing.iconSm),
+                      AppSpacing.gapW8,
+                      Text('Sổ Quỹ'),
+                    ],
+                  ),
+                ),
+                if (canManageJoinRequests)
+                  const Tab(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.how_to_reg_rounded, size: AppSpacing.iconSm),
+                        AppSpacing.gapW8,
+                        Text('Đơn Gia Nhập'),
+                      ],
                     ),
-
-              // Tab 3: Sổ Quỹ (FR22, UC19)
-              ClubLedgerTab(clubId: widget.club.clubId),
-
-              // Tab 3: Join Requests (Chỉ hiện khi có quyền duyệt)
-              if (canManageJoinRequests)
-                ClubJoinRequestsTab(clubId: widget.club.clubId),
-
-              // Tab 4: Overview & Schedules (FR07, FR13)
-              ClubOverviewTab(
-                clubId: widget.club.clubId,
-                clubCode: widget.club.clubCode,
-                userRole: widget.club.role,
-              ),
-            ],
+                  ),
+                const Tab(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.info_outline_rounded, size: AppSpacing.iconSm),
+                      AppSpacing.gapW8,
+                      Text('Giới Thiệu Nhóm'),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-      ],
+
+          // 3. Tab Views
+          Expanded(
+            child: TabBarView(
+              children: [
+                // Tab 1: Sessions (FR13)
+                ClubSessionsTab(
+                  clubId: widget.club.clubId,
+                  clubName: widget.club.clubName,
+                  isHost: isHost,
+                ),
+
+                // Tab 2: Member List (Discord Roles)
+                membersState.isLoading
+                    ? Center(child: CircularProgressIndicator(color: colors.primary))
+                    : ClubMemberSection(
+                        members: membersState.members,
+                        isHost: isHost,
+                        vm: membersVm,
+                      ),
+
+                // Tab 3: Sổ Quỹ (FR22, UC19)
+                ClubLedgerTab(clubId: widget.club.clubId),
+
+                // Tab 3: Join Requests (Chỉ hiện khi có quyền duyệt)
+                if (canManageJoinRequests)
+                  ClubJoinRequestsTab(clubId: widget.club.clubId),
+
+                // Tab 4: Overview & Schedules (FR07, FR13)
+                ClubOverviewTab(
+                  clubId: widget.club.clubId,
+                  clubCode: widget.club.clubCode,
+                  userRole: widget.club.role,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 

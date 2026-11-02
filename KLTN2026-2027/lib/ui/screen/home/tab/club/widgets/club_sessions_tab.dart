@@ -187,12 +187,11 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
               icon: const Icon(Icons.add_rounded),
               label: Text('Tạo buổi chơi', style: AppTypography.labelLarge.bold.colored(AppColors.white)),
               onPressed: () async {
-                final sessionId = await CreateSessionDialog.show(
-                  context,
-                  clubId: widget.clubId,
-                  clubName: widget.clubName,
+                final created = await context.push<bool>(
+                  AppConfig.createSessionRoutePath(widget.clubId),
+                  extra: {'clubName': widget.clubName},
                 );
-                if (sessionId != null && context.mounted) {
+                if (created == true && context.mounted) {
                   ref.read(clubSessionsViewModelProvider(widget.clubId).notifier).loadSessions();
                 }
               },

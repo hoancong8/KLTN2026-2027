@@ -30,6 +30,9 @@ class SessionRepositoryImpl implements SessionRepository {
     int? maxPlayers,
     DateTime? deadlineBooking,
     double courtRentalCost = 0.0,
+    String? address,
+    double? lat,
+    double? lng,
   }) async {
     final request = CreateSessionRequestDto(
       title: title,
@@ -41,6 +44,9 @@ class SessionRepositoryImpl implements SessionRepository {
       maxPlayers: maxPlayers,
       deadlineBooking: deadlineBooking?.toUtc().toIso8601String(),
       courtRentalCost: courtRentalCost,
+      address: address,
+      lat: lat,
+      lng: lng,
     );
     return await remote.createSession(clubId, request);
   }

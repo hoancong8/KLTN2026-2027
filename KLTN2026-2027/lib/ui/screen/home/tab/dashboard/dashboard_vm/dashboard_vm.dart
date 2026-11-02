@@ -7,7 +7,6 @@ import 'package:kltn2026_2027/domain/entities/club/my_club.dart';
 import 'package:kltn2026_2027/domain/entities/player_profile.dart';
 import 'package:kltn2026_2027/domain/entities/session/guest_recruitment.dart';
 import 'package:kltn2026_2027/domain/entities/session/my_booking_item.dart';
-import 'package:kltn2026_2027/domain/enums/session_enums.dart';
 import 'package:kltn2026_2027/domain/services/i_location_service.dart';
 import 'package:kltn2026_2027/domain/usecases/club/explore_clubs_usecase.dart';
 import 'package:kltn2026_2027/domain/usecases/club/get_my_clubs_usecase.dart';
@@ -90,7 +89,7 @@ class DashboardViewModel extends StateNotifier<DashboardState> {
         isLoading: false,
         playerProfile: results[0] as PlayerProfile?,
         upcomingBookings: upcoming,
-        nearbyRecruitments: _filterAvailableRecruitments(rawRecruitments, upcoming, myClubs),
+        nearbyRecruitments: rawRecruitments,
         nearbyClubs: _filterUnjoinedClubs(rawClubs, myClubs),
         myClubs: myClubs,
       );
@@ -128,7 +127,7 @@ class DashboardViewModel extends StateNotifier<DashboardState> {
         isRefreshing: false,
         playerProfile: results[0] as PlayerProfile?,
         upcomingBookings: upcoming,
-        nearbyRecruitments: _filterAvailableRecruitments(rawRecruitments, upcoming, myClubs),
+        nearbyRecruitments: rawRecruitments,
         nearbyClubs: _filterUnjoinedClubs(rawClubs, myClubs),
         myClubs: myClubs,
       );
@@ -139,28 +138,6 @@ class DashboardViewModel extends StateNotifier<DashboardState> {
         errorMessage: e.toString(),
       );
     }
-  }
-
-  List<GuestRecruitment> _filterAvailableRecruitments(
-    List<GuestRecruitment> recruitments,
-    List<MyBookingItem> bookings,
-    List<MyClub> myClubs,
-  ) {
-    final bookedSessionIds = bookings
-        .where((b) => !b.isEnded && b.bookingStatus != BookingStatus.absent)
-        .map((b) => b.sessionId)
-        .toSet();
-    final joinedClubNames = myClubs
-        .map((c) => c.clubName.trim().toLowerCase())
-        .where((s) => s.isNotEmpty)
-        .toSet();
-
-    return recruitments.where((r) {
-      if (bookedSessionIds.contains(r.sessionId)) return false;
-      final clubName = r.clubName.trim().toLowerCase();
-      if (clubName.isNotEmpty && joinedClubNames.contains(clubName)) return false;
-      return true;
-    }).toList();
   }
 
   List<ExploreClub> _filterUnjoinedClubs(

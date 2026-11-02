@@ -8,6 +8,9 @@ class SessionDto {
   final String startTime;
   final String endTime;
   final String courtLocation;
+  final String? address;
+  final double? lat;
+  final double? lng;
   final int courtCount;
   final int targetPlayerPerCourt;
   final int maxPlayers;
@@ -28,6 +31,9 @@ class SessionDto {
     required this.startTime,
     required this.endTime,
     required this.courtLocation,
+    this.address,
+    this.lat,
+    this.lng,
     required this.courtCount,
     required this.targetPlayerPerCourt,
     required this.maxPlayers,
@@ -90,6 +96,9 @@ class SessionDto {
       startTime: json['startTime']?.toString() ?? '',
       endTime: json['endTime']?.toString() ?? '',
       courtLocation: json['courtLocation']?.toString() ?? '',
+      address: json['address']?.toString(),
+      lat: json['lat'] != null ? _parseDouble(json['lat']) : null,
+      lng: json['lng'] != null ? _parseDouble(json['lng']) : null,
       courtCount: _parseInt(json['courtCount']),
       targetPlayerPerCourt: _parseInt(json['targetPlayerPerCourt']),
       maxPlayers: _parseInt(json['maxPlayers']),
@@ -112,6 +121,9 @@ class SessionDto {
     'startTime': startTime,
     'endTime': endTime,
     'courtLocation': courtLocation,
+    if (address != null) 'address': address,
+    if (lat != null) 'lat': lat,
+    if (lng != null) 'lng': lng,
     'courtCount': courtCount,
     'targetPlayerPerCourt': targetPlayerPerCourt,
     'maxPlayers': maxPlayers,

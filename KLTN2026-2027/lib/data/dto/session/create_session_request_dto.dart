@@ -10,6 +10,9 @@ class CreateSessionRequestDto {
   final int? maxPlayers;
   final String? deadlineBooking;
   final double courtRentalCost;
+  final String? address;
+  final double? lat;
+  final double? lng;
 
   CreateSessionRequestDto({
     required this.title,
@@ -21,6 +24,9 @@ class CreateSessionRequestDto {
     this.maxPlayers,
     this.deadlineBooking,
     this.courtRentalCost = 0.0,
+    this.address,
+    this.lat,
+    this.lng,
   });
 
   Map<String, dynamic> toJson() => {
@@ -33,5 +39,8 @@ class CreateSessionRequestDto {
     if (maxPlayers != null) 'maxPlayers': maxPlayers,
     if (deadlineBooking != null) 'deadlineBooking': deadlineBooking,
     'courtRentalCost': courtRentalCost,
+    if (address != null) 'address': address,
+    if (lat != null) 'lat': lat,
+    if (lng != null) 'lng': lng,
   };
 }

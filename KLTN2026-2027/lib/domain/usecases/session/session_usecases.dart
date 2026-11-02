@@ -17,6 +17,9 @@ class CreateSessionParams {
   final int? maxPlayers;
   final DateTime? deadlineBooking;
   final double courtRentalCost;
+  final String? address;
+  final double? lat;
+  final double? lng;
 
   const CreateSessionParams({
     required this.clubId,
@@ -29,6 +32,9 @@ class CreateSessionParams {
     this.maxPlayers,
     this.deadlineBooking,
     this.courtRentalCost = 0.0,
+    this.address,
+    this.lat,
+    this.lng,
   });
 }
 
@@ -48,6 +54,9 @@ class CreateSessionUseCase {
       maxPlayers: params.maxPlayers,
       deadlineBooking: params.deadlineBooking,
       courtRentalCost: params.courtRentalCost,
+      address: params.address,
+      lat: params.lat,
+      lng: params.lng,
     );
   }
 }

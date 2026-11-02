@@ -18,6 +18,9 @@ abstract class SessionRepository {
     int? maxPlayers,
     DateTime? deadlineBooking,
     double courtRentalCost = 0.0,
+    String? address,
+    double? lat,
+    double? lng,
   });
 
   Future<List<Session>> getClubSessions(String clubId);

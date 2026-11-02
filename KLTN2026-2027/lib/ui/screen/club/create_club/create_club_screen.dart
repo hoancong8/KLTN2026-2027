@@ -8,6 +8,7 @@ import 'package:kltn2026_2027/app/theme/theme.dart';
 import '../../../../domain/enums/session_enums.dart';
 import '../club_vm/club_context_vm.dart';
 import '../../home/tab/club/widgets/club_schedule_planner.dart';
+import '../widgets/map_location_picker_sheet.dart';
 
 class CreateClubScreen extends ConsumerStatefulWidget {
   const CreateClubScreen({super.key});
@@ -94,6 +95,24 @@ class _CreateClubScreenState extends ConsumerState<CreateClubScreen> {
         return 'Chủ Nhật';
       default:
         return 'Thứ $dayOfWeek';
+    }
+  }
+
+  Future<void> _pickLocationOnMap() async {
+    final result = await MapLocationPickerSheet.show(
+      context,
+      initialVenueName: _venueController.text.trim(),
+      initialAddress: _addressController.text.trim(),
+      initialLat: _lat,
+      initialLng: _lng,
+    );
+    if (result != null && mounted) {
+      setState(() {
+        _venueController.text = result.venueName;
+        _addressController.text = result.address;
+        _lat = result.latitude;
+        _lng = result.longitude;
+      });
     }
   }
 
@@ -622,23 +641,41 @@ class _CreateClubScreenState extends ConsumerState<CreateClubScreen> {
                     ],
                   ),
                 ),
-                OutlinedButton.icon(
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: AppColors.primary,
-                    minimumSize: const Size(0, 36),
-                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
-                    side: BorderSide(color: AppColors.primary.withValues(alpha: 0.4)),
-                    shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
-                  ),
-                  icon: _isGettingLocation
-                      ? const SizedBox(
-                          width: 14,
-                          height: 14,
-                          child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary),
-                        )
-                      : const Icon(Icons.my_location_rounded, size: 16),
-                  label: const Text('Lấy GPS'),
-                  onPressed: _isGettingLocation ? null : _getCurrentLocation,
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.primary,
+                        minimumSize: const Size(0, 36),
+                        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.sm),
+                        side: BorderSide(color: AppColors.primary.withValues(alpha: 0.4)),
+                        shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                      ),
+                      icon: const Icon(Icons.map_rounded, size: 16),
+                      label: const Text('Bản đồ'),
+                      onPressed: _pickLocationOnMap,
+                    ),
+                    const SizedBox(width: 6),
+                    OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.primary,
+                        minimumSize: const Size(0, 36),
+                        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.sm),
+                        side: BorderSide(color: AppColors.primary.withValues(alpha: 0.4)),
+                        shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                      ),
+                      icon: _isGettingLocation
+                          ? const SizedBox(
+                              width: 14,
+                              height: 14,
+                              child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary),
+                            )
+                          : const Icon(Icons.my_location_rounded, size: 16),
+                      label: const Text('GPS'),
+                      onPressed: _isGettingLocation ? null : _getCurrentLocation,
+                    ),
+                  ],
                 ),
               ],
             ),

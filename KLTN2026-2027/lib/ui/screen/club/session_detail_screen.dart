@@ -1479,77 +1479,92 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header Row: Club Tag + Status Badge
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
-                decoration: BoxDecoration(
-                  color: colors.primary.withValues(alpha: 0.1),
-                  borderRadius: AppRadius.tag,
-                  border: Border.all(color: colors.primary.withValues(alpha: 0.25)),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.shield_outlined, size: 14, color: colors.primary),
-                    AppSpacing.gapW4,
-                    Text(
-                      session.clubName,
-                      style: AppTypography.labelSmall.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: colors.primary,
+          // Header Row: Club Tag + Status Badge (Responsive Wrap to prevent overflow)
+          SizedBox(
+            width: double.infinity,
+            child: Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              alignment: WrapAlignment.spaceBetween,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                Container(
+                  constraints: const BoxConstraints(maxWidth: 220),
+                  padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: colors.primary.withValues(alpha: 0.1),
+                    borderRadius: AppRadius.tag,
+                    border: Border.all(color: colors.primary.withValues(alpha: 0.25)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.shield_outlined, size: 14, color: colors.primary),
+                      AppSpacing.gapW4,
+                      Flexible(
+                        child: Text(
+                          session.clubName,
+                          style: AppTypography.labelSmall.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: colors.primary,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
-                    ),
+                    ],
+                  ),
+                ),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 6,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    if (activeRecruitment != null)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: AppColors.roleViolet.withValues(alpha: 0.15),
+                          borderRadius: AppRadius.tag,
+                          border: Border.all(color: AppColors.roleViolet.withValues(alpha: 0.35)),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.radar_rounded, size: 12, color: AppColors.roleViolet),
+                            AppSpacing.gapW4,
+                            Text(
+                              'Tuyển khách giao lưu',
+                              style: AppTypography.labelSmall.bold.colored(AppColors.roleViolet),
+                            ),
+                          ],
+                        ),
+                      )
+                    else
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: colors.surfaceSubtle,
+                          borderRadius: AppRadius.tag,
+                          border: Border.all(color: colors.cardBorder),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.shield_outlined, size: 12, color: colors.textMuted),
+                            AppSpacing.gapW4,
+                            Text(
+                              'Nội bộ CLB',
+                              style: AppTypography.labelSmall.bold.colored(colors.textMuted),
+                            ),
+                          ],
+                        ),
+                      ),
+                    _buildStatusBadge(session.status, isEnded, isPlaying),
                   ],
                 ),
-              ),
-              const Spacer(),
-              if (activeRecruitment != null) ...[
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: AppColors.roleViolet.withValues(alpha: 0.15),
-                    borderRadius: AppRadius.tag,
-                    border: Border.all(color: AppColors.roleViolet.withValues(alpha: 0.35)),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.radar_rounded, size: 12, color: AppColors.roleViolet),
-                      AppSpacing.gapW4,
-                      Text(
-                        'Tuyển khách giao lưu',
-                        style: AppTypography.labelSmall.bold.colored(AppColors.roleViolet),
-                      ),
-                    ],
-                  ),
-                ),
-                AppSpacing.gapW8,
-              ] else ...[
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: colors.surfaceSubtle,
-                    borderRadius: AppRadius.tag,
-                    border: Border.all(color: colors.cardBorder),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.shield_outlined, size: 12, color: colors.textMuted),
-                      AppSpacing.gapW4,
-                      Text(
-                        'Nội bộ CLB',
-                        style: AppTypography.labelSmall.bold.colored(colors.textMuted),
-                      ),
-                    ],
-                  ),
-                ),
-                AppSpacing.gapW8,
               ],
-              _buildStatusBadge(session.status, isEnded, isPlaying),
-            ],
+            ),
           ),
           AppSpacing.gapH12,
 
@@ -1599,7 +1614,12 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
           // Court location with Copy action
           InkWell(
             onTap: () {
-              Clipboard.setData(ClipboardData(text: session.courtLocation));
+              final copyTarget = (session.address != null &&
+                      session.address!.isNotEmpty &&
+                      session.address != session.courtLocation)
+                  ? ' - '
+                  : session.courtLocation;
+              Clipboard.setData(ClipboardData(text: copyTarget));
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: const Text('Đã sao chép địa chỉ sân đấu vào bộ nhớ tạm'),
@@ -1612,21 +1632,46 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 4),
               child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(Icons.location_on_rounded, size: 16, color: colors.primary),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 2),
+                    child: Icon(Icons.location_on_rounded, size: 16, color: colors.primary),
+                  ),
                   AppSpacing.gapW8,
                   Expanded(
-                    child: Text(
-                      session.courtLocation,
-                      style: AppTypography.bodySmall.copyWith(
-                        fontWeight: FontWeight.w600,
-                        color: colors.textPrimary,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          session.courtLocation,
+                          style: AppTypography.bodySmall.copyWith(
+                            fontWeight: FontWeight.w600,
+                            color: colors.textPrimary,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        if (session.address != null &&
+                            session.address!.isNotEmpty &&
+                            session.address != session.courtLocation) ...[
+                          AppSpacing.gapH4,
+                          Text(
+                            session.address!,
+                            style: AppTypography.labelSmall.copyWith(
+                              color: colors.textMuted,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ],
                     ),
                   ),
-                  Icon(Icons.copy_rounded, size: 14, color: colors.textMuted),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 2),
+                    child: Icon(Icons.copy_rounded, size: 14, color: colors.textMuted),
+                  ),
                 ],
               ),
             ),

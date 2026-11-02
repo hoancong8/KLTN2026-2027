@@ -1,3 +1,4 @@
+import '../../ui/screen/club/create_session_screen.dart';
 import '../../ui/screen/club/session_operations/session_attendance_screen.dart';
 import '../../ui/screen/club/session_operations/session_rotation_screen.dart';
 import '../../ui/screen/club/session_operations/session_settlement_screen.dart';
@@ -141,6 +142,15 @@ GoRouter generateAppRouter(String initialRoute) {
         builder: (_, state) {
           final sessionId = state.pathParameters['sessionId'] ?? '';
           return SessionReviewsScreen(sessionId: sessionId);
+        },
+      ),
+      GoRoute(
+        path: '/session-create/:clubId',
+        builder: (_, state) {
+          final clubId = state.pathParameters['clubId'] ?? '';
+          final extra = state.extra as Map<String, dynamic>?;
+          final clubName = extra?['clubName'] as String? ?? '';
+          return CreateSessionScreen(clubId: clubId, clubName: clubName);
         },
       ),
     ],

@@ -159,7 +159,7 @@ def run_flutter_analyze(flutter_dir):
     print("[INFO] Running 'flutter analyze'...")
     try:
         res = subprocess.run(
-            ["flutter", "analyze"],
+            ["flutter", "analyze", "--no-pub"],
             cwd=flutter_dir,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
@@ -179,7 +179,7 @@ def run_flutter_test(flutter_dir):
     print("[INFO] Running 'flutter test'...")
     try:
         res = subprocess.run(
-            ["flutter", "test"],
+            ["flutter", "test", "--no-pub"],
             cwd=flutter_dir,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
