@@ -8,6 +8,7 @@ import 'package:kltn2026_2027/app/provider.dart';
 import 'package:kltn2026_2027/app/theme/theme.dart';
 import 'package:kltn2026_2027/app/provider/localization_provider.dart';
 import 'package:kltn2026_2027/app/l10n_gen/app_localizations.dart';
+import 'package:kltn2026_2027/app/l10n/flutter_app_messages.dart';
 import '../../../../../../app/consts/app_config.dart';
 import '../../../../../../domain/entities/session/session.dart';
 import '../../../../../../domain/enums/club_role.dart';
@@ -120,7 +121,12 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
       return Center(child: CircularProgressIndicator(color: colors.primary));
     }
 
-    if (state.errorMessage != null) {
+    if (state.error != null || state.errorMessage != null) {
+      final appMessages = FlutterAppMessages(l10n);
+      final errorDisplay = state.error?.resolve(appMessages) ??
+          state.errorMessage ??
+          l10n.error_system_retry;
+
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -130,7 +136,7 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
               Icon(Icons.error_outline_rounded, color: colors.error, size: 48),
               const SizedBox(height: 12),
               Text(
-                state.errorMessage!,
+                errorDisplay,
                 style: AppTypography.bodySmall.colored(colors.error),
                 textAlign: TextAlign.center,
               ),
@@ -138,7 +144,7 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
               ElevatedButton.icon(
                 onPressed: () => ref.read(clubSessionsViewModelProvider(widget.clubId).notifier).loadSessions(),
                 icon: const Icon(Icons.refresh, size: 18),
-                label: const Text('Thử lại'),
+                label: Text(l10n.com_retry),
               ),
             ],
           ),

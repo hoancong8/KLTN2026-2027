@@ -84,7 +84,12 @@ class AppExceptionHandler {
       if (statusCode >= 500) return ServerException(message: message, originalError: e);
     }
 
-    // 5. Các lỗi Network của Dio
+    // 5. Chặn rò rỉ lỗi database / SQL nội bộ ra ngoài giao diện
+    if (message != null && _isTechnicalError(message)) {
+      return const ServerException();
+    }
+
+    // 6. Các lỗi Network của Dio
     if (e.type == DioExceptionType.connectionTimeout ||
         e.type == DioExceptionType.receiveTimeout) {
       return const NetworkTimeoutException();
@@ -94,7 +99,19 @@ class AppExceptionHandler {
       return const ConnectionException();
     }
 
-    // 6. Fallback — dùng message nếu có, ngược lại base class trả errorSystem
+    // 7. Fallback — dùng message nếu có, ngược lại base class trả errorSystem
     return AppException(message: message, originalError: e);
+  }
+
+  static bool _isTechnicalError(String msg) {
+    final lower = msg.toLowerCase();
+    return RegExp(r'^\d{5}:').hasMatch(msg.trim()) ||
+        lower.contains('does not exist') ||
+        lower.contains('syntax error') ||
+        lower.contains('npgsql') ||
+        lower.contains('postgresexception') ||
+        lower.contains('position:') ||
+        lower.contains('sqlstate') ||
+        lower.contains('microsoft.entityframeworkcore');
   }
 }

@@ -2,6 +2,7 @@
 
 import 'package:flutter_riverpod/legacy.dart';
 import '../../../../app/provider.dart';
+import '../../../../app/utils/app_exception_handler.dart';
 import '../../../../domain/exceptions/app_exception.dart';
 import '../../../../domain/usecases/session/session_usecases.dart';
 import 'club_sessions_state.dart';
@@ -30,14 +31,19 @@ class ClubSessionsViewModel extends StateNotifier<ClubSessionsState> {
 
   Future<void> loadSessions() async {
     if (clubId.isEmpty) return;
-    state = state.copyWith(isLoading: true, errorMessage: null);
+    state = state.copyWith(isLoading: true, clearError: true);
     try {
       final sessions = await getClubSessionsUseCase.execute(clubId);
       if (!mounted) return;
-      state = state.copyWith(isLoading: false, sessions: sessions);
+      state = state.copyWith(isLoading: false, sessions: sessions, clearError: true);
     } catch (e) {
       if (!mounted) return;
-      state = state.copyWith(isLoading: false, errorMessage: _resolveErrorMessage(e));
+      final appException = AppExceptionHandler.handle(e);
+      state = state.copyWith(
+        isLoading: false,
+        error: appException,
+        errorMessage: _resolveErrorMessage(appException),
+      );
     }
   }
 
@@ -49,7 +55,11 @@ class ClubSessionsViewModel extends StateNotifier<ClubSessionsState> {
       return sessionId;
     } catch (e) {
       if (!mounted) return null;
-      state = state.copyWith(errorMessage: _resolveErrorMessage(e));
+      final appException = AppExceptionHandler.handle(e);
+      state = state.copyWith(
+        error: appException,
+        errorMessage: _resolveErrorMessage(appException),
+      );
       return null;
     }
   }
