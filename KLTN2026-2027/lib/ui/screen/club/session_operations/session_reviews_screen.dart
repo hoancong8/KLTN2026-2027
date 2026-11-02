@@ -88,7 +88,7 @@ class SessionReviewsScreen extends ConsumerWidget {
         elevation: 0.5,
         leading: IconButton(
           icon: Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: colors.textPrimary),
-          onPressed: () => context.pop(),
+          onPressed: () => context.canPop() ? context.pop() : context.go('/home'),
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(

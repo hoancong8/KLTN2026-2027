@@ -27,7 +27,7 @@ class ChangePasswordShared extends ConsumerWidget
             size: 18,
           ),
         ),
-        onPressed: () => context.pop(),
+        onPressed: () => context.canPop() ? context.pop() : context.go('/home'),
       ),
       title: Text(
         title,
