@@ -2,8 +2,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import '../../../../app/provider.dart';
 import '../../../../domain/entities/club/club_detail.dart';
+import '../../../../domain/entities/club/club_fee_rule.dart';
 import '../../../../domain/enums/session_enums.dart';
 import '../../../../domain/exceptions/app_exception.dart';
+import '../../../../domain/usecases/club/club_fee_rule_usecases.dart';
 import '../../../../domain/usecases/club/get_club_detail_usecase.dart';
 import '../../../../domain/usecases/club/join_request_usecases.dart';
 import '../../../../domain/usecases/club/switch_club_context_usecase.dart';
@@ -23,6 +25,8 @@ final clubDetailViewModelProvider = StateNotifierProvider.autoDispose
     switchClubContextUseCase: ref.watch(switchClubContextUseCaseProvider),
     updateClubInfoUseCase: ref.watch(updateClubInfoUseCaseProvider),
     updateClubSchedulesUseCase: ref.watch(updateClubSchedulesUseCaseProvider),
+    getClubFeeRuleUseCase: ref.watch(getClubFeeRuleUseCaseProvider),
+    updateClubFeeRuleUseCase: ref.watch(updateClubFeeRuleUseCaseProvider),
   );
 });
 
@@ -34,6 +38,8 @@ class ClubDetailViewModel extends StateNotifier<ClubDetailState> {
   final SwitchClubContextUseCase switchClubContextUseCase;
   final UpdateClubInfoUseCase updateClubInfoUseCase;
   final UpdateClubSchedulesUseCase updateClubSchedulesUseCase;
+  final GetClubFeeRuleUseCase getClubFeeRuleUseCase;
+  final UpdateClubFeeRuleUseCase updateClubFeeRuleUseCase;
 
   ClubDetailViewModel({
     required this.ref,
@@ -43,6 +49,8 @@ class ClubDetailViewModel extends StateNotifier<ClubDetailState> {
     required this.switchClubContextUseCase,
     required this.updateClubInfoUseCase,
     required this.updateClubSchedulesUseCase,
+    required this.getClubFeeRuleUseCase,
+    required this.updateClubFeeRuleUseCase,
   }) : super(const ClubDetailState()) {
     loadDetail();
   }
@@ -51,7 +59,13 @@ class ClubDetailViewModel extends StateNotifier<ClubDetailState> {
     state = state.copyWith(isLoading: true, error: null);
     try {
       final club = await getClubDetailUseCase.execute(clubId);
-      state = state.copyWith(isLoading: false, club: club);
+      ClubFeeRule? feeRule;
+      try {
+        feeRule = await getClubFeeRuleUseCase.execute(clubId);
+      } catch (_) {
+        // Fee rule might be optional or default
+      }
+      state = state.copyWith(isLoading: false, club: club, feeRule: feeRule);
     } on AppException catch (e) {
       state = state.copyWith(isLoading: false, error: e);
     } catch (e) {
@@ -156,6 +170,47 @@ class ClubDetailViewModel extends StateNotifier<ClubDetailState> {
       state = state.copyWith(
         isSubmitting: false,
         successMessage: 'Cập nhật lịch tuần CLB thành công!',
+      );
+      return true;
+    } on AppException catch (e) {
+      state = state.copyWith(isSubmitting: false, error: e);
+      return false;
+    } catch (e) {
+      state = state.copyWith(
+        isSubmitting: false,
+        error: AppException(message: e.toString()),
+      );
+      return false;
+    }
+  }
+
+  Future<bool> updateFeeRule({
+    required int feeMode,
+    required double monthlyFee,
+    required double dailyMemberFee,
+    required double guestFee,
+    required double femaleDiscountMonthly,
+    required double femaleDiscountDaily,
+    required double femaleDiscountGuest,
+    required int roundRule,
+  }) async {
+    state = state.copyWith(isSubmitting: true, error: null, successMessage: null);
+    try {
+      final updatedRule = await updateClubFeeRuleUseCase.execute(
+        clubId,
+        feeMode: feeMode,
+        monthlyFee: monthlyFee,
+        dailyMemberFee: dailyMemberFee,
+        guestFee: guestFee,
+        femaleDiscountMonthly: femaleDiscountMonthly,
+        femaleDiscountDaily: femaleDiscountDaily,
+        femaleDiscountGuest: femaleDiscountGuest,
+        roundRule: roundRule,
+      );
+      state = state.copyWith(
+        isSubmitting: false,
+        feeRule: updatedRule,
+        successMessage: 'Cập nhật biểu phí câu lạc bộ thành công!',
       );
       return true;
     } on AppException catch (e) {

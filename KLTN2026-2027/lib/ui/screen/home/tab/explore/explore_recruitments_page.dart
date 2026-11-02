@@ -28,7 +28,6 @@ class ExploreRecruitmentsPage extends ConsumerStatefulWidget {
 class _ExploreRecruitmentsPageState extends ConsumerState<ExploreRecruitmentsPage> {
   final _searchController = TextEditingController();
 
-  static const List<double> _quickRadii = [3.0, 5.0, 10.0, 20.0];
 
   @override
   void dispose() {
@@ -245,79 +244,7 @@ class _ExploreRecruitmentsPageState extends ConsumerState<ExploreRecruitmentsPag
           ),
           const SizedBox(height: 10),
 
-          // 2. GPS Location & Quick Radius Pills
-          Row(
-            children: [
-              // GPS indicator
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: colors.primaryContainer,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      state.isLocating ? Icons.sync_rounded : Icons.my_location_rounded,
-                      size: 13,
-                      color: colors.primary,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      state.isLocating ? 'Đang định vị' : 'GPS',
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
-                        color: colors.primary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 8),
-
-              // Radius Pills
-              Expanded(
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: _quickRadii.map((r) {
-                      final isSelected = (state.radiusKm - r).abs() < 0.1;
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 6),
-                        child: InkWell(
-                          onTap: () => vm.setRadius(r),
-                          borderRadius: BorderRadius.circular(20),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4.5),
-                            decoration: BoxDecoration(
-                              color: isSelected ? colors.primary : colors.cardBackground,
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(
-                                color: isSelected ? colors.primary : colors.cardBorder,
-                              ),
-                            ),
-                            child: Text(
-                              '${r.toStringAsFixed(0)} km',
-                              style: TextStyle(
-                                fontSize: 11.5,
-                                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                                color: isSelected ? AppColors.white : colors.textPrimary,
-                              ),
-                            ),
-                          ),
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-
-          // 3. Skill Level Chips
+          // Skill Level Chips
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
@@ -496,8 +423,8 @@ class _ExploreRecruitmentsPageState extends ConsumerState<ExploreRecruitmentsPag
                     _buildDetailRow(
                       context,
                       icon: Icons.payments_rounded,
-                      label: 'Chi phí chia sẻ',
-                      value: '${NumberFormat('#,###').format(match.sharedCost)} đ / người',
+                      label: 'Tiền sân',
+                      value: 'Nam: ${NumberFormat('#,###').format(match.maleCost)} đ • Nữ: ${NumberFormat('#,###').format(match.femaleCost)} đ',
                       valueColor: colors.primary,
                       isBold: true,
                     ),
@@ -521,7 +448,7 @@ class _ExploreRecruitmentsPageState extends ConsumerState<ExploreRecruitmentsPag
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        'Cam kết văn hóa sân cầu: Hãy đến sân đúng giờ để giao lưu cùng mọi người. Tiền sân & cầu thanh toán trực tiếp qua VietQR tại sân sau buổi chơi. Nếu có việc bận đột xuất, vui lòng hủy suất sớm để nhường chỗ cho người khác.',
+                        'Lưu ý: Vui lòng đến sân đúng giờ. Tiền sân thanh toán trực tiếp tại sân sau buổi chơi. Nếu bận đột xuất, vui lòng hủy chỗ sớm để nhường người khác.',
                         style: TextStyle(
                           fontSize: 12,
                           color: colors.textPrimary,
@@ -559,15 +486,15 @@ class _ExploreRecruitmentsPageState extends ConsumerState<ExploreRecruitmentsPag
                         padding: const EdgeInsets.symmetric(vertical: 13),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
-                      icon: const Icon(Icons.check_circle_rounded, size: 18),
-                      label: const Text('Xác Nhận Tham Gia', style: TextStyle(fontWeight: FontWeight.bold)),
+                      icon: const Icon(Icons.sports_tennis_rounded, size: 18),
+                      label: const Text('Nhận Suất Giao Lưu', style: TextStyle(fontWeight: FontWeight.bold)),
                       onPressed: () async {
                         Navigator.of(ctx).pop();
                         final ok = await vm.joinRecruitment(match.id);
                         if (ok && context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: const Text('Nhận suất giao lưu thành công! Hãy đến sân đúng giờ nhé.'),
+                              content: const Text('Nhận suất giao lưu thành công!'),
                               backgroundColor: colors.primary,
                               behavior: SnackBarBehavior.floating,
                             ),
@@ -645,14 +572,14 @@ class _ExploreRecruitmentsPageState extends ConsumerState<ExploreRecruitmentsPag
             ),
             const SizedBox(height: 16),
             Text(
-              isSearching ? 'Không Tìm Thấy Kèo Phù Hợp' : 'Chưa Tìm Thấy Kèo Giao Lưu Nào',
+              isSearching ? 'Không Tìm Thấy Kèo Giao Lưu Phù Hợp' : 'Chưa Tìm Thấy Kèo Giao Lưu Nào',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: colors.textPrimary),
             ),
             const SizedBox(height: 8),
             Text(
               isSearching
                   ? 'Không có bài tuyển khách nào khớp với từ khóa "${state.searchTerm}". Hãy thử từ khóa khác hoặc xóa lọc.'
-                  : 'Hiện không có buổi chơi nào tuyển khách trong bán kính ${state.radiusKm.toStringAsFixed(0)} km. Hãy thử mở rộng bán kính quét.',
+                  : 'Hiện chưa có bài tuyển khách giao lưu nào. Hãy thử tìm theo tên sân hoặc tải lại danh sách.',
               style: TextStyle(fontSize: 13, color: colors.textMuted, height: 1.4),
               textAlign: TextAlign.center,
             ),
@@ -668,16 +595,10 @@ class _ExploreRecruitmentsPageState extends ConsumerState<ExploreRecruitmentsPag
                 label: const Text('Xóa bộ lọc tìm kiếm'),
               )
             else
-              ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: colors.primary,
-                  foregroundColor: AppColors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 11),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                ),
-                onPressed: () => vm.setRadius(20.0),
-                icon: const Icon(Icons.zoom_out_map_rounded, size: 18),
-                label: const Text('Mở rộng bán kính 20km', style: TextStyle(fontWeight: FontWeight.bold)),
+              OutlinedButton.icon(
+                onPressed: vm.explore,
+                icon: const Icon(Icons.refresh_rounded, size: 18),
+                label: const Text('Tải lại danh sách'),
               ),
           ],
         ),
@@ -977,24 +898,42 @@ class _RecruitmentMatchCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Chi phí:',
+                          'Tiền sân:',
                           style: TextStyle(fontSize: 10.5, color: colors.textMuted),
                         ),
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.baseline,
-                          textBaseline: TextBaseline.alphabetic,
+                        const SizedBox(height: 2),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 2,
+                          crossAxisAlignment: WrapCrossAlignment.center,
                           children: [
-                            Text(
-                              NumberFormat('#,###').format(match.sharedCost),
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: colors.primary,
-                              ),
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.male_rounded, size: 13, color: colors.primary),
+                                Text(
+                                  '${NumberFormat("#,###").format(match.maleCost)} đ',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.bold,
+                                    color: colors.primary,
+                                  ),
+                                ),
+                              ],
                             ),
-                            Text(
-                              ' đ/người',
-                              style: TextStyle(fontSize: 11, color: colors.textMuted),
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.female_rounded, size: 13, color: colors.secondary),
+                                Text(
+                                  '${NumberFormat("#,###").format(match.femaleCost)} đ',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.bold,
+                                    color: colors.secondary,
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),
@@ -1013,7 +952,7 @@ class _RecruitmentMatchCard extends StatelessWidget {
                       visualDensity: VisualDensity.compact,
                     ),
                     icon: const Icon(Icons.sports_tennis_rounded, size: 14),
-                    label: const Text('Nhận Suất', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                    label: const Text('Tham gia ngay', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
                   ),
                 ],
               ),

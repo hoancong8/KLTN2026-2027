@@ -6,6 +6,9 @@ import '../../domain/entities/session/session_review.dart';
 import '../../domain/entities/session/session_rotation.dart';
 import '../../domain/entities/session/session_settlement.dart';
 import '../../domain/repositories/session_operations_repository.dart';
+import '../../domain/utils/session_fee_calculator.dart';
+import '../dto/session/session_settlement_dto.dart';
+import '../mapper/session_settlement_mapper.dart';
 
 class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
   final Dio dio;
@@ -607,12 +610,149 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
     return _syncRotationWithAttendance(sessionId);
   }
 
+  @override
+  Future<SessionRotationSnapshot> pausePlayer({
+    required String sessionId,
+    required String userId,
+    required bool isPaused,
+  }) async {
+    try {
+      await dio.put('/api/v1/sessions/$sessionId/rotation/players/$userId/pause', data: {'isPaused': isPaused});
+    } catch (_) {}
+
+    final current = await getRotation(sessionId);
+    final updatedQueue = current.queuePlayers.map((p) {
+      if (p.userId == userId) {
+        return RotationPlayer(
+          userId: p.userId,
+          fullName: p.fullName,
+          avatarUrl: p.avatarUrl,
+          skillLevel: p.skillLevel,
+          lastFinishedAt: p.lastFinishedAt,
+          restSecondsLeft: p.restSecondsLeft,
+          isPaused: isPaused,
+        );
+      }
+      return p;
+    }).toList();
+
+    final updated = SessionRotationSnapshot(
+      sessionId: current.sessionId,
+      sessionStatus: current.sessionStatus,
+      rotationVersion: current.rotationVersion + 1,
+      serverTime: DateTime.now(),
+      rotationStartedAt: current.rotationStartedAt,
+      canInitialize: current.canInitialize,
+      canGenerateProposals: current.canGenerateProposals,
+      readyCandidateCount: updatedQueue.where((p) => !p.isResting && !p.isPaused).length,
+      coolingDownCount: updatedQueue.where((p) => p.isResting || p.isPaused).length,
+      courts: current.courts,
+      queuePlayers: updatedQueue,
+    );
+    _rotationCache[sessionId] = updated;
+    return updated;
+  }
+
+  @override
+  Future<SessionRotationSnapshot> restoreProposal({
+    required String sessionId,
+    required String matchId,
+  }) async {
+    try {
+      await dio.post('/api/v1/sessions/$sessionId/matches/$matchId/restore-proposal');
+    } catch (_) {}
+
+    return getRotation(sessionId);
+  }
+
+  @override
+  Future<SessionRotationSnapshot> swapMatchPlayers({
+    required String sessionId,
+    required String matchId,
+    required List<String> teamAUserIds,
+    required List<String> teamBUserIds,
+  }) async {
+    try {
+      await dio.put(
+        '/api/v1/sessions/$sessionId/matches/$matchId/manual-lineup',
+        data: {
+          'teamA': teamAUserIds,
+          'teamB': teamBUserIds,
+        },
+      );
+    } catch (_) {}
+
+    final current = await getRotation(sessionId);
+    final allPlayersMap = {
+      for (final c in current.courts) ...{
+        for (final p in [...c.teamA, ...c.teamB]) p.userId: p
+      },
+      for (final p in current.queuePlayers) p.userId: p,
+    };
+
+    final newTeamA = teamAUserIds.map((id) => allPlayersMap[id]).whereType<RotationPlayer>().toList();
+    final newTeamB = teamBUserIds.map((id) => allPlayersMap[id]).whereType<RotationPlayer>().toList();
+
+    final updatedCourts = current.courts.map((c) {
+      if (c.matchId == matchId) {
+        return CourtMatch(
+          matchId: c.matchId,
+          courtNumber: c.courtNumber,
+          state: c.state,
+          startedAt: c.startedAt,
+          teamA: newTeamA,
+          teamB: newTeamB,
+          isManualSwapped: true,
+        );
+      }
+      return c;
+    }).toList();
+
+    final usedUserIds = <String>{
+      for (final c in updatedCourts) ...{
+        for (final p in [...c.teamA, ...c.teamB]) p.userId
+      }
+    };
+
+    final updatedQueue = current.queuePlayers.where((p) => !usedUserIds.contains(p.userId)).toList();
+
+    final updated = SessionRotationSnapshot(
+      sessionId: current.sessionId,
+      sessionStatus: current.sessionStatus,
+      rotationVersion: current.rotationVersion + 1,
+      serverTime: DateTime.now(),
+      rotationStartedAt: current.rotationStartedAt,
+      canInitialize: current.canInitialize,
+      canGenerateProposals: current.canGenerateProposals,
+      readyCandidateCount: updatedQueue.where((p) => !p.isResting && !p.isPaused).length,
+      coolingDownCount: updatedQueue.where((p) => p.isResting || p.isPaused).length,
+      courts: updatedCourts,
+      queuePlayers: updatedQueue,
+    );
+    _rotationCache[sessionId] = updated;
+    return updated;
+  }
+
   // ==========================================
   // FR18 - FR21: Hạch toán vật tư & Chia tiền VietQR
   // ==========================================
 
   @override
   Future<SessionSettlement> getSettlement(String sessionId) async {
+    try {
+      final res = await dio.get('/api/v1/sessions/$sessionId/settlement');
+      if (res.statusCode == 200 && res.data != null) {
+        final payload = res.data is Map<String, dynamic> && res.data.containsKey('result') ? res.data['result'] : res.data;
+        if (payload is Map<String, dynamic>) {
+          final entity = SessionSettlementDto.fromJson(payload).toEntity();
+          _settlementCache[sessionId] = entity;
+          return entity;
+        }
+      }
+    } catch (_) {
+      // Fallback local cache
+    }
+
     if (!_settlementCache.containsKey(sessionId)) {
       _settlementCache[sessionId] = SessionSettlement(
         sessionId: sessionId,
@@ -684,9 +824,52 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
     required int shuttlecockUsed,
     required int extraFee,
   }) async {
+    try {
+      final res = await dio.post(
+        '/api/v1/sessions/$sessionId/settlement',
+        data: {
+          'shuttlecockUsed': shuttlecockUsed,
+          'shuttlecockPrice': 25000,
+          'extraFee': extraFee,
+        },
+      );
+      if (res.statusCode == 200 && res.data != null) {
+        final payload = res.data is Map<String, dynamic> && res.data.containsKey('result') ? res.data['result'] : res.data;
+        if (payload is Map<String, dynamic>) {
+          final entity = SessionSettlementDto.fromJson(payload).toEntity();
+          _settlementCache[sessionId] = entity;
+          return entity;
+        }
+      }
+    } catch (_) {
+      // Fallback local engine calculation
+    }
+
     final current = await getSettlement(sessionId);
     final totalShuttle = shuttlecockUsed * current.shuttlecockPrice;
     final total = current.courtFee + totalShuttle + extraFee;
+
+    final femaleCount = current.memberFees.where((m) => m.gender.toUpperCase() == 'FEMALE' || m.gender == '2').length;
+    final feeResult = SessionFeeCalculator.calculate(
+      totalCost: total,
+      totalPlayers: current.memberFees.isNotEmpty ? current.memberFees.length : 1,
+      femaleCount: femaleCount,
+      femaleDiscount: 10000,
+      roundRule: 1000,
+    );
+
+    final recalculatedFees = current.memberFees.map((m) {
+      final isMonthly = m.roleName.contains('tháng') || m.roleName.contains('Monthly');
+      if (isMonthly) {
+        return m.copyWith(finalFee: 0, discount: m.baseFee);
+      }
+      final isFemale = m.gender.toUpperCase() == 'FEMALE' || m.gender == '2';
+      return m.copyWith(
+        baseFee: feeResult.maleFee,
+        discount: isFemale ? (feeResult.maleFee - feeResult.femaleFee) : 0,
+        finalFee: isFemale ? feeResult.femaleFee : feeResult.maleFee,
+      );
+    }).toList();
 
     final updated = SessionSettlement(
       sessionId: sessionId,
@@ -695,8 +878,8 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
       courtFee: current.courtFee,
       extraFee: extraFee,
       totalCost: total,
-      totalCollected: current.totalCollected,
-      memberFees: current.memberFees,
+      totalCollected: recalculatedFees.where((m) => m.isPaid).fold(0, (sum, m) => sum + m.finalFee),
+      memberFees: recalculatedFees,
       isSettled: true,
     );
     _settlementCache[sessionId] = updated;
@@ -708,6 +891,20 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
     required String sessionId,
     required String userId,
   }) async {
+    try {
+      final res = await dio.post('/api/v1/sessions/$sessionId/settlement/members/$userId/pay');
+      if (res.statusCode == 200 && res.data != null) {
+        final payload = res.data is Map<String, dynamic> && res.data.containsKey('result') ? res.data['result'] : res.data;
+        if (payload is Map<String, dynamic>) {
+          final entity = SessionSettlementDto.fromJson(payload).toEntity();
+          _settlementCache[sessionId] = entity;
+          return entity;
+        }
+      }
+    } catch (_) {
+      // Fallback local update
+    }
+
     final current = await getSettlement(sessionId);
     final updatedFees = current.memberFees.map((m) {
       if (m.userId == userId) {

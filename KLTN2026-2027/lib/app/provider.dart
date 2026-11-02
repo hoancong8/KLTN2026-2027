@@ -1,4 +1,5 @@
 import '../domain/repositories/session_operations_repository.dart';
+import '../domain/entities/session/session_settlement.dart';
 import '../data/repositories/session_operations_repository_impl.dart';
 import 'package:dio/dio.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
@@ -95,6 +96,8 @@ import '../domain/usecases/club/explore_clubs_usecase.dart';
 import '../domain/usecases/club/get_club_detail_usecase.dart';
 import '../domain/usecases/club/update_club_info_usecase.dart';
 import '../domain/usecases/club/update_club_schedules_usecase.dart';
+import '../domain/usecases/club/club_fee_rule_usecases.dart';
+import '../domain/entities/club/club_fee_rule.dart';
 import '../domain/usecases/auth/register_usecase.dart';
 
 // Session imports
@@ -592,6 +595,19 @@ final updateClubSchedulesUseCaseProvider = Provider<UpdateClubSchedulesUseCase>(
   return UpdateClubSchedulesUseCase(ref.watch(clubRepositoryProvider));
 });
 
+// --- FR19: Hạch toán biểu phí và Quỹ nhóm ---
+final getClubFeeRuleUseCaseProvider = Provider<GetClubFeeRuleUseCase>((ref) {
+  return GetClubFeeRuleUseCase(ref.watch(clubRepositoryProvider));
+});
+
+final clubFeeRuleProvider = FutureProvider.autoDispose.family<ClubFeeRule, String>((ref, clubId) async {
+  return ref.watch(getClubFeeRuleUseCaseProvider).execute(clubId);
+});
+
+final updateClubFeeRuleUseCaseProvider = Provider<UpdateClubFeeRuleUseCase>((ref) {
+  return UpdateClubFeeRuleUseCase(ref.watch(clubRepositoryProvider));
+});
+
 // Registration
 final registerUseCaseProvider = Provider<RegisterUseCase>((ref) {
   return RegisterUseCase(
@@ -643,6 +659,10 @@ final cancelBookingUseCaseProvider = Provider<CancelBookingUseCase>((ref) {
   return CancelBookingUseCase(ref.watch(sessionRepositoryProvider));
 });
 
+final confirmBookingUseCaseProvider = Provider<ConfirmBookingUseCase>((ref) {
+  return ConfirmBookingUseCase(ref.watch(sessionRepositoryProvider));
+});
+
 final getSessionBookingsUseCaseProvider = Provider<GetSessionBookingsUseCase>((ref) {
   return GetSessionBookingsUseCase(ref.watch(sessionRepositoryProvider));
 });
@@ -685,4 +705,8 @@ final cancelRecruitmentBookingUseCaseProvider = Provider<CancelRecruitmentBookin
 
 final sessionOperationsRepositoryProvider = Provider<SessionOperationsRepository>((ref) {
   return SessionOperationsRepositoryImpl(dio: ref.watch(dioProvider));
+});
+
+final sessionSettlementProvider = FutureProvider.autoDispose.family<SessionSettlement, String>((ref, sessionId) async {
+  return ref.watch(sessionOperationsRepositoryProvider).getSettlement(sessionId);
 });

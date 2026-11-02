@@ -31,11 +31,30 @@ class ExploreClubDto {
     this.schedulesSummary,
   });
 
-  factory ExploreClubDto.fromJson(Map<String, dynamic> json) {
+  factory ExploreClubDto.fromJson(dynamic rawJson) {
+    if (rawJson is! Map) {
+      return ExploreClubDto(
+        id: '',
+        groupName: '',
+        code: '',
+        description: null,
+        avatarUrl: null,
+        fixedVenueName: null,
+        fixedAddress: null,
+        distanceKm: null,
+        minSkillLevel: null,
+        maxSkillLevel: null,
+        memberCount: 0,
+        isRecruiting: false,
+        qualityScore: 5.0,
+        schedulesSummary: null,
+      );
+    }
+    final json = rawJson;
     return ExploreClubDto(
-      id: json['id']?.toString() ?? '',
-      groupName: json['groupName']?.toString() ?? '',
-      code: json['code']?.toString() ?? '',
+      id: (json['id'] ?? json['clubId'] ?? json['groupId'])?.toString() ?? '',
+      groupName: (json['groupName'] ?? json['clubName'] ?? json['name'])?.toString() ?? '',
+      code: (json['code'] ?? json['clubCode'])?.toString() ?? '',
       description: json['description']?.toString(),
       avatarUrl: json['avatarUrl']?.toString(),
       fixedVenueName: json['fixedVenueName']?.toString(),

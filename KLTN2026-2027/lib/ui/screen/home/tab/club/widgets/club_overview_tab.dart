@@ -9,9 +9,9 @@ import '../../../../../../app/theme/theme.dart';
 import '../../../../../../app/provider/localization_provider.dart';
 import '../../../../../../app/l10n_gen/app_localizations.dart';
 import '../../../../../../domain/enums/club_role.dart';
+import '../../../../../../domain/entities/club/club_fee_rule.dart';
 import '../../../../club/club_management_vm/club_members_vm.dart';
 import '../../../../club/club_vm/club_context_vm.dart';
-import '../../../../club/role_management/club_role_management_screen.dart';
 import '../../../../club_detail/club_detail_vm/club_detail_vm.dart';
 import 'club_qr_dialog.dart';
 
@@ -63,6 +63,7 @@ class _ClubOverviewTabState extends ConsumerState<ClubOverviewTab> {
     final isHost = isHostOwner || (isSameClub && activeContext?.role == ClubRole.host) || widget.userRole == ClubRole.host;
     final canManageInfo = isHost || (isSameClub && ref.hasClubPermission('MEMBER.INFO.UPDATE'));
     final canManageRoles = isHost || (isSameClub && ref.hasClubPermission('MEMBER.ROLE.MANAGE'));
+    final canManageClub = isHost || canManageInfo || canManageRoles;
 
     if (state.isLoading && state.club == null) {
       return const Center(child: CircularProgressIndicator(color: AppColors.primary));
@@ -275,6 +276,11 @@ class _ClubOverviewTabState extends ConsumerState<ClubOverviewTab> {
 
           AppSpacing.gapH16,
 
+          // 3. Tiền sân & Đóng quỹ nhóm (Biểu phí sinh hoạt)
+          _buildClubFeeCard(club, canManageClub, state.feeRule),
+
+          AppSpacing.gapH16,
+
           // 4. Club Quality & Details Card (FR23)
           Container(
             padding: AppSpacing.allBase,
@@ -299,7 +305,7 @@ class _ClubOverviewTabState extends ConsumerState<ClubOverviewTab> {
                 ),
                 Divider(height: AppSpacing.base, color: colors.cardBorder),
                 _buildInfoRow(
-                  'Sĩ số thành viên',
+                  'Số lượng thành viên',
                   club != null ? '${club.memberCount} thành viên' : 'Đang tải...',
                   icon: Icons.people_outline_rounded,
                 ),
@@ -340,8 +346,8 @@ class _ClubOverviewTabState extends ConsumerState<ClubOverviewTab> {
 
           AppSpacing.gapH16,
 
-          // 6. Host Quick Action Shortcuts
-          if (canManageRoles) ...[
+          // 6. Host Quick Action Shortcuts: Cài đặt nhóm
+          if (canManageClub) ...[
             Container(
               padding: AppSpacing.allBase,
               decoration: BoxDecoration(
@@ -353,24 +359,24 @@ class _ClubOverviewTabState extends ConsumerState<ClubOverviewTab> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Quản trị ban điều hành',
+                    'Cài đặt & Quản trị',
                     style: AppTypography.titleSmall.bold.colored(colors.textPrimary),
                   ),
                   AppSpacing.gapH12,
                   ElevatedButton.icon(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.roleHost,
+                      backgroundColor: colors.primary,
                       foregroundColor: AppColors.white,
                       minimumSize: const Size(double.infinity, 44),
                       shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
                     ),
-                    icon: const Icon(Icons.shield_rounded, size: AppSpacing.iconSm),
+                    icon: const Icon(Icons.settings_outlined, size: AppSpacing.iconSm),
                     label: Text(
-                      'Vai Trò & Cây Phân Quyền Nhóm',
+                      'Cài đặt nhóm',
                       style: AppTypography.labelLarge.bold.colored(AppColors.white),
                     ),
                     onPressed: () {
-                      ClubRoleManagementScreen.show(context, clubId: widget.clubId);
+                      context.push('/club/${widget.clubId}/settings');
                     },
                   ),
                 ],
@@ -399,6 +405,160 @@ class _ClubOverviewTabState extends ConsumerState<ClubOverviewTab> {
             ),
           ],
           AppSpacing.gapH24,
+        ],
+      ),
+    );
+  }
+
+  String _formatVnd(num value) {
+    final intVal = value.toInt();
+    final str = intVal.toString();
+    final buffer = StringBuffer();
+    for (int i = 0; i < str.length; i++) {
+      if (i > 0 && (str.length - i) % 3 == 0) {
+        buffer.write('.');
+      }
+      buffer.write(str[i]);
+    }
+    return buffer.toString();
+  }
+
+  Widget _buildClubFeeCard(dynamic club, bool canManageClub, [ClubFeeRule? feeRule]) {
+    final isDynamic = feeRule?.isDynamic ?? true;
+    final monthlyFee = feeRule?.monthlyFee ?? 500000;
+    final monthlyDiscount = feeRule?.femaleDiscountMonthly ?? 50000;
+    final dailyMemberFee = feeRule?.dailyMemberFee ?? 50000;
+    final dailyDiscount = feeRule?.femaleDiscountDaily ?? 10000;
+    final guestFee = feeRule?.guestFee ?? 70000;
+    final guestDiscount = feeRule?.femaleDiscountGuest ?? 10000;
+    final roundRule = feeRule?.roundRule ?? 1000;
+
+    final monthlyFemale = (monthlyFee - monthlyDiscount).clamp(0, monthlyFee);
+    final dailyFemale = (dailyMemberFee - dailyDiscount).clamp(0, dailyMemberFee);
+    final guestFemale = (guestFee - guestDiscount).clamp(0, guestFee);
+
+    final roundText = canManageClub ? ' (Làm tròn: ${_formatVnd(roundRule)}đ khi quét VietQR).' : '';
+    final modeDesc = isDynamic
+        ? 'Tổng tiền sân + Cầu bóc mới thực tế + Nước uống phát sinh, chia đều theo đầu người tham gia buổi chơi.$roundText'
+        : 'Thu theo đơn giá buổi cố định đã thiết lập cho từng nhóm đối tượng.$roundText';
+
+    return Container(
+      padding: AppSpacing.allBase,
+      decoration: BoxDecoration(
+        color: colors.cardBackground,
+        borderRadius: AppRadius.card,
+        border: Border.all(color: colors.cardBorder),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: colors.primary.withValues(alpha: 0.12),
+                  borderRadius: AppRadius.borderSm,
+                ),
+                child: Icon(Icons.payments_outlined, color: colors.primary, size: 18),
+              ),
+              AppSpacing.gapW8,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Tiền sân & Đóng quỹ nhóm',
+                      style: AppTypography.titleSmall.bold.colored(colors.textPrimary),
+                    ),
+                    Text(
+                      'Cách tính tiền buổi chơi & quỹ tháng của CLB',
+                      style: AppTypography.labelSmall.colored(colors.textMuted),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          AppSpacing.gapH12,
+          // Banner cách tính tiền buổi chơi
+          Container(
+            padding: const EdgeInsets.all(AppSpacing.sm),
+            decoration: BoxDecoration(
+              color: colors.surfaceSubtle,
+              borderRadius: AppRadius.borderMd,
+              border: Border.all(color: colors.cardBorder),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(Icons.calculate_outlined, color: colors.primary, size: 18),
+                AppSpacing.gapW8,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Cách chia tiền mỗi buổi chơi:',
+                        style: AppTypography.labelSmall.bold.colored(colors.textPrimary),
+                      ),
+                      AppSpacing.gapH4,
+                      Text(
+                        modeDesc,
+                        style: AppTypography.bodySmall.colored(colors.textSecondary),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          AppSpacing.gapH12,
+          if (isDynamic) ...[
+            _buildInfoRow(
+              'Hình thức đóng tiền',
+              'Chia đều toàn bộ chi phí thực tế cho tất cả tay vợt',
+              icon: Icons.groups_rounded,
+              iconColor: colors.primary,
+            ),
+            Divider(height: AppSpacing.base, color: colors.cardBorder),
+            _buildInfoRow(
+              'Ưu đãi dành cho Nữ',
+              'Tự động giảm trừ ${_formatVnd(dailyDiscount)} đ/người vào phần chia mỗi buổi',
+              icon: Icons.female_rounded,
+              iconColor: AppColors.pink,
+              valueColor: AppColors.pink,
+            ),
+          ] else ...[
+            _buildInfoRow(
+              'Hội viên cố định (tháng)',
+              '${_formatVnd(monthlyFee)} đ/tháng (Nữ: ${_formatVnd(monthlyFemale)} đ)',
+              icon: Icons.card_membership_rounded,
+              iconColor: colors.primary,
+            ),
+            Divider(height: AppSpacing.base, color: colors.cardBorder),
+            _buildInfoRow(
+              'Hội viên đóng theo buổi',
+              '${_formatVnd(dailyMemberFee)} đ/buổi (Nữ: ${_formatVnd(dailyFemale)} đ)',
+              icon: Icons.person_outline_rounded,
+              iconColor: colors.success,
+            ),
+            Divider(height: AppSpacing.base, color: colors.cardBorder),
+            _buildInfoRow(
+              'Khách vãng lai giao lưu',
+              '${_formatVnd(guestFee)} đ/buổi (Nữ: ${_formatVnd(guestFemale)} đ)',
+              icon: Icons.sports_tennis_rounded,
+              iconColor: colors.warning,
+            ),
+            Divider(height: AppSpacing.base, color: colors.cardBorder),
+            _buildInfoRow(
+              'Ưu đãi cho Nữ (mọi đối tượng)',
+              'Giảm ${_formatVnd(monthlyDiscount)} đ/tháng, ${_formatVnd(dailyDiscount)} đ/buổi cố định, ${_formatVnd(guestDiscount)} đ/buổi khách vãng lai',
+              icon: Icons.favorite_outline_rounded,
+              iconColor: colors.error,
+              valueColor: colors.error,
+            ),
+          ],
         ],
       ),
     );

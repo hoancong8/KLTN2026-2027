@@ -61,105 +61,12 @@ class ClubLedgerViewModel extends StateNotifier<ClubLedgerState> {
   Future<void> loadLedger() async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      // Dữ liệu mẫu chuẩn hạch toán minh bạch (FR22 / UC19)
-      final now = DateTime.now();
-      final mockTransactions = [
-        ClubLedgerTransaction(
-          id: 'tx-1',
-          clubId: clubId,
-          title: 'Thu tiền buổi chơi Thứ 4',
-          amount: 540000,
-          type: LedgerTransactionType.income,
-          category: LedgerCategory.sessionFee,
-          createdAt: now.subtract(const Duration(hours: 3)),
-          creatorName: 'Hệ thống (VietQR)',
-          isVerified: true,
-          note: 'Đối soát tự động từ 9 người chơi tham gia',
-          paymentMethod: 'VIETQR',
-        ),
-        ClubLedgerTransaction(
-          id: 'tx-2',
-          clubId: clubId,
-          title: 'Thanh toán tiền thuê sân',
-          amount: -300000,
-          type: LedgerTransactionType.expense,
-          category: LedgerCategory.courtRental,
-          createdAt: now.subtract(const Duration(hours: 4)),
-          creatorName: 'Trần Văn Host',
-          isVerified: true,
-          note: '2 sân x 3 giờ tại Sân Cầu Lông Kỳ Hòa',
-          paymentMethod: 'VIETQR',
-        ),
-        ClubLedgerTransaction(
-          id: 'tx-3',
-          clubId: clubId,
-          title: 'Mua 2 ống cầu Hải Yến',
-          amount: -520000,
-          type: LedgerTransactionType.expense,
-          category: LedgerCategory.shuttlecock,
-          createdAt: now.subtract(const Duration(days: 2)),
-          creatorName: 'Lê Thủ Quỹ',
-          isVerified: true,
-          note: 'Hóa đơn mã HY-2026-883',
-          paymentMethod: 'CASH',
-        ),
-        ClubLedgerTransaction(
-          id: 'tx-4',
-          clubId: clubId,
-          title: 'Hội viên Nguyễn Văn A đóng quỹ tháng',
-          amount: 500000,
-          type: LedgerTransactionType.income,
-          category: LedgerCategory.monthlyFund,
-          createdAt: now.subtract(const Duration(days: 3)),
-          creatorName: 'Hệ thống (VietQR)',
-          isVerified: true,
-          note: 'Quỹ hội viên trọn gói tháng',
-          paymentMethod: 'VIETQR',
-        ),
-        ClubLedgerTransaction(
-          id: 'tx-5',
-          clubId: clubId,
-          title: 'Hội viên Trần Thị B đóng quỹ tháng',
-          amount: 500000,
-          type: LedgerTransactionType.income,
-          category: LedgerCategory.monthlyFund,
-          createdAt: now.subtract(const Duration(days: 4)),
-          creatorName: 'Hệ thống (VietQR)',
-          isVerified: true,
-          note: 'Quỹ hội viên trọn gói tháng',
-          paymentMethod: 'VIETQR',
-        ),
-        ClubLedgerTransaction(
-          id: 'tx-6',
-          clubId: clubId,
-          title: 'Mua thùng nước khoáng Revive',
-          amount: -210000,
-          type: LedgerTransactionType.expense,
-          category: LedgerCategory.drink,
-          createdAt: now.subtract(const Duration(days: 5)),
-          creatorName: 'Lê Thủ Quỹ',
-          isVerified: true,
-          note: 'Phục vụ giải khát tại sân',
-          paymentMethod: 'CASH',
-        ),
-      ];
-
-      var income = 0;
-      var expense = 0;
-      for (final tx in mockTransactions) {
-        if (tx.amount > 0) {
-          income += tx.amount;
-        } else {
-          expense += tx.amount.abs();
-        }
-      }
-
       state = state.copyWith(
         isLoading: false,
-        transactions: mockTransactions,
-        totalIncome: income,
-        totalExpense: expense,
-        balance: income - expense,
+        transactions: const [],
+        totalIncome: 0,
+        totalExpense: 0,
+        balance: 0,
       );
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());

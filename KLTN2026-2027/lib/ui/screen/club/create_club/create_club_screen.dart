@@ -290,25 +290,30 @@ class _CreateClubScreenState extends ConsumerState<CreateClubScreen> {
             _buildStepperHeader(),
 
             if (_errorMessage != null)
-              Container(
-                margin: const EdgeInsets.symmetric(horizontal: AppSpacing.base, vertical: AppSpacing.sm),
-                padding: AppSpacing.allMd,
-                decoration: BoxDecoration(
-                  color: AppColors.error.withValues(alpha: 0.1),
-                  borderRadius: AppRadius.borderMd,
-                  border: Border.all(color: AppColors.error.withValues(alpha: 0.3)),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.error_outline_rounded, color: AppColors.error, size: 20),
-                    AppSpacing.gapW8,
-                    Expanded(
-                      child: Text(
-                        _errorMessage!,
-                        style: AppTypography.bodySmall.colored(AppColors.error),
-                      ),
+              Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 768),
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(horizontal: AppSpacing.base, vertical: AppSpacing.sm),
+                    padding: AppSpacing.allMd,
+                    decoration: BoxDecoration(
+                      color: AppColors.error.withValues(alpha: 0.1),
+                      borderRadius: AppRadius.borderMd,
+                      border: Border.all(color: AppColors.error.withValues(alpha: 0.3)),
                     ),
-                  ],
+                    child: Row(
+                      children: [
+                        const Icon(Icons.error_outline_rounded, color: AppColors.error, size: 20),
+                        AppSpacing.gapW8,
+                        Expanded(
+                          child: Text(
+                            _errorMessage!,
+                            style: AppTypography.bodySmall.colored(AppColors.error),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ),
 
@@ -316,7 +321,13 @@ class _CreateClubScreenState extends ConsumerState<CreateClubScreen> {
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(horizontal: AppSpacing.base, vertical: AppSpacing.md),
-                child: _buildCurrentStepContent(),
+                child: Align(
+                  alignment: Alignment.topCenter,
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 768),
+                    child: _buildCurrentStepContent(),
+                  ),
+                ),
               ),
             ),
 
@@ -330,16 +341,23 @@ class _CreateClubScreenState extends ConsumerState<CreateClubScreen> {
 
   Widget _buildStepperHeader() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.base, vertical: AppSpacing.md),
       color: colors.surface,
-      child: Row(
-        children: [
-          _buildStepItem(0, 'Thông tin', Icons.badge_outlined),
-          _buildStepDivider(0),
-          _buildStepItem(1, 'Sân bãi', Icons.location_on_outlined),
-          _buildStepDivider(1),
-          _buildStepItem(2, 'Lịch chơi', Icons.calendar_month_outlined),
-        ],
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 768),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.base, vertical: AppSpacing.md),
+            child: Row(
+              children: [
+                _buildStepItem(0, 'Thông tin', Icons.badge_outlined),
+                _buildStepDivider(0),
+                _buildStepItem(1, 'Sân bãi', Icons.location_on_outlined),
+                _buildStepDivider(1),
+                _buildStepItem(2, 'Lịch chơi', Icons.calendar_month_outlined),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -559,42 +577,66 @@ class _CreateClubScreenState extends ConsumerState<CreateClubScreen> {
           Text('Tọa Độ GPS (Định vị Radar)', style: AppTypography.labelMedium.bold.colored(colors.textPrimary)),
           AppSpacing.gapH8,
           Container(
-            padding: AppSpacing.allMd,
+            padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: colors.cardBackground,
+              color: colors.surfaceSubtle,
               borderRadius: AppRadius.borderMd,
               border: Border.all(color: colors.cardBorder),
             ),
             child: Row(
               children: [
-                Icon(Icons.my_location_rounded, color: _lat != null ? AppColors.success : colors.textMuted),
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: (_lat != null ? AppColors.success : colors.textMuted).withValues(alpha: 0.15),
+                    borderRadius: AppRadius.borderSm,
+                  ),
+                  child: Icon(
+                    _lat != null ? Icons.gps_fixed_rounded : Icons.gps_not_fixed_rounded,
+                    color: _lat != null ? AppColors.success : colors.textMuted,
+                    size: 20,
+                  ),
+                ),
                 AppSpacing.gapW12,
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        _lat != null
-                            ? '(${_lat!.toStringAsFixed(4)}, ${_lng!.toStringAsFixed(4)})'
-                            : 'Chưa cập nhật tọa độ',
-                        style: AppTypography.titleSmall.bold.colored(colors.textPrimary),
+                        'Tọa độ vị trí GPS',
+                        style: AppTypography.labelMedium.bold.colored(colors.textPrimary),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
+                      AppSpacing.gapH4,
                       Text(
-                        _lat != null ? 'Đã ghim vị trí cho tìm kiếm bán kính' : 'Bấm nút để lấy tọa độ hiện tại của bạn',
-                        style: AppTypography.bodySmall.colored(colors.textMuted),
+                        _lat != null
+                            ? '${_lat!.toStringAsFixed(4)}, ${_lng!.toStringAsFixed(4)}'
+                            : 'Chưa có tọa độ',
+                        style: AppTypography.bodySmall.semiBold.colored(
+                          _lat != null ? AppColors.primary : colors.textMuted,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ],
                   ),
                 ),
-                ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: colors.primaryContainer,
-                    foregroundColor: colors.primary,
-                    elevation: 0,
+                OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.primary,
+                    minimumSize: const Size(0, 36),
+                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+                    side: BorderSide(color: AppColors.primary.withValues(alpha: 0.4)),
+                    shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
                   ),
                   icon: _isGettingLocation
-                      ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2))
-                      : const Icon(Icons.gps_fixed_rounded, size: 16),
+                      ? const SizedBox(
+                          width: 14,
+                          height: 14,
+                          child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary),
+                        )
+                      : const Icon(Icons.my_location_rounded, size: 16),
                   label: const Text('Lấy GPS'),
                   onPressed: _isGettingLocation ? null : _getCurrentLocation,
                 ),
@@ -703,48 +745,56 @@ class _CreateClubScreenState extends ConsumerState<CreateClubScreen> {
 
   Widget _buildBottomNav() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.base, vertical: AppSpacing.md),
       decoration: BoxDecoration(
         color: colors.surface,
         border: Border(top: BorderSide(color: colors.cardBorder)),
       ),
-      child: Row(
-        children: [
-          if (_currentStep > 0)
-            Expanded(
-              child: OutlinedButton(
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: colors.textPrimary,
-                  side: BorderSide(color: colors.cardBorder),
-                  padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-                  shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
-                ),
-                onPressed: _isSubmitting ? null : _onPrevStep,
-                child: const Text('Quay lại'),
-              ),
-            ),
-          if (_currentStep > 0) AppSpacing.gapW12,
-          Expanded(
-            flex: 2,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: AppColors.white,
-                padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-                shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
-              ),
-              onPressed: _isSubmitting
-                  ? null
-                  : (_currentStep == 2 ? _submit : _onNextStep),
-              child: _isSubmitting
-                  ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: AppColors.white, strokeWidth: 2))
-                  : Text(
-                      _currentStep == 2 ? 'Hoàn tất tạo CLB' : 'Tiếp tục',
-                      style: AppTypography.labelLarge.bold.colored(AppColors.white),
+      child: Center(
+        heightFactor: 1.0,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 768),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.base, vertical: AppSpacing.md),
+            child: Row(
+              children: [
+                if (_currentStep > 0)
+                  Expanded(
+                    child: OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: colors.textPrimary,
+                        side: BorderSide(color: colors.cardBorder),
+                        padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+                        shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                      ),
+                      onPressed: _isSubmitting ? null : _onPrevStep,
+                      child: const Text('Quay lại'),
                     ),
+                  ),
+                if (_currentStep > 0) AppSpacing.gapW12,
+                Expanded(
+                  flex: 2,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: AppColors.white,
+                      padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+                      shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                    ),
+                    onPressed: _isSubmitting
+                        ? null
+                        : (_currentStep == 2 ? _submit : _onNextStep),
+                    child: _isSubmitting
+                        ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: AppColors.white, strokeWidth: 2))
+                        : Text(
+                            _currentStep == 2 ? 'Hoàn tất tạo CLB' : 'Tiếp tục',
+                            style: AppTypography.labelLarge.bold.colored(AppColors.white),
+                          ),
+                  ),
+                ),
+              ],
             ),
           ),
-        ],
+        ),
       ),
     );
   }

@@ -568,7 +568,7 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
               crossAxisCount: 7,
               crossAxisSpacing: 4,
               mainAxisSpacing: 4,
-              childAspectRatio: 0.82,
+              childAspectRatio: 0.72,
             ),
             itemBuilder: (context, index) {
               if (index < leadingBlanks) {
@@ -664,10 +664,10 @@ class _ClubSchedulePlannerState extends State<ClubSchedulePlanner> {
                                 borderRadius: BorderRadius.circular(3),
                               ),
                               child: Text(
-                                _formatTime(scheduleEntry.startTime),
+                                '${_formatTime(scheduleEntry.startTime)} - ${_formatTime(scheduleEntry.endTime)}',
                                 textAlign: TextAlign.center,
                                 style: const TextStyle(
-                                  fontSize: 9,
+                                  fontSize: 8,
                                   fontWeight: FontWeight.bold,
                                   color: AppColors.white,
                                 ),

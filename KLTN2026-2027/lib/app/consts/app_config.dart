@@ -50,6 +50,7 @@ class AppConfig {
   static String clubDetailPath(String id) => '$clubsPath/$id';
   static String clubInfoPath(String id) => '$clubsPath/$id/info';
   static String clubSchedulesPath(String id) => '$clubsPath/$id/schedules';
+  static String clubFeeRulePath(String id) => '$clubsPath/$id/fee-rule';
   static String clubMembersPath(String id) => '$clubsPath/$id/members';
   static String clubMemberRolePath(String id, String userId) =>
       '$clubsPath/$id/members/$userId/role';
@@ -102,6 +103,8 @@ class AppConfig {
       '$sessionsPath/$sessionId/bookings';
   static String sessionMyBookingPath(String sessionId) =>
       '$sessionsPath/$sessionId/bookings/me';
+  static String sessionConfirmBookingPath(String sessionId, String bookingId) =>
+      '$sessionsPath/$sessionId/bookings/$bookingId/confirm';
   static const myBookingsPath = '$sessionsPath/my-bookings';
   static String sessionRecruitmentsPath(String sessionId) =>
       '$sessionsPath/$sessionId/recruitments';
@@ -110,6 +113,10 @@ class AppConfig {
       '$sessionsPath/recruitments/$recruitmentId/join';
   static String cancelRecruitmentPath(String recruitmentId) =>
       '$sessionsPath/recruitments/$recruitmentId/cancel';
+  static String sessionSettlementPath(String sessionId) =>
+      '$sessionsPath/$sessionId/settlement';
+  static String sessionMarkPaidPath(String sessionId, String userId) =>
+      '$sessionsPath/$sessionId/settlement/members/$userId/pay';
 
   // ===== [ROUTER] Routes App (GoRouter) =====
   static const splashPath = '/';

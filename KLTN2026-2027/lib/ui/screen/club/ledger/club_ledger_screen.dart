@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../../app/provider.dart';
 import '../../../../app/theme/theme.dart';
@@ -38,7 +39,7 @@ class _ClubLedgerScreenState extends ConsumerState<ClubLedgerScreen> {
         elevation: 0,
         leading: IconButton(
           icon: Icon(Icons.arrow_back_ios_new_rounded, color: colors.textPrimary, size: 20),
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: () => context.canPop() ? context.pop() : context.go('/home'),
         ),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

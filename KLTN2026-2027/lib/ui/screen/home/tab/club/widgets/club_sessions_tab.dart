@@ -862,29 +862,21 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
                           ),
                           if (hasSessions) ...[
                             const SizedBox(height: 2),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Container(
-                                  width: 5,
-                                  height: 5,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: isSelected ? AppColors.white : colors.primary,
-                                  ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 1),
+                              decoration: BoxDecoration(
+                                color: isSelected ? AppColors.white.withValues(alpha: 0.25) : colors.primary,
+                                borderRadius: BorderRadius.circular(3),
+                              ),
+                              child: Text(
+                                '${DateFormat('HH:mm').format(daySessions.first.startTime)} - ${DateFormat('HH:mm').format(daySessions.first.endTime)}',
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                  fontSize: 7.5,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.white,
                                 ),
-                                if (daySessions.length > 1) ...[
-                                  const SizedBox(width: 2),
-                                  Container(
-                                    width: 3,
-                                    height: 3,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: isSelected ? AppColors.white.withValues(alpha: 0.7) : colors.warning,
-                                    ),
-                                  ),
-                                ],
-                              ],
+                              ),
                             ),
                           ],
                         ],

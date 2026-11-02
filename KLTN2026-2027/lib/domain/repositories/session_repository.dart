@@ -43,6 +43,8 @@ abstract class SessionRepository {
 
   Future<void> cancelBooking(String sessionId);
 
+  Future<void> confirmBooking(String sessionId, String bookingId);
+
   Future<List<SessionBooking>> getSessionBookings(String sessionId);
 
   Future<SessionBooking?> getMyBooking(String sessionId);
@@ -56,6 +58,8 @@ abstract class SessionRepository {
     double sharedCost = 0.0,
     double scanRadiusKm = 5.0,
     bool hidePlayerList = false,
+    double? femaleDiscount,
+    double? femaleSharedCost,
   });
 
   Future<GuestRecruitment?> getSessionRecruitment(String sessionId);

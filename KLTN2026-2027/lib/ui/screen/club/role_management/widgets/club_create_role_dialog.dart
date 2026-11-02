@@ -86,7 +86,7 @@ class _ClubCreateRoleDialogState extends State<ClubCreateRoleDialog> {
       insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 480),
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(22),
           child: Form(
             key: _formKey,

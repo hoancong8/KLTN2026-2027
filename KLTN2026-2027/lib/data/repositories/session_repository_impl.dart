@@ -102,6 +102,11 @@ class SessionRepositoryImpl implements SessionRepository {
   }
 
   @override
+  Future<void> confirmBooking(String sessionId, String bookingId) async {
+    await remote.confirmBooking(sessionId, bookingId);
+  }
+
+  @override
   Future<List<SessionBooking>> getSessionBookings(String sessionId) async {
     final dtos = await remote.getSessionBookings(sessionId);
     return dtos.map(SessionMapper.toBookingEntity).toList();
@@ -127,6 +132,8 @@ class SessionRepositoryImpl implements SessionRepository {
     double sharedCost = 0.0,
     double scanRadiusKm = 5.0,
     bool hidePlayerList = false,
+    double? femaleDiscount,
+    double? femaleSharedCost,
   }) async {
     final request = CreateRecruitmentRequestDto(
       slotsNeeded: slotsNeeded,
@@ -134,6 +141,8 @@ class SessionRepositoryImpl implements SessionRepository {
       sharedCost: sharedCost,
       scanRadiusKm: scanRadiusKm,
       hidePlayerList: hidePlayerList,
+      femaleDiscount: femaleDiscount,
+      femaleSharedCost: femaleSharedCost,
     );
     return await remote.createRecruitment(sessionId, request);
   }

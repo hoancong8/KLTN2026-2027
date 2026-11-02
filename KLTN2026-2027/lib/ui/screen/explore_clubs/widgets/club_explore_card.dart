@@ -260,7 +260,7 @@ class ClubExploreCard extends StatelessWidget {
                       ),
                     ),
                     child: Text(
-                      club.isRecruiting ? 'Đang tuyển quân' : 'Đủ thành viên',
+                      club.isRecruiting ? 'Đang tuyển thành viên' : 'Đủ thành viên',
                       style: TextStyle(
                         fontSize: 10.5,
                         fontWeight: FontWeight.bold,

@@ -16,6 +16,7 @@ class ClubRoleManagementMobile extends StatefulWidget {
   final ClubMembersViewModel vm;
   final bool isHost;
   final VoidCallback onRefresh;
+  final bool embedded;
 
   const ClubRoleManagementMobile({
     super.key,
@@ -25,6 +26,7 @@ class ClubRoleManagementMobile extends StatefulWidget {
     required this.vm,
     required this.isHost,
     required this.onRefresh,
+    this.embedded = false,
   });
 
   @override
@@ -76,6 +78,19 @@ class _ClubRoleManagementMobileState extends State<ClubRoleManagementMobile> {
       );
     }
 
+    final listWidget = ClubRoleListView(
+      roles: widget.roles,
+      members: widget.members,
+      selectedRole: null,
+      isHost: widget.isHost,
+      onRoleSelected: (role) => setState(() => _selectedRole = role),
+      onAddRolePressed: _showAddRoleDialog,
+    );
+
+    if (widget.embedded) {
+      return listWidget;
+    }
+
     return Scaffold(
       backgroundColor: colors.background,
       appBar: AppBar(
@@ -100,14 +115,7 @@ class _ClubRoleManagementMobileState extends State<ClubRoleManagementMobile> {
           ),
         ],
       ),
-      body: ClubRoleListView(
-        roles: widget.roles,
-        members: widget.members,
-        selectedRole: null,
-        isHost: widget.isHost,
-        onRoleSelected: (role) => setState(() => _selectedRole = role),
-        onAddRolePressed: _showAddRoleDialog,
-      ),
+      body: listWidget,
     );
   }
 }

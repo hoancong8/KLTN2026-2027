@@ -79,7 +79,7 @@ class SessionSettlementScreen extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('Tính Tiền Cầu & Sân', style: AppTypography.titleMedium.bold.colored(colors.textPrimary)),
-            Text('Công thức đa hệ số & VietQR tự động gạch nợ',
+            Text('Công thức đa hệ số & tự động xác nhận thanh toán',
                 style: AppTypography.labelSmall.colored(colors.textMuted)),
           ],
         ),
@@ -87,7 +87,7 @@ class SessionSettlementScreen extends ConsumerWidget {
         elevation: 0.5,
         leading: IconButton(
           icon: Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: colors.textPrimary),
-          onPressed: () => context.pop(),
+          onPressed: () => context.canPop() ? context.pop() : context.go('/home'),
         ),
         actions: [
           IconButton(
@@ -227,7 +227,50 @@ class SessionSettlementScreen extends ConsumerWidget {
                     AppSpacing.gapH16,
 
                     // 2. Members Fees Breakdown
-                    Text('Bảng chia tiền đa hệ số & VietQR cá nhân (${settlement.memberFees.length})',
+                    // Cách chia tiền buổi chơi giải thích cho người chơi
+                    Consumer(
+                      builder: (context, ref, _) {
+                        final activeContext = ref.watch(activeClubContextProvider);
+                        final feeRuleAsync = activeContext != null ? ref.watch(clubFeeRuleProvider(activeContext.clubId)) : null;
+                        final isDynamic = feeRuleAsync?.asData?.value.isDynamic ?? true;
+
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: AppSpacing.md),
+                          padding: const EdgeInsets.all(AppSpacing.sm),
+                          decoration: BoxDecoration(
+                            color: colors.surfaceSubtle,
+                            borderRadius: AppRadius.borderMd,
+                            border: Border.all(color: colors.cardBorder),
+                          ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Icon(Icons.info_outline_rounded, color: colors.primary, size: 18),
+                              AppSpacing.gapW8,
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      isDynamic ? 'Cách tính tiền: Chia đều thực tế' : 'Cách tính tiền: Định mức cố định',
+                                      style: AppTypography.labelSmall.bold.colored(colors.textPrimary),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      isDynamic
+                                          ? 'Tiền sân (${currencyFormat.format(settlement.courtFee)} đ) + Cầu bóc mới (${settlement.shuttlecockUsed} quả) + Phụ phí (${currencyFormat.format(settlement.extraFee)} đ) được chia đều cho tất cả người chơi tham gia. Nữ nhận ưu đãi giảm giá trừ thẳng vào phần chia.'
+                                          : 'Thu tiền theo định mức cố định đã cấu hình của CLB (Hội viên tháng miễn phí buổi, Hội viên theo buổi và Khách vãng lai thu theo mức cố định, có ưu đãi Nữ).',
+                                      style: AppTypography.bodySmall.colored(colors.textSecondary),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                    Text('Tiền đóng từng người & Mã quét VietQR (${settlement.memberFees.length})',
                         style: AppTypography.titleSmall.bold.colored(colors.textPrimary)),
                     AppSpacing.gapH8,
 

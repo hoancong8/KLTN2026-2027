@@ -32,6 +32,21 @@ abstract class SessionOperationsRepository {
     required String sessionId,
     required String matchId,
   });
+  Future<SessionRotationSnapshot> pausePlayer({
+    required String sessionId,
+    required String userId,
+    required bool isPaused,
+  });
+  Future<SessionRotationSnapshot> restoreProposal({
+    required String sessionId,
+    required String matchId,
+  });
+  Future<SessionRotationSnapshot> swapMatchPlayers({
+    required String sessionId,
+    required String matchId,
+    required List<String> teamAUserIds,
+    required List<String> teamBUserIds,
+  });
 
   // --- FR18 - FR21: Hạch toán vật tư, đa hệ số & VietQR ---
   Future<SessionSettlement> getSettlement(String sessionId);

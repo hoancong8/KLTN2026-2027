@@ -13,6 +13,7 @@ class SessionBookingDto {
   final String bookedAt;
   final String? checkinAt;
   final String? recruitmentId;
+  final int? gender;
 
   SessionBookingDto({
     required this.bookingId,
@@ -27,6 +28,7 @@ class SessionBookingDto {
     required this.bookedAt,
     this.checkinAt,
     this.recruitmentId,
+    this.gender,
   });
 
   static int _parseInt(dynamic value) {
@@ -34,6 +36,14 @@ class SessionBookingDto {
     if (value is num) return value.toInt();
     if (value is String) return int.tryParse(value) ?? 0;
     return 0;
+  }
+
+  static int? _parseNullableInt(dynamic value) {
+    if (value == null) return null;
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    if (value is String) return int.tryParse(value);
+    return null;
   }
 
   factory SessionBookingDto.fromJson(dynamic rawJson) {
@@ -51,6 +61,7 @@ class SessionBookingDto {
         bookedAt: '',
         checkinAt: null,
         recruitmentId: null,
+        gender: null,
       );
     }
     final json = rawJson;
@@ -67,6 +78,7 @@ class SessionBookingDto {
       bookedAt: json['bookedAt']?.toString() ?? '',
       checkinAt: json['checkinAt']?.toString(),
       recruitmentId: json['recruitmentId']?.toString(),
+      gender: _parseNullableInt(json['gender']),
     );
   }
 
@@ -83,5 +95,6 @@ class SessionBookingDto {
     'bookedAt': bookedAt,
     'checkinAt': checkinAt,
     'recruitmentId': recruitmentId,
+    if (gender != null) 'gender': gender,
   };
 }

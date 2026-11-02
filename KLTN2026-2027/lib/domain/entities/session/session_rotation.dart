@@ -7,6 +7,7 @@ class RotationPlayer {
   final int skillLevel;
   final DateTime? lastFinishedAt;
   final int restSecondsLeft;
+  final bool isPaused;
 
   const RotationPlayer({
     required this.userId,
@@ -15,6 +16,7 @@ class RotationPlayer {
     this.skillLevel = 3,
     this.lastFinishedAt,
     this.restSecondsLeft = 0,
+    this.isPaused = false,
   });
 
   bool get isResting => restSecondsLeft > 0;
@@ -27,6 +29,7 @@ class CourtMatch {
   final DateTime? startedAt;
   final List<RotationPlayer> teamA;
   final List<RotationPlayer> teamB;
+  final bool isManualSwapped;
 
   const CourtMatch({
     required this.matchId,
@@ -35,6 +38,7 @@ class CourtMatch {
     this.startedAt,
     required this.teamA,
     required this.teamB,
+    this.isManualSwapped = false,
   });
 
   bool get isProposed => state == 'Proposed';

@@ -2,7 +2,10 @@
 
 import 'package:flutter_riverpod/legacy.dart';
 import '../../../../app/provider.dart';
-import '../../../../domain/services/i_location_service.dart';
+import '../../../../domain/entities/session/guest_recruitment.dart';
+import '../../../../domain/enums/session_enums.dart';
+import '../../../../domain/usecases/club/get_my_clubs_usecase.dart';
+import '../../../../domain/usecases/session/get_my_bookings_usecase.dart';
 import '../../../../domain/usecases/session/session_usecases.dart';
 import 'explore_recruitments_state.dart';
 
@@ -12,7 +15,8 @@ final exploreRecruitmentsViewModelProvider =
     exploreRecruitmentsUseCase: ref.watch(exploreRecruitmentsUseCaseProvider),
     joinRecruitmentUseCase: ref.watch(joinRecruitmentUseCaseProvider),
     cancelRecruitmentBookingUseCase: ref.watch(cancelRecruitmentBookingUseCaseProvider),
-    locationService: ref.watch(locationServiceProvider),
+    getMyBookingsUseCase: ref.watch(getMyBookingsUseCaseProvider),
+    getMyClubsUseCase: ref.watch(getMyClubsUseCaseProvider),
   );
 });
 
@@ -20,54 +24,45 @@ class ExploreRecruitmentsViewModel extends StateNotifier<ExploreRecruitmentsStat
   final ExploreRecruitmentsUseCase exploreRecruitmentsUseCase;
   final JoinRecruitmentUseCase joinRecruitmentUseCase;
   final CancelRecruitmentBookingUseCase cancelRecruitmentBookingUseCase;
-  final ILocationService locationService;
+  final GetMyBookingsUseCase getMyBookingsUseCase;
+  final GetMyClubsUseCase getMyClubsUseCase;
 
   ExploreRecruitmentsViewModel({
     required this.exploreRecruitmentsUseCase,
     required this.joinRecruitmentUseCase,
     required this.cancelRecruitmentBookingUseCase,
-    required this.locationService,
-  }) : super(const ExploreRecruitmentsState()) {
-    initLocationAndExplore();
-  }
-
-  Future<void> initLocationAndExplore() async {
-    state = state.copyWith(isLoading: true, isLocating: true, errorMessage: null);
-    try {
-      final loc = await locationService.getCurrentLocation();
-      state = state.copyWith(
-        latitude: loc.latitude,
-        longitude: loc.longitude,
-        isLocating: false,
-      );
-    } catch (_) {
-      state = state.copyWith(isLocating: false);
-    } finally {
-      state = state.copyWith(isLocating: false);
-      await explore();
-    }
+    required this.getMyBookingsUseCase,
+    required this.getMyClubsUseCase,
+  }) : super(const ExploreRecruitmentsState(isLocating: false)) {
+    explore();
   }
 
   Future<void> explore() async {
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
-      double? lat = state.latitude;
-      double? lng = state.longitude;
+      final results = await Future.wait([
+        exploreRecruitmentsUseCase.execute(
+          latitude: null,
+          longitude: null,
+          radiusKm: null,
+          minSkillLevel: state.selectedSkillLevel,
+        ),
+        _fetchActiveBookedSessionIds(),
+        _fetchJoinedClubNames(),
+      ]);
+      final recruitments = results[0] as List<GuestRecruitment>;
+      final bookedSessionIds = results[1] as Set<String>;
+      final joinedClubNames = results[2] as Set<String>;
 
-      if (lat == null || lng == null) {
-        final loc = await locationService.getCurrentLocation();
-        lat = loc.latitude;
-        lng = loc.longitude;
-        state = state.copyWith(latitude: lat, longitude: lng);
-      }
+      final available = recruitments.where((r) {
+        final rSessionId = r.sessionId.trim().toLowerCase();
+        if (bookedSessionIds.contains(rSessionId)) return false;
+        final clubName = r.clubName.trim().toLowerCase();
+        if (clubName.isNotEmpty && joinedClubNames.contains(clubName)) return false;
+        return true;
+      }).toList();
 
-      final results = await exploreRecruitmentsUseCase.execute(
-        latitude: lat,
-        longitude: lng,
-        radiusKm: state.radiusKm,
-        minSkillLevel: state.selectedSkillLevel,
-      );
-      state = state.copyWith(isLoading: false, recruitments: results);
+      state = state.copyWith(isLoading: false, recruitments: available);
     } catch (e) {
       state = state.copyWith(isLoading: false, errorMessage: e.toString());
     } finally {
@@ -77,13 +72,32 @@ class ExploreRecruitmentsViewModel extends StateNotifier<ExploreRecruitmentsStat
     }
   }
 
-  void setSearchTerm(String term) {
-    state = state.copyWith(searchTerm: term);
+  Future<Set<String>> _fetchActiveBookedSessionIds() async {
+    try {
+      final bookings = await getMyBookingsUseCase.execute();
+      return bookings
+          .where((b) => !b.isEnded && b.bookingStatus != BookingStatus.absent)
+          .map((b) => b.sessionId.trim().toLowerCase())
+          .toSet();
+    } catch (_) {
+      return {};
+    }
   }
 
-  void setRadius(double radiusKm) {
-    state = state.copyWith(radiusKm: radiusKm);
-    explore();
+  Future<Set<String>> _fetchJoinedClubNames() async {
+    try {
+      final clubs = await getMyClubsUseCase.execute();
+      return clubs
+          .map((c) => c.clubName.trim().toLowerCase())
+          .where((s) => s.isNotEmpty)
+          .toSet();
+    } catch (_) {
+      return {};
+    }
+  }
+
+  void setSearchTerm(String term) {
+    state = state.copyWith(searchTerm: term);
   }
 
   void setSkillLevel(String? skillLevel) {
@@ -109,12 +123,14 @@ class ExploreRecruitmentsViewModel extends StateNotifier<ExploreRecruitmentsStat
   }
 
   Future<bool> cancelRecruitment(String recruitmentId) async {
+    state = state.copyWith(isJoining: true, errorMessage: null);
     try {
       await cancelRecruitmentBookingUseCase.execute(recruitmentId);
       await explore();
+      state = state.copyWith(isJoining: false, successMessage: 'Đã hủy suất giao lưu thành công!');
       return true;
     } catch (e) {
-      state = state.copyWith(errorMessage: e.toString());
+      state = state.copyWith(isJoining: false, errorMessage: e.toString());
       return false;
     }
   }

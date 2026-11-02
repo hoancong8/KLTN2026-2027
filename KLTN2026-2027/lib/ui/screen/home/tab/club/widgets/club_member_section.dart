@@ -213,7 +213,7 @@ class _ClubMemberSectionState extends ConsumerState<ClubMemberSection> {
                       (e) => _buildRoleGroup(context, e.key.toUpperCase(), e.value, AppColors.roleTeal, currentProfile, canManageRoles: canManageRoles, canRemoveMember: canRemoveMember),
                     ),
                     if (regularMembers.isNotEmpty) _buildRoleGroup(context, 'THÀNH VIÊN CHÍNH THỨC', regularMembers, colors.primary, currentProfile, canManageRoles: canManageRoles, canRemoveMember: canRemoveMember),
-                    if (guests.isNotEmpty) _buildRoleGroup(context, 'KHÁCH VÃNG LAI', guests, AppColors.roleGuest, currentProfile, canManageRoles: canManageRoles, canRemoveMember: canRemoveMember),
+                    if (guests.isNotEmpty) _buildRoleGroup(context, 'KHÁCH GIAO LƯU', guests, AppColors.roleGuest, currentProfile, canManageRoles: canManageRoles, canRemoveMember: canRemoveMember),
                     AppSpacing.gapH16,
                   ],
                 ),
@@ -376,7 +376,7 @@ class _ClubMemberSectionState extends ConsumerState<ClubMemberSection> {
                 ),
                 const SizedBox(height: 1.5),
                 Text(
-                  '${m.role == ClubRole.guest ? "Khách vãng lai" : (m.isMonthlyMember ? "Gói Tháng (Cố định)" : "Đóng theo buổi")} • ${isMe ? "Tài khoản của bạn" : (m.email ?? "Thành viên")}',
+                  '${m.role == ClubRole.guest ? "Khách giao lưu" : (m.isMonthlyMember ? "Gói Tháng (Cố định)" : "Đóng theo buổi")} • ${isMe ? "Tài khoản của bạn" : (m.email ?? "Thành viên")}',
                   style: AppTypography.bodySmall.colored(
                     isMe ? colors.primary : colors.textMuted,
                   ).copyWith(fontWeight: isMe ? FontWeight.w500 : FontWeight.normal),
@@ -529,7 +529,7 @@ class _ClubMemberSectionState extends ConsumerState<ClubMemberSection> {
                   subtitle: Text(
                     m.isMonthlyMember
                         ? 'Hiện tại: Hội viên Cố định (Gói Tháng - 0đ/buổi)'
-                        : 'Hiện tại: Hội viên Đóng theo buổi (DAILY)',
+                        : 'Hiện tại: Hội viên Đóng theo buổi',
                     style: AppTypography.labelSmall.colored(colors.textMuted),
                   ),
                   onTap: () {
@@ -684,7 +684,7 @@ class _ClubMemberSectionState extends ConsumerState<ClubMemberSection> {
                   selectedType == 'DAILY' ? Icons.radio_button_checked : Icons.radio_button_off,
                   color: selectedType == 'DAILY' ? colors.primary : colors.textMuted,
                 ),
-                title: Text('Hội viên Đóng theo buổi (DAILY)', style: AppTypography.bodyMedium.bold.colored(colors.textPrimary)),
+                title: Text('Hội viên Đóng theo buổi', style: AppTypography.bodyMedium.bold.colored(colors.textPrimary)),
                 subtitle: Text(
                   'Tham gia buổi nào tính phí buổi đó theo biểu phí thành viên ngày (có áp dụng ưu đãi Nữ).',
                   style: AppTypography.labelSmall.colored(colors.textMuted),

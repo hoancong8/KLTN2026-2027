@@ -25,7 +25,7 @@ Hệ thống cơ sở dữ liệu được xây dựng trên hệ quản trị *
 | **13** | Quy tắc chia tiền & Biểu phí | `group_fee_rule` | `GroupFeeRule` | Tài chính & Biểu phí |
 | **14** | Yêu cầu gia nhập nhóm | `join_request` | `JoinRequest` | Tuyển quân & Gia nhập |
 | **15** | Buổi sinh hoạt cầu lông | `badminton_session` | `BadmintonSession` | Vận hành Buổi chơi |
-| **16** | Biểu quyết giữ chỗ | `session_booking` | `SessionBooking` | Đặt chỗ & Hàng đợi |
+| **16** | Đăng ký giữ chỗ | `session_booking` | `SessionBooking` | Đặt chỗ & Hàng đợi |
 | **17** | Yêu cầu tìm khách giao lưu | `guest_recruitment` | `GuestRecruitment` | Kết nối Radar GPS |
 | **18** | Trận đấu xoay tua | `session_match` | `SessionMatch` | Điều phối tại sân |
 | **19** | Người chơi trận đấu | `match_player` | `MatchPlayer` | Điều phối tại sân |
@@ -93,7 +93,7 @@ Lưu trữ thông tin tài khoản và hồ sơ thể thao cá nhân.
 | `skill_level` | SMALLINT | NOT NULL | 1 | Trình độ: 1=NB, 2=Y, 3=TBY, 4=TB, 5=TBK, 6=K |
 | `last_lat` | DECIMAL(10,7)| NULL | - | Vĩ độ GPS gần nhất |
 | `last_lng` | DECIMAL(10,7)| NULL | - | Kinh độ GPS gần nhất |
-| `is_open_for_guest`| BOOLEAN | NOT NULL | `true` | Cờ sẵn sàng nhận kèo giao lưu quanh đây |
+| `is_open_for_guest`| BOOLEAN | NOT NULL | `true` | Cờ sẵn sàng tham gia giao lưu quanh đây |
 | `reputation_score` | DECIMAL(5,2)| NOT NULL | 100.00 | Điểm uy tín cá nhân (khởi tạo 100đ) |
 | `is_active` | BOOLEAN | NOT NULL | `true` | Trạng thái hoạt động tài khoản |
 | `created_at` | TIMESTAMP | NOT NULL | `now()` | Thời điểm tạo tài khoản |
@@ -284,6 +284,7 @@ Lưu cấu hình tính phí và ưu đãi tài chính của nhóm.
 | `guest_fee` | DECIMAL(18,2)| NOT NULL | `0` | Tiền buổi cho khách vãng lai |
 | `female_discount_monthly`| DECIMAL(18,2)| NOT NULL | `0` | Giảm trừ tháng cho Nữ |
 | `female_discount_daily` | DECIMAL(18,2)| NOT NULL | `0` | Giảm trừ buổi cho Nữ |
+| `female_discount_guest` | DECIMAL(18,2)| NOT NULL | `0` | Giảm trừ buổi cho Nữ khách giao lưu |
 | `round_rule` | INT | NOT NULL | `1000` | Làm tròn tiền (VD: 1.000đ, 5.000đ) |
 | `applied_at` | TIMESTAMP | NOT NULL | `now()` | Thời điểm áp dụng |
 
@@ -308,7 +309,7 @@ Lưu các đơn xin gia nhập câu lạc bộ từ người chơi.
 ---
 
 ### 3.15. Bảng `badminton_session` (Buổi Sinh Hoạt Cầu Lông)
-Lưu thông tin các buổi chơi (kèo đấu) do câu lạc bộ tổ chức.
+Lưu thông tin các buổi sinh hoạt do câu lạc bộ tổ chức.
 
 | Tên Cột | Kiểu Dữ Liệu | Ràng Buộc | Giá Trị Mặc Định | Mô Tả Nghiệp Vụ |
 | :--- | :--- | :--- | :--- | :--- |
@@ -335,7 +336,7 @@ Lưu thông tin các buổi chơi (kèo đấu) do câu lạc bộ tổ chức.
 
 ---
 
-### 3.16. Bảng `session_booking` (Biểu Quyết Giữ Chỗ)
+### 3.16. Bảng `session_booking` (Đăng Ký Giữ Chỗ)
 Lưu danh sách người đăng ký tham gia buổi chơi và hàng đợi.
 
 | Tên Cột | Kiểu Dữ Liệu | Ràng Buộc | Giá Trị Mặc Định | Mô Tả Nghiệp Vụ |
@@ -348,6 +349,7 @@ Lưu danh sách người đăng ký tham gia buổi chơi và hàng đợi.
 | `queue_order` | INT | NOT NULL | 0 | Thứ tự hàng đợi (0: chính thức, 1, 2...: hàng đợi) |
 | `booked_at` | TIMESTAMP | NOT NULL | `now()` | Thời điểm bấm giữ chỗ |
 | `checkin_at` | TIMESTAMP | NULL | - | Thời điểm điểm danh có mặt tại sân |
+| `is_rotation_paused` | BOOLEAN | NOT NULL | false | UC14: cờ tạm nghỉ, migration mới đã kiểm chứng trên sandbox; chưa áp dụng DB đích |
 | `attendance_marked_at` | TIMESTAMP WITH TIME ZONE | NULL | - | Thời điểm cập nhật điểm danh gần nhất |
 | `attendance_marked_by` | UUID | NULL | - | ID người cập nhật điểm danh; dấu vết thực hiện, không khai báo FK trong migration hiện tại |
 
@@ -383,8 +385,11 @@ Lưu thông tin các trận đấu diễn ra trên từng sân của buổi chơ
 | `time_start` | TIMESTAMP WITH TIME ZONE | NULL | - | Giờ bắt đầu thực tế; đề xuất WAITING chưa có giá trị |
 | `time_end` | TIMESTAMP WITH TIME ZONE | NULL | - | Giờ kết thúc trận hoặc hủy đề xuất; trận FINISHED không kết thúc trước time_start |
 | `status` | VARCHAR(20) | NOT NULL | `'WAITING'` | Trạng thái: `WAITING`, `PLAYING`, `FINISHED`, `SKIPPED` |
+| `original_lineup_snapshot` | JSONB | NULL; CHECK SQL NULL hoặc JSON object | NULL | UC14: gợi ý gốc dưới dạng object; migration mới đã kiểm chứng sandbox, DB đích chưa nâng cấp |
 
 UC13 có unique index `ux_session_match_active_court` trên `(id_session, court_number)` với điều kiện trạng thái WAITING/PLAYING và chưa xóa. Phân trùng người giữa các trận được ngăn bởi khóa dòng session và kiểm tra Domain trong cùng transaction. Số lượt tăng theo từng sân; proposal luôn đúng bốn người, mỗi đội hai người.
+
+**UC14 — mapping/migration đã kiểm chứng sandbox ở đợt B:** migration `20261020150546_AddManualRotationIntervention` thêm hai cột được ghi ở các bảng trên; DB đích chưa được migrate. Object LineupSnapshot trong SessionMatch.cs được EF complex type + ToJson lưu thành JSONB, không thêm bảng/entity/converter riêng. SQL NULL là chưa chụp; CHECK ck_session_match_original_lineup_object chặn JSON null/scalar/array. Repository kiểm tra cấu trúc snapshot sau tải; UserId trong JSONB không có FK nên reset vẫn phải kiểm tra eligibility ở các đợt sau. Down chặn mọi snapshot IS NOT NULL hoặc người pause, không tự xóa dữ liệu để rollback. Chi tiết: [UC14-BE.md](Detail%20Design/UC14-BE.md).
 
 ---
 

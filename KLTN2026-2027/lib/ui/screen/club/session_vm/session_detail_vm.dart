@@ -14,6 +14,7 @@ final sessionDetailViewModelProvider = StateNotifierProvider.autoDispose
     getSessionDetailUseCase: ref.watch(getSessionDetailUseCaseProvider),
     voteBookingUseCase: ref.watch(voteBookingUseCaseProvider),
     cancelBookingUseCase: ref.watch(cancelBookingUseCaseProvider),
+    confirmBookingUseCase: ref.watch(confirmBookingUseCaseProvider),
     updateSessionStatusUseCase: ref.watch(updateSessionStatusUseCaseProvider),
     deleteSessionUseCase: ref.watch(deleteSessionUseCaseProvider),
     createRecruitmentUseCase: ref.watch(createRecruitmentUseCaseProvider),
@@ -26,6 +27,7 @@ class SessionDetailViewModel extends StateNotifier<SessionDetailState> {
   final GetSessionDetailUseCase getSessionDetailUseCase;
   final VoteBookingUseCase voteBookingUseCase;
   final CancelBookingUseCase cancelBookingUseCase;
+  final ConfirmBookingUseCase confirmBookingUseCase;
   final UpdateSessionStatusUseCase updateSessionStatusUseCase;
   final DeleteSessionUseCase deleteSessionUseCase;
   final CreateRecruitmentUseCase createRecruitmentUseCase;
@@ -36,6 +38,7 @@ class SessionDetailViewModel extends StateNotifier<SessionDetailState> {
     required this.getSessionDetailUseCase,
     required this.voteBookingUseCase,
     required this.cancelBookingUseCase,
+    required this.confirmBookingUseCase,
     required this.updateSessionStatusUseCase,
     required this.deleteSessionUseCase,
     required this.createRecruitmentUseCase,
@@ -84,6 +87,19 @@ class SessionDetailViewModel extends StateNotifier<SessionDetailState> {
     } catch (e) {
       if (!mounted) return false;
       state = state.copyWith(isSubmitting: false, errorMessage: _resolveErrorMessage(e));
+      return false;
+    }
+  }
+
+  Future<bool> confirmBooking(String bookingId) async {
+    state = state.copyWith(isSubmitting: true, errorMessage: null);
+    try {
+      await confirmBookingUseCase.execute(sessionId, bookingId);
+      await loadDetail();
+      state = state.copyWith(isSubmitting: false);
+      return true;
+    } catch (e) {
+      state = state.copyWith(isSubmitting: false, errorMessage: e.toString());
       return false;
     }
   }

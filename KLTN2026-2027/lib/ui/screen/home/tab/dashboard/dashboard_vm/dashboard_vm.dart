@@ -7,6 +7,7 @@ import 'package:kltn2026_2027/domain/entities/club/my_club.dart';
 import 'package:kltn2026_2027/domain/entities/player_profile.dart';
 import 'package:kltn2026_2027/domain/entities/session/guest_recruitment.dart';
 import 'package:kltn2026_2027/domain/entities/session/my_booking_item.dart';
+import 'package:kltn2026_2027/domain/enums/session_enums.dart';
 import 'package:kltn2026_2027/domain/services/i_location_service.dart';
 import 'package:kltn2026_2027/domain/usecases/club/explore_clubs_usecase.dart';
 import 'package:kltn2026_2027/domain/usecases/club/get_my_clubs_usecase.dart';
@@ -80,13 +81,18 @@ class DashboardViewModel extends StateNotifier<DashboardState> {
       ]);
 
       if (!mounted) return;
+      final upcoming = results[1] as List<MyBookingItem>;
+      final rawRecruitments = results[2] as List<GuestRecruitment>;
+      final rawClubs = results[3] as List<ExploreClub>;
+      final myClubs = results[4] as List<MyClub>;
+
       state = state.copyWith(
         isLoading: false,
         playerProfile: results[0] as PlayerProfile?,
-        upcomingBookings: results[1] as List<MyBookingItem>,
-        nearbyRecruitments: results[2] as List<GuestRecruitment>,
-        nearbyClubs: results[3] as List<ExploreClub>,
-        myClubs: results[4] as List<MyClub>,
+        upcomingBookings: upcoming,
+        nearbyRecruitments: _filterAvailableRecruitments(rawRecruitments, upcoming, myClubs),
+        nearbyClubs: _filterUnjoinedClubs(rawClubs, myClubs),
+        myClubs: myClubs,
       );
     } catch (e) {
       if (!mounted) return;
@@ -113,13 +119,18 @@ class DashboardViewModel extends StateNotifier<DashboardState> {
       ]);
 
       if (!mounted) return;
+      final upcoming = results[1] as List<MyBookingItem>;
+      final rawRecruitments = results[2] as List<GuestRecruitment>;
+      final rawClubs = results[3] as List<ExploreClub>;
+      final myClubs = results[4] as List<MyClub>;
+
       state = state.copyWith(
         isRefreshing: false,
         playerProfile: results[0] as PlayerProfile?,
-        upcomingBookings: results[1] as List<MyBookingItem>,
-        nearbyRecruitments: results[2] as List<GuestRecruitment>,
-        nearbyClubs: results[3] as List<ExploreClub>,
-        myClubs: results[4] as List<MyClub>,
+        upcomingBookings: upcoming,
+        nearbyRecruitments: _filterAvailableRecruitments(rawRecruitments, upcoming, myClubs),
+        nearbyClubs: _filterUnjoinedClubs(rawClubs, myClubs),
+        myClubs: myClubs,
       );
     } catch (e) {
       if (!mounted) return;
@@ -128,6 +139,48 @@ class DashboardViewModel extends StateNotifier<DashboardState> {
         errorMessage: e.toString(),
       );
     }
+  }
+
+  List<GuestRecruitment> _filterAvailableRecruitments(
+    List<GuestRecruitment> recruitments,
+    List<MyBookingItem> bookings,
+    List<MyClub> myClubs,
+  ) {
+    final bookedSessionIds = bookings
+        .where((b) => !b.isEnded && b.bookingStatus != BookingStatus.absent)
+        .map((b) => b.sessionId)
+        .toSet();
+    final joinedClubNames = myClubs
+        .map((c) => c.clubName.trim().toLowerCase())
+        .where((s) => s.isNotEmpty)
+        .toSet();
+
+    return recruitments.where((r) {
+      if (bookedSessionIds.contains(r.sessionId)) return false;
+      final clubName = r.clubName.trim().toLowerCase();
+      if (clubName.isNotEmpty && joinedClubNames.contains(clubName)) return false;
+      return true;
+    }).toList();
+  }
+
+  List<ExploreClub> _filterUnjoinedClubs(
+    List<ExploreClub> clubs,
+    List<MyClub> myClubs,
+  ) {
+    final joinedIds = myClubs.map((c) => c.clubId.trim().toLowerCase()).where((s) => s.isNotEmpty).toSet();
+    final joinedCodes = myClubs.map((c) => c.clubCode.trim().toUpperCase()).where((s) => s.isNotEmpty).toSet();
+    final joinedNames = myClubs.map((c) => c.clubName.trim().toLowerCase()).where((s) => s.isNotEmpty).toSet();
+
+    return clubs.where((c) {
+      final id = c.id.trim().toLowerCase();
+      final code = c.code.trim().toUpperCase();
+      final name = c.groupName.trim().toLowerCase();
+
+      if (id.isNotEmpty && joinedIds.contains(id)) return false;
+      if (code.isNotEmpty && joinedCodes.contains(code)) return false;
+      if (name.isNotEmpty && joinedNames.contains(name)) return false;
+      return true;
+    }).toList();
   }
 
   Future<PlayerProfile?> _fetchProfile() async {

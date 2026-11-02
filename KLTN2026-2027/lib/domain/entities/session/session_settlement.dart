@@ -28,6 +28,34 @@ class MemberSettlementFee {
   });
 
   bool get isPaid => paymentStatus == 'PAID';
+
+  MemberSettlementFee copyWith({
+    String? userId,
+    String? fullName,
+    String? avatarUrl,
+    String? roleName,
+    String? gender,
+    int? baseFee,
+    int? discount,
+    int? finalFee,
+    String? paymentStatus,
+    String? vietQrUrl,
+    String? paymentCode,
+  }) {
+    return MemberSettlementFee(
+      userId: userId ?? this.userId,
+      fullName: fullName ?? this.fullName,
+      avatarUrl: avatarUrl ?? this.avatarUrl,
+      roleName: roleName ?? this.roleName,
+      gender: gender ?? this.gender,
+      baseFee: baseFee ?? this.baseFee,
+      discount: discount ?? this.discount,
+      finalFee: finalFee ?? this.finalFee,
+      paymentStatus: paymentStatus ?? this.paymentStatus,
+      vietQrUrl: vietQrUrl ?? this.vietQrUrl,
+      paymentCode: paymentCode ?? this.paymentCode,
+    );
+  }
 }
 
 class SessionSettlement {

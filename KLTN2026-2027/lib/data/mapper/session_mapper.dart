@@ -50,6 +50,7 @@ class SessionMapper {
       bookedAt: (DateTime.tryParse(dto.bookedAt) ?? DateTime.now()).toLocal(),
       checkinAt: dto.checkinAt != null ? DateTime.tryParse(dto.checkinAt!)?.toLocal() : null,
       recruitmentId: dto.recruitmentId,
+      gender: dto.gender,
     );
   }
 
@@ -70,6 +71,8 @@ class SessionMapper {
       broadcastAt: (DateTime.tryParse(dto.broadcastAt) ?? DateTime.now()).toLocal(),
       distanceKm: dto.distanceKm,
       hidePlayerList: dto.hidePlayerList,
+      femaleDiscount: dto.femaleDiscount,
+      femaleSharedCost: dto.femaleSharedCost,
     );
   }
 

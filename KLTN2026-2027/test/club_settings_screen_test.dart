@@ -110,6 +110,14 @@ void main() {
 
     await tester.pumpAndSettle();
     expect(find.text('Cài Đặt Câu Lạc Bộ'), findsOneWidget);
+    // Tap Tab Biểu Phí & Ngân Hàng to view fees
+    await tester.tap(find.text('Biểu Phí & Ngân Hàng'));
+    await tester.pumpAndSettle();
+    expect(find.text('Chia Thực Tế'), findsOneWidget);
+    expect(find.text('Ưu đãi giảm giá cho Nữ'), findsOneWidget);
+    // Switch to 'Định Mức Cố Định' to see fixed rates
+    await tester.tap(find.text('Định Mức Cố Định'));
+    await tester.pumpAndSettle();
     expect(find.text('500.000'), findsOneWidget);
     final btn = tester.getRect(find.text('Lưu Thay Đổi Cài Đặt'));
     final form = tester.getRect(find.byType(Form));

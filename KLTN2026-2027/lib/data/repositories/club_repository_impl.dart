@@ -3,6 +3,9 @@
 import '../../domain/entities/club/active_club_context.dart';
 import '../../domain/entities/club/club.dart';
 import '../../domain/entities/club/club_detail.dart';
+import '../../domain/entities/club/club_fee_rule.dart';
+import '../dto/club/club_fee_rule_dto.dart';
+import '../mapper/club_fee_rule_mapper.dart';
 import '../../domain/entities/club/club_member.dart';
 import '../../domain/entities/club/club_role_item.dart';
 import '../../domain/entities/club/explore_club.dart';
@@ -322,5 +325,38 @@ class ClubRepositoryImpl implements ClubRepository {
   ) async {
     final request = ClubDetailMapper.toUpdateSchedulesDto(schedules);
     await remoteDatasource.updateClubSchedules(clubId, request);
+  }
+
+  // --- FR19: Hạch toán biểu phí và Quỹ nhóm ---
+  @override
+  Future<ClubFeeRule> getClubFeeRule(String clubId) async {
+    final dto = await remoteDatasource.getClubFeeRule(clubId);
+    return ClubFeeRuleMapper.toEntity(dto);
+  }
+
+  @override
+  Future<ClubFeeRule> updateClubFeeRule(
+    String clubId, {
+    required int feeMode,
+    required double monthlyFee,
+    required double dailyMemberFee,
+    required double guestFee,
+    required double femaleDiscountMonthly,
+    required double femaleDiscountDaily,
+    required double femaleDiscountGuest,
+    required int roundRule,
+  }) async {
+    final request = UpdateClubFeeRuleRequestDto(
+      feeMode: feeMode,
+      monthlyFee: monthlyFee,
+      dailyMemberFee: dailyMemberFee,
+      guestFee: guestFee,
+      femaleDiscountMonthly: femaleDiscountMonthly,
+      femaleDiscountDaily: femaleDiscountDaily,
+      femaleDiscountGuest: femaleDiscountGuest,
+      roundRule: roundRule,
+    );
+    final dto = await remoteDatasource.updateClubFeeRule(clubId, request);
+    return ClubFeeRuleMapper.toEntity(dto);
   }
 }

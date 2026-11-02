@@ -149,8 +149,12 @@ class LoginMobile extends ConsumerWidget {
             alignment: Alignment.centerRight,
             child: TextButton(
               onPressed: () {
-                // TODO: Thêm logic chuyển hướng đến màn quên mật khẩu
-                // Ví dụ: context.push(AppConfig.forgotPasswordPath);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Vui lòng liên hệ Quản trị viên để đặt lại mật khẩu.'),
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
               },
               style: TextButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 8),

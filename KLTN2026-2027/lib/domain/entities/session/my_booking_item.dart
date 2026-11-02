@@ -18,6 +18,8 @@ class MyBookingItem {
   final double feePerMember;
   final DateTime bookedAt;
   final DateTime? checkinAt;
+  final bool isGuest;
+  final String memberType;
 
   const MyBookingItem({
     required this.bookingId,
@@ -35,13 +37,18 @@ class MyBookingItem {
     required this.feePerMember,
     required this.bookedAt,
     this.checkinAt,
+    this.isGuest = false,
+    this.memberType = 'MONTHLY',
   });
 
   bool get isUpcoming => startTime.isAfter(DateTime.now());
   bool get isOngoing => startTime.isBefore(DateTime.now()) && endTime.isAfter(DateTime.now());
   bool get isUpcomingOrOngoing => endTime.isAfter(DateTime.now());
   bool get isPast => endTime.isBefore(DateTime.now());
+  bool get isEnded => sessionStatus == SessionStatus.completed || sessionStatus == SessionStatus.calculated || isPast;
   bool get isConfirmed => bookingStatus == BookingStatus.confirmed;
   bool get isWaiting => bookingStatus == BookingStatus.waiting;
   bool get isCheckedIn => bookingStatus == BookingStatus.checkedIn;
+  bool get isMonthlyMember => !isGuest && memberType.toUpperCase() == 'MONTHLY';
+  bool get isDailyMember => !isGuest && memberType.toUpperCase() == 'DAILY';
 }
