@@ -56,7 +56,7 @@ class _MyAppState extends ConsumerState<MyApp> {
     FlutterNativeSplash.remove();
 
     return MaterialApp.router(
-      title: 'KLTN2026-2027',
+      title: 'SIPM - Sport Club',
       routerConfig: _router,
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,

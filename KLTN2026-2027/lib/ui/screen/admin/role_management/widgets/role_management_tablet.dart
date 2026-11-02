@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:kltn2026_2027/app/theme/theme.dart';
 import 'package:kltn2026_2027/app/consts/permissions.dart';
 import 'package:kltn2026_2027/domain/entities/app_role.dart';
@@ -153,15 +154,19 @@ class _RoleManagementTabletState extends ConsumerState<RoleManagementTablet> {
               color: colors.surface,
               child: Row(
                 children: [
-                  if (Navigator.of(context).canPop()) ...[
-                    IconButton(
-                      icon: Icon(Icons.arrow_back_rounded, color: colors.textPrimary),
-                      onPressed: () => Navigator.of(context).pop(),
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
-                    ),
-                    const SizedBox(width: 12),
-                  ],
+                  IconButton(
+                    icon: Icon(Icons.arrow_back_rounded, color: colors.textPrimary),
+                    onPressed: () {
+                      if (context.canPop()) {
+                        context.pop();
+                      } else {
+                        context.go('/home');
+                      }
+                    },
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                  ),
+                  const SizedBox(width: 12),
                   Text(
                     'Quản lý vai trò',
                     style: TextStyle(

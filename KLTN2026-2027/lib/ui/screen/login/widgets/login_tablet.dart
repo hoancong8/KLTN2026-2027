@@ -152,7 +152,14 @@ class LoginTablet extends ConsumerWidget {
           Align(
             alignment: Alignment.centerRight,
             child: TextButton(
-              onPressed: () {}, // Add logic forgot password
+              onPressed: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Vui lòng liên hệ Quản trị viên để đặt lại mật khẩu.'),
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              },
               child: Text(
                 l10n.auth_forgot_password,
                 style: TextStyle(color: colors.textMuted, fontSize: 14),

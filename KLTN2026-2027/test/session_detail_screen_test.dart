@@ -37,18 +37,19 @@ void main() {
       tester.view.resetDevicePixelRatio();
     });
 
+    final futureDate = DateTime.now().add(const Duration(days: 3));
     final session = Session(
       id: 'session-1',
       groupId: 'club-1',
       clubName: 'CLB Cầu Lông Chiến Binh Quận 10',
       title: 'Buổi sinh hoạt Thứ 2 (19:00 - 22:00)',
-      startTime: DateTime(2026, 10, 29, 19, 0),
-      endTime: DateTime(2026, 10, 29, 22, 0),
+      startTime: futureDate,
+      endTime: futureDate.add(const Duration(hours: 3)),
       courtLocation: 'Sân Cầu Lông Kỳ Hòa, 238 Đường 3/2, Phường 12, Quận 10, TP.HCM',
       courtCount: 2,
       targetPlayerPerCourt: 6,
       maxPlayers: 12,
-      deadlineBooking: DateTime(2026, 10, 29, 17, 0),
+      deadlineBooking: futureDate.subtract(const Duration(hours: 2)),
       courtRentalCost: 300000,
       status: SessionStatus.open,
       confirmedCount: 1,
@@ -113,18 +114,19 @@ void main() {
       tester.view.resetDevicePixelRatio();
     });
 
+    final futureDate = DateTime.now().add(const Duration(days: 3));
     final session = Session(
       id: 'session-2',
       groupId: 'club-1',
       clubName: 'CLB Cầu Lông Chiến Binh Quận 10',
       title: 'Buổi sinh hoạt Thứ 4 (19:00 - 22:00)',
-      startTime: DateTime(2026, 10, 28, 19, 0),
-      endTime: DateTime(2026, 10, 28, 22, 0),
+      startTime: futureDate,
+      endTime: futureDate.add(const Duration(hours: 3)),
       courtLocation: 'Sân Cầu Lông Kỳ Hòa, 238 Đường 3/2, Phường 12, Quận 10, TP.HCM',
       courtCount: 2,
       targetPlayerPerCourt: 6,
       maxPlayers: 12,
-      deadlineBooking: DateTime(2026, 10, 28, 17, 0),
+      deadlineBooking: futureDate.subtract(const Duration(hours: 2)),
       courtRentalCost: 300000,
       status: SessionStatus.open,
       confirmedCount: 1,
