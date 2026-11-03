@@ -24,17 +24,17 @@ class RoleCard extends StatelessWidget {
   Color _getIconColor() {
     final nameLower = role.name.toLowerCase();
     if (nameLower == 'admin' || nameLower == 'user') {
-      return AppColors.roleOrange; // Orange
+      return AppColors.primaryDark;
     }
-    return AppColors.roleViolet; // Purple
+    return AppColors.primary;
   }
 
   Color _getIconBackgroundColor() {
     final nameLower = role.name.toLowerCase();
     if (nameLower == 'admin' || nameLower == 'user') {
-      return AppColors.accentLight; // Soft orange background
+      return AppColors.primaryContainer;
     }
-    return AppColors.violetLight; // Soft purple background
+    return AppColors.primaryContainer;
   }
 
   @override

@@ -161,7 +161,7 @@ class _ClubMemberSectionState extends ConsumerState<ClubMemberSection> {
                 padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: 10),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [AppColors.roleViolet, AppColors.roleHost],
+                    colors: [AppColors.primary, AppColors.primaryDark],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),

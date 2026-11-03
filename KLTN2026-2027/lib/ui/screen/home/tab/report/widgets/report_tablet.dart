@@ -27,51 +27,53 @@ class _ReportTabletState extends ConsumerState<ReportTablet> {
     final vm = ref.read(reportViewModelProvider.notifier);
     final state = widget.state;
 
-    return Scaffold(
-      backgroundColor: colors.background,
-      body: RefreshIndicator(
-        color: colors.primary,
-        backgroundColor: colors.surface,
-        onRefresh: widget.onRefresh,
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Left column: Month Calendar + Mini Stats
-            Container(
-              width: 380,
-              decoration: BoxDecoration(
-                color: colors.cardBackground,
-                border: Border(right: BorderSide(color: colors.cardBorder)),
-              ),
-              child: ListView(
-                padding: const EdgeInsets.all(24),
-                children: [
-                  _buildHeaderInfo(state, vm),
-                  const SizedBox(height: 20),
-                  _buildMonthCalendar(state, vm),
-                ],
-              ),
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Left column: Month Calendar + Mini Stats
+        Container(
+          width: 380,
+          decoration: BoxDecoration(
+            color: colors.cardBackground,
+            border: Border(right: BorderSide(color: colors.cardBorder)),
+          ),
+          child: RefreshIndicator(
+            color: colors.primary,
+            backgroundColor: colors.surface,
+            onRefresh: widget.onRefresh,
+            child: ListView(
+              padding: const EdgeInsets.all(24),
+              children: [
+                _buildHeaderInfo(state, vm),
+                const SizedBox(height: 20),
+                _buildMonthCalendar(state, vm),
+              ],
             ),
-
-            // Right column: Booked Sessions List
-            Expanded(
-              child: ListView(
-                padding: const EdgeInsets.all(28),
-                children: [
-                  _buildListHeader(state, vm),
-                  const SizedBox(height: 16),
-                  _buildFilterChips(state, vm),
-                  const SizedBox(height: 16),
-                  if (state.bookingsOnSelectedDate.isEmpty)
-                    _buildEmptyState(state)
-                  else
-                    ...state.bookingsOnSelectedDate.map((b) => _buildBookingCard(b)),
-                ],
-              ),
-            ),
-          ],
+          ),
         ),
-      ),
+
+        // Right column: Booked Sessions List
+        Expanded(
+          child: RefreshIndicator(
+            color: colors.primary,
+            backgroundColor: colors.surface,
+            onRefresh: widget.onRefresh,
+            child: ListView(
+              padding: const EdgeInsets.all(28),
+              children: [
+                _buildListHeader(state, vm),
+                const SizedBox(height: 16),
+                _buildFilterChips(state, vm),
+                const SizedBox(height: 16),
+                if (state.bookingsOnSelectedDate.isEmpty)
+                  _buildEmptyState(state)
+                else
+                  ...state.bookingsOnSelectedDate.map((b) => _buildBookingCard(b)),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -482,17 +484,15 @@ class _ReportTabletState extends ConsumerState<ReportTablet> {
       badgeBorder = colors.cardBorder;
       badgeFg = colors.textMuted;
       badgeIcon = Icons.flag_circle_outlined;
-      badgeText = 'BUỔI ĐÃ KẾT THÚC';
-      explainText = 'Buổi chơi đã hoàn tất${booking.isConfirmed ? ' • Bạn đã hoàn thành buổi này' : ''}';
+      badgeText = 'Đã kết thúc';
+      explainText = 'Buổi chơi đã hoàn tất${booking.isConfirmed ? ' • Bạn đã hoàn thành ca đấu này' : ''}';
       explainIcon = Icons.task_alt_rounded;
     } else if (isWaiting) {
       badgeBg = colors.warning.withValues(alpha: 0.14);
       badgeBorder = colors.warning.withValues(alpha: 0.35);
       badgeFg = colors.warning;
       badgeIcon = Icons.hourglass_top_rounded;
-      badgeText = booking.isGuest
-          ? (booking.queueOrder > 0 ? 'VÃNG LAI CHỜ DUYỆT (#${booking.queueOrder})' : 'VÃNG LAI CHỜ DUYỆT')
-          : (booking.queueOrder > 0 ? 'HÀNG ĐỢI (#${booking.queueOrder})' : 'DANH SÁCH CHỜ');
+      badgeText = booking.queueOrder > 0 ? 'Chờ duyệt (#${booking.queueOrder})' : 'Chờ duyệt';
       explainText = booking.isGuest
           ? 'Đang trong danh sách chờ • Chờ Host xác nhận suất giao lưu'
           : 'Đang trong hàng đợi • Tự động đôn lên khi có người báo vắng';
@@ -502,7 +502,7 @@ class _ReportTabletState extends ConsumerState<ReportTablet> {
       badgeBorder = colors.primary.withValues(alpha: 0.35);
       badgeFg = colors.primary;
       badgeIcon = Icons.verified_user_rounded;
-      badgeText = 'SUẤT CỐ ĐỊNH';
+      badgeText = 'Suất cố định';
       explainText = 'Lịch sinh hoạt định kỳ • Tự động giữ chỗ không cần duyệt';
       explainIcon = Icons.calendar_today_rounded;
     } else if (isConfirmed) {
@@ -510,7 +510,7 @@ class _ReportTabletState extends ConsumerState<ReportTablet> {
       badgeBorder = colors.success.withValues(alpha: 0.35);
       badgeFg = colors.success;
       badgeIcon = Icons.verified_rounded;
-      badgeText = booking.isGuest ? 'VÉ GIAO LƯU CHÍNH THỨC' : 'SUẤT CHÍNH THỨC';
+      badgeText = booking.isGuest ? 'Vé giao lưu' : 'Suất chính thức';
       explainText = booking.isGuest
           ? 'Host đã duyệt suất giao lưu • Vui lòng đến sân đúng giờ'
           : 'Đã giữ chỗ chính thức • Vui lòng đến sân đúng giờ';
@@ -520,167 +520,266 @@ class _ReportTabletState extends ConsumerState<ReportTablet> {
       badgeBorder = colors.warning.withValues(alpha: 0.35);
       badgeFg = colors.warning;
       badgeIcon = Icons.hourglass_top_rounded;
-      badgeText = 'CHỜ DUYỆT';
+      badgeText = 'Chờ xử lý';
       explainText = 'Đang chờ xử lý';
       explainIcon = Icons.access_time_rounded;
     }
 
+    final String memberTypeText;
+    if (booking.isGuest) {
+      memberTypeText = 'Khách vãng lai';
+    } else if (booking.isMonthlyMember) {
+      memberTypeText = 'Hội viên cố định';
+    } else if (booking.isDailyMember) {
+      memberTypeText = 'Hội viên theo buổi';
+    } else {
+      memberTypeText = 'Thành viên CLB';
+    }
+
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
         color: isEnded ? colors.cardBackground.withValues(alpha: 0.7) : colors.cardBackground,
         borderRadius: AppRadius.card,
-        border: Border.all(color: isConfirmed ? colors.success.withValues(alpha: 0.4) : colors.cardBorder),
+        border: Border.all(
+          color: isConfirmed
+              ? colors.success.withValues(alpha: 0.35)
+              : (isWaiting ? colors.warning.withValues(alpha: 0.35) : colors.cardBorder),
+        ),
         boxShadow: context.isDark ? AppShadows.none : AppShadows.sm,
       ),
       child: InkWell(
         onTap: () => context.push('/session/${booking.sessionId}'),
         borderRadius: AppRadius.card,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: isEnded
-                        ? colors.surfaceSubtle
-                        : (isConfirmed ? colors.success : colors.primary).withValues(alpha: 0.15),
-                    borderRadius: AppRadius.borderMd,
-                    image: (booking.clubAvatarUrl != null && booking.clubAvatarUrl!.isNotEmpty)
-                        ? DecorationImage(
-                            image: NetworkImage(booking.clubAvatarUrl!),
-                            fit: BoxFit.cover,
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // 1. Top row: Club info & Status Badge
+              Row(
+                children: [
+                  Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: isEnded
+                          ? colors.surfaceSubtle
+                          : (isConfirmed ? colors.success : colors.primary).withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(8),
+                      image: (booking.clubAvatarUrl != null && booking.clubAvatarUrl!.isNotEmpty)
+                          ? DecorationImage(
+                              image: NetworkImage(booking.clubAvatarUrl!),
+                              fit: BoxFit.cover,
+                            )
+                          : null,
+                    ),
+                    child: (booking.clubAvatarUrl == null || booking.clubAvatarUrl!.isEmpty)
+                        ? Center(
+                            child: Icon(
+                              Icons.groups_rounded,
+                              color: isEnded ? colors.textMuted : (isConfirmed ? colors.success : colors.primary),
+                              size: 20,
+                            ),
                           )
                         : null,
                   ),
-                  child: (booking.clubAvatarUrl == null || booking.clubAvatarUrl!.isEmpty)
-                      ? Center(
-                          child: Icon(
-                            isEnded ? Icons.history_rounded : Icons.sports_tennis_rounded,
-                            color: isEnded ? colors.textMuted : (isConfirmed ? colors.success : colors.primary),
-                            size: 24,
-                          ),
-                        )
-                      : null,
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        booking.sessionTitle.isNotEmpty ? booking.sessionTitle : 'Buổi sinh hoạt cầu lông',
-                        style: AppTypography.titleSmall.bold.colored(
-                          isEnded ? colors.textSecondary : colors.textPrimary,
+                  AppSpacing.gapW12,
+                  Expanded(
+                    child: Text(
+                      booking.clubName,
+                      style: AppTypography.titleSmall.bold.colored(colors.textSecondary),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  AppSpacing.gapW12,
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: badgeBg,
+                      borderRadius: AppRadius.tag,
+                      border: Border.all(color: badgeBorder),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(badgeIcon, size: 13, color: badgeFg),
+                        const SizedBox(width: 4),
+                        Text(
+                          badgeText,
+                          style: AppTypography.labelSmall.bold.colored(badgeFg),
                         ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              AppSpacing.gapH12,
+
+              // 2. Session Title (Prominent, Full Width)
+              Text(
+                booking.sessionTitle.isNotEmpty ? booking.sessionTitle : 'Buổi sinh hoạt cầu lông',
+                style: AppTypography.titleMedium.bold.colored(
+                  isEnded ? colors.textSecondary : colors.textPrimary,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              AppSpacing.gapH8,
+
+              // 3. Member Type Tag & Fee
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: (booking.isGuest || booking.isWaiting)
+                          ? colors.warning.withValues(alpha: 0.12)
+                          : colors.primary.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(
+                        color: (booking.isGuest || booking.isWaiting)
+                            ? colors.warning.withValues(alpha: 0.3)
+                            : colors.primary.withValues(alpha: 0.3),
                       ),
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          Icon(Icons.groups_rounded, size: 14, color: colors.textSecondary),
-                          const SizedBox(width: 4),
-                          Text(booking.clubName, style: AppTypography.labelSmall.bold.colored(colors.textSecondary)),
-                          const SizedBox(width: 8),
-                          // Member Type Tag
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: (booking.isGuest || booking.isWaiting)
-                                  ? colors.warning.withValues(alpha: 0.12)
-                                  : colors.primary.withValues(alpha: 0.12),
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: Text(
-                              booking.isWaiting
-                                  ? (booking.isGuest ? 'Khách vãng lai (Chờ duyệt)' : 'Hàng đợi dự bị')
-                                  : (booking.isGuest
-                                      ? 'Khách vãng lai'
-                                      : (booking.isMonthlyMember ? 'Hội viên cố định' : 'Hội viên theo buổi')),
-                              style: TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
-                                color: (booking.isGuest || booking.isWaiting) ? colors.warning : colors.primary,
-                              ),
-                            ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          booking.isGuest ? Icons.person_outline_rounded : Icons.verified_user_outlined,
+                          size: 13,
+                          color: (booking.isGuest || booking.isWaiting) ? colors.warning : colors.primary,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          memberTypeText,
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: (booking.isGuest || booking.isWaiting) ? colors.warning : colors.primary,
                           ),
-                          const SizedBox(width: 12),
-                          Icon(Icons.access_time_rounded, size: 14, color: isEnded ? colors.textMuted : colors.primary),
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (booking.feePerMember > 0) ...[
+                    AppSpacing.gapW8,
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: colors.surfaceSubtle,
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(color: colors.cardBorder),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.payments_outlined, size: 13, color: colors.textSecondary),
                           const SizedBox(width: 4),
                           Text(
-                            '$startStr - $endStr, $dateStr',
-                            style: AppTypography.labelSmall.colored(
-                              isEnded ? colors.textSecondary : colors.textPrimary,
+                            '${(booking.feePerMember / 1000).toInt()}k/người',
+                            style: AppTypography.labelSmall.copyWith(
+                              color: colors.textSecondary,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 11,
                             ),
                           ),
                         ],
                       ),
-                      if (booking.courtLocation.isNotEmpty) ...[
-                        const SizedBox(height: 4),
-                        Row(
-                          children: [
-                            Icon(Icons.location_on_outlined, size: 14, color: colors.textMuted),
-                            const SizedBox(width: 4),
-                            Text(booking.courtLocation, style: AppTypography.labelSmall.colored(colors.textMuted)),
-                          ],
+                    ),
+                  ],
+                ],
+              ),
+              AppSpacing.gapH12,
+
+              // 4. Time & Location Box
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                decoration: BoxDecoration(
+                  color: colors.surfaceSubtle,
+                  borderRadius: AppRadius.borderSm,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.access_time_rounded,
+                          size: 16,
+                          color: isEnded ? colors.textMuted : colors.primary,
+                        ),
+                        AppSpacing.gapW8,
+                        Expanded(
+                          child: Text(
+                            '$startStr - $endStr, $dateStr',
+                            style: AppTypography.bodySmall.copyWith(
+                              color: isEnded ? colors.textSecondary : colors.textPrimary,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
                         ),
                       ],
+                    ),
+                    if (booking.courtLocation.isNotEmpty) ...[
+                      AppSpacing.gapH8,
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.location_on_outlined,
+                            size: 16,
+                            color: colors.textMuted,
+                          ),
+                          AppSpacing.gapW8,
+                          Expanded(
+                            child: Text(
+                              booking.courtLocation,
+                              style: AppTypography.bodySmall.colored(colors.textMuted),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
                     ],
-                  ),
+                  ],
                 ),
-                const SizedBox(width: 16),
-                // Status badge
+              ),
+
+              // 5. Phase Explanation Banner
+              if (explainText.isNotEmpty) ...[
+                AppSpacing.gapH8,
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   decoration: BoxDecoration(
                     color: badgeBg,
-                    borderRadius: AppRadius.tag,
-                    border: Border.all(color: badgeBorder),
+                    borderRadius: AppRadius.borderSm,
+                    border: Border.all(color: badgeBorder.withValues(alpha: 0.4)),
                   ),
                   child: Row(
-                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(badgeIcon, size: 13, color: badgeFg),
-                      const SizedBox(width: 4),
-                      Text(
-                        badgeText,
-                        style: AppTypography.labelSmall.bold.colored(badgeFg),
+                      Icon(explainIcon, size: 14, color: badgeFg),
+                      AppSpacing.gapW8,
+                      Expanded(
+                        child: Text(
+                          explainText,
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: badgeFg,
+                          ),
+                        ),
                       ),
                     ],
                   ),
                 ),
               ],
-            ),
-            const SizedBox(height: 8),
-            // Phase Explanation Banner
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              decoration: BoxDecoration(
-                color: badgeBg,
-                borderRadius: AppRadius.borderSm,
-                border: Border.all(color: badgeBorder.withValues(alpha: 0.5)),
-              ),
-              child: Row(
-                children: [
-                  Icon(explainIcon, size: 13, color: badgeFg),
-                  const SizedBox(width: 6),
-                  Expanded(
-                    child: Text(
-                      explainText,
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w500,
-                        color: badgeFg,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

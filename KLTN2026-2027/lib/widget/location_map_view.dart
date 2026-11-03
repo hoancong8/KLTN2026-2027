@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -49,10 +50,13 @@ class LocationMapView extends StatelessWidget {
       ),
       children: [
         TileLayer(
-          urlTemplate: 'https://mt{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
-          subdomains: const ['0', '1', '2', '3'],
+          urlTemplate: kIsWeb
+              ? 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
+              : 'https://mt{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
+          fallbackUrl: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+          subdomains: kIsWeb ? const [] : const ['0', '1', '2', '3'],
           userAgentPackageName: 'com.legendsteam.kltn2026_2027',
-          maxNativeZoom: 20,
+          maxNativeZoom: 19,
           maxZoom: 20,
           panBuffer: 1,
           keepBuffer: 2,

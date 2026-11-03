@@ -27,16 +27,15 @@ class _ReportPageState extends ConsumerState<ReportPage> {
     final colors = context.colors;
     final state = ref.watch(reportViewModelProvider);
 
+    Widget content;
     if (state.isLoading) {
-      return Center(
+      content = Center(
         child: CircularProgressIndicator(
           valueColor: AlwaysStoppedAnimation<Color>(colors.primary),
         ),
       );
-    }
-
-    if (state.error != null) {
-      return Center(
+    } else if (state.error != null) {
+      content = Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -75,27 +74,30 @@ class _ReportPageState extends ConsumerState<ReportPage> {
           ],
         ),
       );
+    } else {
+      content = ResponsiveLayout(
+        mobile: ReportMobile(
+          state: state,
+          onRefresh: () async {
+            await ref.read(reportViewModelProvider.notifier).loadData();
+          },
+        ),
+        tablet: ReportTablet(
+          state: state,
+          onRefresh: () async {
+            await ref.read(reportViewModelProvider.notifier).loadData();
+          },
+        ),
+      );
     }
 
-    return RefreshIndicator(
-        color: colors.primary,
-        backgroundColor: colors.surface,
-        onRefresh: () async {
-          await ref.read(reportViewModelProvider.notifier).loadData();
-        },
-        child: ResponsiveLayout(
-          mobile: ReportMobile(
-            state: state,
-            onRefresh: () async {
-              await ref.read(reportViewModelProvider.notifier).loadData();
-            },
-          ),
-          tablet: ReportTablet(
-            state: state,
-            onRefresh: () async {
-              await ref.read(reportViewModelProvider.notifier).loadData();
-            },
-          ),
-        ));
+    return Scaffold(
+      backgroundColor: colors.background,
+      body: SafeArea(
+        top: true,
+        bottom: false,
+        child: content,
+      ),
+    );
   }
 }

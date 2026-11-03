@@ -1524,18 +1524,18 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                         decoration: BoxDecoration(
-                          color: AppColors.roleViolet.withValues(alpha: 0.15),
+                          color: colors.primary.withValues(alpha: 0.1),
                           borderRadius: AppRadius.tag,
-                          border: Border.all(color: AppColors.roleViolet.withValues(alpha: 0.35)),
+                          border: Border.all(color: colors.primary.withValues(alpha: 0.25)),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.radar_rounded, size: 12, color: AppColors.roleViolet),
+                            Icon(Icons.radar_rounded, size: 12, color: colors.primary),
                             AppSpacing.gapW4,
                             Text(
                               'Tuyển khách giao lưu',
-                              style: AppTypography.labelSmall.bold.colored(AppColors.roleViolet),
+                              style: AppTypography.labelSmall.bold.colored(colors.primary),
                             ),
                           ],
                         ),
@@ -2747,7 +2747,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                   if (canRecruit && session.status == SessionStatus.open && !isEnded && !isPlaying && !isExpired)
                     ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.roleViolet,
+                        backgroundColor: colors.primary,
                         foregroundColor: AppColors.white,
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                         minimumSize: Size.zero,
@@ -2786,35 +2786,45 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
     final shouldHidePlayers = (detail?.activeRecruitment?.hidePlayerList ?? false) && !isSameClub && !canOperateAttendance;
 
     if (shouldHidePlayers) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: colors.surfaceSubtle,
-                  shape: BoxShape.circle,
+      return LayoutBuilder(
+        builder: (context, constraints) => SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: colors.surfaceSubtle,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(Icons.visibility_off_rounded, size: 36, color: colors.textMuted),
+                    ),
+                    AppSpacing.gapH12,
+                    Text(
+                      'Danh sách người chơi được ẩn',
+                      style: AppTypography.titleSmall.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: colors.textPrimary,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    AppSpacing.gapH4,
+                    Text(
+                      'Chủ câu lạc bộ đã bật chế độ bảo mật danh tính thành viên cho buổi chơi này.',
+                      style: AppTypography.bodySmall.copyWith(color: colors.textMuted),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
                 ),
-                child: Icon(Icons.visibility_off_rounded, size: 40, color: colors.textMuted),
               ),
-              AppSpacing.gapH16,
-              Text(
-                'Danh sách người chơi được ẩn',
-                style: AppTypography.titleSmall.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: colors.textPrimary,
-                ),
-              ),
-              AppSpacing.gapH8,
-              Text(
-                'Chủ câu lạc bộ đã bật chế độ bảo mật danh tính thành viên cho buổi chơi này.',
-                style: AppTypography.bodySmall.copyWith(color: colors.textMuted),
-                textAlign: TextAlign.center,
-              ),
-            ],
+            ),
           ),
         ),
       );
@@ -2832,34 +2842,44 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
     final isSubmitting = ref.watch(sessionDetailViewModelProvider(widget.sessionId)).isSubmitting;
 
     if (players.isEmpty) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                isWaiting ? Icons.hourglass_disabled_rounded : Icons.person_off_outlined,
-                size: 46,
-                color: colors.textMuted,
-              ),
-              AppSpacing.gapH12,
-              Text(
-                isWaiting ? 'Hàng đợi đang trống' : 'Chưa có người chơi chính thức',
-                style: AppTypography.titleSmall.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: colors.textPrimary,
+      return LayoutBuilder(
+        builder: (context, constraints) => SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      isWaiting ? Icons.hourglass_disabled_rounded : Icons.person_off_outlined,
+                      size: 38,
+                      color: colors.textMuted,
+                    ),
+                    AppSpacing.gapH8,
+                    Text(
+                      isWaiting ? 'Hàng đợi đang trống' : 'Chưa có người chơi chính thức',
+                      style: AppTypography.titleSmall.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: colors.textPrimary,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    AppSpacing.gapH4,
+                    Text(
+                      isWaiting
+                          ? 'Khi slot chính thức đã đủ, các đăng ký tiếp theo sẽ tự động vào đây.'
+                          : 'Hãy là người đầu tiên xác nhận tham gia buổi chơi này!',
+                      style: AppTypography.bodySmall.copyWith(color: colors.textMuted),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
                 ),
               ),
-              AppSpacing.gapH4,
-              Text(
-                isWaiting
-                    ? 'Khi slot chính thức đã đủ, các đăng ký tiếp theo sẽ tự động vào đây.'
-                    : 'Hãy là người đầu tiên xác nhận tham gia buổi chơi này!',
-                style: AppTypography.bodySmall.copyWith(color: colors.textMuted),
-                textAlign: TextAlign.center,
-              ),
-            ],
+            ),
           ),
         ),
       );

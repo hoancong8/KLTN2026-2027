@@ -33,7 +33,12 @@ class _ReportMobileState extends ConsumerState<ReportMobile> {
       onRefresh: widget.onRefresh,
       child: ListView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: AppSpacing.allBase,
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.base,
+          AppSpacing.sm,
+          AppSpacing.base,
+          AppSpacing.xl,
+        ),
         children: [
           // 1. Header Title & 4 Mini Stats
           _buildSummaryCard(state, vm),
@@ -516,17 +521,15 @@ class _ReportMobileState extends ConsumerState<ReportMobile> {
       badgeBorder = colors.cardBorder;
       badgeFg = colors.textMuted;
       badgeIcon = Icons.flag_circle_outlined;
-      badgeText = 'BUỔI ĐÃ KẾT THÚC';
-      explainText = 'Buổi chơi đã hoàn tất${booking.isConfirmed ? ' • Bạn đã hoàn thành buổi này' : ''}';
+      badgeText = 'Đã kết thúc';
+      explainText = 'Buổi chơi đã hoàn tất${booking.isConfirmed ? ' • Bạn đã hoàn thành ca đấu này' : ''}';
       explainIcon = Icons.task_alt_rounded;
     } else if (isWaiting) {
       badgeBg = colors.warning.withValues(alpha: 0.14);
       badgeBorder = colors.warning.withValues(alpha: 0.35);
       badgeFg = colors.warning;
       badgeIcon = Icons.hourglass_top_rounded;
-      badgeText = booking.isGuest
-          ? (booking.queueOrder > 0 ? 'VÃNG LAI CHỜ DUYỆT (#${booking.queueOrder})' : 'VÃNG LAI CHỜ DUYỆT')
-          : (booking.queueOrder > 0 ? 'HÀNG ĐỢI (#${booking.queueOrder})' : 'DANH SÁCH CHỜ');
+      badgeText = booking.queueOrder > 0 ? 'Chờ duyệt (#${booking.queueOrder})' : 'Chờ duyệt';
       explainText = booking.isGuest
           ? 'Đang trong danh sách chờ • Chờ Host xác nhận suất giao lưu'
           : 'Đang trong hàng đợi • Tự động đôn lên khi có người báo vắng';
@@ -536,7 +539,7 @@ class _ReportMobileState extends ConsumerState<ReportMobile> {
       badgeBorder = colors.primary.withValues(alpha: 0.35);
       badgeFg = colors.primary;
       badgeIcon = Icons.verified_user_rounded;
-      badgeText = 'SUẤT CỐ ĐỊNH';
+      badgeText = 'Suất cố định';
       explainText = 'Lịch sinh hoạt định kỳ • Tự động giữ chỗ không cần duyệt';
       explainIcon = Icons.calendar_today_rounded;
     } else if (isConfirmed) {
@@ -544,7 +547,7 @@ class _ReportMobileState extends ConsumerState<ReportMobile> {
       badgeBorder = colors.success.withValues(alpha: 0.35);
       badgeFg = colors.success;
       badgeIcon = Icons.verified_rounded;
-      badgeText = booking.isGuest ? 'VÉ GIAO LƯU CHÍNH THỨC' : 'SUẤT CHÍNH THỨC';
+      badgeText = booking.isGuest ? 'Vé giao lưu' : 'Suất chính thức';
       explainText = booking.isGuest
           ? 'Host đã duyệt suất giao lưu • Vui lòng đến sân đúng giờ'
           : 'Đã giữ chỗ chính thức • Vui lòng đến sân đúng giờ';
@@ -554,187 +557,266 @@ class _ReportMobileState extends ConsumerState<ReportMobile> {
       badgeBorder = colors.warning.withValues(alpha: 0.35);
       badgeFg = colors.warning;
       badgeIcon = Icons.hourglass_top_rounded;
-      badgeText = 'CHỜ DUYỆT';
+      badgeText = 'Chờ xử lý';
       explainText = 'Đang chờ xử lý';
       explainIcon = Icons.access_time_rounded;
     }
 
+    final String memberTypeText;
+    if (booking.isGuest) {
+      memberTypeText = 'Khách vãng lai';
+    } else if (booking.isMonthlyMember) {
+      memberTypeText = 'Hội viên cố định';
+    } else if (booking.isDailyMember) {
+      memberTypeText = 'Hội viên theo buổi';
+    } else {
+      memberTypeText = 'Thành viên CLB';
+    }
+
     return Container(
-      margin: const EdgeInsets.only(bottom: AppSpacing.sm),
+      margin: const EdgeInsets.only(bottom: AppSpacing.md),
       decoration: BoxDecoration(
         color: isEnded ? colors.cardBackground.withValues(alpha: 0.7) : colors.cardBackground,
         borderRadius: AppRadius.card,
-        border: Border.all(color: isConfirmed ? colors.success.withValues(alpha: 0.4) : colors.cardBorder),
+        border: Border.all(
+          color: isConfirmed
+              ? colors.success.withValues(alpha: 0.35)
+              : (isWaiting ? colors.warning.withValues(alpha: 0.35) : colors.cardBorder),
+        ),
         boxShadow: context.isDark ? AppShadows.none : AppShadows.sm,
       ),
-      padding: AppSpacing.allBase,
       child: InkWell(
         onTap: () => context.push('/session/${booking.sessionId}'),
         borderRadius: AppRadius.card,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Avatar / Icon
-                Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: isEnded
-                        ? colors.surfaceSubtle
-                        : (isConfirmed ? colors.success : colors.primary).withValues(alpha: 0.15),
-                    borderRadius: AppRadius.borderMd,
-                    image: (booking.clubAvatarUrl != null && booking.clubAvatarUrl!.isNotEmpty)
-                        ? DecorationImage(
-                            image: NetworkImage(booking.clubAvatarUrl!),
-                            fit: BoxFit.cover,
+        child: Padding(
+          padding: AppSpacing.allBase,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // 1. Top row: Club info & Status Badge
+              Row(
+                children: [
+                  Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: isEnded
+                          ? colors.surfaceSubtle
+                          : (isConfirmed ? colors.success : colors.primary).withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(8),
+                      image: (booking.clubAvatarUrl != null && booking.clubAvatarUrl!.isNotEmpty)
+                          ? DecorationImage(
+                              image: NetworkImage(booking.clubAvatarUrl!),
+                              fit: BoxFit.cover,
+                            )
+                          : null,
+                    ),
+                    child: (booking.clubAvatarUrl == null || booking.clubAvatarUrl!.isEmpty)
+                        ? Center(
+                            child: Icon(
+                              Icons.groups_rounded,
+                              color: isEnded ? colors.textMuted : (isConfirmed ? colors.success : colors.primary),
+                              size: 18,
+                            ),
                           )
                         : null,
                   ),
-                  child: (booking.clubAvatarUrl == null || booking.clubAvatarUrl!.isEmpty)
-                      ? Center(
-                          child: Icon(
-                            isEnded ? Icons.history_rounded : Icons.sports_tennis_rounded,
-                            color: isEnded ? colors.textMuted : (isConfirmed ? colors.success : colors.primary),
-                            size: 22,
-                          ),
-                        )
-                      : null,
-                ),
-                AppSpacing.gapW12,
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        booking.sessionTitle.isNotEmpty ? booking.sessionTitle : 'Buổi sinh hoạt cầu lông',
-                        style: AppTypography.titleSmall.bold.colored(
-                          isEnded ? colors.textSecondary : colors.textPrimary,
+                  AppSpacing.gapW8,
+                  Expanded(
+                    child: Text(
+                      booking.clubName,
+                      style: AppTypography.labelMedium.bold.colored(colors.textSecondary),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  AppSpacing.gapW8,
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: badgeBg,
+                      borderRadius: AppRadius.tag,
+                      border: Border.all(color: badgeBorder),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(badgeIcon, size: 12, color: badgeFg),
+                        const SizedBox(width: 4),
+                        Text(
+                          badgeText,
+                          style: AppTypography.labelSmall.bold.colored(badgeFg),
                         ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              AppSpacing.gapH12,
+
+              // 2. Session Title (Prominent, Full Width)
+              Text(
+                booking.sessionTitle.isNotEmpty ? booking.sessionTitle : 'Buổi sinh hoạt cầu lông',
+                style: AppTypography.titleMedium.bold.colored(
+                  isEnded ? colors.textSecondary : colors.textPrimary,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              AppSpacing.gapH8,
+
+              // 3. Member Type Tag & Fee
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: (booking.isGuest || booking.isWaiting)
+                          ? colors.warning.withValues(alpha: 0.12)
+                          : colors.primary.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(
+                        color: (booking.isGuest || booking.isWaiting)
+                            ? colors.warning.withValues(alpha: 0.3)
+                            : colors.primary.withValues(alpha: 0.3),
                       ),
-                      AppSpacing.gapH4,
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          booking.isGuest ? Icons.person_outline_rounded : Icons.verified_user_outlined,
+                          size: 13,
+                          color: (booking.isGuest || booking.isWaiting) ? colors.warning : colors.primary,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          memberTypeText,
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: (booking.isGuest || booking.isWaiting) ? colors.warning : colors.primary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (booking.feePerMember > 0) ...[
+                    AppSpacing.gapW8,
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: colors.surfaceSubtle,
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(color: colors.cardBorder),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.payments_outlined, size: 13, color: colors.textSecondary),
+                          const SizedBox(width: 4),
+                          Text(
+                            '${(booking.feePerMember / 1000).toInt()}k/người',
+                            style: AppTypography.labelSmall.copyWith(
+                              color: colors.textSecondary,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 11,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+              AppSpacing.gapH12,
+
+              // 4. Time & Location Box
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                decoration: BoxDecoration(
+                  color: colors.surfaceSubtle,
+                  borderRadius: AppRadius.borderSm,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.access_time_rounded,
+                          size: 15,
+                          color: isEnded ? colors.textMuted : colors.primary,
+                        ),
+                        AppSpacing.gapW8,
+                        Expanded(
+                          child: Text(
+                            '$startStr - $endStr, $dateStr',
+                            style: AppTypography.bodySmall.copyWith(
+                              color: isEnded ? colors.textSecondary : colors.textPrimary,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (booking.courtLocation.isNotEmpty) ...[
+                      AppSpacing.gapH8,
                       Row(
                         children: [
-                          Icon(Icons.groups_rounded, size: 14, color: colors.textSecondary),
-                          AppSpacing.gapW4,
+                          Icon(
+                            Icons.location_on_outlined,
+                            size: 15,
+                            color: colors.textMuted,
+                          ),
+                          AppSpacing.gapW8,
                           Expanded(
                             child: Text(
-                              booking.clubName,
-                              style: AppTypography.labelSmall.bold.colored(colors.textSecondary),
+                              booking.courtLocation,
+                              style: AppTypography.bodySmall.colored(colors.textMuted),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
                         ],
                       ),
-                      AppSpacing.gapH4,
-                      // Member Type Tag
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: (booking.isGuest || booking.isWaiting)
-                              ? colors.warning.withValues(alpha: 0.12)
-                              : colors.primary.withValues(alpha: 0.12),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
+                    ],
+                  ],
+                ),
+              ),
+
+              // 5. Phase Explanation Banner
+              if (explainText.isNotEmpty) ...[
+                AppSpacing.gapH8,
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                  decoration: BoxDecoration(
+                    color: badgeBg,
+                    borderRadius: AppRadius.borderSm,
+                    border: Border.all(color: badgeBorder.withValues(alpha: 0.4)),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(explainIcon, size: 14, color: badgeFg),
+                      AppSpacing.gapW8,
+                      Expanded(
                         child: Text(
-                          booking.isWaiting
-                              ? (booking.isGuest ? 'Khách vãng lai (Chờ duyệt)' : 'Hàng đợi dự bị')
-                              : (booking.isGuest
-                                  ? 'Khách vãng lai'
-                                  : (booking.isMonthlyMember ? 'Hội viên cố định' : 'Hội viên theo buổi')),
+                          explainText,
                           style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                            color: (booking.isGuest || booking.isWaiting) ? colors.warning : colors.primary,
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w500,
+                            color: badgeFg,
                           ),
                         ),
                       ),
                     ],
                   ),
                 ),
-                AppSpacing.gapW8,
-                // Status badge
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: badgeBg,
-                    borderRadius: AppRadius.tag,
-                    border: Border.all(color: badgeBorder),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(badgeIcon, size: 12, color: badgeFg),
-                      const SizedBox(width: 4),
-                      Text(
-                        badgeText,
-                        style: AppTypography.labelSmall.bold.colored(badgeFg),
-                      ),
-                    ],
-                  ),
-                ),
               ],
-            ),
-            AppSpacing.gapH12,
-            Divider(height: 1, color: colors.cardBorder),
-            AppSpacing.gapH12,
-            Row(
-              children: [
-                Icon(Icons.access_time_rounded, size: 14, color: isEnded ? colors.textMuted : colors.primary),
-                AppSpacing.gapW4,
-                Text(
-                  '$startStr - $endStr, $dateStr',
-                  style: AppTypography.labelSmall.colored(isEnded ? colors.textSecondary : colors.textPrimary),
-                ),
-              ],
-            ),
-            if (booking.courtLocation.isNotEmpty) ...[
-              AppSpacing.gapH4,
-              Row(
-                children: [
-                  Icon(Icons.location_on_outlined, size: 14, color: colors.textMuted),
-                  AppSpacing.gapW4,
-                  Expanded(
-                    child: Text(
-                      booking.courtLocation,
-                      style: AppTypography.labelSmall.colored(colors.textMuted),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
-              ),
             ],
-            AppSpacing.gapH8,
-            // Phase Explanation Banner
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              decoration: BoxDecoration(
-                color: badgeBg,
-                borderRadius: AppRadius.borderSm,
-                border: Border.all(color: badgeBorder.withValues(alpha: 0.5)),
-              ),
-              child: Row(
-                children: [
-                  Icon(explainIcon, size: 13, color: badgeFg),
-                  const SizedBox(width: 6),
-                  Expanded(
-                    child: Text(
-                      explainText,
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w500,
-                        color: badgeFg,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );

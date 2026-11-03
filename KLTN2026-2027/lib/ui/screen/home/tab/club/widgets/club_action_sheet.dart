@@ -72,7 +72,7 @@ class ClubActionSheet extends ConsumerWidget {
             _buildActionTile(
               context: context,
               icon: Icons.tag_rounded,
-              iconColor: AppColors.roleSky,
+              iconColor: colors.primary,
               iconBgColor: colors.secondaryContainer,
               title: 'Tham gia bằng mã Code',
               subtitle: 'Nhập mã Code được Host chia sẻ để vào nhóm ngay',
@@ -87,7 +87,7 @@ class ClubActionSheet extends ConsumerWidget {
             _buildActionTile(
               context: context,
               icon: Icons.radar_rounded,
-              iconColor: AppColors.roleViolet,
+              iconColor: colors.primary,
               iconBgColor: colors.primaryContainer,
               title: 'Quét tìm CLB quanh đây (Radar GPS)',
               subtitle: 'Tìm các câu lạc bộ cầu lông đang hoạt động trong khu vực của bạn',

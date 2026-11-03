@@ -416,7 +416,7 @@ class _ExploreRecruitmentsPageState extends ConsumerState<ExploreRecruitmentsPag
                       icon: Icons.military_tech_rounded,
                       label: 'Yêu cầu trình độ',
                       value: '${match.minSkillLevel.displayName} (${match.minSkillLevel.description})',
-                      valueColor: AppColors.roleViolet,
+                      valueColor: colors.primary,
                       isBold: true,
                     ),
                     const Divider(height: 16),
@@ -788,14 +788,14 @@ class _RecruitmentMatchCard extends StatelessWidget {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.people_alt_rounded, size: 12, color: AppColors.roleTreasurer),
+                        Icon(Icons.people_alt_rounded, size: 12, color: colors.textSecondary),
                         const SizedBox(width: 4),
                         Text(
                           'Còn ${match.slotsRemaining} slot',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 11.5,
                             fontWeight: FontWeight.bold,
-                            color: AppColors.roleTreasurer,
+                            color: colors.textSecondary,
                           ),
                         ),
                       ],
@@ -862,7 +862,7 @@ class _RecruitmentMatchCard extends StatelessWidget {
               // Skill requirement
               Row(
                 children: [
-                  Icon(Icons.military_tech_rounded, size: 15, color: AppColors.roleViolet),
+                  Icon(Icons.military_tech_rounded, size: 15, color: colors.primary),
                   const SizedBox(width: 6),
                   Text(
                     'Trình độ: ',
@@ -871,15 +871,15 @@ class _RecruitmentMatchCard extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
                     decoration: BoxDecoration(
-                      color: AppColors.roleViolet.withValues(alpha: 0.1),
+                      color: colors.primary.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(
                       match.minSkillLevel.displayName,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.roleViolet,
+                        color: colors.primary,
                       ),
                     ),
                   ),

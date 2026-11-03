@@ -6,8 +6,6 @@ import 'package:kltn2026_2027/app/consts/app_config.dart';
 import 'package:kltn2026_2027/app/consts/permissions.dart';
 import 'package:kltn2026_2027/app/provider.dart';
 import '../../../../../../app/provider/localization_provider.dart';
-import '../../../../../../widget/club_switcher_dialog.dart';
-import '../../../../club/club_vm/club_context_vm.dart';
 import '../settings_vm/settings_vm.dart';
 
 class SettingsSection {
@@ -55,7 +53,6 @@ List<SettingsSection> buildSettingsSections(
   final currentLocale = ref.watch(localizationProvider);
   final canReadUsers = ref.hasPermission(Permissions.usersRead);
   final canReadRoles = ref.hasPermission(Permissions.rolesRead);
-  final clubContext = ref.watch(clubContextViewModelProvider);
 
   return [
     SettingsSection(
@@ -63,19 +60,8 @@ List<SettingsSection> buildSettingsSections(
       icon: Icons.sports_tennis_rounded,
       items: [
         SettingsItemData(
-          icon: Icons.swap_horiz_rounded,
-          color: AppColors.roleSky,
-          title: clubContext.currentClubName != null
-              ? 'Đang chọn: ${clubContext.currentClubName}'
-              : 'Chọn câu lạc bộ hoạt động',
-          subtitle: clubContext.currentRole != null
-              ? 'Vai trò hiện tại: ${clubContext.currentRole!.displayName}'
-              : 'Chuyển đổi nhóm và đồng bộ vai trò/quyền hạn',
-          onTap: () => ClubSwitcherDialog.show(context),
-        ),
-        SettingsItemData(
           icon: Icons.groups_outlined,
-          color: AppColors.roleMember,
+          color: context.colors.primary,
           title: 'Quản lý thành viên & vai trò',
           subtitle: 'Xem danh sách thành viên và phân quyền trong nhóm',
           onTap: () => context.push(AppConfig.clubManagementPath),
@@ -112,7 +98,7 @@ List<SettingsSection> buildSettingsSections(
           if (canReadRoles)
             SettingsItemData(
               icon: Icons.shield_outlined,
-              color: AppColors.roleViolet,
+              color: AppColors.primary,
               title: 'Quản lý vai trò',
               subtitle: 'Xem và cấu hình nhóm quyền hạn',
               onTap: () => context.push(AppConfig.adminRolesPath),
