@@ -278,12 +278,12 @@ class _MapLocationPickerSheetState extends ConsumerState<MapLocationPickerSheet>
                     children: [
                       TileLayer(
                         urlTemplate: kIsWeb
-                            ? 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png'
+                            ? 'https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png'
                             : 'https://mt{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
                         fallbackUrl: kIsWeb
-                            ? 'https://a.basemaps.cartocdn.com/rastertiles/light_all/{z}/{x}/{y}.png'
-                            : 'https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',
-                        subdomains: kIsWeb ? const ['a', 'b', 'c', 'd'] : const ['0', '1', '2', '3'],
+                            ? 'https://{s}.tile.openstreetmap.de/{z}/{x}/{y}.png'
+                            : 'https://tile.openstreetmap.de/{z}/{x}/{y}.png',
+                        subdomains: kIsWeb ? const ['a', 'b', 'c'] : const ['0', '1', '2', '3'],
                         userAgentPackageName: 'com.legendsteam.kltn2026_2027',
                         maxNativeZoom: 19,
                         maxZoom: 20,
