@@ -51,10 +51,12 @@ class LocationMapView extends StatelessWidget {
       children: [
         TileLayer(
           urlTemplate: kIsWeb
-              ? 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
+              ? 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png'
               : 'https://mt{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
-          fallbackUrl: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-          subdomains: kIsWeb ? const [] : const ['0', '1', '2', '3'],
+          fallbackUrl: kIsWeb
+              ? 'https://a.basemaps.cartocdn.com/rastertiles/light_all/{z}/{x}/{y}.png'
+              : 'https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',
+          subdomains: kIsWeb ? const ['a', 'b', 'c', 'd'] : const ['0', '1', '2', '3'],
           userAgentPackageName: 'com.legendsteam.kltn2026_2027',
           maxNativeZoom: 19,
           maxZoom: 20,
