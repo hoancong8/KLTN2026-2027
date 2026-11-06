@@ -4,7 +4,7 @@ import 'package:kltn2026_2027/domain/usecases/session/get_my_bookings_usecase.da
 import 'report_state.dart';
 
 final reportViewModelProvider =
-    StateNotifierProvider.autoDispose<ReportViewModel, ReportState>((ref) {
+    StateNotifierProvider<ReportViewModel, ReportState>((ref) {
   final getMyBookingsUseCase = ref.watch(getMyBookingsUseCaseProvider);
   return ReportViewModel(getMyBookingsUseCase);
 });
@@ -16,7 +16,9 @@ class ReportViewModel extends StateNotifier<ReportState> {
       : super(ReportState(
           focusedMonth: DateTime(DateTime.now().year, DateTime.now().month, 1),
           selectedDate: DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day),
-        ));
+        )) {
+    loadData();
+  }
 
   Future<void> loadData() async {
     if (!mounted) return;

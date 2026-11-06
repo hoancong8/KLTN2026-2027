@@ -59,6 +59,28 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
         (s.startTime.isBefore(now) && s.endTime.isAfter(now));
   }
 
+  int _getSessionPriority(Session s, DateTime now) {
+    final isEnded = _isSessionEnded(s, now);
+    if (!isEnded) {
+      if (s.status == SessionStatus.open) return 0;
+      if (s.status == SessionStatus.playing || _isSessionPlaying(s, now)) return 0;
+      return 1;
+    }
+    return 2;
+  }
+
+  int _compareSessions(Session a, Session b, DateTime now) {
+    final priorityA = _getSessionPriority(a, now);
+    final priorityB = _getSessionPriority(b, now);
+    if (priorityA != priorityB) {
+      return priorityA.compareTo(priorityB);
+    }
+    if (!_isSessionEnded(a, now)) {
+      return a.startTime.compareTo(b.startTime);
+    }
+    return b.startTime.compareTo(a.startTime);
+  }
+
   @override
   void initState() {
     super.initState();
@@ -156,15 +178,20 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
     final sortedSessions = List<Session>.from(state.sessions)
       ..sort((a, b) => a.startTime.compareTo(b.startTime));
 
-    final upcomingSessions = sortedSessions.where(
-      (s) => !_isSessionEnded(s, now),
-    ).toList();
+    final upcomingSessions = List<Session>.from(state.sessions)
+        .where((s) => !_isSessionEnded(s, now))
+        .toList()
+      ..sort((a, b) => a.startTime.compareTo(b.startTime));
 
     final Session? nearestSession = upcomingSessions.isNotEmpty
         ? upcomingSessions.first
-        : (sortedSessions.isNotEmpty ? sortedSessions.last : null);
+        : (state.sessions.isNotEmpty
+            ? (List<Session>.from(state.sessions)
+              ..sort((a, b) => b.startTime.compareTo(a.startTime)))
+                .first
+            : null);
 
-    List<Session> displaySessions = sortedSessions;
+    List<Session> displaySessions = List<Session>.from(state.sessions);
     if (_selectedDate != null) {
       displaySessions = displaySessions.where((s) {
         return s.startTime.year == _selectedDate!.year &&
@@ -178,6 +205,8 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
     } else if (_filter == _SessionTabFilter.ended) {
       displaySessions = displaySessions.where((s) => _isSessionEnded(s, now)).toList();
     }
+
+    displaySessions.sort((a, b) => _compareSessions(a, b, now));
 
     final activeContext = ref.watch(activeClubContextProvider);
     final isSameClub = activeContext?.clubId == widget.clubId;

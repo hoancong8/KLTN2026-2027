@@ -14,6 +14,8 @@ class ExploreRecruitmentsState {
   final bool isLocating;
   final String? errorMessage;
   final String? successMessage;
+  final Set<String> joinedSessionIds;
+  final Set<String> myClubNames;
 
   const ExploreRecruitmentsState({
     this.isLoading = false,
@@ -27,6 +29,8 @@ class ExploreRecruitmentsState {
     this.isLocating = false,
     this.errorMessage,
     this.successMessage,
+    this.joinedSessionIds = const {},
+    this.myClubNames = const {},
   });
 
   List<GuestRecruitment> get filteredRecruitments {
@@ -53,6 +57,8 @@ class ExploreRecruitmentsState {
     String? successMessage,
     bool clearError = false,
     bool clearSuccess = false,
+    Set<String>? joinedSessionIds,
+    Set<String>? myClubNames,
   }) {
     return ExploreRecruitmentsState(
       isLoading: isLoading ?? this.isLoading,
@@ -66,6 +72,8 @@ class ExploreRecruitmentsState {
       isLocating: isLocating ?? this.isLocating,
       errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
       successMessage: clearSuccess ? null : (successMessage ?? this.successMessage),
+      joinedSessionIds: joinedSessionIds ?? this.joinedSessionIds,
+      myClubNames: myClubNames ?? this.myClubNames,
     );
   }
 }

@@ -1,3 +1,4 @@
+import '../tab/dashboard/dashboard_vm/dashboard_vm.dart';
 // lib/ui/screen/home/widgets/home_tablet.dart
 
 import 'package:flutter/material.dart';
@@ -58,8 +59,9 @@ class _HomeTabletState extends ConsumerState<HomeTablet> {
       );
     }
 
-    // 1. Neu dang nap ho so nguoi dung
-    if (userProfile == null) {
+    // 1. Neu dang nap ho so nguoi dung hoac du lieu trang chu
+    final dashboardState = ref.watch(dashboardViewModelProvider);
+    if (userProfile == null || dashboardState.playerProfile == null) {
       return Scaffold(
         backgroundColor: colors.surface,
         body: Center(
@@ -78,6 +80,7 @@ class _HomeTabletState extends ConsumerState<HomeTablet> {
               TextButton(
                 onPressed: () {
                   ref.read(currentUserProfileProvider.notifier).fetchProfile();
+                  ref.read(dashboardViewModelProvider.notifier).loadData();
                 },
                 child: Text(
                   l10n.home_retry,

@@ -25,7 +25,23 @@ class PlayerProfileDto {
     required this.reputationScore,
   });
 
-  factory PlayerProfileDto.fromJson(Map<String, dynamic> json) {
+  factory PlayerProfileDto.fromJson(dynamic rawJson) {
+    if (rawJson is! Map) {
+      return PlayerProfileDto(
+        id: '',
+        fullName: '',
+        userName: '',
+        email: '',
+        phoneNumber: null,
+        gender: 0,
+        avatarUrl: null,
+        skillLevel: 'NB',
+        skillLevelName: 'Newbie',
+        isOpenForGuest: false,
+        reputationScore: 100.0,
+      );
+    }
+    final json = rawJson;
     return PlayerProfileDto(
       id: json['id']?.toString() ?? '',
       fullName: json['fullName']?.toString() ?? '',

@@ -20,7 +20,7 @@ class _JoinedClubIdentifiers {
 }
 
 final exploreClubsViewModelProvider =
-    StateNotifierProvider.autoDispose<ExploreClubsViewModel, ExploreClubsState>((ref) {
+    StateNotifierProvider<ExploreClubsViewModel, ExploreClubsState>((ref) {
   return ExploreClubsViewModel(
     exploreClubsUseCase: ref.watch(exploreClubsUseCaseProvider),
     getMyClubsUseCase: ref.watch(getMyClubsUseCaseProvider),

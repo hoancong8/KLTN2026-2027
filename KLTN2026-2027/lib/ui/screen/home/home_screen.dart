@@ -1,3 +1,5 @@
+import 'tab/dashboard/dashboard_vm/dashboard_vm.dart';
+import '../../../widget/keep_alive_wrapper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kltn2026_2027/app/provider.dart';
@@ -29,6 +31,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       // Tự động tải thông tin user & permissions nếu Riverpod chưa có
       if (ref.read(currentUserProfileProvider) == null) {
         await ref.read(currentUserProfileProvider.notifier).fetchProfile();
+      }
+      if (ref.read(dashboardViewModelProvider).playerProfile == null) {
+        ref.read(dashboardViewModelProvider.notifier).loadData();
       }
     });
   }
@@ -74,7 +79,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     });
 
     final destinations = getHomeNavDestinations(context);
-    final pages = destinations.map((d) => d.page).toList();
+    final pages = destinations.map((d) => KeepAliveWrapper(child: d.page)).toList();
 
     return Theme(
       data: _buildTheme(context),

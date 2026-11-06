@@ -1,3 +1,4 @@
+import '../../home/tab/dashboard/dashboard_vm/dashboard_vm.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import '../../../../app/provider.dart';
@@ -57,15 +58,12 @@ class LoginViewModel extends StateNotifier<LoginState> {
       // Lưu auth token vào provider toàn cục (chỉ dùng định danh phiên đăng nhập)
       ref.read(authTokenProvider.notifier).state = token;
 
-      // Lấy thông tin người dùng và danh sách quyền hệ thống (permissions)
-      await ref.read(currentUserProfileProvider.notifier).fetchProfile();
-
-      // Khởi tạo danh sách CLB & kích hoạt ngữ cảnh CLB mặc định (Giai đoạn 1 & 2)
-      try {
-        await ref.read(clubContextViewModelProvider.notifier).loadMyClubs();
-      } catch (_) {
-        // Không block đăng nhập nếu tải CLB ban đầu gặp sự cố mạng
-      }
+      // Tải song song: Profile người dùng + Quyền hạn + CLB + Dữ liệu Trang chủ (Dashboard)
+      await Future.wait([
+        ref.read(currentUserProfileProvider.notifier).fetchProfile(),
+        ref.read(clubContextViewModelProvider.notifier).loadMyClubs().catchError((_) => null),
+        ref.read(dashboardViewModelProvider.notifier).loadData().catchError((_) => null),
+      ]);
 
       // Lưu last login credentials để tự điền hoặc dùng cho sinh trắc
       if (username.trim().isNotEmpty && password.isNotEmpty) {

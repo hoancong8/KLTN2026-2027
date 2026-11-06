@@ -1,3 +1,4 @@
+import '../../../../../widget/keep_alive_wrapper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kltn2026_2027/app/provider/localization_provider.dart';
@@ -123,8 +124,8 @@ class _ExplorePageState extends ConsumerState<ExplorePage>
       body: TabBarView(
         controller: _tabController,
         children: const [
-          ExploreRecruitmentsPage(isEmbedded: true),
-          ExploreClubsScreen(isEmbedded: true),
+          KeepAliveWrapper(child: ExploreRecruitmentsPage(isEmbedded: true)),
+          KeepAliveWrapper(child: ExploreClubsScreen(isEmbedded: true)),
         ],
       ),
     );

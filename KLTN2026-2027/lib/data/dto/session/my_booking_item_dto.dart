@@ -39,7 +39,25 @@ class MyBookingItemDto {
     this.memberType = 'MONTHLY',
   });
 
-  factory MyBookingItemDto.fromJson(Map<String, dynamic> json) {
+  factory MyBookingItemDto.fromJson(dynamic rawJson) {
+    if (rawJson is! Map) {
+      return MyBookingItemDto(
+        bookingId: '',
+        sessionId: '',
+        sessionTitle: 'Buổi chơi cầu lông',
+        clubId: '',
+        clubName: 'CLB Cầu lông',
+        startTime: '',
+        endTime: '',
+        courtLocation: '',
+        sessionStatus: 1,
+        bookingStatus: 1,
+        queueOrder: 0,
+        feePerMember: 0.0,
+        bookedAt: '',
+      );
+    }
+    final json = rawJson;
     return MyBookingItemDto(
       bookingId: json['bookingId']?.toString() ?? '',
       sessionId: json['sessionId']?.toString() ?? '',

@@ -1,3 +1,4 @@
+import '../../home/tab/dashboard/dashboard_vm/dashboard_vm.dart';
 // lib/ui/screen/login/register_vm/register_vm.dart
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -51,7 +52,10 @@ class RegisterViewModel extends StateNotifier<RegisterState> {
           refreshToken: result.refreshToken,
           userId: result.userId,
         );
-        await ref.read(currentUserProfileProvider.notifier).fetchProfile();
+        await Future.wait([
+          ref.read(currentUserProfileProvider.notifier).fetchProfile(),
+          ref.read(dashboardViewModelProvider.notifier).loadData().catchError((_) => null),
+        ]);
       }
 
       state = state.copyWith(isLoading: false, isSuccess: true);

@@ -154,9 +154,13 @@ class _ExploreRecruitmentsPageState extends ConsumerState<ExploreRecruitmentsPag
                       separatorBuilder: (_, _) => const SizedBox(height: 14),
                       itemBuilder: (ctx, index) {
                         final match = filteredList[index];
+                        final isJoined = state.joinedSessionIds.contains(match.sessionId.trim().toLowerCase());
+                        final isMyClub = state.myClubNames.contains(match.clubName.trim().toLowerCase());
                         return _RecruitmentMatchCard(
                           match: match,
                           isJoining: state.isJoining,
+                          isJoined: isJoined,
+                          isMyClub: isMyClub,
                           onJoin: () => _showJoinBottomSheet(context, vm, match),
                         );
                       },
@@ -168,14 +172,18 @@ class _ExploreRecruitmentsPageState extends ConsumerState<ExploreRecruitmentsPag
                         crossAxisCount: 2,
                         mainAxisSpacing: 16,
                         crossAxisSpacing: 16,
-                        childAspectRatio: 1.55,
+                        childAspectRatio: 1.4,
                       ),
                       itemCount: filteredList.length,
                       itemBuilder: (ctx, index) {
                         final match = filteredList[index];
+                        final isJoined = state.joinedSessionIds.contains(match.sessionId.trim().toLowerCase());
+                        final isMyClub = state.myClubNames.contains(match.clubName.trim().toLowerCase());
                         return _RecruitmentMatchCard(
                           match: match,
                           isJoining: state.isJoining,
+                          isJoined: isJoined,
+                          isMyClub: isMyClub,
                           onJoin: () => _showJoinBottomSheet(context, vm, match),
                         );
                       },
@@ -641,11 +649,15 @@ class _ExploreRecruitmentsPageState extends ConsumerState<ExploreRecruitmentsPag
 class _RecruitmentMatchCard extends StatelessWidget {
   final GuestRecruitment match;
   final bool isJoining;
+  final bool isJoined;
+  final bool isMyClub;
   final VoidCallback onJoin;
 
   const _RecruitmentMatchCard({
     required this.match,
     required this.isJoining,
+    this.isJoined = false,
+    this.isMyClub = false,
     required this.onJoin,
   });
 
@@ -941,19 +953,56 @@ class _RecruitmentMatchCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  ElevatedButton.icon(
-                    onPressed: isJoining ? null : onJoin,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: colors.primary,
-                      foregroundColor: AppColors.white,
-                      minimumSize: const Size(64, 36),
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                      visualDensity: VisualDensity.compact,
+                  if (isJoined)
+                    OutlinedButton.icon(
+                      onPressed: () => context.push(AppConfig.sessionDetailRoutePath(match.sessionId)),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: colors.primary,
+                        side: BorderSide(color: colors.primary.withValues(alpha: 0.4)),
+                        backgroundColor: colors.primaryContainer.withValues(alpha: 0.3),
+                        minimumSize: const Size(64, 36),
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        visualDensity: VisualDensity.compact,
+                      ),
+                      icon: Icon(Icons.check_circle_rounded, size: 14, color: colors.primary),
+                      label: const Text(
+                        'Đã tham gia',
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                      ),
+                    )
+                  else if (isMyClub)
+                    OutlinedButton.icon(
+                      onPressed: () => context.push(AppConfig.sessionDetailRoutePath(match.sessionId)),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: colors.textSecondary,
+                        side: BorderSide(color: colors.cardBorder),
+                        backgroundColor: colors.surfaceSubtle,
+                        minimumSize: const Size(64, 36),
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        visualDensity: VisualDensity.compact,
+                      ),
+                      icon: Icon(Icons.groups_rounded, size: 14, color: colors.primary),
+                      label: const Text(
+                        'CLB của bạn',
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                      ),
+                    )
+                  else
+                    ElevatedButton.icon(
+                      onPressed: isJoining ? null : onJoin,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: colors.primary,
+                        foregroundColor: AppColors.white,
+                        minimumSize: const Size(64, 36),
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        visualDensity: VisualDensity.compact,
+                      ),
+                      icon: const Icon(Icons.sports_tennis_rounded, size: 14),
+                      label: const Text('Tham gia ngay', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
                     ),
-                    icon: const Icon(Icons.sports_tennis_rounded, size: 14),
-                    label: const Text('Tham gia ngay', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-                  ),
                 ],
               ),
             ],

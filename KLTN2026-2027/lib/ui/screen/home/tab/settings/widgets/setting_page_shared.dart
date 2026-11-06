@@ -56,19 +56,6 @@ List<SettingsSection> buildSettingsSections(
 
   return [
     SettingsSection(
-      title: 'Câu lạc bộ cầu lông',
-      icon: Icons.sports_tennis_rounded,
-      items: [
-        SettingsItemData(
-          icon: Icons.groups_outlined,
-          color: context.colors.primary,
-          title: 'Quản lý thành viên & vai trò',
-          subtitle: 'Xem danh sách thành viên và phân quyền trong nhóm',
-          onTap: () => context.push(AppConfig.clubManagementPath),
-        ),
-      ],
-    ),
-    SettingsSection(
       title: context.l10n.set_account,
       icon: Icons.person_outline,
       items: [

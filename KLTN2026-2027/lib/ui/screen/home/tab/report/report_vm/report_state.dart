@@ -42,7 +42,13 @@ class ReportState {
   int get countCompleted => baseBookings.where((b) => b.isEnded).length;
 
   List<MyBookingItem> get bookingsOnSelectedDate {
-    final base = baseBookings;
+    final base = List<MyBookingItem>.from(baseBookings);
+    base.sort((a, b) {
+      if (!a.isEnded && b.isEnded) return -1;
+      if (a.isEnded && !b.isEnded) return 1;
+      if (!a.isEnded) return a.startTime.compareTo(b.startTime);
+      return b.startTime.compareTo(a.startTime);
+    });
     switch (filter) {
       case ReportFilter.confirmed:
         return base.where((b) => b.isConfirmed && !b.isEnded).toList();

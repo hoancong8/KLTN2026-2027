@@ -1,12 +1,15 @@
 // lib/ui/screen/home/tab/dashboard/dashboard_vm/dashboard_vm.dart
 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
+import 'package:kltn2026_2027/app/consts/app_log.dart';
 import 'package:kltn2026_2027/app/provider.dart';
 import 'package:kltn2026_2027/domain/entities/club/explore_club.dart';
 import 'package:kltn2026_2027/domain/entities/club/my_club.dart';
 import 'package:kltn2026_2027/domain/entities/player_profile.dart';
 import 'package:kltn2026_2027/domain/entities/session/guest_recruitment.dart';
 import 'package:kltn2026_2027/domain/entities/session/my_booking_item.dart';
+import 'package:kltn2026_2027/domain/enums/session_enums.dart';
 import 'package:kltn2026_2027/domain/services/i_location_service.dart';
 import 'package:kltn2026_2027/domain/usecases/club/explore_clubs_usecase.dart';
 import 'package:kltn2026_2027/domain/usecases/club/get_my_clubs_usecase.dart';
@@ -16,7 +19,7 @@ import 'package:kltn2026_2027/domain/usecases/user/get_player_profile_usecase.da
 import 'dashboard_state.dart';
 
 final dashboardViewModelProvider =
-    StateNotifierProvider.autoDispose<DashboardViewModel, DashboardState>((ref) {
+    StateNotifierProvider<DashboardViewModel, DashboardState>((ref) {
   final getPlayerProfileUseCase = ref.watch(getPlayerProfileUseCaseProvider);
   final getMyBookingsUseCase = ref.watch(getMyBookingsUseCaseProvider);
   final exploreRecruitmentsUseCase = ref.watch(exploreRecruitmentsUseCaseProvider);
@@ -26,6 +29,7 @@ final dashboardViewModelProvider =
   final locationService = ref.watch(locationServiceProvider);
 
   return DashboardViewModel(
+    ref: ref,
     getPlayerProfileUseCase: getPlayerProfileUseCase,
     getMyBookingsUseCase: getMyBookingsUseCase,
     exploreRecruitmentsUseCase: exploreRecruitmentsUseCase,
@@ -37,6 +41,7 @@ final dashboardViewModelProvider =
 });
 
 class DashboardViewModel extends StateNotifier<DashboardState> {
+  final Ref ref;
   final GetPlayerProfileUseCase _getPlayerProfileUseCase;
   final GetMyBookingsUseCase _getMyBookingsUseCase;
   final ExploreRecruitmentsUseCase _exploreRecruitmentsUseCase;
@@ -44,8 +49,10 @@ class DashboardViewModel extends StateNotifier<DashboardState> {
   final GetMyClubsUseCase _getMyClubsUseCase;
   final JoinRecruitmentUseCase _joinRecruitmentUseCase;
   final ILocationService _locationService;
+  Future<void>? _runningLoadData;
 
   DashboardViewModel({
+    required this.ref,
     required GetPlayerProfileUseCase getPlayerProfileUseCase,
     required GetMyBookingsUseCase getMyBookingsUseCase,
     required ExploreRecruitmentsUseCase exploreRecruitmentsUseCase,
@@ -60,40 +67,77 @@ class DashboardViewModel extends StateNotifier<DashboardState> {
         _getMyClubsUseCase = getMyClubsUseCase,
         _joinRecruitmentUseCase = joinRecruitmentUseCase,
         _locationService = locationService,
-        super(const DashboardState()) {
-    loadData();
+        super(const DashboardState());
+
+  Future<void> loadData() {
+    if (_runningLoadData != null) return _runningLoadData!;
+    final future = _executeLoadData();
+    _runningLoadData = future.whenComplete(() {
+      _runningLoadData = null;
+    });
+    return _runningLoadData!;
   }
 
-  Future<void> loadData() async {
+  Future<void> _executeLoadData() async {
     if (!mounted) return;
     state = state.copyWith(isLoading: true, clearError: true);
 
     try {
-      final loc = await _locationService.getCurrentLocation();
-
-      final results = await Future.wait([
+      final nonLocationResults = await Future.wait([
         _fetchProfile(),
         _fetchUpcomingBookings(),
-        _fetchNearbyRecruitments(loc.latitude, loc.longitude),
-        _fetchNearbyClubs(loc.latitude, loc.longitude),
         _fetchMyClubs(),
       ]);
 
       if (!mounted) return;
-      final upcoming = results[1] as List<MyBookingItem>;
-      final rawRecruitments = results[2] as List<GuestRecruitment>;
-      final rawClubs = results[3] as List<ExploreClub>;
-      final myClubs = results[4] as List<MyClub>;
+      var profile = nonLocationResults[0] as PlayerProfile?;
+      final upcoming = nonLocationResults[1] as List<MyBookingItem>;
+      final myClubs = nonLocationResults[2] as List<MyClub>;
+
+      if (profile == null) {
+        final user = ref.read(currentUserProfileProvider);
+        if (user != null) {
+          profile = PlayerProfile(
+            id: user.id,
+            fullName: user.userName,
+            userName: user.userName,
+            email: user.email,
+            phoneNumber: user.phoneNumber,
+            gender: 0,
+            avatarUrl: null,
+            skillLevel: SkillLevel.nb,
+            skillLevelName: 'Newbie',
+            isOpenForGuest: false,
+            reputationScore: 5.0,
+          );
+        }
+      }
+
+      state = state.copyWith(
+        playerProfile: profile,
+        upcomingBookings: upcoming,
+        myClubs: myClubs,
+      );
+
+      final loc = await _locationService.getCurrentLocation();
+      if (!mounted) return;
+
+      final nearbyResults = await Future.wait([
+        _fetchNearbyRecruitments(loc.latitude, loc.longitude),
+        _fetchNearbyClubs(loc.latitude, loc.longitude),
+      ]);
+
+      if (!mounted) return;
+      final rawRecruitments = nearbyResults[0] as List<GuestRecruitment>;
+      final rawClubs = nearbyResults[1] as List<ExploreClub>;
 
       state = state.copyWith(
         isLoading: false,
-        playerProfile: results[0] as PlayerProfile?,
-        upcomingBookings: upcoming,
         nearbyRecruitments: rawRecruitments,
         nearbyClubs: _filterUnjoinedClubs(rawClubs, myClubs),
-        myClubs: myClubs,
       );
     } catch (e) {
+      AppLog.info('[Dashboard] loadData error: $e');
       if (!mounted) return;
       state = state.copyWith(
         isLoading: false,
@@ -107,29 +151,39 @@ class DashboardViewModel extends StateNotifier<DashboardState> {
     state = state.copyWith(isRefreshing: true, clearError: true);
 
     try {
-      final loc = await _locationService.getCurrentLocation();
-
-      final results = await Future.wait([
+      final nonLocationResults = await Future.wait([
         _fetchProfile(),
         _fetchUpcomingBookings(),
-        _fetchNearbyRecruitments(loc.latitude, loc.longitude),
-        _fetchNearbyClubs(loc.latitude, loc.longitude),
         _fetchMyClubs(),
       ]);
 
       if (!mounted) return;
-      final upcoming = results[1] as List<MyBookingItem>;
-      final rawRecruitments = results[2] as List<GuestRecruitment>;
-      final rawClubs = results[3] as List<ExploreClub>;
-      final myClubs = results[4] as List<MyClub>;
+      final profile = nonLocationResults[0] as PlayerProfile?;
+      final upcoming = nonLocationResults[1] as List<MyBookingItem>;
+      final myClubs = nonLocationResults[2] as List<MyClub>;
+
+      state = state.copyWith(
+        playerProfile: profile,
+        upcomingBookings: upcoming,
+        myClubs: myClubs,
+      );
+
+      final loc = await _locationService.getCurrentLocation();
+      if (!mounted) return;
+
+      final nearbyResults = await Future.wait([
+        _fetchNearbyRecruitments(loc.latitude, loc.longitude),
+        _fetchNearbyClubs(loc.latitude, loc.longitude),
+      ]);
+
+      if (!mounted) return;
+      final rawRecruitments = nearbyResults[0] as List<GuestRecruitment>;
+      final rawClubs = nearbyResults[1] as List<ExploreClub>;
 
       state = state.copyWith(
         isRefreshing: false,
-        playerProfile: results[0] as PlayerProfile?,
-        upcomingBookings: upcoming,
         nearbyRecruitments: rawRecruitments,
         nearbyClubs: _filterUnjoinedClubs(rawClubs, myClubs),
-        myClubs: myClubs,
       );
     } catch (e) {
       if (!mounted) return;
@@ -163,7 +217,8 @@ class DashboardViewModel extends StateNotifier<DashboardState> {
   Future<PlayerProfile?> _fetchProfile() async {
     try {
       return await _getPlayerProfileUseCase.execute();
-    } catch (_) {
+    } catch (e) {
+      AppLog.info('[Dashboard] FetchProfile error: $e');
       return state.playerProfile;
     }
   }
@@ -174,7 +229,8 @@ class DashboardViewModel extends StateNotifier<DashboardState> {
       final activeList = list.where((b) => b.isUpcomingOrOngoing).toList();
       activeList.sort((a, b) => a.startTime.compareTo(b.startTime));
       return activeList;
-    } catch (_) {
+    } catch (e) {
+      AppLog.info('[Dashboard] FetchUpcomingBookings error: $e');
       return state.upcomingBookings;
     }
   }
@@ -192,7 +248,8 @@ class DashboardViewModel extends StateNotifier<DashboardState> {
       final activeList = list.where((r) => r.isActive).toList();
       activeList.sort((a, b) => a.startTime.compareTo(b.startTime));
       return activeList;
-    } catch (_) {
+    } catch (e) {
+      AppLog.info('[Dashboard] FetchNearbyRecruitments error: $e');
       return state.nearbyRecruitments;
     }
   }
@@ -209,7 +266,8 @@ class DashboardViewModel extends StateNotifier<DashboardState> {
           radiusKm: 15.0,
         ),
       );
-    } catch (_) {
+    } catch (e) {
+      AppLog.info('[Dashboard] FetchNearbyClubs error: $e');
       return state.nearbyClubs;
     }
   }
@@ -217,7 +275,8 @@ class DashboardViewModel extends StateNotifier<DashboardState> {
   Future<List<MyClub>> _fetchMyClubs() async {
     try {
       return await _getMyClubsUseCase.execute();
-    } catch (_) {
+    } catch (e) {
+      AppLog.info('[Dashboard] FetchMyClubs error: $e');
       return state.myClubs;
     }
   }

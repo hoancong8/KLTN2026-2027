@@ -1,3 +1,4 @@
+import '../tab/dashboard/dashboard_vm/dashboard_vm.dart';
 // lib/ui/screen/home/widgets/home_mobile.dart
 
 import 'package:flutter/material.dart';
@@ -46,8 +47,9 @@ class HomeMobile extends ConsumerWidget {
       );
     }
 
-    // 1. Neu dang nap thong tin nguoi dung ban dau
-    if (userProfile == null) {
+    // 1. Neu dang nap thong tin nguoi dung ban dau hoac du lieu trang chu
+    final dashboardState = ref.watch(dashboardViewModelProvider);
+    if (userProfile == null || dashboardState.playerProfile == null) {
       return Scaffold(
         backgroundColor: colors.surface,
         body: Center(
@@ -66,6 +68,7 @@ class HomeMobile extends ConsumerWidget {
               TextButton(
                 onPressed: () {
                   ref.read(currentUserProfileProvider.notifier).fetchProfile();
+                  ref.read(dashboardViewModelProvider.notifier).loadData();
                 },
                 child: Text(
                   l10n.home_retry,

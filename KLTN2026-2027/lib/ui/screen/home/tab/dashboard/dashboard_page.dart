@@ -41,7 +41,14 @@ class DashboardPage extends ConsumerWidget {
             onRefresh: () async {
               await vm.refreshData();
             },
-            child: SingleChildScrollView(
+            child: (state.playerProfile == null)
+                ? SizedBox(
+                    height: MediaQuery.sizeOf(context).height * 0.7,
+                    child: Center(
+                      child: CircularProgressIndicator(color: colors.primary),
+                    ),
+                  )
+                : SingleChildScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -444,7 +451,7 @@ class DashboardPage extends ConsumerWidget {
       children: [
         _buildUpcomingSessionHero(context, ref, state.nextBooking),
         AppSpacing.gapH20,
-        _buildRadarRecruitments(context, ref, state.nearbyRecruitments, vm, state.joiningRecruitmentId),
+        _buildRadarRecruitments(context, ref, state.nearbyRecruitments, vm, state.joiningRecruitmentId, state.upcomingBookings.map((b) => b.sessionId.trim().toLowerCase()).toSet()),
         AppSpacing.gapH20,
         _buildNearbyClubs(context, ref, state.nearbyClubs),
       ],
@@ -467,7 +474,7 @@ class DashboardPage extends ConsumerWidget {
             children: [
               _buildUpcomingSessionHero(context, ref, state.nextBooking),
               AppSpacing.gapH20,
-              _buildRadarRecruitments(context, ref, state.nearbyRecruitments, vm, state.joiningRecruitmentId),
+              _buildRadarRecruitments(context, ref, state.nearbyRecruitments, vm, state.joiningRecruitmentId, state.upcomingBookings.map((b) => b.sessionId.trim().toLowerCase()).toSet()),
             ],
           ),
         ),
@@ -729,6 +736,7 @@ class DashboardPage extends ConsumerWidget {
     List<GuestRecruitment> recruitments,
     DashboardViewModel vm,
     String? joiningId,
+    Set<String> joinedSessionIds,
   ) {
     final colors = context.colors;
     final l10n = context.l10n;
@@ -789,7 +797,7 @@ class DashboardPage extends ConsumerWidget {
             separatorBuilder: (_, _) => AppSpacing.gapH12,
             itemBuilder: (context, index) {
               final item = recruitments[index];
-              return _buildRecruitmentCard(context, item, vm, joiningId == item.id);
+              return _buildRecruitmentCard(context, item, vm, joiningId == item.id, isJoined: joinedSessionIds.contains(item.sessionId.trim().toLowerCase()));
             },
           ),
       ],
@@ -800,8 +808,9 @@ class DashboardPage extends ConsumerWidget {
     BuildContext context,
     GuestRecruitment item,
     DashboardViewModel vm,
-    bool isJoining,
-  ) {
+    bool isJoining, {
+    bool isJoined = false,
+  }) {
     final colors = context.colors;
     final l10n = context.l10n;
     final timeStr = _formatSessionDateTime(item.startTime, item.endTime);
@@ -994,42 +1003,66 @@ class DashboardPage extends ConsumerWidget {
                           ),
                         ),
                         AppSpacing.gapW8,
-                        ElevatedButton(
-                          onPressed: isJoining
-                              ? null
-                              : () async {
-                                  final success = await vm.joinRecruitment(item.id);
-                                  if (context.mounted && success) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text(l10n.home_joined_match_success),
-                                        backgroundColor: colors.success,
-                                        behavior: SnackBarBehavior.floating,
-                                      ),
-                                    );
-                                    context.push(AppConfig.sessionDetailRoutePath(item.sessionId));
-                                  }
-                                },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: colors.primary,
-                            foregroundColor: AppColors.white,
-                            elevation: 0,
-                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                            visualDensity: VisualDensity.compact,
-                            shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
-                            textStyle: AppTypography.labelSmall.copyWith(
-                              fontWeight: FontWeight.bold,
-                              inherit: false,
+                        if (isJoined)
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: colors.primaryContainer.withValues(alpha: 0.3),
+                              borderRadius: AppRadius.button,
+                              border: Border.all(color: colors.primary.withValues(alpha: 0.3)),
                             ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.check_circle_rounded, size: 12, color: colors.primary),
+                                AppSpacing.gapW4,
+                                Text(
+                                  'Đã tham gia',
+                                  style: AppTypography.labelSmall.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: colors.primary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                        else
+                          ElevatedButton(
+                            onPressed: isJoining
+                                ? null
+                                : () async {
+                                    final success = await vm.joinRecruitment(item.id);
+                                    if (context.mounted && success) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text(l10n.home_joined_match_success),
+                                          backgroundColor: colors.success,
+                                          behavior: SnackBarBehavior.floating,
+                                        ),
+                                      );
+                                      context.push(AppConfig.sessionDetailRoutePath(item.sessionId));
+                                    }
+                                  },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: colors.primary,
+                              foregroundColor: AppColors.white,
+                              elevation: 0,
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                              visualDensity: VisualDensity.compact,
+                              shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                              textStyle: AppTypography.labelSmall.copyWith(
+                                fontWeight: FontWeight.bold,
+                                inherit: false,
+                              ),
+                            ),
+                            child: isJoining
+                                ? const SizedBox(
+                                    width: 14,
+                                    height: 14,
+                                    child: CircularProgressIndicator(color: AppColors.white, strokeWidth: 2),
+                                  )
+                                : Text(l10n.home_join_match),
                           ),
-                          child: isJoining
-                              ? const SizedBox(
-                                  width: 14,
-                                  height: 14,
-                                  child: CircularProgressIndicator(color: AppColors.white, strokeWidth: 2),
-                                )
-                              : Text(l10n.home_join_match),
-                        ),
                       ],
                     ),
                   ],
