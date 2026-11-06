@@ -6,7 +6,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:kltn2026_2027/app/consts/app_config.dart';
+import 'package:kltn2026_2027/app/provider/localization_provider.dart';
 import 'package:kltn2026_2027/app/theme/theme.dart';
+import 'package:kltn2026_2027/app/utils/exception_ext.dart';
 import 'package:kltn2026_2027/widget/responsive_layout.dart';
 import '../../../../../domain/entities/session/guest_recruitment.dart';
 import '../../../../../domain/enums/session_enums.dart';
@@ -28,6 +30,18 @@ class ExploreRecruitmentsPage extends ConsumerStatefulWidget {
 class _ExploreRecruitmentsPageState extends ConsumerState<ExploreRecruitmentsPage> {
   final _searchController = TextEditingController();
 
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        final state = ref.read(exploreRecruitmentsViewModelProvider);
+        if (state.recruitments.isEmpty && !state.isLoading) {
+          ref.read(exploreRecruitmentsViewModelProvider.notifier).explore();
+        }
+      }
+    });
+  }
 
   @override
   void dispose() {
@@ -37,6 +51,26 @@ class _ExploreRecruitmentsPageState extends ConsumerState<ExploreRecruitmentsPag
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<ExploreRecruitmentsState>(exploreRecruitmentsViewModelProvider, (prev, next) {
+      if (next.error != null && next.recruitments.isNotEmpty && prev?.error != next.error) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(next.error!.getDisplayMessage(context.l10n)),
+            backgroundColor: AppColors.error,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      } else if (next.errorMessage != null && next.recruitments.isNotEmpty && prev?.errorMessage != next.errorMessage && next.error == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(next.errorMessage!),
+            backgroundColor: AppColors.error,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    });
+
     final colors = context.colors;
     final state = ref.watch(exploreRecruitmentsViewModelProvider);
     final vm = ref.read(exploreRecruitmentsViewModelProvider.notifier);
@@ -137,8 +171,8 @@ class _ExploreRecruitmentsPageState extends ConsumerState<ExploreRecruitmentsPag
                 if (state.isLoading) {
                   return Center(child: CircularProgressIndicator(color: colors.primary));
                 }
-                if (state.errorMessage != null && state.recruitments.isEmpty) {
-                  return _buildErrorState(context, state.errorMessage!, vm);
+                if ((state.error != null || state.errorMessage != null) && state.recruitments.isEmpty) {
+                  return _buildErrorState(context, state, vm);
                 }
                 if (filteredList.isEmpty) {
                   return _buildEmptyState(context, state, vm);
@@ -614,8 +648,12 @@ class _ExploreRecruitmentsPageState extends ConsumerState<ExploreRecruitmentsPag
     );
   }
 
-  Widget _buildErrorState(BuildContext context, String error, ExploreRecruitmentsViewModel vm) {
+  Widget _buildErrorState(BuildContext context, ExploreRecruitmentsState state, ExploreRecruitmentsViewModel vm) {
     final colors = context.colors;
+    final displayMessage = state.error?.getDisplayMessage(context.l10n) ??
+        state.errorMessage ??
+        context.l10n.error_system_retry;
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -625,7 +663,7 @@ class _ExploreRecruitmentsPageState extends ConsumerState<ExploreRecruitmentsPag
             const Icon(Icons.error_outline_rounded, size: 48, color: AppColors.warning),
             const SizedBox(height: 12),
             Text(
-              error,
+              displayMessage,
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 13, color: colors.textMuted),
             ),
@@ -633,7 +671,7 @@ class _ExploreRecruitmentsPageState extends ConsumerState<ExploreRecruitmentsPag
             ElevatedButton.icon(
               onPressed: vm.explore,
               icon: const Icon(Icons.refresh_rounded, size: 18),
-              label: const Text('Thử lại'),
+              label: Text(context.l10n.com_retry),
               style: ElevatedButton.styleFrom(
                 backgroundColor: colors.primary,
                 foregroundColor: AppColors.white,

@@ -1,6 +1,7 @@
 // lib/ui/screen/club/session_vm/explore_recruitments_state.dart
 
 import '../../../../domain/entities/session/guest_recruitment.dart';
+import '../../../../domain/exceptions/app_exception.dart';
 
 class ExploreRecruitmentsState {
   final bool isLoading;
@@ -12,6 +13,7 @@ class ExploreRecruitmentsState {
   final double? latitude;
   final double? longitude;
   final bool isLocating;
+  final AppException? error;
   final String? errorMessage;
   final String? successMessage;
   final Set<String> joinedSessionIds;
@@ -27,6 +29,7 @@ class ExploreRecruitmentsState {
     this.latitude,
     this.longitude,
     this.isLocating = false,
+    this.error,
     this.errorMessage,
     this.successMessage,
     this.joinedSessionIds = const {},
@@ -53,6 +56,7 @@ class ExploreRecruitmentsState {
     double? latitude,
     double? longitude,
     bool? isLocating,
+    AppException? error,
     String? errorMessage,
     String? successMessage,
     bool clearError = false,
@@ -70,6 +74,7 @@ class ExploreRecruitmentsState {
       latitude: latitude ?? this.latitude,
       longitude: longitude ?? this.longitude,
       isLocating: isLocating ?? this.isLocating,
+      error: clearError ? null : (error ?? this.error),
       errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
       successMessage: clearSuccess ? null : (successMessage ?? this.successMessage),
       joinedSessionIds: joinedSessionIds ?? this.joinedSessionIds,

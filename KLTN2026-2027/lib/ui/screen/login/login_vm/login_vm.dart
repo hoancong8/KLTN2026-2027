@@ -1,4 +1,6 @@
 import '../../home/tab/dashboard/dashboard_vm/dashboard_vm.dart';
+import '../../club/session_vm/explore_recruitments_vm.dart';
+import '../../explore_clubs/explore_clubs_vm/explore_clubs_vm.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import '../../../../app/provider.dart';
@@ -8,6 +10,7 @@ import '../../../../domain/usecases/auth/login_usecase.dart';
 import '../../../../domain/usecases/auth/biometric_usecase.dart';
 import '../../../../domain/exceptions/app_exception.dart';
 import '../../club/club_vm/club_context_vm.dart';
+import '../../../../app/services/push_notification_service.dart';
 import 'login_state.dart';
 
 // Provider for LoginViewModel
@@ -50,13 +53,24 @@ class LoginViewModel extends StateNotifier<LoginState> {
     state = state.copyWith(isLoading: true, error: null, isSuccess: false);
 
     try {
+      // 1. Xin quyen thong bao va lay Device Token gui kem dang nhap
+      await PushNotificationService.instance.requestPermission();
+      final deviceToken = await PushNotificationService.instance.getToken();
+      final platform = PushNotificationService.instance.getPlatform();
+
       final token = await loginUseCase.execute(
         username: username,
         password: password,
+        deviceToken: deviceToken,
+        platform: platform,
       );
 
       // Lưu auth token vào provider toàn cục (chỉ dùng định danh phiên đăng nhập)
       ref.read(authTokenProvider.notifier).state = token;
+
+      // Làm mới các feature providers cho phiên đăng nhập mới
+      ref.invalidate(exploreRecruitmentsViewModelProvider);
+      ref.invalidate(exploreClubsViewModelProvider);
 
       // Tải song song: Profile người dùng + Quyền hạn + CLB + Dữ liệu Trang chủ (Dashboard)
       await Future.wait([

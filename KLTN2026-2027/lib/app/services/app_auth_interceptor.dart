@@ -21,6 +21,7 @@ class AppAuthInterceptor extends Interceptor {
 
   // Fix #1: these are static to share across parallel requests, but must be
   // reset after session expires or after a successful refresh cycle completes.
+  static bool isLoggingOut = false;
   static bool _isShowingSessionExpiredDialog = false;
   static Dio? _refreshDio;
   static Future<AuthToken>? _refreshFuture;
@@ -29,6 +30,7 @@ class AppAuthInterceptor extends Interceptor {
   static void resetStaticState() {
     _isShowingSessionExpiredDialog = false;
     _refreshFuture = null;
+    isLoggingOut = false;
     // Keep _refreshDio — it is stateless and can be reused across sessions.
   }
 
@@ -67,7 +69,8 @@ class AppAuthInterceptor extends Interceptor {
     if (err.response?.statusCode == 401) {
       final path = err.requestOptions.path;
 
-      if (path.contains(AppConfig.login) ||
+      if (isLoggingOut ||
+          path.contains(AppConfig.login) ||
           path.contains(AppConfig.logOut) ||
           path.contains(AppConfig.refreshToken)) {
         return handler.next(err);
@@ -75,13 +78,7 @@ class AppAuthInterceptor extends Interceptor {
 
       final currentToken = ref.read(authTokenProvider);
       if (currentToken == null) {
-        _handleSessionExpired(ref);
-        return handler.reject(
-          DioException(
-            requestOptions: err.requestOptions,
-            type: DioExceptionType.cancel,
-          ),
-        );
+        return handler.next(err);
       }
 
       if (_refreshFuture != null) {

@@ -60,6 +60,8 @@ class ClubMapper {
       joinedAt: dto.joinedAt != null ? DateTime.tryParse(dto.joinedAt!) : null,
       memberType: effectiveMemberType,
       monthlyExpiryDate: dto.monthlyExpiryDate != null ? DateTime.tryParse(dto.monthlyExpiryDate!) : null,
+      fullName: dto.fullName,
+      avatarUrl: dto.avatarUrl,
     );
   }
 

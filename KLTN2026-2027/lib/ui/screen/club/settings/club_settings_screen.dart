@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:kltn2026_2027/app/provider.dart';
 import 'package:kltn2026_2027/app/theme/theme.dart';
 import '../../../../domain/entities/club/club_detail.dart';
@@ -52,6 +53,7 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
   double? _lat;
   double? _lng;
   bool _isGettingLocation = false;
+  bool _isUploadingAvatar = false;
 
   SkillLevel? _minLevel;
   SkillLevel? _maxLevel;
@@ -177,6 +179,114 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
     final h = t.hour.toString().padLeft(2, '0');
     final m = t.minute.toString().padLeft(2, '0');
     return '$h:$m';
+  }
+
+  Future<void> _pickAndUploadAvatar(ImageSource source) async {
+    try {
+      final picker = ImagePicker();
+      final pickedFile = await picker.pickImage(
+        source: source,
+        maxWidth: 1024,
+        maxHeight: 1024,
+        imageQuality: 85,
+      );
+      if (pickedFile == null) return;
+
+      setState(() => _isUploadingAvatar = true);
+
+      final uploadUseCase = ref.read(uploadImageUseCaseProvider);
+      final uploadedUrl = await uploadUseCase.execute(
+        pickedFile.path,
+        folder: 'badminton_app/clubs',
+      );
+
+      if (!mounted) return;
+      setState(() {
+        _avatarUrlController.text = uploadedUrl;
+        _isUploadingAvatar = false;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Tải ảnh đại diện lên thành công!'),
+          backgroundColor: colors.success,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isUploadingAvatar = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Lỗi tải ảnh: $e'),
+          backgroundColor: colors.error,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+  }
+
+  void _showImageSourcePicker() {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: colors.cardBackground,
+      shape: const RoundedRectangleBorder(borderRadius: AppRadius.bottomSheet),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: AppSpacing.allBase,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Thay Đổi Ảnh Đại Diện CLB',
+                style: AppTypography.titleMedium.bold.colored(colors.textPrimary),
+              ),
+              AppSpacing.gapH4,
+              Text(
+                'Tải ảnh trực tiếp lên hệ thống lưu trữ Cloudinary',
+                style: AppTypography.bodySmall.colored(colors.textMuted),
+              ),
+              AppSpacing.gapH16,
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: Container(
+                  padding: AppSpacing.allSm,
+                  decoration: BoxDecoration(
+                    color: colors.primaryContainer,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(Icons.camera_alt_rounded, color: colors.primary),
+                ),
+                title: Text('Chụp ảnh từ camera', style: AppTypography.labelLarge.bold.colored(colors.textPrimary)),
+                subtitle: Text('Sử dụng camera của thiết bị', style: AppTypography.bodySmall.colored(colors.textMuted)),
+                onTap: () {
+                  Navigator.of(ctx).pop();
+                  _pickAndUploadAvatar(ImageSource.camera);
+                },
+              ),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: Container(
+                  padding: AppSpacing.allSm,
+                  decoration: BoxDecoration(
+                    color: colors.primaryContainer,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(Icons.photo_library_rounded, color: colors.primary),
+                ),
+                title: Text('Chọn ảnh từ thư viện', style: AppTypography.labelLarge.bold.colored(colors.textPrimary)),
+                subtitle: Text('Tải ảnh có sẵn từ thiết bị', style: AppTypography.bodySmall.colored(colors.textMuted)),
+                onTap: () {
+                  Navigator.of(ctx).pop();
+                  _pickAndUploadAvatar(ImageSource.gallery);
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   Future<void> _getCurrentLocation() async {
@@ -399,42 +509,96 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
     );
   }
 
-  Widget _buildAvatarPreview() {
+  Widget _buildAvatarPreview(bool canEdit) {
     final avatarUrl = _avatarUrlController.text.trim();
     return Center(
       child: Column(
         children: [
-          Container(
-            width: 86,
-            height: 86,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: colors.primary.withValues(alpha: 0.1),
-              border: Border.all(color: colors.primary.withValues(alpha: 0.35), width: 2),
-            ),
-            child: ClipOval(
-              child: avatarUrl.isNotEmpty
-                  ? Image.network(
-                      avatarUrl,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, _, _) => Icon(
-                        Icons.sports_tennis_rounded,
-                        size: 40,
+          GestureDetector(
+            onTap: (canEdit && !_isUploadingAvatar) ? _showImageSourcePicker : null,
+            child: Stack(
+              children: [
+                Container(
+                  width: 86,
+                  height: 86,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: colors.primary.withValues(alpha: 0.1),
+                    border: Border.all(color: colors.primary.withValues(alpha: 0.35), width: 2),
+                  ),
+                  child: ClipOval(
+                    child: _isUploadingAvatar
+                        ? Center(
+                            child: SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: CircularProgressIndicator(strokeWidth: 2.5, color: colors.primary),
+                            ),
+                          )
+                        : (avatarUrl.isNotEmpty
+                            ? Image.network(
+                                avatarUrl,
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, _, _) => Icon(
+                                  Icons.sports_tennis_rounded,
+                                  size: 40,
+                                  color: colors.primary,
+                                ),
+                              )
+                            : Icon(
+                                Icons.groups_rounded,
+                                size: 42,
+                                color: colors.primary,
+                              )),
+                  ),
+                ),
+                if (canEdit)
+                  Positioned(
+                    bottom: 0,
+                    right: 0,
+                    child: Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
                         color: colors.primary,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: colors.cardBackground, width: 2),
                       ),
-                    )
-                  : Icon(
-                      Icons.groups_rounded,
-                      size: 42,
-                      color: colors.primary,
+                      child: const Icon(Icons.camera_alt_rounded, size: 14, color: AppColors.white),
                     ),
+                  ),
+              ],
             ),
           ),
           AppSpacing.gapH8,
           Text(
-            avatarUrl.isNotEmpty ? 'Ảnh đại diện câu lạc bộ' : 'Chưa có ảnh đại diện',
+            canEdit
+                ? (avatarUrl.isNotEmpty ? 'Nhấn để thay đổi ảnh đại diện' : 'Nhấn để tải ảnh đại diện CLB')
+                : (avatarUrl.isNotEmpty ? 'Ảnh đại diện câu lạc bộ' : 'Chưa có ảnh đại diện'),
             style: AppTypography.labelSmall.colored(colors.textMuted),
           ),
+          if (canEdit) ...[
+            AppSpacing.gapH8,
+            OutlinedButton.icon(
+              style: OutlinedButton.styleFrom(
+                foregroundColor: colors.primary,
+                side: BorderSide(color: colors.primary.withValues(alpha: 0.4)),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+              ),
+              icon: _isUploadingAvatar
+                  ? SizedBox(
+                      width: 14,
+                      height: 14,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: colors.primary),
+                    )
+                  : const Icon(Icons.cloud_upload_outlined, size: 16),
+              label: Text(
+                _isUploadingAvatar ? 'Đang tải lên...' : 'Tải ảnh từ thiết bị',
+                style: AppTypography.labelSmall.bold.colored(colors.primary),
+              ),
+              onPressed: _isUploadingAvatar ? null : _showImageSourcePicker,
+            ),
+          ],
         ],
       ),
     );
@@ -705,7 +869,7 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                           title: 'Thông Tin Chung',
                           icon: Icons.info_outline_rounded,
                           children: [
-                            _buildAvatarPreview(),
+                            _buildAvatarPreview(canManageInfo),
                             AppSpacing.gapH16,
                             Text('Tên Câu Lạc Bộ *', style: AppTypography.labelMedium.bold.colored(colors.textPrimary)),
                             AppSpacing.gapH8,

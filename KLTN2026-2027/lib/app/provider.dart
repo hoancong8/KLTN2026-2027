@@ -28,6 +28,18 @@ import '../domain/usecases/auth/login_usecase.dart';
 import '../domain/usecases/auth/refresh_token_usecase.dart';
 import 'consts/app_config.dart';
 import 'services/app_auth_interceptor.dart';
+import '../data/datasource/remote/abstract/notification_remote_datasource.dart';
+import '../data/datasource/remote/implement/notification_remote_datasource_impl.dart';
+import '../data/repositories/notification_repository_impl.dart';
+import '../domain/repositories/notification_repository.dart';
+import '../domain/usecases/notification/get_notifications_usecase.dart';
+import '../data/datasource/remote/abstract/media_remote_datasource.dart';
+import '../data/datasource/remote/implement/media_remote_datasource_impl.dart';
+import '../data/repositories/media_repository_impl.dart';
+import '../domain/repositories/media_repository.dart';
+import '../domain/usecases/media/upload_image_usecase.dart';
+import '../domain/usecases/notification/mark_all_notifications_read_usecase.dart';
+import '../domain/usecases/notification/mark_notification_read_usecase.dart';
 
 // User & Role imports
 import '../data/datasource/remote/abstract/role_remote_datasource.dart';
@@ -700,6 +712,30 @@ final cancelRecruitmentBookingUseCaseProvider = Provider<CancelRecruitmentBookin
 });
 
 // ============================================================================
+// NOTIFICATION PROVIDERS
+// ============================================================================
+
+final notificationRemoteDatasourceProvider = Provider<NotificationRemoteDatasource>((ref) {
+  return NotificationRemoteDatasourceImpl(ref.watch(dioProvider));
+});
+
+final notificationRepositoryProvider = Provider<NotificationRepository>((ref) {
+  return NotificationRepositoryImpl(ref.watch(notificationRemoteDatasourceProvider));
+});
+
+final getNotificationsUseCaseProvider = Provider<GetNotificationsUseCase>((ref) {
+  return GetNotificationsUseCase(ref.watch(notificationRepositoryProvider));
+});
+
+final markNotificationReadUseCaseProvider = Provider<MarkNotificationReadUseCase>((ref) {
+  return MarkNotificationReadUseCase(ref.watch(notificationRepositoryProvider));
+});
+
+final markAllNotificationsReadUseCaseProvider = Provider<MarkAllNotificationsReadUseCase>((ref) {
+  return MarkAllNotificationsReadUseCase(ref.watch(notificationRepositoryProvider));
+});
+
+// ============================================================================
 // FR14 - FR23: SESSION ON-COURT OPERATIONS & SETTLEMENT PROVIDERS
 // ============================================================================
 
@@ -709,4 +745,20 @@ final sessionOperationsRepositoryProvider = Provider<SessionOperationsRepository
 
 final sessionSettlementProvider = FutureProvider.autoDispose.family<SessionSettlement, String>((ref, sessionId) async {
   return ref.watch(sessionOperationsRepositoryProvider).getSettlement(sessionId);
+});
+
+// ============================================================================
+// MEDIA UPLOAD PROVIDERS
+// ============================================================================
+
+final mediaRemoteDatasourceProvider = Provider<MediaRemoteDatasource>((ref) {
+  return MediaRemoteDatasourceImpl(ref.watch(dioProvider));
+});
+
+final mediaRepositoryProvider = Provider<MediaRepository>((ref) {
+  return MediaRepositoryImpl(ref.watch(mediaRemoteDatasourceProvider));
+});
+
+final uploadImageUseCaseProvider = Provider<UploadImageUseCase>((ref) {
+  return UploadImageUseCase(ref.watch(mediaRepositoryProvider));
 });

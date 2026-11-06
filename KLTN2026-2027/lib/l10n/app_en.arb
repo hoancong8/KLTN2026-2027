@@ -428,5 +428,13 @@
     }
   },
   "home_recruiting_badge": "Recruiting",
-  "home_search_hint": "Search clubs, venues..."
+  "home_search_hint": "Search clubs, venues...",
+  "notification_title": "Notifications",
+  "notification_mark_all_read": "Mark all as read",
+  "notification_filter_all": "All",
+  "notification_filter_unread": "Unread",
+  "notification_filter_payment": "Payment",
+  "notification_filter_match": "Matches",
+  "notification_empty": "No notifications yet",
+  "notification_empty_hint": "Notifications regarding matches, court assignments, fees, and settlements will appear here."
 }

@@ -1,10 +1,12 @@
 // lib/ui/screen/home/tab/club/widgets/my_clubs_mobile.dart
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../../../app/consts/app_config.dart';
 import '../../../../../../app/theme/theme.dart';
-import '../../../../../../domain/entities/club/my_club.dart';
 import '../../../../club/club_vm/club_context_state.dart';
+import '../../../../notification/notification_vm/notification_vm.dart';
 import 'club_action_sheet.dart';
 import 'club_detail_view.dart';
 import 'club_empty_state.dart';
@@ -70,6 +72,34 @@ class MyClubsMobile extends StatelessWidget {
                 ),
               ),
         actions: [
+          Consumer(
+            builder: (context, ref, _) {
+              final unreadCount = ref.watch(notificationViewModelProvider.select((s) => s.unreadCount));
+              return IconButton(
+                tooltip: 'Thông báo',
+                icon: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    Icon(Icons.notifications_outlined, color: colors.textPrimary, size: 24),
+                    if (unreadCount > 0)
+                      Positioned(
+                        top: 2,
+                        right: 2,
+                        child: Container(
+                          width: 8,
+                          height: 8,
+                          decoration: BoxDecoration(
+                            color: colors.error,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+                onPressed: () => context.push(AppConfig.notificationsPath),
+              );
+            },
+          ),
           IconButton(
             tooltip: 'Thêm / Tham gia nhóm',
             icon: Container(
@@ -84,18 +114,6 @@ class MyClubsMobile extends StatelessWidget {
           ),
           AppSpacing.gapW8,
         ],
-        bottom: clubs.length > 1
-            ? PreferredSize(
-                preferredSize: const Size.fromHeight(64),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    _buildHorizontalClubStrip(context, clubs, activeId),
-                    Container(height: 1, color: colors.cardBorder),
-                  ],
-                ),
-              )
-            : null,
       ),
       body: state.isLoading && clubs.isEmpty
           ? Center(child: CircularProgressIndicator(color: colors.primary))
@@ -106,106 +124,6 @@ class MyClubsMobile extends StatelessWidget {
                   isActiveContext: selectedClub.clubId == activeId,
                 )
               : const ClubEmptyState(),
-    );
-  }
-
-  Widget _buildHorizontalClubStrip(BuildContext context, List<MyClub> clubs, String? activeId) {
-    final colors = context.colors;
-
-    return Container(
-      height: 60,
-      color: colors.surface,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.base, vertical: 6),
-        itemCount: clubs.length + 1,
-        separatorBuilder: (_, _) => AppSpacing.gapW8,
-        itemBuilder: (context, index) {
-          if (index == clubs.length) {
-            return InkWell(
-              onTap: () {
-                context.push('/club/create');
-              },
-              borderRadius: AppRadius.borderFull,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.xs),
-                decoration: BoxDecoration(
-                  color: colors.primaryContainer,
-                  borderRadius: AppRadius.borderFull,
-                  border: Border.all(
-                    color: colors.primary.withValues(alpha: 0.4),
-                    width: 1,
-                  ),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.add_rounded, size: AppSpacing.iconSm, color: colors.primary),
-                    AppSpacing.gapW4,
-                    Text(
-                      'Tạo CLB mới',
-                      style: AppTypography.labelSmall.bold.colored(colors.primary),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }
-
-          final club = clubs[index];
-          final isSelected = club.clubId == selectedClubId;
-          final isActive = club.clubId == activeId;
-          final initials = club.clubName.isNotEmpty
-              ? club.clubName.trim().split(' ').map((e) => e.isNotEmpty ? e[0] : '').take(2).join().toUpperCase()
-              : 'CLB';
-
-          return GestureDetector(
-            onTap: () => onSwitchClub(club.clubId),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.xs),
-              decoration: BoxDecoration(
-                color: isSelected ? colors.primaryContainer : colors.surfaceSubtle,
-                borderRadius: AppRadius.borderFull,
-                border: Border.all(
-                  color: isSelected ? colors.primary : colors.cardBorder,
-                  width: isSelected ? 1.5 : 1,
-                ),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 26,
-                    height: 26,
-                    decoration: BoxDecoration(
-                      color: isSelected ? colors.primary : colors.textMuted,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Center(
-                      child: Text(
-                        initials,
-                        style: AppTypography.labelSmall.bold.colored(AppColors.white),
-                      ),
-                    ),
-                  ),
-                  AppSpacing.gapW8,
-                  Text(
-                    club.clubName,
-                    style: AppTypography.bodySmall.colored(
-                      isSelected ? colors.primary : colors.textPrimary,
-                    ).copyWith(fontWeight: isSelected ? FontWeight.bold : FontWeight.w500),
-                  ),
-                  if (isActive) ...[
-                    AppSpacing.gapW4,
-                    Icon(Icons.check_circle_rounded, color: colors.success, size: 14),
-                  ],
-                ],
-              ),
-            ),
-          );
-        },
-      ),
     );
   }
 }

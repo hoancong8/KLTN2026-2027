@@ -18,6 +18,8 @@ class ClubMember {
   final DateTime? joinedAt;
   final String memberType;
   final DateTime? monthlyExpiryDate;
+  final String? fullName;
+  final String? avatarUrl;
 
   const ClubMember({
     required this.id,
@@ -33,6 +35,8 @@ class ClubMember {
     this.joinedAt,
     this.memberType = 'MONTHLY',
     this.monthlyExpiryDate,
+    this.fullName,
+    this.avatarUrl,
   });
 
   bool get isMonthlyMember => memberType.toUpperCase() == 'MONTHLY';
@@ -51,6 +55,8 @@ class ClubMember {
     DateTime? joinedAt,
     String? memberType,
     DateTime? monthlyExpiryDate,
+    String? fullName,
+    String? avatarUrl,
   }) {
     return ClubMember(
       id: id ?? this.id,
@@ -66,6 +72,8 @@ class ClubMember {
       joinedAt: joinedAt ?? this.joinedAt,
       memberType: memberType ?? this.memberType,
       monthlyExpiryDate: monthlyExpiryDate ?? this.monthlyExpiryDate,
+      fullName: fullName ?? this.fullName,
+      avatarUrl: avatarUrl ?? this.avatarUrl,
     );
   }
 }

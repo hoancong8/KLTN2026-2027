@@ -14,6 +14,7 @@ import 'package:kltn2026_2027/domain/entities/player_profile.dart';
 import 'package:kltn2026_2027/domain/entities/session/guest_recruitment.dart';
 import 'package:kltn2026_2027/domain/entities/session/my_booking_item.dart';
 import 'package:kltn2026_2027/widget/app_network_image.dart';
+import '../../../notification/notification_vm/notification_vm.dart';
 import 'dashboard_vm/dashboard_state.dart';
 import 'dashboard_vm/dashboard_vm.dart';
 
@@ -137,7 +138,7 @@ class DashboardPage extends ConsumerWidget {
                   backgroundColor: colors.primaryContainer,
                 ),
               ),
-              AppSpacing.gapW12,
+              AppSpacing.gapW8,
               // User Name & Skill Level Badge
               Expanded(
                 child: Column(
@@ -145,33 +146,39 @@ class DashboardPage extends ConsumerWidget {
                   children: [
                     Row(
                       children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: colors.primary.withValues(alpha: 0.15),
-                            borderRadius: AppRadius.chip,
-                            border: Border.all(color: colors.primary.withValues(alpha: 0.3)),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(Icons.sports_tennis_rounded, size: 11, color: colors.primary),
-                              AppSpacing.gapW4,
-                              Text(
-                                '${context.l10n.home_skill_level_label}: $skillLevelName',
-                                style: AppTypography.labelSmall.copyWith(
-                                  color: colors.primary,
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 10,
+                        Flexible(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: colors.primary.withValues(alpha: 0.15),
+                              borderRadius: AppRadius.chip,
+                              border: Border.all(color: colors.primary.withValues(alpha: 0.3)),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.sports_tennis_rounded, size: 10, color: colors.primary),
+                                AppSpacing.gapW4,
+                                Flexible(
+                                  child: Text(
+                                    '${context.l10n.home_skill_level_label}: $skillLevelName',
+                                    style: AppTypography.labelSmall.copyWith(
+                                      color: colors.primary,
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 9.5,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                         if (isOpenForGuest) ...[
                           AppSpacing.gapW4,
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
                             decoration: BoxDecoration(
                               color: colors.success.withValues(alpha: 0.15),
                               borderRadius: AppRadius.chip,
@@ -182,7 +189,7 @@ class DashboardPage extends ConsumerWidget {
                               style: AppTypography.labelSmall.copyWith(
                                 color: colors.success,
                                 fontWeight: FontWeight.bold,
-                                fontSize: 9.5,
+                                fontSize: 9,
                               ),
                             ),
                           ),
@@ -202,19 +209,21 @@ class DashboardPage extends ConsumerWidget {
                   ],
                 ),
               ),
+              AppSpacing.gapW8,
               // Compact Reputation Badge
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                height: 36,
+                padding: const EdgeInsets.symmetric(horizontal: 8),
                 decoration: BoxDecoration(
                   color: colors.cardBackground,
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(18),
                   border: Border.all(color: colors.cardBorder),
                   boxShadow: context.isDark ? AppShadows.none : AppShadows.sm,
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.star_rounded, color: colors.accent, size: 16),
+                    Icon(Icons.star_rounded, color: colors.accent, size: 15),
                     AppSpacing.gapW4,
                     Text(
                       reputation,
@@ -226,6 +235,9 @@ class DashboardPage extends ConsumerWidget {
                   ],
                 ),
               ),
+              AppSpacing.gapW8,
+              // Notification Bell
+              _buildNotificationBell(context, ref),
             ],
           ),
           AppSpacing.gapH12,
@@ -258,6 +270,45 @@ class DashboardPage extends ConsumerWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildNotificationBell(BuildContext context, WidgetRef ref) {
+    final colors = context.colors;
+    final unreadCount = ref.watch(notificationViewModelProvider.select((s) => s.unreadCount));
+
+    return InkWell(
+      onTap: () => context.push(AppConfig.notificationsPath),
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        width: 36,
+        height: 36,
+        decoration: BoxDecoration(
+          color: colors.cardBackground,
+          shape: BoxShape.circle,
+          border: Border.all(color: colors.cardBorder),
+          boxShadow: context.isDark ? AppShadows.none : AppShadows.sm,
+        ),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Icon(Icons.notifications_outlined, size: 20, color: colors.textPrimary),
+            if (unreadCount > 0)
+              Positioned(
+                top: 5,
+                right: 5,
+                child: Container(
+                  width: 8,
+                  height: 8,
+                  decoration: BoxDecoration(
+                    color: colors.error,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }

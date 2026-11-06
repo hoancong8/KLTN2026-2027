@@ -728,7 +728,8 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
     final members = _membersWithRole.where((m) {
       if (_memberSearchQuery.isEmpty) return true;
       final q = _memberSearchQuery.toLowerCase();
-      return (m.userName?.toLowerCase().contains(q) ?? false) ||
+      return (m.fullName?.toLowerCase().contains(q) ?? false) ||
+          (m.userName?.toLowerCase().contains(q) ?? false) ||
           (m.nickname?.toLowerCase().contains(q) ?? false) ||
           (m.email?.toLowerCase().contains(q) ?? false);
     }).toList();
@@ -813,6 +814,14 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
                   separatorBuilder: (_, _) => const SizedBox(height: 8),
                   itemBuilder: (ctx, idx) {
                     final member = members[idx];
+                    final displayName = (member.fullName != null && member.fullName!.trim().isNotEmpty)
+                        ? ((member.nickname != null && member.nickname!.trim().isNotEmpty)
+                            ? '${member.fullName!.trim()} (${member.nickname!.trim()})'
+                            : member.fullName!.trim())
+                        : ((member.nickname != null && member.nickname!.trim().isNotEmpty)
+                            ? member.nickname!.trim()
+                            : (member.userName ?? 'Người dùng'));
+
                     return Container(
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                       decoration: BoxDecoration(
@@ -825,10 +834,15 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
                           CircleAvatar(
                             radius: 18,
                             backgroundColor: roleColor.withValues(alpha: 0.15),
-                            child: Text(
-                              (member.userName?.isNotEmpty == true ? member.userName![0] : 'U').toUpperCase(),
-                              style: TextStyle(color: roleColor, fontWeight: FontWeight.bold, fontSize: 14),
-                            ),
+                            backgroundImage: (member.avatarUrl != null && member.avatarUrl!.isNotEmpty)
+                                ? NetworkImage(member.avatarUrl!)
+                                : null,
+                            child: (member.avatarUrl == null || member.avatarUrl!.isEmpty)
+                                ? Text(
+                                    displayName.isNotEmpty ? displayName[0].toUpperCase() : 'U',
+                                    style: TextStyle(color: roleColor, fontWeight: FontWeight.bold, fontSize: 14),
+                                  )
+                                : null,
                           ),
                           const SizedBox(width: 12),
                           Expanded(
@@ -837,11 +851,15 @@ class _ClubRoleDetailViewState extends State<ClubRoleDetailView> with SingleTick
                               children: [
                                 Row(
                                   children: [
-                                    Text(
-                                      member.nickname ?? member.userName ?? 'Người dùng',
-                                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5),
+                                    Flexible(
+                                      child: Text(
+                                        displayName,
+                                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
                                     ),
-                                    if (member.nickname != null && member.userName != null) ...[
+                                    if (member.userName != null && member.userName!.isNotEmpty) ...[
                                       const SizedBox(width: 6),
                                       Text(
                                         '(@${member.userName})',

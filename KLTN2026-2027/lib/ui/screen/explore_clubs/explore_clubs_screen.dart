@@ -246,7 +246,7 @@ class _ExploreClubsScreenState extends ConsumerState<ExploreClubsScreen> {
               children: [
                 // Recruiting Toggle Pill
                 InkWell(
-                  onTap: () => vm.toggleRecruitingOnly(state.isRecruitingOnly == true ? null : true),
+                  onTap: () => vm.toggleRecruitingOnly(),
                   borderRadius: BorderRadius.circular(20),
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4.5),

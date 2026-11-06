@@ -56,6 +56,18 @@ class _ClubMemberSectionState extends ConsumerState<ClubMemberSection> {
     return false;
   }
 
+  String _getMemberDisplayName(ClubMember m) {
+    if (m.fullName != null && m.fullName!.trim().isNotEmpty) {
+      return (m.nickname != null && m.nickname!.trim().isNotEmpty)
+          ? '${m.fullName!.trim()} (${m.nickname!.trim()})'
+          : m.fullName!.trim();
+    }
+    if (m.nickname != null && m.nickname!.trim().isNotEmpty) {
+      return m.nickname!.trim();
+    }
+    return m.userName ?? 'Thành viên';
+  }
+
   List<ClubMember> _sortGroup(List<ClubMember> list, UserProfile? profile) {
     final copy = List<ClubMember>.from(list);
     copy.sort((a, b) {
@@ -63,7 +75,9 @@ class _ClubMemberSectionState extends ConsumerState<ClubMemberSection> {
       final bMe = _checkIsMe(b, profile);
       if (aMe && !bMe) return -1;
       if (!aMe && bMe) return 1;
-      return (a.userName ?? '').compareTo(b.userName ?? '');
+      final aName = (a.fullName?.isNotEmpty == true ? a.fullName! : (a.userName ?? '')).toLowerCase();
+      final bName = (b.fullName?.isNotEmpty == true ? b.fullName! : (b.userName ?? '')).toLowerCase();
+      return aName.compareTo(bName);
     });
     return copy;
   }
@@ -83,7 +97,8 @@ class _ClubMemberSectionState extends ConsumerState<ClubMemberSection> {
     final filtered = widget.members.where((m) {
       if (_searchQuery.isEmpty) return true;
       final q = _searchQuery.toLowerCase();
-      return (m.userName?.toLowerCase().contains(q) ?? false) ||
+      return (m.fullName?.toLowerCase().contains(q) ?? false) ||
+          (m.userName?.toLowerCase().contains(q) ?? false) ||
           (m.nickname?.toLowerCase().contains(q) ?? false) ||
           (m.email?.toLowerCase().contains(q) ?? false);
     }).toList();
@@ -264,9 +279,7 @@ class _ClubMemberSectionState extends ConsumerState<ClubMemberSection> {
     final colors = context.colors;
     final isMe = _checkIsMe(m, currentProfile);
 
-    final displayName = m.nickname != null && m.nickname!.isNotEmpty
-        ? '${m.userName ?? "Thành viên"} (${m.nickname})'
-        : m.userName ?? 'Thành viên';
+    final displayName = _getMemberDisplayName(m);
 
     return InkWell(
       onTap: () => _showMemberActionSheet(m, isMe, canManageRoles, canRemoveMember),
@@ -299,12 +312,15 @@ class _ClubMemberSectionState extends ConsumerState<ClubMemberSection> {
                   backgroundColor: isMe
                       ? colors.primary.withValues(alpha: 0.15)
                       : roleColor.withValues(alpha: 0.15),
-                  child: Text(
-                    m.userName != null && m.userName!.isNotEmpty
-                        ? m.userName![0].toUpperCase()
-                        : 'U',
-                    style: AppTypography.titleSmall.bold.colored(isMe ? colors.primary : roleColor),
-                  ),
+                  backgroundImage: (m.avatarUrl != null && m.avatarUrl!.isNotEmpty)
+                      ? NetworkImage(m.avatarUrl!)
+                      : null,
+                  child: (m.avatarUrl == null || m.avatarUrl!.isEmpty)
+                      ? Text(
+                          displayName.isNotEmpty ? displayName[0].toUpperCase() : 'U',
+                          style: AppTypography.titleSmall.bold.colored(isMe ? colors.primary : roleColor),
+                        )
+                      : null,
                 ),
               ),
               if (isMe)
@@ -376,7 +392,13 @@ class _ClubMemberSectionState extends ConsumerState<ClubMemberSection> {
                 ),
                 const SizedBox(height: 1.5),
                 Text(
-                  '${m.role == ClubRole.guest ? "Khách giao lưu" : (m.isMonthlyMember ? "Gói Tháng (Cố định)" : "Đóng theo buổi")} • ${isMe ? "Tài khoản của bạn" : (m.email ?? "Thành viên")}',
+                  [
+                    if (m.userName != null && m.userName!.trim().isNotEmpty) '@${m.userName!.trim()}',
+                    m.role == ClubRole.guest
+                        ? 'Khách giao lưu'
+                        : (m.isMonthlyMember ? 'Gói Tháng (Cố định)' : 'Đóng theo buổi'),
+                    isMe ? 'Tài khoản của bạn' : (m.email ?? 'Thành viên'),
+                  ].join(' • '),
                   style: AppTypography.bodySmall.colored(
                     isMe ? colors.primary : colors.textMuted,
                   ).copyWith(fontWeight: isMe ? FontWeight.w500 : FontWeight.normal),
@@ -435,7 +457,7 @@ class _ClubMemberSectionState extends ConsumerState<ClubMemberSection> {
   void _showMemberActionSheet(ClubMember m, bool isMe, bool canManageRoles, bool canRemoveMember) {
     final colors = context.colors;
     final roleColor = _getRoleColor(m.role);
-    final displayName = (m.nickname != null && m.nickname!.isNotEmpty) ? m.nickname! : (m.userName ?? 'Thành viên');
+    final displayName = _getMemberDisplayName(m);
 
     showModalBottomSheet(
       context: context,
@@ -466,12 +488,25 @@ class _ClubMemberSectionState extends ConsumerState<ClubMemberSection> {
                       shape: BoxShape.circle,
                       border: Border.all(color: roleColor.withValues(alpha: 0.3), width: 1.5),
                     ),
-                    child: Center(
-                      child: Text(
-                        displayName.isNotEmpty ? displayName[0].toUpperCase() : 'U',
-                        style: AppTypography.titleLarge.bold.colored(roleColor),
-                      ),
-                    ),
+                    child: (m.avatarUrl != null && m.avatarUrl!.isNotEmpty)
+                        ? ClipOval(
+                            child: Image.network(
+                              m.avatarUrl!,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, _, _) => Center(
+                                child: Text(
+                                  displayName.isNotEmpty ? displayName[0].toUpperCase() : 'U',
+                                  style: AppTypography.titleLarge.bold.colored(roleColor),
+                                ),
+                              ),
+                            ),
+                          )
+                        : Center(
+                            child: Text(
+                              displayName.isNotEmpty ? displayName[0].toUpperCase() : 'U',
+                              style: AppTypography.titleLarge.bold.colored(roleColor),
+                            ),
+                          ),
                   ),
                   AppSpacing.gapW12,
                   Expanded(
@@ -480,7 +515,13 @@ class _ClubMemberSectionState extends ConsumerState<ClubMemberSection> {
                       children: [
                         Text(displayName, style: AppTypography.titleMedium.bold.colored(colors.textPrimary)),
                         AppSpacing.gapH4,
-                        Text(m.email ?? 'Thành viên câu lạc bộ', style: AppTypography.bodySmall.colored(colors.textMuted)),
+                        Text(
+                          [
+                            if (m.userName != null && m.userName!.isNotEmpty) '@${m.userName}',
+                            m.email ?? 'Thành viên câu lạc bộ',
+                          ].join(' • '),
+                          style: AppTypography.bodySmall.colored(colors.textMuted),
+                        ),
                       ],
                     ),
                   ),
@@ -604,7 +645,7 @@ class _ClubMemberSectionState extends ConsumerState<ClubMemberSection> {
           backgroundColor: colors.cardBackground,
           shape: const RoundedRectangleBorder(borderRadius: AppRadius.dialog),
           title: Text(
-            'Phân quyền: ${m.userName ?? "Thành viên"}',
+            'Phân quyền: ${_getMemberDisplayName(m)}',
             style: AppTypography.titleMedium.bold.colored(colors.textPrimary),
           ),
           content: Column(
@@ -658,7 +699,7 @@ class _ClubMemberSectionState extends ConsumerState<ClubMemberSection> {
           backgroundColor: colors.cardBackground,
           shape: const RoundedRectangleBorder(borderRadius: AppRadius.dialog),
           title: Text(
-            'Gói sinh hoạt: ${m.userName ?? "Thành viên"}',
+            'Gói sinh hoạt: ${_getMemberDisplayName(m)}',
             style: AppTypography.titleMedium.bold.colored(colors.textPrimary),
           ),
           content: Column(
@@ -731,7 +772,7 @@ class _ClubMemberSectionState extends ConsumerState<ClubMemberSection> {
         shape: const RoundedRectangleBorder(borderRadius: AppRadius.dialog),
         title: Text('Xác nhận xóa thành viên', style: AppTypography.titleMedium.bold.colored(colors.textPrimary)),
         content: Text(
-          'Bạn có chắc chắn muốn xóa "${m.userName ?? "thành viên"}" ra khỏi câu lạc bộ?',
+          'Bạn có chắc chắn muốn xóa "${_getMemberDisplayName(m)}" ra khỏi câu lạc bộ?',
           style: AppTypography.bodyMedium.colored(colors.textSecondary),
         ),
         actions: [

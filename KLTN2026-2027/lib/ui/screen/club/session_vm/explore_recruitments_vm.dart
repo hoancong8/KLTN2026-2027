@@ -1,11 +1,13 @@
 // lib/ui/screen/club/session_vm/explore_recruitments_vm.dart
 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import '../../../../app/provider.dart';
 import '../../../../domain/entities/club/my_club.dart';
 import '../../../../domain/entities/session/guest_recruitment.dart';
 import '../../../../domain/entities/session/my_booking_item.dart';
 import '../../../../domain/enums/session_enums.dart';
+import '../../../../domain/exceptions/app_exception.dart';
 import '../../../../domain/usecases/club/get_my_clubs_usecase.dart';
 import '../../../../domain/usecases/session/get_my_bookings_usecase.dart';
 import '../../../../domain/usecases/session/session_usecases.dart';
@@ -14,6 +16,7 @@ import 'explore_recruitments_state.dart';
 final exploreRecruitmentsViewModelProvider =
     StateNotifierProvider<ExploreRecruitmentsViewModel, ExploreRecruitmentsState>((ref) {
   return ExploreRecruitmentsViewModel(
+    ref: ref,
     exploreRecruitmentsUseCase: ref.watch(exploreRecruitmentsUseCaseProvider),
     joinRecruitmentUseCase: ref.watch(joinRecruitmentUseCaseProvider),
     cancelRecruitmentBookingUseCase: ref.watch(cancelRecruitmentBookingUseCaseProvider),
@@ -23,6 +26,7 @@ final exploreRecruitmentsViewModelProvider =
 });
 
 class ExploreRecruitmentsViewModel extends StateNotifier<ExploreRecruitmentsState> {
+  final Ref? ref;
   final ExploreRecruitmentsUseCase exploreRecruitmentsUseCase;
   final JoinRecruitmentUseCase joinRecruitmentUseCase;
   final CancelRecruitmentBookingUseCase cancelRecruitmentBookingUseCase;
@@ -30,17 +34,26 @@ class ExploreRecruitmentsViewModel extends StateNotifier<ExploreRecruitmentsStat
   final GetMyClubsUseCase? getMyClubsUseCase;
 
   ExploreRecruitmentsViewModel({
+    this.ref,
     required this.exploreRecruitmentsUseCase,
     required this.joinRecruitmentUseCase,
     required this.cancelRecruitmentBookingUseCase,
     this.getMyBookingsUseCase,
     this.getMyClubsUseCase,
   }) : super(const ExploreRecruitmentsState(isLocating: false)) {
-    explore();
+    if (ref == null || ref?.read(authTokenProvider) != null) {
+      explore();
+    }
   }
 
   Future<void> explore() async {
-    state = state.copyWith(isLoading: true, errorMessage: null);
+    final token = ref?.read(authTokenProvider);
+    if (ref != null && (token == null || token.accessToken.isEmpty)) {
+      state = state.copyWith(isLoading: false, recruitments: const [], clearError: true);
+      return;
+    }
+
+    state = state.copyWith(isLoading: true, clearError: true, errorMessage: null);
     try {
       final recruitmentsFuture = exploreRecruitmentsUseCase.execute(
         latitude: null,
@@ -78,9 +91,15 @@ class ExploreRecruitmentsViewModel extends StateNotifier<ExploreRecruitmentsStat
         recruitments: recruitments,
         joinedSessionIds: activeJoinedSessionIds,
         myClubNames: clubNames,
+        clearError: true,
       );
     } catch (e) {
-      state = state.copyWith(isLoading: false, errorMessage: e.toString());
+      final appException = e is AppException ? e : AppException(message: e.toString(), originalError: e);
+      state = state.copyWith(
+        isLoading: false,
+        error: appException,
+        errorMessage: appException.message ?? appException.toString(),
+      );
     } finally {
       if (state.isLoading) {
         state = state.copyWith(isLoading: false);
@@ -102,7 +121,7 @@ class ExploreRecruitmentsViewModel extends StateNotifier<ExploreRecruitmentsStat
   }
 
   Future<bool> joinRecruitment(String recruitmentId) async {
-    state = state.copyWith(isJoining: true, errorMessage: null);
+    state = state.copyWith(isJoining: true, clearError: true, errorMessage: null);
     try {
       await joinRecruitmentUseCase.execute(recruitmentId);
       final matched = state.recruitments.where((r) => r.id == recruitmentId).firstOrNull;
@@ -114,20 +133,30 @@ class ExploreRecruitmentsViewModel extends StateNotifier<ExploreRecruitmentsStat
       state = state.copyWith(isJoining: false, successMessage: 'Nhận suất giao lưu thành công!');
       return true;
     } catch (e) {
-      state = state.copyWith(isJoining: false, errorMessage: e.toString());
+      final appException = e is AppException ? e : AppException(message: e.toString(), originalError: e);
+      state = state.copyWith(
+        isJoining: false,
+        error: appException,
+        errorMessage: appException.message ?? appException.toString(),
+      );
       return false;
     }
   }
 
   Future<bool> cancelRecruitment(String recruitmentId) async {
-    state = state.copyWith(isJoining: true, errorMessage: null);
+    state = state.copyWith(isJoining: true, clearError: true, errorMessage: null);
     try {
       await cancelRecruitmentBookingUseCase.execute(recruitmentId);
       await explore();
       state = state.copyWith(isJoining: false, successMessage: 'Đã hủy suất giao lưu thành công!');
       return true;
     } catch (e) {
-      state = state.copyWith(isJoining: false, errorMessage: e.toString());
+      final appException = e is AppException ? e : AppException(message: e.toString(), originalError: e);
+      state = state.copyWith(
+        isJoining: false,
+        error: appException,
+        errorMessage: appException.message ?? appException.toString(),
+      );
       return false;
     }
   }

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
+import '../../../../app/provider.dart';
 import '../../../../app/theme/theme.dart';
 import '../../../../app/provider/localization_provider.dart';
 import '../../../../app/utils/exception_ext.dart';
@@ -635,6 +637,8 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
   late int _gender;
   late SkillLevel _skillLevel;
   late bool _isOpenForGuest;
+  String? _avatarUrl;
+  bool _isUploadingAvatar = false;
 
   @override
   void initState() {
@@ -643,6 +647,7 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
     _gender = widget.profile.gender;
     _skillLevel = widget.profile.skillLevel;
     _isOpenForGuest = widget.profile.isOpenForGuest;
+    _avatarUrl = widget.profile.avatarUrl;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(profileViewModelProvider.notifier).clearMessages();
     });
@@ -654,13 +659,121 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
     super.dispose();
   }
 
+  Future<void> _pickAndUploadAvatar(ImageSource source) async {
+    try {
+      final picker = ImagePicker();
+      final pickedFile = await picker.pickImage(
+        source: source,
+        maxWidth: 1024,
+        maxHeight: 1024,
+        imageQuality: 85,
+      );
+      if (pickedFile == null) return;
+
+      setState(() => _isUploadingAvatar = true);
+
+      final uploadUseCase = ref.read(uploadImageUseCaseProvider);
+      final uploadedUrl = await uploadUseCase.execute(
+        pickedFile.path,
+        folder: 'badminton_app/users',
+      );
+
+      if (!mounted) return;
+      setState(() {
+        _avatarUrl = uploadedUrl;
+        _isUploadingAvatar = false;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Tải ảnh đại diện lên thành công!'),
+          backgroundColor: colors.success,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isUploadingAvatar = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Lỗi tải ảnh: $e'),
+          backgroundColor: colors.error,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+  }
+
+  void _showImageSourcePicker() {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: colors.cardBackground,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Thay Đổi Ảnh Đại Diện',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: colors.textPrimary),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Tải ảnh lên hệ thống lưu trữ Cloudinary',
+                style: TextStyle(fontSize: 12, color: colors.textMuted),
+              ),
+              const SizedBox(height: 16),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: colors.primaryContainer,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(Icons.camera_alt_rounded, color: colors.primary),
+                ),
+                title: Text('Chụp ảnh từ camera', style: TextStyle(fontWeight: FontWeight.bold, color: colors.textPrimary)),
+                subtitle: Text('Sử dụng camera của thiết bị', style: TextStyle(fontSize: 12, color: colors.textMuted)),
+                onTap: () {
+                  Navigator.of(ctx).pop();
+                  _pickAndUploadAvatar(ImageSource.camera);
+                },
+              ),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: colors.primaryContainer,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(Icons.photo_library_rounded, color: colors.primary),
+                ),
+                title: Text('Chọn ảnh từ thư viện', style: TextStyle(fontWeight: FontWeight.bold, color: colors.textPrimary)),
+                subtitle: Text('Tải ảnh có sẵn từ thiết bị', style: TextStyle(fontSize: 12, color: colors.textMuted)),
+                onTap: () {
+                  Navigator.of(ctx).pop();
+                  _pickAndUploadAvatar(ImageSource.gallery);
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
 
     final success = await ref.read(profileViewModelProvider.notifier).updateProfile(
           fullName: _nameController.text.trim(),
           gender: _gender,
-          avatarUrl: widget.profile.avatarUrl,
+          avatarUrl: _avatarUrl,
           skillLevel: _skillLevel,
           isOpenForGuest: _isOpenForGuest,
         );
@@ -707,6 +820,72 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
                 ],
               ),
               const Divider(height: 16),
+
+              // Avatar preview & edit
+              Center(
+                child: GestureDetector(
+                  onTap: _isUploadingAvatar ? null : _showImageSourcePicker,
+                  child: Stack(
+                    children: [
+                      Container(
+                        width: 80,
+                        height: 80,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: colors.primary.withValues(alpha: 0.1),
+                          border: Border.all(color: colors.primary.withValues(alpha: 0.35), width: 2),
+                        ),
+                        child: ClipOval(
+                          child: _isUploadingAvatar
+                              ? Center(
+                                  child: SizedBox(
+                                    width: 24,
+                                    height: 24,
+                                    child: CircularProgressIndicator(strokeWidth: 2.5, color: colors.primary),
+                                  ),
+                                )
+                              : (_avatarUrl != null && _avatarUrl!.isNotEmpty
+                                  ? Image.network(
+                                      _avatarUrl!,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (_, _, _) => Icon(
+                                        Icons.person_rounded,
+                                        size: 40,
+                                        color: colors.primary,
+                                      ),
+                                    )
+                                  : Icon(
+                                      Icons.person_rounded,
+                                      size: 42,
+                                      color: colors.primary,
+                                    )),
+                        ),
+                      ),
+                      Positioned(
+                        bottom: 0,
+                        right: 0,
+                        child: Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: colors.primary,
+                            shape: BoxShape.circle,
+                            border: Border.all(color: colors.cardBackground, width: 2),
+                          ),
+                          child: const Icon(Icons.camera_alt_rounded, size: 14, color: AppColors.white),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 6),
+              Center(
+                child: Text(
+                  _isUploadingAvatar ? 'Đang tải ảnh...' : 'Chạm để thay đổi ảnh đại diện',
+                  style: TextStyle(fontSize: 12, color: colors.textMuted),
+                ),
+              ),
+              const SizedBox(height: 16),
 
               // Full Name
               Text(

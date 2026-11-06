@@ -79,6 +79,9 @@ class AppConfig {
   static const userPermissionsPath = '/api/v1/user/permissions';
   static const userAllPermissionsPath = '/api/v1/user/all-permissions';
 
+  // ===== [API] Media APIs (/api/v1/media) =====
+  static const mediaUploadPath = '/api/v1/media/upload';
+
   // ===== [API] 5. Venues Management APIs (/api/v1/venues) =====
   static const venuesPath = '/api/v1/venues';
   static const venueRecommendationsPath = '/api/v1/venues/recommendations';
@@ -136,4 +139,12 @@ class AppConfig {
       '/session/$sessionId';
   static String createSessionRoutePath(String clubId) =>
       '/session-create/$clubId';
+
+  // ===== [API] Notifications APIs (/api/v1/user/me/notifications) =====
+  static const myNotificationsEndpoint = '/api/v1/user/me/notifications';
+  static String markNotificationReadEndpoint(String id) =>
+      '/api/v1/user/me/notifications/$id/read';
+  static const markAllNotificationsReadEndpoint =
+      '/api/v1/user/me/notifications/read-all';
+  static const notificationsPath = '/notifications';
 }

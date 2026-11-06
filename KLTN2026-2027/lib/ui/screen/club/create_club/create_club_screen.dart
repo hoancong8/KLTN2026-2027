@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:kltn2026_2027/app/provider.dart';
 import 'package:kltn2026_2027/app/theme/theme.dart';
 import '../../../../domain/enums/session_enums.dart';
@@ -34,6 +35,7 @@ class _CreateClubScreenState extends ConsumerState<CreateClubScreen> {
   double? _lat;
   double? _lng;
   bool _isGettingLocation = false;
+  bool _isUploadingAvatar = false;
 
   SkillLevel _minLevel = SkillLevel.nb;
   SkillLevel _maxLevel = SkillLevel.k;
@@ -96,6 +98,114 @@ class _CreateClubScreenState extends ConsumerState<CreateClubScreen> {
       default:
         return 'Thứ $dayOfWeek';
     }
+  }
+
+  Future<void> _pickAndUploadAvatar(ImageSource source) async {
+    try {
+      final picker = ImagePicker();
+      final pickedFile = await picker.pickImage(
+        source: source,
+        maxWidth: 1024,
+        maxHeight: 1024,
+        imageQuality: 85,
+      );
+      if (pickedFile == null) return;
+
+      setState(() => _isUploadingAvatar = true);
+
+      final uploadUseCase = ref.read(uploadImageUseCaseProvider);
+      final uploadedUrl = await uploadUseCase.execute(
+        pickedFile.path,
+        folder: 'badminton_app/clubs',
+      );
+
+      if (!mounted) return;
+      setState(() {
+        _avatarUrlController.text = uploadedUrl;
+        _isUploadingAvatar = false;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Tải ảnh đại diện lên thành công!'),
+          backgroundColor: AppColors.success,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isUploadingAvatar = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Lỗi tải ảnh: $e'),
+          backgroundColor: AppColors.error,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+  }
+
+  void _showImageSourcePicker() {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: colors.cardBackground,
+      shape: const RoundedRectangleBorder(borderRadius: AppRadius.bottomSheet),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: AppSpacing.allBase,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Chọn Ảnh Đại Diện CLB',
+                style: AppTypography.titleMedium.bold.colored(colors.textPrimary),
+              ),
+              AppSpacing.gapH4,
+              Text(
+                'Tải ảnh trực tiếp lên hệ thống lưu trữ Cloudinary',
+                style: AppTypography.bodySmall.colored(colors.textMuted),
+              ),
+              AppSpacing.gapH16,
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: Container(
+                  padding: AppSpacing.allSm,
+                  decoration: BoxDecoration(
+                    color: colors.primaryContainer,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(Icons.camera_alt_rounded, color: colors.primary),
+                ),
+                title: Text('Chụp ảnh từ camera', style: AppTypography.labelLarge.bold.colored(colors.textPrimary)),
+                subtitle: Text('Sử dụng camera của thiết bị', style: AppTypography.bodySmall.colored(colors.textMuted)),
+                onTap: () {
+                  Navigator.of(ctx).pop();
+                  _pickAndUploadAvatar(ImageSource.camera);
+                },
+              ),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: Container(
+                  padding: AppSpacing.allSm,
+                  decoration: BoxDecoration(
+                    color: colors.primaryContainer,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(Icons.photo_library_rounded, color: colors.primary),
+                ),
+                title: Text('Chọn ảnh từ thư viện', style: AppTypography.labelLarge.bold.colored(colors.textPrimary)),
+                subtitle: Text('Tải ảnh có sẵn từ thiết bị', style: AppTypography.bodySmall.colored(colors.textMuted)),
+                onTap: () {
+                  Navigator.of(ctx).pop();
+                  _pickAndUploadAvatar(ImageSource.gallery);
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   Future<void> _pickLocationOnMap() async {
@@ -481,16 +591,123 @@ class _CreateClubScreenState extends ConsumerState<CreateClubScreen> {
           ),
           AppSpacing.gapH16,
 
-          // Avatar Preset / Custom URL
-          Text('Ảnh Đại Diện (URL)', style: AppTypography.labelMedium.bold.colored(colors.textPrimary)),
+          // Avatar Upload & Preset Section
+          Text('Ảnh Đại Diện Câu Lạc Bộ', style: AppTypography.labelMedium.bold.colored(colors.textPrimary)),
           AppSpacing.gapH8,
+          Container(
+            padding: AppSpacing.allMd,
+            decoration: BoxDecoration(
+              color: colors.cardBackground,
+              borderRadius: AppRadius.borderMd,
+              border: Border.all(color: colors.cardBorder),
+            ),
+            child: Row(
+              children: [
+                GestureDetector(
+                  onTap: _isUploadingAvatar ? null : _showImageSourcePicker,
+                  child: Stack(
+                    children: [
+                      Container(
+                        width: 72,
+                        height: 72,
+                        decoration: BoxDecoration(
+                          color: colors.surfaceSubtle,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: colors.primary.withValues(alpha: 0.3), width: 2),
+                        ),
+                        child: ClipOval(
+                          child: _isUploadingAvatar
+                              ? const Center(
+                                  child: SizedBox(
+                                    width: 24,
+                                    height: 24,
+                                    child: CircularProgressIndicator(strokeWidth: 2.5),
+                                  ),
+                                )
+                              : (_avatarUrlController.text.trim().isNotEmpty
+                                  ? Image.network(
+                                      _avatarUrlController.text.trim(),
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (_, _, _) => Icon(
+                                        Icons.sports_tennis_rounded,
+                                        size: 32,
+                                        color: colors.primary,
+                                      ),
+                                    )
+                                  : Icon(
+                                      Icons.groups_rounded,
+                                      size: 36,
+                                      color: colors.textMuted,
+                                    )),
+                        ),
+                      ),
+                      Positioned(
+                        bottom: 0,
+                        right: 0,
+                        child: Container(
+                          padding: const EdgeInsets.all(5),
+                          decoration: BoxDecoration(
+                            color: AppColors.primary,
+                            shape: BoxShape.circle,
+                            border: Border.all(color: colors.cardBackground, width: 2),
+                          ),
+                          child: const Icon(Icons.camera_alt_rounded, size: 14, color: AppColors.white),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                AppSpacing.gapW16,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: colors.primaryContainer,
+                          foregroundColor: colors.primary,
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+                          shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                        ),
+                        icon: _isUploadingAvatar
+                            ? const SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              )
+                            : const Icon(Icons.cloud_upload_outlined, size: 18),
+                        label: Text(
+                          _isUploadingAvatar ? 'Đang tải lên...' : 'Tải ảnh từ máy',
+                          style: AppTypography.labelMedium.bold.colored(colors.primary),
+                        ),
+                        onPressed: _isUploadingAvatar ? null : _showImageSourcePicker,
+                      ),
+                      AppSpacing.gapH4,
+                      Text(
+                        'Hỗ trợ JPG, PNG, WEBP (Tối đa 5MB)',
+                        style: AppTypography.caption.colored(colors.textMuted),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          AppSpacing.gapH12,
           TextFormField(
             controller: _avatarUrlController,
             decoration: InputDecoration(
-              hintText: 'Dán đường dẫn ảnh hoặc chọn ảnh mẫu bên dưới',
+              hintText: 'Hoặc dán URL ảnh / chọn ảnh mẫu bên dưới',
               filled: true,
               fillColor: colors.inputFill,
-              prefixIcon: Icon(Icons.image_outlined, color: colors.textMuted),
+              prefixIcon: Icon(Icons.link_rounded, color: colors.textMuted),
+              suffixIcon: _avatarUrlController.text.isNotEmpty
+                  ? IconButton(
+                      icon: const Icon(Icons.clear_rounded, size: 18),
+                      onPressed: () => setState(() => _avatarUrlController.clear()),
+                    )
+                  : null,
               border: OutlineInputBorder(borderRadius: AppRadius.borderMd, borderSide: BorderSide(color: colors.inputBorder)),
             ),
             onChanged: (_) => setState(() {}),
@@ -720,7 +937,7 @@ class _CreateClubScreenState extends ConsumerState<CreateClubScreen> {
         Text('Khoảng Trình Độ Tiếp Nhận', style: AppTypography.labelMedium.bold.colored(colors.textPrimary)),
         AppSpacing.gapH8,
         Container(
-          padding: AppSpacing.allMd,
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
           decoration: BoxDecoration(
             color: colors.cardBackground,
             borderRadius: AppRadius.borderMd,
@@ -730,22 +947,88 @@ class _CreateClubScreenState extends ConsumerState<CreateClubScreen> {
             children: [
               Expanded(
                 child: DropdownButtonFormField<SkillLevel>(
+                  isExpanded: true,
                   initialValue: _minLevel,
-                  decoration: const InputDecoration(labelText: 'Tối thiểu'),
-                  items: SkillLevel.values.map((s) => DropdownMenuItem(value: s, child: Text(s.displayName))).toList(),
+                  decoration: InputDecoration(
+                    labelText: 'Tối thiểu',
+                    labelStyle: AppTypography.labelSmall.colored(colors.textMuted),
+                    filled: true,
+                    fillColor: colors.inputFill,
+                    isDense: true,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                    border: OutlineInputBorder(
+                      borderRadius: AppRadius.input,
+                      borderSide: BorderSide(color: colors.inputBorder),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: AppRadius.input,
+                      borderSide: BorderSide(color: colors.inputBorder),
+                    ),
+                  ),
+                  items: SkillLevel.values
+                      .map((s) => DropdownMenuItem(
+                            value: s,
+                            child: Text(
+                              s.displayName,
+                              style: AppTypography.bodySmall.colored(colors.textPrimary),
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                            ),
+                          ))
+                      .toList(),
                   onChanged: (val) {
-                    if (val != null) setState(() => _minLevel = val);
+                    if (val != null) {
+                      setState(() {
+                        _minLevel = val;
+                        if (_minLevel.level > _maxLevel.level) {
+                          _maxLevel = _minLevel;
+                        }
+                      });
+                    }
                   },
                 ),
               ),
-              AppSpacing.gapW16,
+              AppSpacing.gapW12,
               Expanded(
                 child: DropdownButtonFormField<SkillLevel>(
+                  isExpanded: true,
                   initialValue: _maxLevel,
-                  decoration: const InputDecoration(labelText: 'Tối đa'),
-                  items: SkillLevel.values.map((s) => DropdownMenuItem(value: s, child: Text(s.displayName))).toList(),
+                  decoration: InputDecoration(
+                    labelText: 'Tối đa',
+                    labelStyle: AppTypography.labelSmall.colored(colors.textMuted),
+                    filled: true,
+                    fillColor: colors.inputFill,
+                    isDense: true,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                    border: OutlineInputBorder(
+                      borderRadius: AppRadius.input,
+                      borderSide: BorderSide(color: colors.inputBorder),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: AppRadius.input,
+                      borderSide: BorderSide(color: colors.inputBorder),
+                    ),
+                  ),
+                  items: SkillLevel.values
+                      .map((s) => DropdownMenuItem(
+                            value: s,
+                            child: Text(
+                              s.displayName,
+                              style: AppTypography.bodySmall.colored(colors.textPrimary),
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                            ),
+                          ))
+                      .toList(),
                   onChanged: (val) {
-                    if (val != null) setState(() => _maxLevel = val);
+                    if (val != null) {
+                      setState(() {
+                        _maxLevel = val;
+                        if (_maxLevel.level < _minLevel.level) {
+                          _minLevel = _maxLevel;
+                        }
+                      });
+                    }
                   },
                 ),
               ),

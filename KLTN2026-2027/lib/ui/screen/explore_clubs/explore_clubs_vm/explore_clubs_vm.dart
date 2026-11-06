@@ -114,8 +114,13 @@ class ExploreClubsViewModel extends StateNotifier<ExploreClubsState> {
     loadClubs();
   }
 
-  void toggleRecruitingOnly(bool? value) {
-    state = state.copyWith(isRecruitingOnly: value);
+  void toggleRecruitingOnly([bool? value]) {
+    final nextValue = value ?? !(state.isRecruitingOnly ?? false);
+    if (!nextValue) {
+      state = state.copyWith(clearRecruitingOnly: true);
+    } else {
+      state = state.copyWith(isRecruitingOnly: true);
+    }
     loadClubs();
   }
 }

@@ -8,6 +8,8 @@ import 'package:kltn2026_2027/app/consts/app_theme.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:kltn2026_2027/app/provider/localization_provider.dart';
 import 'package:kltn2026_2027/app/l10n_gen/app_localizations.dart';
+import 'services/push_notification_service.dart';
+import '../ui/screen/notification/notification_vm/notification_vm.dart';
 
 class MyApp extends ConsumerStatefulWidget {
   final String initialRoute;
@@ -30,7 +32,18 @@ class _MyAppState extends ConsumerState<MyApp> {
 
   Future<void> _initApp() async {
     await _initializeLocalization();
+    PushNotificationService.instance.initForegroundHandler(
+      onNotificationReceived: () {
+        ref.read(notificationViewModelProvider.notifier).refresh();
+      },
+    );
     if (mounted) setState(() => _isInit = true);
+  }
+
+  @override
+  void dispose() {
+    PushNotificationService.instance.dispose();
+    super.dispose();
   }
 
   Future<void> _initializeLocalization() async {

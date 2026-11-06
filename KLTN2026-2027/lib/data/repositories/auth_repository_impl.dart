@@ -18,10 +18,14 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<AuthToken> login({
     required String username,
     required String password,
+    String? deviceToken,
+    String? platform,
   }) async {
     final dto = LoginRequestDto(
       email: username,
       password: password,
+      deviceToken: deviceToken,
+      platform: platform,
     );
 
     final res = await remote.login(dto);

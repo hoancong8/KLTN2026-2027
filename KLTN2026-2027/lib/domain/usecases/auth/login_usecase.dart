@@ -14,10 +14,14 @@ class LoginUseCase {
   Future<AuthToken> execute({
     required String username,
     required String password,
+    String? deviceToken,
+    String? platform,
   }) async {
     final token = await repository.login(
       username: username,
       password: password,
+      deviceToken: deviceToken,
+      platform: platform,
     );
 
     // Luôn lưu token

@@ -22,6 +22,7 @@ import '../../ui/screen/club_detail/club_detail_screen.dart';
 import '../../ui/screen/explore_clubs/explore_clubs_screen.dart';
 import '../../ui/screen/home/tab/explore/explore_recruitments_page.dart';
 import '../../ui/screen/login/register_screen.dart';
+import '../../ui/screen/notification/notification_screen.dart';
 import 'app_config.dart';
 
 /// Global navigator key for accessing navigation from anywhere (e.g., Dio interceptor)
@@ -48,6 +49,10 @@ GoRouter generateAppRouter(String initialRoute) {
       GoRoute(
         path: AppConfig.homePath,
         builder: (_, _) => const HomeScreen(),
+      ),
+      GoRoute(
+        path: AppConfig.notificationsPath,
+        builder: (_, _) => const NotificationScreen(),
       ),
       GoRoute(
         path: AppConfig.profilePath,

@@ -428,5 +428,13 @@
     }
   },
   "home_recruiting_badge": "Tuyển thành viên",
-  "home_search_hint": "Tìm kiếm câu lạc bộ, sân đấu..."
+  "home_search_hint": "Tìm kiếm câu lạc bộ, sân đấu...",
+  "notification_title": "Thông báo",
+  "notification_mark_all_read": "Đánh dấu tất cả đã đọc",
+  "notification_filter_all": "Tất cả",
+  "notification_filter_unread": "Chưa đọc",
+  "notification_filter_payment": "Thanh toán",
+  "notification_filter_match": "Trận đấu",
+  "notification_empty": "Chưa có thông báo nào",
+  "notification_empty_hint": "Các thông báo về lịch chơi, xếp sân, tiền quỹ và quyết toán sẽ hiển thị tại đây."
 }
