@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import 'package:kltn2026_2027/app/provider/localization_provider.dart';
 import 'package:kltn2026_2027/app/theme/theme.dart';
 import '../../../app/provider.dart';
@@ -853,7 +854,19 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                 ),
                 child: Column(
                   children: [
-                    Icon(Icons.qr_code_2_rounded, size: 180, color: AppColors.black),
+                    QrImageView(
+                      data: code,
+                      version: QrVersions.auto,
+                      size: 160.0,
+                      eyeStyle: const QrEyeStyle(
+                        eyeShape: QrEyeShape.square,
+                        color: AppColors.neutral900,
+                      ),
+                      dataModuleStyle: const QrDataModuleStyle(
+                        dataModuleShape: QrDataModuleShape.square,
+                        color: AppColors.neutral900,
+                      ),
+                    ),
                     AppSpacing.gapH8,
                     Text(
                       fee > 0 ? '${NumberFormat('#,###').format(fee)} đ' : '0 đ (Miễn phí)',

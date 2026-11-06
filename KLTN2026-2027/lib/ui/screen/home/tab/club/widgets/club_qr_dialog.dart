@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import '../../../../../../app/theme/theme.dart';
 
 class ClubQrDialog extends StatelessWidget {
@@ -86,10 +87,8 @@ class ClubQrDialog extends StatelessWidget {
             ],
           ),
           AppSpacing.gapH16,
-          // ponytail: Visual QR frame with code pattern. Upgrade path: add qr_flutter if scanner camera requires raw matrix rendering.
+          // Real scannable QR Code rendering club join code
           Container(
-            width: 170,
-            height: 170,
             padding: AppSpacing.allMd,
             decoration: BoxDecoration(
               color: AppColors.white,
@@ -97,10 +96,24 @@ class ClubQrDialog extends StatelessWidget {
               border: Border.all(color: colors.cardBorder, width: 2),
             ),
             child: Column(
+              mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.qr_code_2_rounded, size: 96, color: AppColors.neutral900),
-                AppSpacing.gapH4,
+                QrImageView(
+                  data: clubCode,
+                  version: QrVersions.auto,
+                  size: 160.0,
+                  eyeStyle: const QrEyeStyle(
+                    eyeShape: QrEyeShape.square,
+                    color: AppColors.neutral900,
+                  ),
+                  dataModuleStyle: const QrDataModuleStyle(
+                    dataModuleShape: QrDataModuleShape.square,
+                    color: AppColors.neutral900,
+                  ),
+                  errorCorrectionLevel: QrErrorCorrectLevel.M,
+                ),
+                AppSpacing.gapH8,
                 Text(
                   clubCode,
                   style: AppTypography.labelLarge.bold.colored(AppColors.neutral900).copyWith(letterSpacing: 2),
