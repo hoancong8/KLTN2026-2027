@@ -3,6 +3,10 @@
 import '../../../dto/media/upload_image_response_dto.dart';
 
 abstract class MediaRemoteDatasource {
-  Future<UploadImageResponseDto> uploadImage(String filePath, {String? folder});
+  Future<UploadImageResponseDto> uploadImage({
+    required List<int> bytes,
+    required String fileName,
+    String? folder,
+  });
 }
 

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -672,9 +673,15 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
 
       setState(() => _isUploadingAvatar = true);
 
+      final bytes = await pickedFile.readAsBytes();
+      final fileName = pickedFile.name.isNotEmpty
+          ? pickedFile.name
+          : 'user_${DateTime.now().millisecondsSinceEpoch}.jpg';
+
       final uploadUseCase = ref.read(uploadImageUseCaseProvider);
       final uploadedUrl = await uploadUseCase.execute(
-        pickedFile.path,
+        bytes: bytes,
+        fileName: fileName,
         folder: 'badminton_app/users',
       );
 
@@ -705,6 +712,11 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
   }
 
   void _showImageSourcePicker() {
+    if (kIsWeb) {
+      _pickAndUploadAvatar(ImageSource.gallery);
+      return;
+    }
+
     showModalBottomSheet<void>(
       context: context,
       backgroundColor: colors.cardBackground,

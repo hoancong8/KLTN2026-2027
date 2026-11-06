@@ -12,11 +12,14 @@ class MediaRemoteDatasourceImpl extends BaseRemoteDatasource implements MediaRem
   MediaRemoteDatasourceImpl(this.dio);
 
   @override
-  Future<UploadImageResponseDto> uploadImage(String filePath, {String? folder}) async {
+  Future<UploadImageResponseDto> uploadImage({
+    required List<int> bytes,
+    required String fileName,
+    String? folder,
+  }) async {
     try {
-      final fileName = filePath.split(RegExp(r'[\\/]')).last;
       final formData = FormData.fromMap({
-        'file': await MultipartFile.fromFile(filePath, filename: fileName),
+        'file': MultipartFile.fromBytes(bytes, filename: fileName),
         if (folder != null && folder.isNotEmpty) 'folder': folder,
       });
 

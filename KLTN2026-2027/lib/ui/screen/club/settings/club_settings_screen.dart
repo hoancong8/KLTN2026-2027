@@ -1,5 +1,6 @@
 // lib/ui/screen/club/settings/club_settings_screen.dart
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -194,9 +195,15 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
 
       setState(() => _isUploadingAvatar = true);
 
+      final bytes = await pickedFile.readAsBytes();
+      final fileName = pickedFile.name.isNotEmpty
+          ? pickedFile.name
+          : 'club_${DateTime.now().millisecondsSinceEpoch}.jpg';
+
       final uploadUseCase = ref.read(uploadImageUseCaseProvider);
       final uploadedUrl = await uploadUseCase.execute(
-        pickedFile.path,
+        bytes: bytes,
+        fileName: fileName,
         folder: 'badminton_app/clubs',
       );
 
@@ -227,6 +234,11 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
   }
 
   void _showImageSourcePicker() {
+    if (kIsWeb) {
+      _pickAndUploadAvatar(ImageSource.gallery);
+      return;
+    }
+
     showModalBottomSheet<void>(
       context: context,
       backgroundColor: colors.cardBackground,

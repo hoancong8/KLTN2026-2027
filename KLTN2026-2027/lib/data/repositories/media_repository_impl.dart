@@ -9,8 +9,16 @@ class MediaRepositoryImpl implements MediaRepository {
   const MediaRepositoryImpl(this.remoteDatasource);
 
   @override
-  Future<String> uploadImage(String filePath, {String? folder}) async {
-    final dto = await remoteDatasource.uploadImage(filePath, folder: folder);
+  Future<String> uploadImage({
+    required List<int> bytes,
+    required String fileName,
+    String? folder,
+  }) async {
+    final dto = await remoteDatasource.uploadImage(
+      bytes: bytes,
+      fileName: fileName,
+      folder: folder,
+    );
     return dto.url;
   }
 }

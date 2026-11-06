@@ -7,8 +7,16 @@ class UploadImageUseCase {
 
   const UploadImageUseCase(this.repository);
 
-  Future<String> execute(String filePath, {String? folder}) {
-    return repository.uploadImage(filePath, folder: folder);
+  Future<String> execute({
+    required List<int> bytes,
+    required String fileName,
+    String? folder,
+  }) {
+    return repository.uploadImage(
+      bytes: bytes,
+      fileName: fileName,
+      folder: folder,
+    );
   }
 }
 
