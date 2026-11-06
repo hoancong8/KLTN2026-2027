@@ -5,15 +5,16 @@ import '../../domain/entities/session/session_attendance.dart';
 import '../../domain/entities/session/session_review.dart';
 import '../../domain/entities/session/session_rotation.dart';
 import '../../domain/entities/session/session_settlement.dart';
+import '../../domain/enums/session_enums.dart';
 import '../../domain/repositories/session_operations_repository.dart';
 import '../../domain/utils/session_fee_calculator.dart';
+import '../dto/session/session_detail_dto.dart';
 import '../dto/session/session_settlement_dto.dart';
 import '../mapper/session_settlement_mapper.dart';
 
 class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
   final Dio dio;
 
-  // In-memory mock/fallback state caches to guarantee 100% working UI even if backend endpoints are in progress
   final Map<String, SessionAttendanceSnapshot> _attendanceCache = {};
   final Map<String, SessionRotationSnapshot> _rotationCache = {};
   final Map<String, SessionSettlement> _settlementCache = {};
@@ -21,117 +22,310 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
 
   SessionOperationsRepositoryImpl({required this.dio});
 
-  // ==========================================
-  // FR14 / UC12: Điểm danh tại sân
-  // ==========================================
+  static int _parseInt(dynamic value, {int defaultValue = 0}) {
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    if (value is String) return int.tryParse(value) ?? defaultValue;
+    return defaultValue;
+  }
+
+  static bool _parseBool(dynamic value, {bool defaultValue = false}) {
+    if (value is bool) return value;
+    if (value is num) return value != 0;
+    if (value is String) {
+      final lower = value.toLowerCase().trim();
+      if (lower == 'true' || lower == '1') return true;
+      if (lower == 'false' || lower == '0') return false;
+    }
+    return defaultValue;
+  }
+
+  static DateTime? _parseDateTime(dynamic value) {
+    if (value == null) return null;
+    final str = value.toString().trim();
+    if (str.isEmpty) return null;
+    return DateTime.tryParse(str)?.toLocal();
+  }
+
+  static Map<String, dynamic>? _extractMapPayload(dynamic raw) {
+    if (raw is Map<String, dynamic>) {
+      if (raw['result'] is Map) {
+        return Map<String, dynamic>.from(raw['result'] as Map);
+      }
+      if (raw['data'] is Map) {
+        return Map<String, dynamic>.from(raw['data'] as Map);
+      }
+      return raw;
+    }
+    if (raw is Map) {
+      final map = Map<String, dynamic>.from(raw);
+      if (map['result'] is Map) {
+        return Map<String, dynamic>.from(map['result'] as Map);
+      }
+      if (map['data'] is Map) {
+        return Map<String, dynamic>.from(map['data'] as Map);
+      }
+      return map;
+    }
+    return null;
+  }
+
+  static String _normalizeAttendanceStatus(dynamic rawStatus, {bool hasCheckinAt = false}) {
+    final normalized = rawStatus?.toString().trim().toUpperCase() ?? '';
+    if (normalized == '4' || normalized == 'CHECKED_IN') {
+      return 'CHECKED_IN';
+    }
+    if (normalized == '5' || normalized == 'NO_SHOW') {
+      return 'NO_SHOW';
+    }
+    if (normalized == '2' || normalized == 'WAITING') {
+      return 'WAITING';
+    }
+    if (normalized == '3' || normalized == 'ABSENT') {
+      return 'ABSENT';
+    }
+    if (hasCheckinAt) {
+      return 'CHECKED_IN';
+    }
+    return 'CONFIRMED';
+  }
+
+  static bool _isConfirmedParticipantStatus(String normalizedStatus) {
+    return normalizedStatus == 'CONFIRMED' ||
+        normalizedStatus == 'CHECKED_IN' ||
+        normalizedStatus == 'NO_SHOW';
+  }
+
+  SessionAttendanceSnapshot _parseAttendanceSnapshot(
+    Map<String, dynamic> payload, {
+    required String fallbackSessionId,
+  }) {
+    final existingCache = _attendanceCache[fallbackSessionId];
+    final localWalkIns = existingCache?.players.where((p) => p.isWalkIn).toList() ?? const <AttendancePlayer>[];
+
+    final rawPlayers = payload['players'];
+    final parsedPlayers = <AttendancePlayer>[];
+    final seenUserIds = <String>{};
+
+    if (rawPlayers is List) {
+      for (final item in rawPlayers) {
+        if (item is! Map) continue;
+        final map = Map<String, dynamic>.from(item);
+        final checkinAt = _parseDateTime(map['checkinAt']);
+        final status = _normalizeAttendanceStatus(map['status'], hasCheckinAt: checkinAt != null);
+        if (!_isConfirmedParticipantStatus(status)) {
+          continue;
+        }
+        final userId = map['userId']?.toString() ?? '';
+        if (userId.isEmpty) continue;
+        seenUserIds.add(userId);
+        final skill = SkillLevel.fromString(map['skillLevel']);
+        parsedPlayers.add(
+          AttendancePlayer(
+            userId: userId,
+            bookingId: map['bookingId']?.toString() ?? '',
+            fullName: map['fullName']?.toString() ?? '',
+            avatarUrl: map['avatarUrl']?.toString(),
+            status: status,
+            checkinAt: status == 'CHECKED_IN' ? checkinAt : null,
+            bookedAt: _parseDateTime(map['bookedAt']) ??
+                _parseDateTime(map['attendanceMarkedAt']) ??
+                DateTime.now(),
+            skillLevel: skill.level,
+            isReady: _parseBool(map['isReady'], defaultValue: status == 'CHECKED_IN'),
+          ),
+        );
+      }
+    }
+
+    for (final walkIn in localWalkIns) {
+      if (!seenUserIds.contains(walkIn.userId)) {
+        parsedPlayers.add(walkIn);
+      }
+    }
+
+    final startTime = _parseDateTime(payload['startTime']) ??
+        existingCache?.startTime ??
+        DateTime.now().subtract(const Duration(minutes: 15));
+    final endTime = _parseDateTime(payload['endTime']) ??
+        existingCache?.endTime ??
+        DateTime.now().add(const Duration(hours: 2));
+    final presentCount = parsedPlayers.where((p) => p.isCheckedIn).length;
+    final noShowCount = parsedPlayers.where((p) => p.isNoShow).length;
+    final notArrivedCount = parsedPlayers.where((p) => p.isNotArrived).length;
+    final readyCount = parsedPlayers.where((p) => p.isCheckedIn && p.isReady).length;
+    final now = DateTime.now();
+    final defaultCanEdit =
+        now.isAfter(startTime.subtract(const Duration(hours: 1))) && now.isBefore(endTime);
+    final canEdit = payload.containsKey('canEdit')
+        ? _parseBool(payload['canEdit'], defaultValue: defaultCanEdit)
+        : defaultCanEdit;
+    final canStartRotation = payload.containsKey('canStartRotation')
+        ? (_parseBool(payload['canStartRotation']) || presentCount >= 4)
+        : presentCount >= 4;
+
+    return SessionAttendanceSnapshot(
+      sessionId: payload['sessionId']?.toString() ?? fallbackSessionId,
+      groupId: payload['groupId']?.toString() ?? existingCache?.groupId ?? '',
+      startTime: startTime,
+      endTime: endTime,
+      maxPlayers: _parseInt(payload['maxPlayers'], defaultValue: existingCache?.maxPlayers ?? 12),
+      presentCount: presentCount,
+      notArrivedCount: notArrivedCount,
+      noShowCount: noShowCount,
+      waitlistCount: _parseInt(payload['waitlistCount'], defaultValue: existingCache?.waitlistCount ?? 0),
+      readyCount: readyCount,
+      canEdit: canEdit,
+      canStartRotation: canStartRotation,
+      attendanceCompletedAt:
+          _parseDateTime(payload['attendanceCompletedAt']) ?? existingCache?.attendanceCompletedAt,
+      attendanceCompletedBy:
+          payload['attendanceCompletedBy']?.toString() ?? existingCache?.attendanceCompletedBy,
+      players: parsedPlayers,
+    );
+  }
+
+  Future<SessionAttendanceSnapshot?> _buildAttendanceFromSessionDetail(String sessionId) async {
+    try {
+      final res = await dio.get('/api/v1/sessions/$sessionId');
+      if (res.statusCode != 200 || res.data == null) return null;
+      final payload = _extractMapPayload(res.data);
+      if (payload == null) return null;
+
+      final detailDto = SessionDetailDto.fromJson(payload);
+      final existingCache = _attendanceCache[sessionId];
+      final cachedByUser = <String, AttendancePlayer>{
+        if (existingCache != null)
+          for (final p in existingCache.players) p.userId: p,
+      };
+
+      final players = <AttendancePlayer>[];
+      final seenUserIds = <String>{};
+
+      for (final booking in detailDto.confirmedPlayers) {
+        final checkinAt = _parseDateTime(booking.checkinAt);
+        final statusFromDetail = _normalizeAttendanceStatus(
+          booking.status,
+          hasCheckinAt: checkinAt != null,
+        );
+        if (!_isConfirmedParticipantStatus(statusFromDetail)) {
+          continue;
+        }
+        seenUserIds.add(booking.userId);
+        final cached = cachedByUser[booking.userId];
+        final effectiveStatus = cached != null && (cached.isCheckedIn || cached.isNoShow)
+            ? cached.status
+            : statusFromDetail;
+        final effectiveCheckinAt = effectiveStatus == 'CHECKED_IN'
+            ? (checkinAt ?? cached?.checkinAt)
+            : null;
+        final skill = SkillLevel.fromString(booking.skillLevel);
+
+        players.add(
+          AttendancePlayer(
+            userId: booking.userId,
+            bookingId: booking.bookingId,
+            fullName: booking.fullName,
+            avatarUrl: booking.avatarUrl,
+            status: effectiveStatus,
+            checkinAt: effectiveCheckinAt,
+            bookedAt: _parseDateTime(booking.bookedAt) ?? DateTime.now(),
+            skillLevel: skill.level,
+            isReady: effectiveStatus == 'CHECKED_IN',
+          ),
+        );
+      }
+
+      if (existingCache != null) {
+        for (final walkIn in existingCache.players.where((p) => p.isWalkIn)) {
+          if (!seenUserIds.contains(walkIn.userId)) {
+            players.add(walkIn);
+          }
+        }
+      }
+
+      final startTime = _parseDateTime(detailDto.session.startTime) ??
+          DateTime.now().subtract(const Duration(minutes: 15));
+      final endTime = _parseDateTime(detailDto.session.endTime) ??
+          DateTime.now().add(const Duration(hours: 2));
+      final sessionStatus = SessionStatus.fromString(detailDto.session.status);
+      final now = DateTime.now();
+      final isEditableStatus = sessionStatus == SessionStatus.open ||
+          sessionStatus == SessionStatus.locked ||
+          sessionStatus == SessionStatus.playing;
+      final isWithinWindow =
+          now.isAfter(startTime.subtract(const Duration(hours: 1))) && now.isBefore(endTime);
+      final canEdit = isEditableStatus && (isWithinWindow || sessionStatus == SessionStatus.playing);
+
+      final presentCount = players.where((p) => p.isCheckedIn).length;
+      final noShowCount = players.where((p) => p.isNoShow).length;
+      final notArrivedCount = players.where((p) => p.isNotArrived).length;
+
+      return SessionAttendanceSnapshot(
+        sessionId: detailDto.session.id.isNotEmpty ? detailDto.session.id : sessionId,
+        groupId: detailDto.session.groupId,
+        startTime: startTime,
+        endTime: endTime,
+        maxPlayers: detailDto.session.maxPlayers > 0 ? detailDto.session.maxPlayers : 12,
+        presentCount: presentCount,
+        notArrivedCount: notArrivedCount,
+        noShowCount: noShowCount,
+        waitlistCount: detailDto.waitingQueue.isNotEmpty
+            ? detailDto.waitingQueue.length
+            : detailDto.session.waitingCount,
+        readyCount: presentCount,
+        canEdit: canEdit,
+        canStartRotation: presentCount >= 4,
+        attendanceCompletedAt: existingCache?.attendanceCompletedAt,
+        attendanceCompletedBy: existingCache?.attendanceCompletedBy,
+        players: players,
+      );
+    } catch (_) {
+      return null;
+    }
+  }
 
   @override
   Future<SessionAttendanceSnapshot> getAttendance(String sessionId) async {
     try {
       final res = await dio.get('/api/v1/sessions/$sessionId/attendance');
       if (res.statusCode == 200 && res.data != null) {
-        // Parse from BE if available
+        final payload = _extractMapPayload(res.data);
+        if (payload != null) {
+          final snapshot = _parseAttendanceSnapshot(payload, fallbackSessionId: sessionId);
+          _attendanceCache[sessionId] = snapshot;
+          return snapshot;
+        }
       }
     } catch (_) {}
 
-    // Fallback Mock snapshot based on UC12 contract
-    if (!_attendanceCache.containsKey(sessionId)) {
-      _attendanceCache[sessionId] = SessionAttendanceSnapshot(
-        sessionId: sessionId,
-        groupId: 'club-demo-id',
-        startTime: DateTime.now().subtract(const Duration(minutes: 15)),
-        endTime: DateTime.now().add(const Duration(hours: 2)),
-        maxPlayers: 12,
-        presentCount: 6,
-        notArrivedCount: 2,
-        noShowCount: 0,
-        waitlistCount: 1,
-        readyCount: 6,
-        canEdit: true,
-        canStartRotation: true,
-        players: [
-          AttendancePlayer(
-            userId: 'user-01',
-            bookingId: 'bk-01',
-            fullName: 'Nguyễn Văn An (Host)',
-            status: 'CHECKED_IN',
-            checkinAt: DateTime.now().subtract(const Duration(minutes: 10)),
-            bookedAt: DateTime.now().subtract(const Duration(days: 1)),
-            skillLevel: 4,
-            isReady: true,
-          ),
-          AttendancePlayer(
-            userId: 'user-02',
-            bookingId: 'bk-02',
-            fullName: 'Trần Minh Đức',
-            status: 'CHECKED_IN',
-            checkinAt: DateTime.now().subtract(const Duration(minutes: 8)),
-            bookedAt: DateTime.now().subtract(const Duration(days: 1)),
-            skillLevel: 3,
-            isReady: true,
-          ),
-          AttendancePlayer(
-            userId: 'user-03',
-            bookingId: 'bk-03',
-            fullName: 'Lê Hoàng Nam',
-            status: 'CHECKED_IN',
-            checkinAt: DateTime.now().subtract(const Duration(minutes: 5)),
-            bookedAt: DateTime.now().subtract(const Duration(days: 1)),
-            skillLevel: 4,
-            isReady: true,
-          ),
-          AttendancePlayer(
-            userId: 'user-04',
-            bookingId: 'bk-04',
-            fullName: 'Phạm Quỳnh Anh',
-            status: 'CHECKED_IN',
-            checkinAt: DateTime.now().subtract(const Duration(minutes: 4)),
-            bookedAt: DateTime.now().subtract(const Duration(days: 1)),
-            skillLevel: 3,
-            isReady: true,
-          ),
-          AttendancePlayer(
-            userId: 'user-05',
-            bookingId: 'bk-05',
-            fullName: 'Vũ Quốc Bảo',
-            status: 'CHECKED_IN',
-            checkinAt: DateTime.now().subtract(const Duration(minutes: 2)),
-            bookedAt: DateTime.now().subtract(const Duration(days: 1)),
-            skillLevel: 5,
-            isReady: true,
-          ),
-          AttendancePlayer(
-            userId: 'user-06',
-            bookingId: 'bk-06',
-            fullName: 'Đặng Tuấn Kiệt',
-            status: 'CHECKED_IN',
-            checkinAt: DateTime.now().subtract(const Duration(minutes: 1)),
-            bookedAt: DateTime.now().subtract(const Duration(days: 1)),
-            skillLevel: 3,
-            isReady: true,
-          ),
-          AttendancePlayer(
-            userId: 'user-07',
-            bookingId: 'bk-07',
-            fullName: 'Hoàng Mai Phương',
-            status: 'WAITING',
-            bookedAt: DateTime.now().subtract(const Duration(days: 1)),
-            skillLevel: 2,
-            isReady: false,
-          ),
-          AttendancePlayer(
-            userId: 'user-08',
-            bookingId: 'bk-08',
-            fullName: 'Đỗ Hữu Thắng',
-            status: 'WAITING',
-            bookedAt: DateTime.now().subtract(const Duration(days: 1)),
-            skillLevel: 3,
-            isReady: false,
-          ),
-        ],
-      );
+    final fromDetail = await _buildAttendanceFromSessionDetail(sessionId);
+    if (fromDetail != null) {
+      _attendanceCache[sessionId] = fromDetail;
+      return fromDetail;
     }
-    return _attendanceCache[sessionId]!;
+
+    if (_attendanceCache.containsKey(sessionId)) {
+      return _attendanceCache[sessionId]!;
+    }
+
+    final emptySnapshot = SessionAttendanceSnapshot(
+      sessionId: sessionId,
+      groupId: '',
+      startTime: DateTime.now(),
+      endTime: DateTime.now().add(const Duration(hours: 2)),
+      maxPlayers: 12,
+      presentCount: 0,
+      notArrivedCount: 0,
+      noShowCount: 0,
+      waitlistCount: 0,
+      readyCount: 0,
+      canEdit: true,
+      canStartRotation: false,
+      players: const [],
+    );
+    _attendanceCache[sessionId] = emptySnapshot;
+    return emptySnapshot;
   }
 
   @override
@@ -141,16 +335,30 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
     required String status,
   }) async {
     try {
-      await dio.put('/api/v1/sessions/$sessionId/attendance/$userId', data: {'status': status});
+      final res = await dio.put(
+        '/api/v1/sessions/$sessionId/attendance/$userId',
+        data: {'status': status},
+      );
+      if (res.statusCode == 200 && res.data != null) {
+        final payload = _extractMapPayload(res.data);
+        if (payload != null) {
+          final snapshot = _parseAttendanceSnapshot(payload, fallbackSessionId: sessionId);
+          _attendanceCache[sessionId] = snapshot;
+          _syncRotationWithAttendance(sessionId);
+          return snapshot;
+        }
+      }
     } catch (_) {}
 
-    final current = await getAttendance(sessionId);
+    final current = _attendanceCache[sessionId] ?? await getAttendance(sessionId);
     final updatedPlayers = current.players.map((p) {
       if (p.userId == userId) {
+        final isCheckIn = status == 'CHECKED_IN';
         return p.copyWith(
           status: status,
-          checkinAt: status == 'CHECKED_IN' ? DateTime.now() : null,
-          isReady: status == 'CHECKED_IN',
+          checkinAt: isCheckIn ? DateTime.now() : null,
+          clearCheckinAt: !isCheckIn,
+          isReady: isCheckIn,
         );
       }
       return p;
@@ -158,7 +366,7 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
 
     final present = updatedPlayers.where((p) => p.isCheckedIn).length;
     final noShow = updatedPlayers.where((p) => p.isNoShow).length;
-    final notArrived = updatedPlayers.where((p) => p.isWaiting).length;
+    final notArrived = updatedPlayers.where((p) => p.isNotArrived).length;
 
     final updated = SessionAttendanceSnapshot(
       sessionId: current.sessionId,
@@ -189,13 +397,22 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
     String? phoneNumber,
   }) async {
     try {
-      await dio.post('/api/v1/sessions/$sessionId/attendance/walk-ins', data: {
+      final res = await dio.post('/api/v1/sessions/$sessionId/attendance/walk-ins', data: {
         'fullName': fullName,
         'phoneNumber': phoneNumber,
       });
+      if (res.statusCode == 200 && res.data != null) {
+        final payload = _extractMapPayload(res.data);
+        if (payload != null) {
+          final snapshot = _parseAttendanceSnapshot(payload, fallbackSessionId: sessionId);
+          _attendanceCache[sessionId] = snapshot;
+          _syncRotationWithAttendance(sessionId);
+          return snapshot;
+        }
+      }
     } catch (_) {}
 
-    final current = await getAttendance(sessionId);
+    final current = _attendanceCache[sessionId] ?? await getAttendance(sessionId);
     final newPlayer = AttendancePlayer(
       userId: 'walkin-${DateTime.now().millisecondsSinceEpoch}',
       bookingId: 'bk-walkin-${DateTime.now().millisecondsSinceEpoch}',
@@ -211,7 +428,7 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
     final updatedPlayers = [...current.players, newPlayer];
     final present = updatedPlayers.where((p) => p.isCheckedIn).length;
     final noShow = updatedPlayers.where((p) => p.isNoShow).length;
-    final notArrived = updatedPlayers.where((p) => p.isWaiting).length;
+    final notArrived = updatedPlayers.where((p) => p.isNotArrived).length;
 
     final updated = SessionAttendanceSnapshot(
       sessionId: current.sessionId,
@@ -238,10 +455,18 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
   @override
   Future<SessionAttendanceSnapshot> completeAttendance(String sessionId) async {
     try {
-      await dio.post('/api/v1/sessions/$sessionId/attendance/complete');
+      final res = await dio.post('/api/v1/sessions/$sessionId/attendance/complete');
+      if (res.statusCode == 200 && res.data != null) {
+        final payload = _extractMapPayload(res.data);
+        if (payload != null) {
+          final snapshot = _parseAttendanceSnapshot(payload, fallbackSessionId: sessionId);
+          _attendanceCache[sessionId] = snapshot;
+          return snapshot;
+        }
+      }
     } catch (_) {}
 
-    final current = await getAttendance(sessionId);
+    final current = _attendanceCache[sessionId] ?? await getAttendance(sessionId);
     final updated = SessionAttendanceSnapshot(
       sessionId: current.sessionId,
       groupId: current.groupId,
@@ -253,8 +478,8 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
       noShowCount: current.noShowCount,
       waitlistCount: current.waitlistCount,
       readyCount: current.readyCount,
-      canEdit: true,
-      canStartRotation: true,
+      canEdit: current.canEdit,
+      canStartRotation: current.presentCount >= 4,
       attendanceCompletedAt: DateTime.now(),
       attendanceCompletedBy: 'Host',
       players: current.players,
@@ -754,65 +979,38 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
     }
 
     if (!_settlementCache.containsKey(sessionId)) {
+      final attendance = await getAttendance(sessionId);
+      final activePlayers = attendance.players.where((p) => !p.isNoShow).toList();
+      final totalCost = 300000;
+      final feePerPlayer = activePlayers.isNotEmpty
+          ? ((totalCost / activePlayers.length) / 1000).ceil() * 1000
+          : 0;
       _settlementCache[sessionId] = SessionSettlement(
         sessionId: sessionId,
-        shuttlecockUsed: 4, // 4 quả cầu bóc mới
+        shuttlecockUsed: 0,
         shuttlecockPrice: 25000,
-        courtFee: 300000,
-        extraFee: 40000, // Tiền nước
-        totalCost: 440000,
-        totalCollected: 220000,
+        courtFee: totalCost,
+        extraFee: 0,
+        totalCost: totalCost,
+        totalCollected: 0,
         isSettled: false,
-        memberFees: [
-          const MemberSettlementFee(
-            userId: 'u1',
-            fullName: 'Nguyễn Văn An (Host)',
-            roleName: 'Hội viên tháng',
-            gender: 'MALE',
-            baseFee: 55000,
-            discount: 55000,
-            finalFee: 0,
-            paymentStatus: 'PAID',
-            vietQrUrl: '',
-            paymentCode: 'PAID_MONTHLY',
-          ),
-          const MemberSettlementFee(
-            userId: 'u2',
-            fullName: 'Trần Minh Đức',
-            roleName: 'Hội viên ngày',
-            gender: 'MALE',
-            baseFee: 55000,
-            discount: 0,
-            finalFee: 55000,
-            paymentStatus: 'PAID',
-            vietQrUrl: 'https://img.vietqr.io/image/MB-034888888-compact2.png?amount=55000&addInfo=PAY_DUC_55K',
-            paymentCode: 'PAY_DUC_55K',
-          ),
-          const MemberSettlementFee(
-            userId: 'u4',
-            fullName: 'Phạm Quỳnh Anh',
-            roleName: 'Hội viên ngày (Nữ)',
-            gender: 'FEMALE',
-            baseFee: 55000,
-            discount: 15000, // Giảm giá nữ
-            finalFee: 40000,
-            paymentStatus: 'PENDING',
-            vietQrUrl: 'https://img.vietqr.io/image/MB-034888888-compact2.png?amount=40000&addInfo=PAY_ANH_40K',
-            paymentCode: 'PAY_ANH_40K',
-          ),
-          const MemberSettlementFee(
-            userId: 'u5',
-            fullName: 'Vũ Quốc Bảo',
-            roleName: 'Khách vãng lai',
-            gender: 'MALE',
-            baseFee: 70000,
-            discount: 0,
-            finalFee: 70000,
-            paymentStatus: 'PENDING',
-            vietQrUrl: 'https://img.vietqr.io/image/MB-034888888-compact2.png?amount=70000&addInfo=PAY_BAO_70K',
-            paymentCode: 'PAY_BAO_70K',
-          ),
-        ],
+        memberFees: activePlayers
+            .map(
+              (p) => MemberSettlementFee(
+                userId: p.userId,
+                fullName: p.fullName,
+                avatarUrl: p.avatarUrl,
+                roleName: p.isWalkIn ? 'Khách vãng lai' : 'Hội viên',
+                gender: 'MALE',
+                baseFee: feePerPlayer,
+                discount: 0,
+                finalFee: feePerPlayer,
+                paymentStatus: 'PENDING',
+                vietQrUrl: '',
+                paymentCode: 'PAY_${p.userId}',
+              ),
+            )
+            .toList(),
       );
     }
     return _settlementCache[sessionId]!;

@@ -11,6 +11,7 @@ import '../../../../app/theme/theme.dart';
 import '../../../../domain/entities/session/session_attendance.dart';
 import '../../../../widget/app_shimmer.dart';
 import '../../../../widget/app_status_badge.dart';
+import '../session_vm/session_detail_vm.dart';
 import 'session_rotation_screen.dart';
 
 final sessionAttendanceNotifierProvider =
@@ -48,6 +49,7 @@ class SessionAttendanceNotifier extends StateNotifier<AsyncValue<SessionAttendan
       );
       state = AsyncValue.data(updated);
       ref.invalidate(sessionRotationNotifierProvider(sessionId));
+      ref.invalidate(sessionDetailViewModelProvider(sessionId));
     } catch (e, st) {
       state = AsyncValue.error(e, st);
     }
@@ -62,6 +64,7 @@ class SessionAttendanceNotifier extends StateNotifier<AsyncValue<SessionAttendan
       );
       state = AsyncValue.data(updated);
       ref.invalidate(sessionRotationNotifierProvider(sessionId));
+      ref.invalidate(sessionDetailViewModelProvider(sessionId));
     } catch (e, st) {
       state = AsyncValue.error(e, st);
     }
@@ -72,6 +75,7 @@ class SessionAttendanceNotifier extends StateNotifier<AsyncValue<SessionAttendan
       final updated = await _repo.completeAttendance(sessionId);
       state = AsyncValue.data(updated);
       ref.invalidate(sessionRotationNotifierProvider(sessionId));
+      ref.invalidate(sessionDetailViewModelProvider(sessionId));
     } catch (e, st) {
       state = AsyncValue.error(e, st);
     }
@@ -117,8 +121,8 @@ class SessionAttendanceScreen extends ConsumerWidget {
       floatingActionButton: asyncState.maybeWhen(
         data: (snapshot) {
           final now = DateTime.now();
-          final isOngoing = now.isAfter(snapshot.startTime) && now.isBefore(snapshot.endTime) && !snapshot.isCompleted;
-          if (!isOngoing) return null;
+          final isExpired = now.isAfter(snapshot.endTime);
+          if (!snapshot.canEdit || isExpired) return null;
           return FloatingActionButton.extended(
             onPressed: () => _showAddWalkInDialog(context, vm),
             backgroundColor: colors.primary,
@@ -173,8 +177,8 @@ class SessionAttendanceScreen extends ConsumerWidget {
             ),
             data: (snapshot) {
               final now = DateTime.now();
-              final isOngoing = now.isAfter(snapshot.startTime) && now.isBefore(snapshot.endTime);
-              final isUpcoming = now.isBefore(snapshot.startTime);
+              final isOngoing = snapshot.canEdit && now.isBefore(snapshot.endTime);
+              final isUpcoming = !snapshot.canEdit && now.isBefore(snapshot.startTime);
               final isExpired = now.isAfter(snapshot.endTime);
               final timeStr =
                   '${DateFormat('HH:mm').format(snapshot.startTime)} - ${DateFormat('HH:mm').format(snapshot.endTime)}';
@@ -249,7 +253,7 @@ class SessionAttendanceScreen extends ConsumerWidget {
                             AppSpacing.gapW12,
                             Expanded(
                               child: Text(
-                                'Buổi chơi chưa diễn ra. Điểm danh tại sân chỉ mở khi buổi chơi bắt đầu.',
+                                'Buổi chơi chưa diễn ra. Điểm danh tại sân mở từ 1 giờ trước khi buổi chơi bắt đầu.',
                                 style: AppTypography.bodySmall.medium.colored(colors.warning),
                               ),
                             ),
@@ -304,7 +308,7 @@ class SessionAttendanceScreen extends ConsumerWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('Danh sách tay vợt (${snapshot.players.length})',
+                        Text('Danh sách xác nhận tham gia (${snapshot.players.length})',
                             style: AppTypography.titleSmall.bold.colored(colors.textPrimary)),
                         if (!snapshot.isCompleted && isOngoing)
                           TextButton.icon(
@@ -325,14 +329,15 @@ class SessionAttendanceScreen extends ConsumerWidget {
                             Icon(Icons.group_off_rounded, size: 48, color: colors.textMuted),
                             AppSpacing.gapH12,
                             Text(
-                              'Chưa có thành viên nào đăng ký buổi chơi này',
+                              'Chưa có thành viên nào xác nhận tham gia buổi chơi này',
                               style: AppTypography.bodyMedium.colored(colors.textMuted),
+                              textAlign: TextAlign.center,
                             ),
                           ],
                         ),
                       )
                     else
-                      ...snapshot.players.map((p) => _buildPlayerCard(context, p, vm, isOngoing && !snapshot.isCompleted)),
+                      ...snapshot.players.map((p) => _buildPlayerCard(context, p, vm, isOngoing)),
                     const SizedBox(height: 80),
                   ],
                 ),
@@ -410,13 +415,20 @@ class SessionAttendanceScreen extends ConsumerWidget {
                       child: Text('Trình độ: L${player.skillLevel}',
                           style: AppTypography.labelSmall.colored(colors.textSecondary)),
                     ),
-                    if (player.checkinAt != null) ...[
-                      const SizedBox(width: 6),
-                      Text(
-                        'Vào sân: ${DateFormat('HH:mm').format(player.checkinAt!)}',
-                        style: AppTypography.labelSmall.colored(colors.textMuted),
+                    const SizedBox(width: 6),
+                    Flexible(
+                      child: Text(
+                        isCheckedIn && player.checkinAt != null
+                            ? 'Vào sân: ${DateFormat('HH:mm').format(player.checkinAt!)}'
+                            : (isNoShow ? 'Đã báo vắng' : 'Chờ điểm danh'),
+                        style: AppTypography.labelSmall.colored(
+                          isCheckedIn
+                              ? colors.textMuted
+                              : (isNoShow ? colors.error : colors.warning),
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
-                    ],
+                    ),
                   ],
                 ),
               ],

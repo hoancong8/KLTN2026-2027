@@ -27,11 +27,13 @@ class AttendancePlayer {
 
   bool get isCheckedIn => status == 'CHECKED_IN';
   bool get isNoShow => status == 'NO_SHOW';
-  bool get isWaiting => status == 'WAITING';
+  bool get isNotArrived => !isCheckedIn && !isNoShow;
+  bool get isWaiting => !isCheckedIn && !isNoShow;
 
   AttendancePlayer copyWith({
     String? status,
     DateTime? checkinAt,
+    bool clearCheckinAt = false,
     bool? isReady,
   }) {
     return AttendancePlayer(
@@ -40,7 +42,7 @@ class AttendancePlayer {
       fullName: fullName,
       avatarUrl: avatarUrl,
       status: status ?? this.status,
-      checkinAt: checkinAt ?? this.checkinAt,
+      checkinAt: clearCheckinAt ? null : (checkinAt ?? this.checkinAt),
       bookedAt: bookedAt,
       skillLevel: skillLevel,
       isReady: isReady ?? this.isReady,
