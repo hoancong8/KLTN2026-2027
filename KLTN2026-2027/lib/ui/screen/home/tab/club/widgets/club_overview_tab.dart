@@ -169,6 +169,7 @@ class _ClubOverviewTabState extends ConsumerState<ClubOverviewTab> {
                             label: Text('Mã QR', style: AppTypography.labelMedium.bold.colored(colors.primary)),
                             onPressed: () => ClubQrDialog.show(
                               context: context,
+                              clubId: widget.clubId,
                               clubName: club?.groupName ?? 'Câu Lạc Bộ',
                               clubCode: code,
                               avatarUrl: club?.avatarUrl,

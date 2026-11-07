@@ -338,6 +338,7 @@ class _ClubDetailViewState extends ConsumerState<ClubDetailView> {
               tooltip: 'Mã QR nhóm',
               onPressed: () => ClubQrDialog.show(
                 context: context,
+                clubId: widget.club.clubId,
                 clubName: widget.club.clubName,
                 clubCode: widget.club.clubCode,
                 avatarUrl: widget.club.avatarUrl,

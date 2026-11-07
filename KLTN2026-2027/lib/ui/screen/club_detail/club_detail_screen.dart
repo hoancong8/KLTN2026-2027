@@ -383,6 +383,7 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
                         InkWell(
                           onTap: () => ClubQrDialog.show(
                             context: context,
+                            clubId: widget.clubId,
                             clubName: club.groupName,
                             clubCode: club.code,
                             avatarUrl: club.avatarUrl,

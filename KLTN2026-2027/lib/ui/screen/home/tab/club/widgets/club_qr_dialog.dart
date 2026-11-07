@@ -1,17 +1,20 @@
 // lib/ui/screen/home/tab/club/widgets/club_qr_dialog.dart
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import '../../../../../../app/theme/theme.dart';
 
 class ClubQrDialog extends StatelessWidget {
+  final String? clubId;
   final String clubName;
   final String clubCode;
   final String? avatarUrl;
 
   const ClubQrDialog({
     super.key,
+    this.clubId,
     required this.clubName,
     required this.clubCode,
     this.avatarUrl,
@@ -19,6 +22,7 @@ class ClubQrDialog extends StatelessWidget {
 
   static Future<void> show({
     required BuildContext context,
+    String? clubId,
     required String clubName,
     required String clubCode,
     String? avatarUrl,
@@ -26,11 +30,22 @@ class ClubQrDialog extends StatelessWidget {
     return showDialog(
       context: context,
       builder: (_) => ClubQrDialog(
+        clubId: clubId,
         clubName: clubName,
         clubCode: clubCode,
         avatarUrl: avatarUrl,
       ),
     );
+  }
+
+  String get _qrLink {
+    if (clubId != null && clubId!.isNotEmpty) {
+      final base = kIsWeb && Uri.base.host.isNotEmpty
+          ? '${Uri.base.scheme}://${Uri.base.host}${Uri.base.hasPort && Uri.base.port != 80 && Uri.base.port != 443 ? ':${Uri.base.port}' : ''}'
+          : 'https://sportclub.l7ungdz.id.vn';
+      return '$base/#/club/$clubId';
+    }
+    return clubCode;
   }
 
   @override
@@ -87,7 +102,7 @@ class ClubQrDialog extends StatelessWidget {
             ],
           ),
           AppSpacing.gapH16,
-          // Real scannable QR Code rendering club join code
+          // Real scannable QR Code rendering web link to club details
           Container(
             padding: AppSpacing.allMd,
             decoration: BoxDecoration(
@@ -103,7 +118,7 @@ class ClubQrDialog extends StatelessWidget {
                   width: 160,
                   height: 160,
                   child: QrImageView(
-                    data: clubCode,
+                    data: _qrLink,
                     version: QrVersions.auto,
                     size: 160.0,
                     eyeStyle: const QrEyeStyle(
@@ -118,16 +133,24 @@ class ClubQrDialog extends StatelessWidget {
                   ),
                 ),
                 AppSpacing.gapH8,
-                Text(
-                  clubCode,
-                  style: AppTypography.labelLarge.bold.colored(AppColors.neutral900).copyWith(letterSpacing: 2),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: colors.surfaceSubtle,
+                    borderRadius: AppRadius.tag,
+                    border: Border.all(color: colors.cardBorder),
+                  ),
+                  child: Text(
+                    clubCode,
+                    style: AppTypography.labelMedium.bold.colored(AppColors.neutral900).copyWith(letterSpacing: 1.5),
+                  ),
                 ),
               ],
             ),
           ),
-          AppSpacing.gapH16,
+          AppSpacing.gapH12,
           Text(
-            'Nhập mã hoặc quét để bạn bè tham gia nhanh vào câu lạc bộ.',
+            'Quét mã để mở xem thông tin CLB trên web hoặc nhập mã để tham gia nhanh.',
             textAlign: TextAlign.center,
             style: AppTypography.bodySmall.colored(colors.textMuted),
           ),
@@ -141,10 +164,38 @@ class ClubQrDialog extends StatelessWidget {
                 shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
                 padding: AppSpacing.verticalMd,
               ),
+              icon: const Icon(Icons.link_rounded, size: AppSpacing.iconXs),
+              label: Text(
+                'Sao chép liên kết web',
+                style: AppTypography.labelLarge.bold.colored(AppColors.white),
+              ),
+              onPressed: () {
+                Clipboard.setData(ClipboardData(text: _qrLink));
+                Navigator.of(context).pop();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Đã sao chép liên kết câu lạc bộ vào bộ nhớ tạm'),
+                    backgroundColor: AppColors.primary,
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              },
+            ),
+          ),
+          AppSpacing.gapH8,
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              style: OutlinedButton.styleFrom(
+                foregroundColor: colors.textPrimary,
+                side: BorderSide(color: colors.cardBorder),
+                shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                padding: AppSpacing.verticalMd,
+              ),
               icon: const Icon(Icons.copy_rounded, size: AppSpacing.iconXs),
               label: Text(
                 'Sao chép mã ($clubCode)',
-                style: AppTypography.labelLarge.bold.colored(AppColors.white),
+                style: AppTypography.labelMedium.bold.colored(colors.textPrimary),
               ),
               onPressed: () {
                 Clipboard.setData(ClipboardData(text: clubCode));
