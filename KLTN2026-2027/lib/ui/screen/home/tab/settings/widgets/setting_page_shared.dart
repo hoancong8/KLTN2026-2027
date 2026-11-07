@@ -128,68 +128,17 @@ List<SettingsSection> buildSettingsSections(
 // SHARED WIDGETS
 // ─────────────────────────────────────────────────────────────────────────────
 
-/// Header: icon + "Setting / System & Account Configuration"
-Widget buildSettingsHeader(BuildContext context) {
-  return Row(
-    children: [
-      Container(
-        padding: const EdgeInsets.all(10),
-        decoration: BoxDecoration(
-          color: context.colors.primary.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Icon(
-          Icons.settings_outlined,
-          color: context.colors.primary,
-          size: 24,
-        ),
+/// Section title: label without icon
+Widget buildSectionTitle(BuildContext context, String title, [IconData? icon]) {
+  return Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+    child: Text(
+      title,
+      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+        fontWeight: FontWeight.w700,
+        color: context.colors.textPrimary,
       ),
-      const SizedBox(width: 12),
-      Expanded(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              context.l10n.set_title,
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.w800,
-                color: context.colors.textPrimary,
-              ),
-            ),
-            Text(
-              context.l10n.set_system_config,
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(color: context.colors.textMuted),
-            ),
-          ],
-        ),
-      ),
-    ],
-  );
-}
-
-/// Section title row: icon + label
-Widget buildSectionTitle(BuildContext context, String title, IconData icon) {
-  return Row(
-    children: [
-      Container(
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: context.colors.primary.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Icon(icon, color: context.colors.primary, size: 18),
-      ),
-      const SizedBox(width: 10),
-      Text(
-        title,
-        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-          fontWeight: FontWeight.w700,
-          color: context.colors.textPrimary,
-        ),
-      ),
-    ],
+    ),
   );
 }
 

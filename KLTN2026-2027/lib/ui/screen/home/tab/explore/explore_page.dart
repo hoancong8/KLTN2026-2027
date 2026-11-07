@@ -49,6 +49,7 @@ class _ExplorePageState extends ConsumerState<ExplorePage>
         backgroundColor: colors.surface,
         elevation: 0,
         surfaceTintColor: AppColors.transparent,
+        toolbarHeight: 64,
         title: Row(
           children: [
             Container(
@@ -76,7 +77,7 @@ class _ExplorePageState extends ConsumerState<ExplorePage>
                   ),
                 ),
                 Text(
-                  'Kèo giao lưu và câu lạc bộ lân cận',
+                  l10n.explore_subtitle,
                   style: AppTypography.bodySmall.copyWith(
                     color: colors.textMuted,
                     fontSize: 11,
@@ -87,7 +88,7 @@ class _ExplorePageState extends ConsumerState<ExplorePage>
           ],
         ),
         bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(48),
+          preferredSize: const Size.fromHeight(46),
           child: Container(
             decoration: BoxDecoration(
               color: colors.surface,
@@ -109,12 +110,24 @@ class _ExplorePageState extends ConsumerState<ExplorePage>
               ),
               tabs: [
                 Tab(
-                  icon: const Icon(Icons.sports_tennis_rounded, size: 20),
-                  text: l10n.explore_tab_recruitments,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.sports_tennis_rounded, size: 18),
+                      const SizedBox(width: AppSpacing.xs),
+                      Text(l10n.explore_tab_recruitments),
+                    ],
+                  ),
                 ),
                 Tab(
-                  icon: const Icon(Icons.radar_rounded, size: 20),
-                  text: l10n.explore_tab_clubs,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.radar_rounded, size: 18),
+                      const SizedBox(width: AppSpacing.xs),
+                      Text(l10n.explore_tab_clubs),
+                    ],
+                  ),
                 ),
               ],
             ),
