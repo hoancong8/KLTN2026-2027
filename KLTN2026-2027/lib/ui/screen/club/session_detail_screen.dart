@@ -854,17 +854,21 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                 ),
                 child: Column(
                   children: [
-                    QrImageView(
-                      data: code,
-                      version: QrVersions.auto,
-                      size: 160.0,
-                      eyeStyle: const QrEyeStyle(
-                        eyeShape: QrEyeShape.square,
-                        color: AppColors.neutral900,
-                      ),
-                      dataModuleStyle: const QrDataModuleStyle(
-                        dataModuleShape: QrDataModuleShape.square,
-                        color: AppColors.neutral900,
+                    SizedBox(
+                      width: 160,
+                      height: 160,
+                      child: QrImageView(
+                        data: code,
+                        version: QrVersions.auto,
+                        size: 160.0,
+                        eyeStyle: const QrEyeStyle(
+                          eyeShape: QrEyeShape.square,
+                          color: AppColors.neutral900,
+                        ),
+                        dataModuleStyle: const QrDataModuleStyle(
+                          dataModuleShape: QrDataModuleShape.square,
+                          color: AppColors.neutral900,
+                        ),
                       ),
                     ),
                     AppSpacing.gapH8,

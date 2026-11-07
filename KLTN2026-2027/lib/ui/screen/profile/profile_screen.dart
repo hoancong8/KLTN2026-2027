@@ -447,6 +447,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 
   Widget _buildSkillLevelCard(PlayerProfile profile) {
+    final level = profile.skillLevel;
+    final color = _getSkillColor(level);
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -467,13 +470,35 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           Row(
             children: [
               Icon(Icons.sports_tennis_rounded, color: colors.primary, size: 20),
-              SizedBox(width: 8),
+              const SizedBox(width: 8),
               Text(
-                'Thang đo trình độ chuẩn hóa (7 bậc)',
+                'Trình độ hiện tại',
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
                   color: colors.textPrimary,
+                ),
+              ),
+              const Spacer(),
+              InkWell(
+                onTap: () => _showEditProfileBottomSheet(context, profile),
+                borderRadius: BorderRadius.circular(6),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  child: Row(
+                    children: [
+                      Icon(Icons.edit_outlined, size: 14, color: colors.primary),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Đổi trình độ',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: colors.primary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -484,68 +509,60 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             style: TextStyle(fontSize: 12, color: colors.textMuted),
           ),
           const SizedBox(height: 12),
-
-          // List of 7 levels
-          ...SkillLevel.values.map((level) {
-            final isCurrent = level == profile.skillLevel;
-            final color = _getSkillColor(level);
-
-            return Container(
-              margin: const EdgeInsets.only(bottom: 8),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              decoration: BoxDecoration(
-                color: isCurrent ? color.withValues(alpha: 0.08) : colors.surfaceSubtle,
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(
-                  color: isCurrent ? color : AppColors.transparent,
-                  width: isCurrent ? 1.5 : 1,
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: color,
+                width: 1.5,
+              ),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 42,
+                  height: 28,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: color,
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    level.code,
+                    style: const TextStyle(
+                      color: AppColors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 38,
-                    height: 24,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: color,
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: Text(
-                      level.code,
-                      style: TextStyle(
-                        color: AppColors.white,
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        level.displayName,
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: colors.textPrimary,
+                        ),
                       ),
-                    ),
+                      const SizedBox(height: 2),
+                      Text(
+                        level.description,
+                        style: TextStyle(fontSize: 12, color: colors.textMuted),
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          level.displayName,
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: isCurrent ? FontWeight.bold : FontWeight.w600,
-                            color: colors.textPrimary,
-                          ),
-                        ),
-                        Text(
-                          level.description,
-                          style: TextStyle(fontSize: 11, color: colors.textMuted),
-                        ),
-                      ],
-                    ),
-                  ),
-                  if (isCurrent)
-                    Icon(Icons.check_circle_rounded, color: color, size: 18),
-                ],
-              ),
-            );
-          }),
+                ),
+                Icon(Icons.check_circle_rounded, color: color, size: 20),
+              ],
+            ),
+          ),
         ],
       ),
     );

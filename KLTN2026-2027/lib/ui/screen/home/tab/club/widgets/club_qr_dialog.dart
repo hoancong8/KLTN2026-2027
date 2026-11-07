@@ -99,19 +99,23 @@ class ClubQrDialog extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                QrImageView(
-                  data: clubCode,
-                  version: QrVersions.auto,
-                  size: 160.0,
-                  eyeStyle: const QrEyeStyle(
-                    eyeShape: QrEyeShape.square,
-                    color: AppColors.neutral900,
+                SizedBox(
+                  width: 160,
+                  height: 160,
+                  child: QrImageView(
+                    data: clubCode,
+                    version: QrVersions.auto,
+                    size: 160.0,
+                    eyeStyle: const QrEyeStyle(
+                      eyeShape: QrEyeShape.square,
+                      color: AppColors.neutral900,
+                    ),
+                    dataModuleStyle: const QrDataModuleStyle(
+                      dataModuleShape: QrDataModuleShape.square,
+                      color: AppColors.neutral900,
+                    ),
+                    errorCorrectionLevel: QrErrorCorrectLevel.M,
                   ),
-                  dataModuleStyle: const QrDataModuleStyle(
-                    dataModuleShape: QrDataModuleShape.square,
-                    color: AppColors.neutral900,
-                  ),
-                  errorCorrectionLevel: QrErrorCorrectLevel.M,
                 ),
                 AppSpacing.gapH8,
                 Text(

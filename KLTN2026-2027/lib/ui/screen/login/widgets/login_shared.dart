@@ -26,7 +26,7 @@ Widget buildLoginHeader({required AppLocalizations l10n}) {
               ],
             ),
             child: const Icon(
-              Icons.business_center_outlined,
+              Icons.sports_tennis_rounded,
               color: AppColors.white,
               size: 40,
             ),
