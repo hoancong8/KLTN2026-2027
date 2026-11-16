@@ -61,6 +61,8 @@ class DashboardPage extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         AppSpacing.gapH16,
+                        _buildHeroStartMatchCard(context, ref),
+                        AppSpacing.gapH16,
                         _buildQuickActions(context, ref),
                         AppSpacing.gapH16,
                         _buildPlayerQuickStats(context, state),
@@ -69,7 +71,7 @@ class DashboardPage extends ConsumerWidget {
                           _buildTabletLayout(context, ref, state, vm)
                         else
                           _buildMobileLayout(context, ref, state, vm),
-                        AppSpacing.gapH24,
+                        const SizedBox(height: 96),
                       ],
                     ),
                   ),
@@ -83,7 +85,7 @@ class DashboardPage extends ConsumerWidget {
   }
 
   // ===========================================================================
-  // 1. TOP HEADER WITH PLAYER IDENTITY
+  // 1. TOP HEADER WITH PLAYER IDENTITY (LIGHT NEO-SPORT THEME)
   // ===========================================================================
   Widget _buildHeader(BuildContext context, WidgetRef ref, PlayerProfile? playerProfile) {
     final topPadding = MediaQuery.paddingOf(context).top;
@@ -92,7 +94,7 @@ class DashboardPage extends ConsumerWidget {
 
     final displayName = playerProfile?.fullName.isNotEmpty == true
         ? playerProfile!.fullName
-        : (userProfile?.userName.isNotEmpty == true ? userProfile!.userName : 'Player');
+        : (userProfile?.userName.isNotEmpty == true ? userProfile!.userName : 'Tay vợt');
 
     final skillLevelName = playerProfile?.skillLevel.displayName ?? 'NB';
     final isOpenForGuest = playerProfile?.isOpenForGuest ?? false;
@@ -101,33 +103,34 @@ class DashboardPage extends ConsumerWidget {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        color: context.isDark ? colors.surface : colors.primaryContainer.withValues(alpha: 0.35),
-        borderRadius: const BorderRadius.only(
-          bottomLeft: Radius.circular(24),
-          bottomRight: Radius.circular(24),
-        ),
-        border: Border(
-          bottom: BorderSide(color: colors.cardBorder),
-        ),
+        gradient: context.isDark ? null : AppColors.limeAuraGradient,
+        color: context.isDark ? colors.surface : null,
       ),
       padding: EdgeInsets.only(
-        top: topPadding + 12,
+        top: topPadding + 14,
         left: AppSpacing.base,
         right: AppSpacing.base,
-        bottom: AppSpacing.base,
+        bottom: 8,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              // Avatar with Safe Network Image
+              // Avatar with Safe Network Image & Neon Lime Glow Ring
               Container(
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  border: Border.all(color: colors.primary, width: 2),
+                  border: Border.all(color: AppColors.neonLimeDark, width: 2.2),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.neonLime.withValues(alpha: 0.35),
+                      blurRadius: 8,
+                      spreadRadius: 1,
+                    ),
+                  ],
                 ),
                 child: AppNetworkImage(
                   imageUrl: playerProfile?.avatarUrl,
@@ -138,47 +141,41 @@ class DashboardPage extends ConsumerWidget {
                   backgroundColor: colors.primaryContainer,
                 ),
               ),
-              AppSpacing.gapW8,
-              // User Name & Skill Level Badge
+              AppSpacing.gapW12,
+              // User Greeting & Name
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
                       children: [
-                        Flexible(
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: colors.primary.withValues(alpha: 0.15),
-                              borderRadius: AppRadius.chip,
-                              border: Border.all(color: colors.primary.withValues(alpha: 0.3)),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(Icons.sports_tennis_rounded, size: 10, color: colors.primary),
-                                AppSpacing.gapW4,
-                                Flexible(
-                                  child: Text(
-                                    '${context.l10n.home_skill_level_label}: $skillLevelName',
-                                    style: AppTypography.labelSmall.copyWith(
-                                      color: colors.primary,
-                                      fontWeight: FontWeight.w700,
-                                      fontSize: 9.5,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ],
+                        Text(
+                          'Xin chào, ',
+                          style: AppTypography.bodySmall.copyWith(
+                            color: colors.textSecondary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                          decoration: BoxDecoration(
+                            color: AppColors.neonLime.withValues(alpha: 0.3),
+                            borderRadius: AppRadius.chip,
+                            border: Border.all(color: AppColors.neonLimeDark.withValues(alpha: 0.5)),
+                          ),
+                          child: Text(
+                            skillLevelName,
+                            style: AppTypography.labelSmall.copyWith(
+                              color: colors.textPrimary,
+                              fontWeight: FontWeight.w800,
+                              fontSize: 9.5,
                             ),
                           ),
                         ),
                         if (isOpenForGuest) ...[
                           AppSpacing.gapW4,
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
                             decoration: BoxDecoration(
                               color: colors.success.withValues(alpha: 0.15),
                               borderRadius: AppRadius.chip,
@@ -196,12 +193,13 @@ class DashboardPage extends ConsumerWidget {
                         ],
                       ],
                     ),
-                    AppSpacing.gapH4,
+                    const SizedBox(height: 2),
                     Text(
                       displayName,
-                      style: AppTypography.titleMedium.copyWith(
+                      style: AppTypography.titleLarge.copyWith(
                         color: colors.textPrimary,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: -0.3,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -236,14 +234,17 @@ class DashboardPage extends ConsumerWidget {
                 ),
               ),
               AppSpacing.gapW8,
-              // Notification Bell
+              // Notification Bell (Dark circular badge with Neon Lime accent)
               _buildNotificationBell(context, ref),
             ],
           ),
           AppSpacing.gapH12,
-          // Search Input Quick Access
+          // Search Input Quick Access (Sport Pill)
           GestureDetector(
-            onTap: () => ref.read(homeTabProvider.notifier).state = 2,
+            onTap: () {
+              HapticFeedback.lightImpact();
+              ref.read(homeTabProvider.notifier).state = 2;
+            },
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               decoration: BoxDecoration(
@@ -264,9 +265,124 @@ class DashboardPage extends ConsumerWidget {
                       ),
                     ),
                   ),
-                  Icon(Icons.tune, color: colors.primary, size: 18),
+                  Icon(Icons.tune, color: AppColors.neonLimeDark, size: 18),
                 ],
               ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ===========================================================================
+  // 1.1 HERO START MATCH CAPSULE (ALL-WHITE SPORT CAPSULE)
+  // ===========================================================================
+  Widget _buildHeroStartMatchCard(BuildContext context, WidgetRef ref) {
+    final colors = context.colors;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        color: colors.cardBackground,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: colors.primary.withValues(alpha: 0.25), width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.neutral900.withValues(alpha: 0.05),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          // Circular Racket Icon in Mint / Emerald Gradient
+          Container(
+            width: 52,
+            height: 52,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  colors.primaryContainer,
+                  AppColors.neonLimeLight.withValues(alpha: 0.5),
+                ],
+              ),
+              border: Border.all(color: colors.primary.withValues(alpha: 0.35), width: 1.5),
+              boxShadow: [
+                BoxShadow(
+                  color: colors.primary.withValues(alpha: 0.15),
+                  blurRadius: 10,
+                  spreadRadius: 1,
+                ),
+              ],
+            ),
+            child: Center(
+              child: Icon(
+                Icons.sports_tennis_rounded,
+                color: colors.primary,
+                size: 26,
+              ),
+            ),
+          ),
+          const SizedBox(width: 14),
+          // Title & Mint Emerald Pill CTA Button
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Bắt đầu trận đấu mới',
+                  style: AppTypography.labelMedium.copyWith(
+                    color: colors.textPrimary,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.1,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'Ghép cặp & phân sân thi đấu tức thì',
+                  style: AppTypography.bodySmall.copyWith(
+                    color: colors.textSecondary,
+                    fontSize: 11,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                SizedBox(
+                  height: 36,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      HapticFeedback.lightImpact();
+                      ref.read(homeTabProvider.notifier).state = 2;
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: colors.primary,
+                      foregroundColor: AppColors.white,
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      textStyle: AppTypography.labelMedium.copyWith(
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.2,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: const [
+                        Text('Trận Đấu Mới'),
+                        SizedBox(width: 4),
+                        Icon(Icons.arrow_forward_rounded, size: 16),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -279,15 +395,18 @@ class DashboardPage extends ConsumerWidget {
     final unreadCount = ref.watch(notificationViewModelProvider.select((s) => s.unreadCount));
 
     return InkWell(
-      onTap: () => context.push(AppConfig.notificationsPath),
-      borderRadius: BorderRadius.circular(20),
+      onTap: () {
+        HapticFeedback.lightImpact();
+        context.push(AppConfig.notificationsPath);
+      },
+      borderRadius: BorderRadius.circular(22),
       child: Container(
-        width: 36,
-        height: 36,
+        width: 42,
+        height: 42,
         decoration: BoxDecoration(
           color: colors.cardBackground,
           shape: BoxShape.circle,
-          border: Border.all(color: colors.cardBorder),
+          border: Border.all(color: colors.cardBorder, width: 1.2),
           boxShadow: context.isDark ? AppShadows.none : AppShadows.sm,
         ),
         child: Stack(
@@ -296,11 +415,11 @@ class DashboardPage extends ConsumerWidget {
             Icon(Icons.notifications_outlined, size: 20, color: colors.textPrimary),
             if (unreadCount > 0)
               Positioned(
-                top: 5,
-                right: 5,
+                top: 8,
+                right: 8,
                 child: Container(
-                  width: 8,
-                  height: 8,
+                  width: 9,
+                  height: 9,
                   decoration: BoxDecoration(
                     color: colors.error,
                     shape: BoxShape.circle,
@@ -648,7 +767,7 @@ class DashboardPage extends ConsumerWidget {
     } else if (booking.isCheckedIn) {
       statusBgColor = colors.primary.withValues(alpha: 0.15);
       statusTextColor = colors.primary;
-      statusText = 'Đã điểm danh';
+      statusText = 'Đã Ra Sân';
     }
 
     return Container(
@@ -656,8 +775,8 @@ class DashboardPage extends ConsumerWidget {
       padding: AppSpacing.card,
       decoration: BoxDecoration(
         color: colors.cardBackground,
-        borderRadius: AppRadius.card,
-        border: Border.all(color: colors.primary.withValues(alpha: 0.4)),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.neonLimeDark.withValues(alpha: 0.35), width: 1.2),
         boxShadow: context.isDark ? AppShadows.none : AppShadows.md,
       ),
       child: Column(
@@ -666,33 +785,29 @@ class DashboardPage extends ConsumerWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Expanded(
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppColors.neonLime.withValues(alpha: 0.18),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.neonLimeDark.withValues(alpha: 0.4)),
+                ),
                 child: Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    AppNetworkImage(
-                      imageUrl: booking.clubAvatarUrl,
-                      width: 28,
-                      height: 28,
-                      borderRadius: BorderRadius.circular(6),
-                      defaultFallbackIcon: Icons.sports_tennis_rounded,
-                      backgroundColor: colors.primaryContainer,
-                    ),
-                    AppSpacing.gapW8,
-                    Expanded(
-                      child: Text(
-                        booking.clubName,
-                        style: AppTypography.labelMedium.copyWith(
-                          fontWeight: FontWeight.w700,
-                          color: colors.primary,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                    const Icon(Icons.calendar_today_rounded, size: 12, color: AppColors.neonLimeDark),
+                    AppSpacing.gapW4,
+                    Text(
+                      timeStr,
+                      style: AppTypography.labelSmall.copyWith(
+                        color: colors.textPrimary,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 11,
                       ),
                     ),
                   ],
                 ),
               ),
-              AppSpacing.gapW8,
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
@@ -710,30 +825,46 @@ class DashboardPage extends ConsumerWidget {
               ),
             ],
           ),
-          AppSpacing.gapH8,
-          Text(
-            booking.sessionTitle,
-            style: AppTypography.titleMedium.copyWith(
-              fontWeight: FontWeight.bold,
-              color: colors.textPrimary,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          const SizedBox(height: 6),
+          AppSpacing.gapH12,
           Row(
             children: [
-              Icon(Icons.access_time_rounded, size: 14, color: colors.textSecondary),
-              AppSpacing.gapW4,
+              AppNetworkImage(
+                imageUrl: booking.clubAvatarUrl,
+                width: 32,
+                height: 32,
+                borderRadius: BorderRadius.circular(8),
+                defaultFallbackIcon: Icons.sports_tennis_rounded,
+                backgroundColor: colors.primaryContainer,
+              ),
+              AppSpacing.gapW8,
               Expanded(
-                child: Text(
-                  timeStr,
-                  style: AppTypography.bodySmall.copyWith(color: colors.textSecondary),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      booking.clubName,
+                      style: AppTypography.labelSmall.copyWith(
+                        color: colors.textSecondary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    Text(
+                      booking.sessionTitle,
+                      style: AppTypography.titleMedium.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: colors.textPrimary,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
-          AppSpacing.gapH4,
+          AppSpacing.gapH8,
           Row(
             children: [
               Icon(Icons.location_on_outlined, size: 14, color: colors.textSecondary),
@@ -761,14 +892,21 @@ class DashboardPage extends ConsumerWidget {
                   color: colors.textPrimary,
                 ),
               ),
-              TextButton.icon(
+              ElevatedButton.icon(
                 onPressed: () => context.push('/session/${booking.sessionId}'),
-                icon: const Icon(Icons.arrow_forward, size: 14),
+                icon: const Icon(Icons.arrow_forward_rounded, size: 14),
                 label: const Text('Chi tiết ca đấu'),
-                style: TextButton.styleFrom(
-                  foregroundColor: colors.primary,
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  visualDensity: VisualDensity.compact,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: colors.primary,
+                  foregroundColor: AppColors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  textStyle: AppTypography.labelSmall.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                  elevation: 0,
                 ),
               ),
             ],

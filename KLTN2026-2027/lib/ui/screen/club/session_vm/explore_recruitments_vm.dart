@@ -8,6 +8,7 @@ import '../../../../domain/entities/session/guest_recruitment.dart';
 import '../../../../domain/entities/session/my_booking_item.dart';
 import '../../../../domain/enums/session_enums.dart';
 import '../../../../domain/exceptions/app_exception.dart';
+import '../../../../domain/services/i_location_service.dart';
 import '../../../../domain/usecases/club/get_my_clubs_usecase.dart';
 import '../../../../domain/usecases/session/get_my_bookings_usecase.dart';
 import '../../../../domain/usecases/session/session_usecases.dart';
@@ -22,6 +23,7 @@ final exploreRecruitmentsViewModelProvider =
     cancelRecruitmentBookingUseCase: ref.watch(cancelRecruitmentBookingUseCaseProvider),
     getMyBookingsUseCase: ref.watch(getMyBookingsUseCaseProvider),
     getMyClubsUseCase: ref.watch(getMyClubsUseCaseProvider),
+    locationService: ref.watch(locationServiceProvider),
   );
 });
 
@@ -32,6 +34,7 @@ class ExploreRecruitmentsViewModel extends StateNotifier<ExploreRecruitmentsStat
   final CancelRecruitmentBookingUseCase cancelRecruitmentBookingUseCase;
   final GetMyBookingsUseCase? getMyBookingsUseCase;
   final GetMyClubsUseCase? getMyClubsUseCase;
+  final ILocationService? locationService;
 
   ExploreRecruitmentsViewModel({
     this.ref,
@@ -40,6 +43,7 @@ class ExploreRecruitmentsViewModel extends StateNotifier<ExploreRecruitmentsStat
     required this.cancelRecruitmentBookingUseCase,
     this.getMyBookingsUseCase,
     this.getMyClubsUseCase,
+    this.locationService,
   }) : super(const ExploreRecruitmentsState(isLocating: false)) {
     if (ref == null || ref?.read(authTokenProvider) != null) {
       explore();
@@ -55,9 +59,27 @@ class ExploreRecruitmentsViewModel extends StateNotifier<ExploreRecruitmentsStat
 
     state = state.copyWith(isLoading: true, clearError: true, errorMessage: null);
     try {
+      double? lat;
+      double? lng;
+
+      if (locationService != null) {
+        try {
+          final hasPerm = await locationService!.hasPermission();
+          if (hasPerm) {
+            final loc = await locationService!.getCurrentLocation();
+            lat = loc.latitude;
+            lng = loc.longitude;
+            state = state.copyWith(latitude: lat, longitude: lng);
+          }
+        } catch (_) {
+          lat = null;
+          lng = null;
+        }
+      }
+
       final recruitmentsFuture = exploreRecruitmentsUseCase.execute(
-        latitude: null,
-        longitude: null,
+        latitude: lat,
+        longitude: lng,
         radiusKm: null,
         minSkillLevel: state.selectedSkillLevel,
       );
@@ -76,10 +98,25 @@ class ExploreRecruitmentsViewModel extends StateNotifier<ExploreRecruitmentsStat
       final clubs = results[2] as List<MyClub>;
 
       final activeJoinedSessionIds = bookings
-          .where((b) => b.bookingStatus != BookingStatus.absent)
+          .where((b) => b.bookingStatus != BookingStatus.absent && b.bookingStatus != BookingStatus.waiting)
           .map((b) => b.sessionId.trim().toLowerCase())
           .where((id) => id.isNotEmpty)
           .toSet();
+
+      final waitingSessionIds = bookings
+          .where((b) => b.bookingStatus == BookingStatus.waiting)
+          .map((b) => b.sessionId.trim().toLowerCase())
+          .where((id) => id.isNotEmpty)
+          .toSet();
+
+      for (final r in recruitments) {
+        final sid = r.sessionId.trim().toLowerCase();
+        if (r.isWaitingApproval) {
+          waitingSessionIds.add(sid);
+        } else if (r.isConfirmedParticipant) {
+          activeJoinedSessionIds.add(sid);
+        }
+      }
 
       final clubNames = clubs
           .map((c) => c.clubName.trim().toLowerCase())
@@ -90,6 +127,7 @@ class ExploreRecruitmentsViewModel extends StateNotifier<ExploreRecruitmentsStat
         isLoading: false,
         recruitments: recruitments,
         joinedSessionIds: activeJoinedSessionIds,
+        waitingSessionIds: waitingSessionIds,
         myClubNames: clubNames,
         clearError: true,
       );
@@ -126,11 +164,11 @@ class ExploreRecruitmentsViewModel extends StateNotifier<ExploreRecruitmentsStat
       await joinRecruitmentUseCase.execute(recruitmentId);
       final matched = state.recruitments.where((r) => r.id == recruitmentId).firstOrNull;
       if (matched != null) {
-        final updatedJoined = Set<String>.from(state.joinedSessionIds)..add(matched.sessionId.trim().toLowerCase());
-        state = state.copyWith(joinedSessionIds: updatedJoined);
+        final updatedWaiting = Set<String>.from(state.waitingSessionIds)..add(matched.sessionId.trim().toLowerCase());
+        state = state.copyWith(waitingSessionIds: updatedWaiting);
       }
       await explore();
-      state = state.copyWith(isJoining: false, successMessage: 'Nhận suất giao lưu thành công!');
+      state = state.copyWith(isJoining: false, successMessage: 'Đã gửi yêu cầu tham gia, vui lòng chờ duyệt!');
       return true;
     } catch (e) {
       final appException = e is AppException ? e : AppException(message: e.toString(), originalError: e);

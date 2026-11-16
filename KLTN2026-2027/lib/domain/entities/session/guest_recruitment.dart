@@ -20,6 +20,8 @@ class GuestRecruitment {
   final bool hidePlayerList;
   final double? femaleDiscount;
   final double? femaleSharedCost;
+  final String? myBookingStatus;
+  final double? clubQualityScore;
 
   const GuestRecruitment({
     required this.id,
@@ -39,10 +41,16 @@ class GuestRecruitment {
     this.hidePlayerList = false,
     this.femaleDiscount,
     this.femaleSharedCost,
+    this.myBookingStatus,
+    this.clubQualityScore,
   });
 
   bool get isActive => status == RecruitmentStatus.active;
   bool get isFilled => status == RecruitmentStatus.filled;
+  bool get isWaitingApproval => myBookingStatus?.toUpperCase() == 'WAITING';
+  bool get isConfirmedParticipant =>
+      myBookingStatus?.toUpperCase() == 'CONFIRMED' ||
+      myBookingStatus?.toUpperCase() == 'CHECKED_IN';
 
   double get maleCost => sharedCost;
   double get femaleCost {

@@ -17,6 +17,7 @@ class ExploreRecruitmentsState {
   final String? errorMessage;
   final String? successMessage;
   final Set<String> joinedSessionIds;
+  final Set<String> waitingSessionIds;
   final Set<String> myClubNames;
 
   const ExploreRecruitmentsState({
@@ -33,6 +34,7 @@ class ExploreRecruitmentsState {
     this.errorMessage,
     this.successMessage,
     this.joinedSessionIds = const {},
+    this.waitingSessionIds = const {},
     this.myClubNames = const {},
   });
 
@@ -62,6 +64,7 @@ class ExploreRecruitmentsState {
     bool clearError = false,
     bool clearSuccess = false,
     Set<String>? joinedSessionIds,
+    Set<String>? waitingSessionIds,
     Set<String>? myClubNames,
   }) {
     return ExploreRecruitmentsState(
@@ -78,6 +81,7 @@ class ExploreRecruitmentsState {
       errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
       successMessage: clearSuccess ? null : (successMessage ?? this.successMessage),
       joinedSessionIds: joinedSessionIds ?? this.joinedSessionIds,
+      waitingSessionIds: waitingSessionIds ?? this.waitingSessionIds,
       myClubNames: myClubNames ?? this.myClubNames,
     );
   }

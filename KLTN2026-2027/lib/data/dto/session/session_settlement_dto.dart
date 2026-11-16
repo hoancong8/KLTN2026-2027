@@ -32,23 +32,23 @@ class MemberSettlementFeeDto {
       userId: _parseString(json['userId'] ?? json['UserId']),
       fullName: _parseString(json['fullName'] ?? json['FullName']),
       avatarUrl: json['avatarUrl'] ?? json['AvatarUrl'] as String?,
-      roleName: _parseString(json['roleName'] ?? json['RoleName']),
+      roleName: _parseString(json['roleName'] ?? json['RoleName'] ?? json['priceType'] ?? json['PriceType']),
       gender: _parseString(json['gender'] ?? json['Gender']),
-      baseFee: _parseInt(json['baseFee'] ?? json['BaseFee']),
+      baseFee: _parseInt(json['baseFee'] ?? json['BaseFee'] ?? json['finalFee'] ?? json['FinalFee']),
       discount: _parseInt(json['discount'] ?? json['Discount']),
       finalFee: _parseInt(json['finalFee'] ?? json['FinalFee']),
       paymentStatus: _parseString(json['paymentStatus'] ?? json['PaymentStatus']),
-      vietQrUrl: _parseString(json['vietQrUrl'] ?? json['VietQrUrl']),
+      vietQrUrl: _parseString(json['vietQrUrl'] ?? json['VietQrUrl'] ?? json['qrCodePayload'] ?? json['QrCodePayload']),
       paymentCode: _parseString(json['paymentCode'] ?? json['PaymentCode']),
     );
   }
 
   static String _parseString(dynamic v) => v?.toString() ?? '';
-  static int _parseInt(dynamic v) {
+  static int _parseInt(dynamic v, {int defaultValue = 0}) {
     if (v is int) return v;
     if (v is double) return v.toInt();
-    if (v is String) return int.tryParse(v) ?? 0;
-    return 0;
+    if (v is String) return int.tryParse(v) ?? defaultValue;
+    return defaultValue;
   }
 }
 
@@ -89,22 +89,25 @@ class SessionSettlementDto {
     return SessionSettlementDto(
       sessionId: _parseString(json['sessionId'] ?? json['SessionId']),
       shuttlecockUsed: _parseInt(json['shuttlecockUsed'] ?? json['ShuttlecockUsed']),
-      shuttlecockPrice: _parseInt(json['shuttlecockPrice'] ?? json['ShuttlecockPrice']),
-      courtFee: _parseInt(json['courtFee'] ?? json['CourtFee']),
-      extraFee: _parseInt(json['extraFee'] ?? json['ExtraFee']),
+      shuttlecockPrice: _parseInt(json['shuttlecockPrice'] ?? json['ShuttlecockPrice'], defaultValue: 25000),
+      courtFee: _parseInt(json['courtFee'] ?? json['CourtFee'] ?? json['courtRentalCost'] ?? json['CourtRentalCost']),
+      extraFee: _parseInt(json['extraFee'] ?? json['ExtraFee'] ?? json['extraExpense'] ?? json['ExtraExpense']),
       totalCost: _parseInt(json['totalCost'] ?? json['TotalCost']),
       totalCollected: _parseInt(json['totalCollected'] ?? json['TotalCollected']),
       memberFees: fees,
-      isSettled: _parseBool(json['isSettled'] ?? json['IsSettled']),
+      isSettled: _parseBool(json['isSettled'] ?? json['IsSettled']) ||
+          (json['state'] ?? json['State'])?.toString().toUpperCase() == 'PUBLISHED' ||
+          json['publishedAt'] != null ||
+          json['PublishedAt'] != null,
     );
   }
 
   static String _parseString(dynamic v) => v?.toString() ?? '';
-  static int _parseInt(dynamic v) {
+  static int _parseInt(dynamic v, {int defaultValue = 0}) {
     if (v is int) return v;
     if (v is double) return v.toInt();
-    if (v is String) return int.tryParse(v) ?? 0;
-    return 0;
+    if (v is String) return int.tryParse(v) ?? defaultValue;
+    return defaultValue;
   }
   static bool _parseBool(dynamic v) {
     if (v is bool) return v;

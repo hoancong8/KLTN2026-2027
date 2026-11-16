@@ -58,7 +58,8 @@ void main() {
       "scanRadiusKm": 5.00,
       "status": "ACTIVE",
       "broadcastAt": "2026-10-26T07:02:57.824564Z",
-      "distanceKm": 3
+      "distanceKm": 3,
+      "clubQualityScore": 4.8
     };
 
     final rawJson2 = {
@@ -75,7 +76,8 @@ void main() {
       "scanRadiusKm": 10.00,
       "status": "ACTIVE",
       "broadcastAt": "2026-10-26T06:43:56.969142Z",
-      "distanceKm": 5
+      "distanceKm": 5,
+      "clubQualityScore": 5.0
     };
 
     final item1 = SessionMapper.toRecruitmentEntity(GuestRecruitmentDto.fromJson(rawJson1));
@@ -109,10 +111,12 @@ void main() {
     expect(find.text('2 kèo khả dụng'), findsOneWidget);
     expect(find.text('CLB Cau Long Tia Chop'), findsOneWidget);
     expect(find.text('CLB Cầu Lông Legends Quận 7'), findsOneWidget);
+    expect(find.text('4.8'), findsOneWidget);
+    expect(find.text('5.0'), findsOneWidget);
   });
 
 
-  testWidgets('Renders Da tham gia and CLB cua ban when joined or belonging to user club', (tester) async {
+  testWidgets('Renders Da duyet and CLB cua ban when joined or belonging to user club', (tester) async {
     tester.view.physicalSize = const Size(1280, 2856);
     tester.view.devicePixelRatio = 3.0;
     addTearDown(() {
@@ -185,7 +189,7 @@ void main() {
 
     await tester.pumpAndSettle();
 
-    expect(find.text('Đã tham gia'), findsOneWidget);
+    expect(find.text('Đã duyệt'), findsWidgets);
     expect(find.text('CLB của bạn'), findsOneWidget);
     expect(find.text('Tham gia ngay'), findsNothing);
   });

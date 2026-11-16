@@ -78,7 +78,7 @@ class SessionSettlementScreen extends ConsumerWidget {
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Tính Tiền Cầu & Sân', style: AppTypography.titleMedium.bold.colored(colors.textPrimary)),
+            Text('Tổng Kết Chi Phí Trận Đấu', style: AppTypography.titleMedium.bold.colored(colors.textPrimary)),
             Text('Công thức đa hệ số & tự động xác nhận thanh toán',
                 style: AppTypography.labelSmall.colored(colors.textMuted)),
           ],
@@ -120,7 +120,7 @@ class SessionSettlementScreen extends ConsumerWidget {
                 children: [
                   Icon(Icons.error_outline_rounded, size: 48, color: colors.error),
                   AppSpacing.gapH12,
-                  Text('Không thể tải quyết toán', style: AppTypography.titleMedium.bold.colored(colors.textPrimary)),
+                  Text('Không thể tải bảng tổng kết chi phí', style: AppTypography.titleMedium.bold.colored(colors.textPrimary)),
                   AppSpacing.gapH4,
                   Text('$err', style: AppTypography.bodySmall.colored(colors.textMuted), textAlign: TextAlign.center),
                   AppSpacing.gapH16,
@@ -210,17 +210,30 @@ class SessionSettlementScreen extends ConsumerWidget {
                             ],
                           ),
                           AppSpacing.gapH16,
-                          OutlinedButton.icon(
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: colors.primary,
-                              side: BorderSide(color: colors.primary.withValues(alpha: 0.4)),
-                              minimumSize: const Size(double.infinity, 48),
-                              shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                          if (!settlement.isSettled)
+                            ElevatedButton.icon(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: colors.primary,
+                                foregroundColor: AppColors.white,
+                                minimumSize: const Size(double.infinity, 48),
+                                shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                              ),
+                              icon: const Icon(Icons.calculate_rounded),
+                              label: const Text('Hạch toán vật tư & Phát hành thu phí'),
+                              onPressed: () => _showUpdateConsumablesDialog(context, settlement, vm),
+                            )
+                          else
+                            OutlinedButton.icon(
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: colors.primary,
+                                side: BorderSide(color: colors.primary.withValues(alpha: 0.4)),
+                                minimumSize: const Size(double.infinity, 48),
+                                shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                              ),
+                              icon: const Icon(Icons.edit_note_rounded),
+                              label: const Text('Cập nhật lại số quả cầu & phụ phí'),
+                              onPressed: () => _showUpdateConsumablesDialog(context, settlement, vm),
                             ),
-                            icon: const Icon(Icons.edit_note_rounded),
-                            label: const Text('Cập nhật số quả cầu bóc mới & phụ phí'),
-                            onPressed: () => _showUpdateConsumablesDialog(context, settlement, vm),
-                          ),
                         ],
                       ),
                     ),
@@ -563,7 +576,7 @@ class SessionSettlementScreen extends ConsumerWidget {
               vm.calculate(shuttlecockUsed: used, extraFee: extra);
               Navigator.of(ctx).pop();
             },
-            child: const Text('Tính lại đa hệ số'),
+            child: Text(settlement.isSettled ? 'Cập nhật tổng kết chi phí' : 'Phát hành tổng kết chi phí'),
           ),
         ],
       ),

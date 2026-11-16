@@ -99,8 +99,8 @@ class SessionAttendanceScreen extends ConsumerWidget {
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Điểm Danh Tại Sân', style: AppTypography.titleMedium.bold.colored(colors.textPrimary)),
-            Text('Xác nhận hội viên có mặt để nạp hàng đợi xoay tua',
+            Text('Check-in & Điểm Diện Ra Sân', style: AppTypography.titleMedium.bold.colored(colors.textPrimary)),
+            Text('Xác nhận tay vợt có mặt để nạp hàng đợi xoay tua',
                 style: AppTypography.labelSmall.colored(colors.textMuted)),
           ],
         ),
@@ -128,7 +128,7 @@ class SessionAttendanceScreen extends ConsumerWidget {
             backgroundColor: colors.primary,
             foregroundColor: AppColors.white,
             icon: const Icon(Icons.person_add_rounded),
-            label: const Text('Thêm khách vãng lai'),
+            label: const Text('Thêm Khách Giao Lưu Tại Sân'),
           );
         },
         orElse: () => null,
@@ -158,7 +158,7 @@ class SessionAttendanceScreen extends ConsumerWidget {
                 children: [
                   Icon(Icons.error_outline_rounded, size: 48, color: colors.error),
                   AppSpacing.gapH12,
-                  Text('Không thể tải điểm danh', style: AppTypography.titleMedium.bold.colored(colors.textPrimary)),
+                  Text('Không thể tải danh sách ra sân', style: AppTypography.titleMedium.bold.colored(colors.textPrimary)),
                   AppSpacing.gapH4,
                   Text('$err', style: AppTypography.bodySmall.colored(colors.textMuted), textAlign: TextAlign.center),
                   AppSpacing.gapH16,
@@ -211,27 +211,27 @@ class SessionAttendanceScreen extends ConsumerWidget {
                                 ],
                               ),
                               snapshot.isCompleted
-                                  ? const AppStatusBadge.success(label: 'Đã hoàn tất điểm danh')
+                                  ? const AppStatusBadge.success(label: 'Đã hoàn tất check-in')
                                   : isUpcoming
-                                      ? const AppStatusBadge.neutral(label: 'Chưa tới giờ chơi')
+                                      ? const AppStatusBadge.neutral(label: 'Chưa tới giờ thi đấu')
                                       : isOngoing
-                                          ? const AppStatusBadge.warning(label: 'Đang mở điểm danh')
-                                          : const AppStatusBadge.neutral(label: 'Đã kết thúc giờ chơi'),
+                                          ? const AppStatusBadge.warning(label: 'Đang mở check-in ra sân')
+                                          : const AppStatusBadge.neutral(label: 'Đã kết thúc giờ thi đấu'),
                             ],
                           ),
                           AppSpacing.gapH16,
                           Row(
                             children: [
                               Expanded(
-                                child: _buildMetricTile(context, 'Có mặt', '${snapshot.presentCount}', colors.success),
+                                child: _buildMetricTile(context, 'Đã Ra Sân', '${snapshot.presentCount}', colors.success),
                               ),
                               AppSpacing.gapW8,
                               Expanded(
-                                child: _buildMetricTile(context, 'Chưa đến', '${snapshot.notArrivedCount}', colors.warning),
+                                child: _buildMetricTile(context, 'Chưa Đến', '${snapshot.notArrivedCount}', colors.warning),
                               ),
                               AppSpacing.gapW8,
                               Expanded(
-                                child: _buildMetricTile(context, 'Báo vắng', '${snapshot.noShowCount}', colors.error),
+                                child: _buildMetricTile(context, 'Báo Vắng', '${snapshot.noShowCount}', colors.error),
                               ),
                             ],
                           ),
@@ -253,7 +253,7 @@ class SessionAttendanceScreen extends ConsumerWidget {
                             AppSpacing.gapW12,
                             Expanded(
                               child: Text(
-                                'Buổi chơi chưa diễn ra. Điểm danh tại sân mở từ 1 giờ trước khi buổi chơi bắt đầu.',
+                                'Buổi chơi chưa diễn ra. Check-in tại sân mở từ 1 giờ trước khi buổi chơi bắt đầu.',
                                 style: AppTypography.bodySmall.medium.colored(colors.warning),
                               ),
                             ),
@@ -294,8 +294,8 @@ class SessionAttendanceScreen extends ConsumerWidget {
                           minimumSize: const Size(double.infinity, 48),
                           shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
                         ),
-                        icon: const Icon(Icons.swap_horiz_rounded),
-                        label: const Text('Bàn Điều Phối Xoay Tua Sân'),
+                        icon: const Icon(Icons.sports_tennis_rounded),
+                        label: const Text('Vào Bàn Điều Phối Xoay Tua Sân'),
                         onPressed: () {
                           HapticFeedback.lightImpact();
                           context.push('/session/$sessionId/rotation');
@@ -308,12 +308,12 @@ class SessionAttendanceScreen extends ConsumerWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('Danh sách xác nhận tham gia (${snapshot.players.length})',
+                        Text('Danh sách tay vợt tham gia (${snapshot.players.length})',
                             style: AppTypography.titleSmall.bold.colored(colors.textPrimary)),
                         if (!snapshot.isCompleted && isOngoing)
                           TextButton.icon(
                             icon: const Icon(Icons.check_circle_outline_rounded, size: 16),
-                            label: const Text('Khóa điểm danh'),
+                            label: const Text('Chốt danh sách ra sân'),
                             onPressed: () => _confirmCompleteAttendance(context, vm),
                           ),
                       ],
@@ -419,8 +419,8 @@ class SessionAttendanceScreen extends ConsumerWidget {
                     Flexible(
                       child: Text(
                         isCheckedIn && player.checkinAt != null
-                            ? 'Vào sân: ${DateFormat('HH:mm').format(player.checkinAt!)}'
-                            : (isNoShow ? 'Đã báo vắng' : 'Chờ điểm danh'),
+                            ? 'Đã ra sân: ${DateFormat('HH:mm').format(player.checkinAt!)}'
+                            : (isNoShow ? 'Đã báo vắng' : 'Chờ ra sân'),
                         style: AppTypography.labelSmall.colored(
                           isCheckedIn
                               ? colors.textMuted
@@ -460,10 +460,10 @@ class SessionAttendanceScreen extends ConsumerWidget {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.check_rounded, size: 16, color: isCheckedIn ? AppColors.white : colors.success),
+                        Icon(Icons.sports_tennis_rounded, size: 16, color: isCheckedIn ? AppColors.white : colors.success),
                         const SizedBox(width: 4),
                         Text(
-                          'Có mặt',
+                          'Vào Sân',
                           style: AppTypography.labelSmall.bold.colored(isCheckedIn ? AppColors.white : colors.success),
                         ),
                       ],
@@ -488,10 +488,10 @@ class SessionAttendanceScreen extends ConsumerWidget {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.close_rounded, size: 16, color: isNoShow ? AppColors.white : colors.error),
+                        Icon(Icons.person_off_rounded, size: 16, color: isNoShow ? AppColors.white : colors.error),
                         const SizedBox(width: 4),
                         Text(
-                          'Vắng',
+                          'Báo Vắng',
                           style: AppTypography.labelSmall.bold.colored(isNoShow ? AppColors.white : colors.error),
                         ),
                       ],
@@ -540,9 +540,9 @@ class SessionAttendanceScreen extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Khóa lượt điểm danh ban đầu'),
+        title: const Text('Khóa lượt check-in ra sân'),
         content: const Text(
-          'Xác nhận hoàn tất lượt điểm danh? Các tay vợt có mặt sẽ được nạp vào hàng đợi xoay tua.',
+          'Xác nhận hoàn tất lượt check-in? Các tay vợt có mặt sẽ được nạp ngay vào hàng đợi xoay tua thi đấu.',
         ),
         actions: [
           TextButton(
@@ -560,11 +560,11 @@ class SessionAttendanceScreen extends ConsumerWidget {
               await vm.complete();
               if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Đã hoàn tất lượt điểm danh ban đầu!')),
+                  const SnackBar(content: Text('Đã chốt danh sách ra sân ban đầu!')),
                 );
               }
             },
-            child: const Text('Khóa điểm danh'),
+            child: const Text('Chốt danh sách ra sân'),
           ),
         ],
       ),
@@ -578,14 +578,14 @@ class SessionAttendanceScreen extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Thêm Khách Vãng Lai'),
+        title: const Text('Thêm Khách Giao Lưu Tại Sân'),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
                 controller: nameCtrl,
-                decoration: const InputDecoration(labelText: 'Họ tên khách *'),
+                decoration: const InputDecoration(labelText: 'Họ tên tay vợt *'),
               ),
               const SizedBox(height: 12),
               TextField(

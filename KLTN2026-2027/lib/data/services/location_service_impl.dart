@@ -46,6 +46,8 @@ class LocationServiceImpl implements ILocationService {
   @override
   Future<bool> hasPermission() async {
     try {
+      final isServiceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!isServiceEnabled) return false;
       final permission = await Geolocator.checkPermission();
       return permission == LocationPermission.always || permission == LocationPermission.whileInUse;
     } catch (_) {

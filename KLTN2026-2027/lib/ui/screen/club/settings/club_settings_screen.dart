@@ -477,7 +477,7 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
           ],
         ),
         content: Text(
-          'Bạn có chắc chắn muốn rời khỏi câu lạc bộ này? Mọi quyền hạn và lịch sử điểm danh của bạn tại nhóm sẽ bị hủy bỏ.',
+          'Bạn có chắc chắn muốn rời khỏi câu lạc bộ này? Mọi quyền hạn và lịch sử tham gia thi đấu của bạn tại nhóm sẽ bị hủy bỏ.',
           style: AppTypography.bodyMedium.colored(colors.textMuted),
         ),
         actions: [

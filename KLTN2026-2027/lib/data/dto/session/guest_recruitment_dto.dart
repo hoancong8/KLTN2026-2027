@@ -18,6 +18,8 @@ class GuestRecruitmentDto {
   final bool hidePlayerList;
   final double? femaleDiscount;
   final double? femaleSharedCost;
+  final String? myBookingStatus;
+  final double? clubQualityScore;
 
   GuestRecruitmentDto({
     required this.id,
@@ -37,6 +39,8 @@ class GuestRecruitmentDto {
     this.hidePlayerList = false,
     this.femaleDiscount,
     this.femaleSharedCost,
+    this.myBookingStatus,
+    this.clubQualityScore,
   });
 
   static int _parseInt(dynamic value) {
@@ -101,6 +105,10 @@ class GuestRecruitmentDto {
       femaleSharedCost: json['femaleSharedCost'] != null
           ? _parseDouble(json['femaleSharedCost'])
           : (json['femaleCost'] != null ? _parseDouble(json['femaleCost']) : null),
+      myBookingStatus: json['myBookingStatus']?.toString(),
+      clubQualityScore: json['clubQualityScore'] != null
+          ? _parseDouble(json['clubQualityScore'])
+          : (json['qualityScore'] != null ? _parseDouble(json['qualityScore']) : null),
     );
   }
 
@@ -122,5 +130,7 @@ class GuestRecruitmentDto {
     'hidePlayerList': hidePlayerList,
     if (femaleDiscount != null) 'femaleDiscount': femaleDiscount,
     if (femaleSharedCost != null) 'femaleSharedCost': femaleSharedCost,
+    if (myBookingStatus != null) 'myBookingStatus': myBookingStatus,
+    if (clubQualityScore != null) 'clubQualityScore': clubQualityScore,
   };
 }

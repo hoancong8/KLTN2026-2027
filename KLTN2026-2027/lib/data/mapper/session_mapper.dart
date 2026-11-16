@@ -76,6 +76,8 @@ class SessionMapper {
       hidePlayerList: dto.hidePlayerList,
       femaleDiscount: dto.femaleDiscount,
       femaleSharedCost: dto.femaleSharedCost,
+      myBookingStatus: dto.myBookingStatus,
+      clubQualityScore: dto.clubQualityScore,
     );
   }
 

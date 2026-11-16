@@ -20,6 +20,16 @@ class AppColors {
   static const Color onPrimaryContainer = Color(0xFF0F5A40);
 
   // ---------------------------------------------------------------------------
+  // 1.1 NEO-SPORT LIME PALETTE (CYBER SPORTS ACCENT)
+  // ---------------------------------------------------------------------------
+  static const Color neonLime = Color(0xFFC6F432);
+  static const Color neonLimeLight = Color(0xFFE4FFA0);
+  static const Color neonLimeDark = Color(0xFFA6D61B);
+  static const Color cyberDark = Color(0xFF181A20);
+  static const Color cyberCard = Color(0xFF1B1D22);
+  static const Color cyberBorder = Color(0xFF2C3038);
+
+  // ---------------------------------------------------------------------------
   // 2. SECONDARY / ACCENT PALETTE (OCEAN SKY & WARM AMBER)
   // ---------------------------------------------------------------------------
   /// Secondary color - ocean sky blue for auxiliary accents & highlights.
@@ -198,6 +208,18 @@ class AppColors {
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
     colors: [Color(0x143CC18E), Color(0xFFFFFFFF)],
+  );
+
+  static const LinearGradient courtGradient = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [Color(0xFF0F6E44), Color(0xFF0A4D2F)],
+  );
+
+  static const LinearGradient limeAuraGradient = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [Color(0x59C6F432), Color(0xFFF8FAFC)],
   );
 
   static const LinearGradient warningGradient = LinearGradient(

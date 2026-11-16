@@ -689,8 +689,8 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
                   ),
                   label: Text(
                     isEnded
-                        ? 'Xem lại kết quả & Điểm danh'
-                        : (session.isBookedByCurrentUser ? 'Xem chi tiết & Điểm danh' : 'Xem chi tiết & Giữ chỗ'),
+                        ? 'Xem lại kết quả trận đấu'
+                        : (session.isBookedByCurrentUser ? 'Xem chi tiết & Ra sân' : 'Xem chi tiết & Giữ chỗ'),
                     style: AppTypography.bodyMedium.bold.colored(
                       isEnded ? colors.textPrimary : AppColors.white,
                     ),

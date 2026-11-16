@@ -197,10 +197,10 @@ void main() {
     await tester.pumpWidget(buildTestableWidget(const SessionAttendanceScreen(sessionId: 'session-1')));
     await tester.pumpAndSettle();
 
-    expect(find.text('Điểm Danh Tại Sân'), findsOneWidget);
-    expect(find.text('Có mặt'), findsWidgets);
-    expect(find.text('Chưa đến'), findsWidgets);
-    expect(find.text('Báo vắng'), findsWidgets);
+    expect(find.text('Check-in & Điểm Diện Ra Sân'), findsOneWidget);
+    expect(find.text('Đã Ra Sân'), findsWidgets);
+    expect(find.text('Chưa Đến'), findsWidgets);
+    expect(find.text('Báo Vắng'), findsWidgets);
     expect(find.text('Nguyễn Văn An'), findsOneWidget);
   });
 
@@ -208,8 +208,8 @@ void main() {
     await tester.pumpWidget(buildTestableWidget(const SessionRotationScreen(sessionId: 'session-1')));
     await tester.pumpAndSettle();
 
-    expect(find.text('Điều Phối Xoay Tua Sân'), findsOneWidget);
-    expect(find.text('Hệ Thống Xoay Tua Đang Chạy'), findsOneWidget);
+    expect(find.text('Điều Phối Trận Đấu & Xoay Tua Sân'), findsOneWidget);
+    expect(find.text('Điều Phối Trận Đấu Tự Động'), findsOneWidget);
     expect(find.text('SÂN SỐ 1'), findsOneWidget);
   });
 
@@ -217,7 +217,7 @@ void main() {
     await tester.pumpWidget(buildTestableWidget(const SessionSettlementScreen(sessionId: 'session-1')));
     await tester.pumpAndSettle();
 
-    expect(find.text('Tính Tiền Cầu & Sân'), findsOneWidget);
+    expect(find.text('Tổng Kết Chi Phí Trận Đấu'), findsOneWidget);
     expect(find.text('Tổng Chi Phí Buổi Chơi'), findsOneWidget);
     expect(find.text('440,000 đ'), findsOneWidget);
     expect(find.text('ĐÃ ĐÓNG TIỀN'), findsOneWidget);

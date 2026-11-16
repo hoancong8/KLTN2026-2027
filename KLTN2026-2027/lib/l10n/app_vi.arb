@@ -289,7 +289,7 @@
   "session_join_success": "Đăng ký tham gia thành công",
   "session_cancel_join": "Hủy đăng ký",
   "session_cancel_confirm": "Bạn có chắc muốn hủy đăng ký buổi chơi này?",
-  "session_check_in": "Điểm danh",
+  "session_check_in": "Check-in Ra Sân",
   "session_schedule_planner": "Lập lịch sinh hoạt định kỳ",
   "session_no_sessions": "Chưa có buổi chơi nào được lên lịch",
   "session_full": "Buổi chơi đã đủ số lượng người tham gia",

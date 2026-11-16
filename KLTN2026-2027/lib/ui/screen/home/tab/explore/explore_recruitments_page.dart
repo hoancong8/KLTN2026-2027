@@ -188,12 +188,15 @@ class _ExploreRecruitmentsPageState extends ConsumerState<ExploreRecruitmentsPag
                       separatorBuilder: (_, _) => const SizedBox(height: 14),
                       itemBuilder: (ctx, index) {
                         final match = filteredList[index];
-                        final isJoined = state.joinedSessionIds.contains(match.sessionId.trim().toLowerCase());
+                        final sid = match.sessionId.trim().toLowerCase();
+                        final isWaiting = match.isWaitingApproval || state.waitingSessionIds.contains(sid);
+                        final isJoined = !isWaiting && (match.isConfirmedParticipant || state.joinedSessionIds.contains(sid));
                         final isMyClub = state.myClubNames.contains(match.clubName.trim().toLowerCase());
                         return _RecruitmentMatchCard(
                           match: match,
                           isJoining: state.isJoining,
                           isJoined: isJoined,
+                          isWaiting: isWaiting,
                           isMyClub: isMyClub,
                           onJoin: () => _showJoinBottomSheet(context, vm, match),
                         );
@@ -211,12 +214,15 @@ class _ExploreRecruitmentsPageState extends ConsumerState<ExploreRecruitmentsPag
                       itemCount: filteredList.length,
                       itemBuilder: (ctx, index) {
                         final match = filteredList[index];
-                        final isJoined = state.joinedSessionIds.contains(match.sessionId.trim().toLowerCase());
+                        final sid = match.sessionId.trim().toLowerCase();
+                        final isWaiting = match.isWaitingApproval || state.waitingSessionIds.contains(sid);
+                        final isJoined = !isWaiting && (match.isConfirmedParticipant || state.joinedSessionIds.contains(sid));
                         final isMyClub = state.myClubNames.contains(match.clubName.trim().toLowerCase());
                         return _RecruitmentMatchCard(
                           match: match,
                           isJoining: state.isJoining,
                           isJoined: isJoined,
+                          isWaiting: isWaiting,
                           isMyClub: isMyClub,
                           onJoin: () => _showJoinBottomSheet(context, vm, match),
                         );
@@ -688,6 +694,7 @@ class _RecruitmentMatchCard extends StatelessWidget {
   final GuestRecruitment match;
   final bool isJoining;
   final bool isJoined;
+  final bool isWaiting;
   final bool isMyClub;
   final VoidCallback onJoin;
 
@@ -695,6 +702,7 @@ class _RecruitmentMatchCard extends StatelessWidget {
     required this.match,
     required this.isJoining,
     this.isJoined = false,
+    this.isWaiting = false,
     this.isMyClub = false,
     required this.onJoin,
   });
@@ -760,12 +768,28 @@ class _RecruitmentMatchCard extends StatelessWidget {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(height: 2),
+                        const SizedBox(height: 3),
                         Wrap(
-                          spacing: 4,
+                          spacing: 6,
                           runSpacing: 4,
                           crossAxisAlignment: WrapCrossAlignment.center,
                           children: [
+                            if (match.clubQualityScore != null)
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.star_rounded, size: 13, color: colors.warning),
+                                  const SizedBox(width: 2),
+                                  Text(
+                                    match.clubQualityScore!.toStringAsFixed(1),
+                                    style: TextStyle(
+                                      fontSize: 11.5,
+                                      fontWeight: FontWeight.bold,
+                                      color: colors.textPrimary,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             if (match.distanceKm != null)
                               Row(
                                 mainAxisSize: MainAxisSize.min,
@@ -782,21 +806,54 @@ class _RecruitmentMatchCard extends StatelessWidget {
                                   ),
                                 ],
                               ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-                              decoration: BoxDecoration(
-                                color: AppColors.successLight,
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: const Text(
-                                'Đang tuyển',
-                                style: TextStyle(
-                                  fontSize: 9.5,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.success,
+                            if (isWaiting)
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                                decoration: BoxDecoration(
+                                  color: AppColors.warningLight,
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Text(
+                                  'Đang chờ duyệt',
+                                  style: TextStyle(
+                                    fontSize: 9.5,
+                                    fontWeight: FontWeight.bold,
+                                    color: colors.warning,
+                                  ),
+                                ),
+                              )
+                            else if (isJoined)
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                                decoration: BoxDecoration(
+                                  color: AppColors.successLight,
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: const Text(
+                                  'Đã duyệt',
+                                  style: TextStyle(
+                                    fontSize: 9.5,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.success,
+                                  ),
+                                ),
+                              )
+                            else
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                                decoration: BoxDecoration(
+                                  color: AppColors.successLight,
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: const Text(
+                                  'Đang tuyển',
+                                  style: TextStyle(
+                                    fontSize: 9.5,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.success,
+                                  ),
                                 ),
                               ),
-                            ),
                             if (match.hidePlayerList)
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
@@ -991,21 +1048,39 @@ class _RecruitmentMatchCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  if (isJoined)
+                  if (isWaiting)
                     OutlinedButton.icon(
                       onPressed: () => context.push(AppConfig.sessionDetailRoutePath(match.sessionId)),
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: colors.primary,
-                        side: BorderSide(color: colors.primary.withValues(alpha: 0.4)),
-                        backgroundColor: colors.primaryContainer.withValues(alpha: 0.3),
+                        foregroundColor: colors.warning,
+                        side: BorderSide(color: colors.warning.withValues(alpha: 0.6)),
+                        backgroundColor: colors.warning.withValues(alpha: 0.08),
                         minimumSize: const Size(64, 36),
                         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                         visualDensity: VisualDensity.compact,
                       ),
-                      icon: Icon(Icons.check_circle_rounded, size: 14, color: colors.primary),
+                      icon: Icon(Icons.hourglass_top_rounded, size: 14, color: colors.warning),
                       label: const Text(
-                        'Đã tham gia',
+                        'Đang chờ duyệt',
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                      ),
+                    )
+                  else if (isJoined)
+                    OutlinedButton.icon(
+                      onPressed: () => context.push(AppConfig.sessionDetailRoutePath(match.sessionId)),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: colors.success,
+                        side: BorderSide(color: colors.success.withValues(alpha: 0.5)),
+                        backgroundColor: colors.success.withValues(alpha: 0.08),
+                        minimumSize: const Size(64, 36),
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        visualDensity: VisualDensity.compact,
+                      ),
+                      icon: const Icon(Icons.check_circle_rounded, size: 14, color: AppColors.success),
+                      label: const Text(
+                        'Đã duyệt',
                         style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
                       ),
                     )

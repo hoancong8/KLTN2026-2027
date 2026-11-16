@@ -10,7 +10,7 @@ import '../../../../app/provider.dart';
 import '../../../../app/theme/theme.dart';
 import '../../../../domain/entities/session/session_rotation.dart';
 import '../../../../widget/app_shimmer.dart';
-import '../../../../widget/app_status_badge.dart';
+import '../../../../widget/badminton_court_widget.dart';
 
 final sessionRotationNotifierProvider =
     StateNotifierProvider.autoDispose.family<SessionRotationNotifier, AsyncValue<SessionRotationSnapshot>, String>(
@@ -123,8 +123,8 @@ class SessionRotationScreen extends ConsumerWidget {
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Điều Phối Xoay Tua Sân', style: AppTypography.titleMedium.bold.colored(colors.textPrimary)),
-            Text('Giải thuật ưu tiên thời gian nghỉ & cân bằng trình độ',
+            Text('Điều Phối Trận Đấu & Xoay Tua Sân', style: AppTypography.titleMedium.bold.colored(colors.textPrimary)),
+            Text('Tự động ghép cặp theo thời gian hồi sức & trình độ',
                 style: AppTypography.labelSmall.colored(colors.textMuted)),
           ],
         ),
@@ -160,7 +160,7 @@ class SessionRotationScreen extends ConsumerWidget {
                   shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
                 ),
                 icon: const Icon(Icons.how_to_reg_rounded),
-                label: const Text('Xem Điểm Danh'),
+                label: const Text('Check-in Ra Sân'),
                 onPressed: () => context.push('/session/$sessionId/attendance'),
               ),
             ),
@@ -175,7 +175,7 @@ class SessionRotationScreen extends ConsumerWidget {
                   shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
                 ),
                 icon: const Icon(Icons.receipt_long_rounded),
-                label: const Text('Chia Tiền Buổi Chơi'),
+                label: const Text('Tổng Kết Chi Phí'),
                 onPressed: () => context.push('/session/$sessionId/settlement'),
               ),
             ),
@@ -275,10 +275,10 @@ class SessionRotationScreen extends ConsumerWidget {
                         AppSpacing.gapH16,
 
                         // 3. Resting / Waiting Queue
-                        Text('Hàng đợi sẵn sàng vào sân (${snapshot.queuePlayers.length})',
+                        Text('Hàng ghế dự bị sẵn sàng (${snapshot.queuePlayers.length} tay vợt)',
                             style: AppTypography.titleSmall.bold.colored(colors.textPrimary)),
                         AppSpacing.gapH8,
-                        _buildQueueSection(context, snapshot.queuePlayers, vm),
+                        _buildQueueSection(context, snapshot, vm),
 
                         AppSpacing.gapH48,
                       ],
@@ -321,7 +321,7 @@ class SessionRotationScreen extends ConsumerWidget {
                     ),
                   ),
                   AppSpacing.gapW8,
-                  Text('Hệ Thống Xoay Tua Đang Chạy',
+                  Text('Điều Phối Trận Đấu Tự Động',
                       style: AppTypography.labelLarge.bold.colored(colors.textPrimary)),
                 ],
               ),
@@ -331,13 +331,13 @@ class SessionRotationScreen extends ConsumerWidget {
                   color: colors.primary.withValues(alpha: 0.12),
                   borderRadius: AppRadius.tag,
                 ),
-                child: Text('Nghỉ tối thiểu 5 phút', style: AppTypography.labelSmall.bold.colored(colors.primary)),
+                child: Text('Hồi sức tối thiểu 5 phút', style: AppTypography.labelSmall.bold.colored(colors.primary)),
               ),
             ],
           ),
           AppSpacing.gapH12,
           Text(
-            'Giải thuật tự động phân phối 4 tay vợt có thời gian nghỉ lâu nhất vào sân trống tiếp theo và cân bằng chênh lệch tổng trình độ nhỏ nhất.',
+            'Thuật toán ưu tiên 4 tay vợt có thời gian hồi sức lâu nhất vào sân tiếp theo và cân bằng chênh lệch trình độ nhỏ nhất.',
             style: AppTypography.bodySmall.colored(colors.textMuted),
           ),
           AppSpacing.gapH12,
@@ -351,7 +351,7 @@ class SessionRotationScreen extends ConsumerWidget {
                     shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
                   ),
                   icon: const Icon(Icons.bolt_rounded, size: 18),
-                  label: const Text('Tạo Đề Xuất Mới'),
+                  label: const Text('Tạo Lượt Đấu Mới'),
                   onPressed: () {
                     HapticFeedback.lightImpact();
                     vm.generateProposals();
@@ -366,7 +366,7 @@ class SessionRotationScreen extends ConsumerWidget {
                   shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
                 ),
                 icon: const Icon(Icons.restart_alt_rounded, size: 18),
-                label: const Text('Khởi Tạo Lại'),
+                label: const Text('Khởi Tạo Lại Lượt Đấu'),
                 onPressed: () => _confirmInitializeRotation(context, vm),
               ),
             ],
@@ -382,7 +382,7 @@ class SessionRotationScreen extends ConsumerWidget {
       builder: (ctx) => AlertDialog(
         title: const Text('Khởi tạo lại bảng xoay tua?'),
         content: const Text(
-          'Hệ thống sẽ đồng bộ lại toàn bộ danh sách điểm danh và phân bổ sân từ đầu.',
+          'Hệ thống sẽ đồng bộ lại toàn bộ danh sách ra sân và phân bổ sân từ đầu.',
         ),
         actions: [
           TextButton(
@@ -408,221 +408,20 @@ class SessionRotationScreen extends ConsumerWidget {
 
   Widget _buildCourtCard(
       BuildContext context, CourtMatch court, List<RotationPlayer> queuePlayers, SessionRotationNotifier vm) {
-    final colors = context.colors;
-    final isPlaying = court.isPlaying;
-    final isProposed = court.isProposed;
-
-    Widget badgeWidget;
-    if (isPlaying) {
-      badgeWidget = const AppStatusBadge.success(label: 'Đang thi đấu');
-    } else if (isProposed) {
-      badgeWidget = AppStatusBadge.warning(
-        label: court.isManualSwapped ? 'Đã đổi thủ công' : 'Đề xuất sẵn sàng',
-      );
-    } else {
-      badgeWidget = const AppStatusBadge.neutral(label: 'Trống');
-    }
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: AppSpacing.base),
-      padding: AppSpacing.allBase,
-      decoration: BoxDecoration(
-        color: colors.cardBackground,
-        borderRadius: AppRadius.card,
-        border: Border.all(
-          color: isPlaying
-              ? colors.success.withValues(alpha: 0.4)
-              : (isProposed ? colors.primary.withValues(alpha: 0.4) : colors.cardBorder),
-          width: 1.5,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header Court Number & Status
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  Icon(Icons.stadium_rounded, color: colors.primary, size: 20),
-                  AppSpacing.gapW8,
-                  Text('SÂN SỐ ${court.courtNumber}',
-                      style: AppTypography.titleSmall.bold.colored(colors.textPrimary)),
-                ],
-              ),
-              badgeWidget,
-            ],
-          ),
-          AppSpacing.gapH12,
-
-          // 2 Teams Layout
-          if (court.state == 'Empty' || (court.teamA.isEmpty && court.teamB.isEmpty))
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: colors.surfaceSubtle,
-                borderRadius: AppRadius.borderSm,
-                border: Border.all(color: colors.cardBorder),
-              ),
-              child: Column(
-                children: [
-                  Icon(Icons.sports_tennis_rounded, size: 28, color: colors.textMuted),
-                  AppSpacing.gapH8,
-                  Text(
-                    'Sân đang trống, chờ đủ 4 người sẵn sàng trong hàng đợi...',
-                    style: AppTypography.bodySmall.colored(colors.textMuted),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              ),
-            )
-          else
-            Row(
-              children: [
-                // Team A
-                Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: colors.primary.withValues(alpha: 0.08),
-                      borderRadius: AppRadius.borderSm,
-                      border: Border.all(color: colors.primary.withValues(alpha: 0.2)),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text('ĐỘI 1', style: AppTypography.labelSmall.bold.colored(colors.primary)),
-                            Text('L${court.teamASkill}', style: AppTypography.labelSmall.colored(colors.textMuted)),
-                          ],
-                        ),
-                        const SizedBox(height: 6),
-                        ...court.teamA.map(
-                          (p) => Text('• ${p.fullName}',
-                              style: AppTypography.bodySmall.bold.colored(colors.textPrimary),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  child: Text('VS', style: AppTypography.titleSmall.bold.colored(colors.textMuted)),
-                ),
-                // Team B
-                Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: colors.warning.withValues(alpha: 0.08),
-                      borderRadius: AppRadius.borderSm,
-                      border: Border.all(color: colors.warning.withValues(alpha: 0.2)),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text('ĐỘI 2', style: AppTypography.labelSmall.bold.colored(colors.warning)),
-                            Text('L${court.teamBSkill}', style: AppTypography.labelSmall.colored(colors.textMuted)),
-                          ],
-                        ),
-                        const SizedBox(height: 6),
-                        ...court.teamB.map(
-                          (p) => Text('• ${p.fullName}',
-                              style: AppTypography.bodySmall.bold.colored(colors.textPrimary),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          AppSpacing.gapH12,
-
-          // Action Buttons with touch target >= 48dp
-          if (isProposed) ...[
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton.icon(
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: colors.primary,
-                      side: BorderSide(color: colors.primary.withValues(alpha: 0.5)),
-                      padding: const EdgeInsets.symmetric(vertical: 10),
-                      minimumSize: const Size(0, 44),
-                      shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
-                    ),
-                    icon: const Icon(Icons.swap_horiz_rounded, size: 18),
-                    label: const Text('Đổi người'),
-                    onPressed: () => _showSwapLineupDialog(context, court, queuePlayers, vm),
-                  ),
-                ),
-                if (court.isManualSwapped) ...[
-                  AppSpacing.gapW8,
-                  OutlinedButton.icon(
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: colors.warning,
-                      side: BorderSide(color: colors.warning.withValues(alpha: 0.5)),
-                      padding: const EdgeInsets.symmetric(vertical: 10),
-                      minimumSize: const Size(0, 44),
-                      shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
-                    ),
-                    icon: const Icon(Icons.restore_rounded, size: 18),
-                    label: const Text('Gợi ý gốc'),
-                    onPressed: () {
-                      HapticFeedback.lightImpact();
-                      vm.restoreProposal(court.matchId);
-                    },
-                  ),
-                ],
-              ],
-            ),
-            AppSpacing.gapH8,
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: colors.primary,
-                  foregroundColor: AppColors.white,
-                  minimumSize: const Size.fromHeight(48),
-                  shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
-                ),
-                icon: const Icon(Icons.play_arrow_rounded),
-                label: Text(court.isManualSwapped ? 'Xác nhận bắt đầu trận đã đổi' : 'Bắt đầu trận đấu trên sân này'),
-                onPressed: () {
-                  HapticFeedback.mediumImpact();
-                  vm.startMatch(court.matchId);
-                },
-              ),
-            ),
-          ] else if (isPlaying)
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: colors.success,
-                  foregroundColor: AppColors.white,
-                  minimumSize: const Size.fromHeight(48),
-                  shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
-                ),
-                icon: const Icon(Icons.stop_rounded),
-                label: const Text('Kết thúc trận (Tự động tính 5p nghỉ)'),
-                onPressed: () => _confirmFinishMatch(context, court, vm),
-              ),
-            ),
-        ],
-      ),
+    return BadmintonCourtWidget(
+      court: court,
+      onStartMatch: () {
+        HapticFeedback.mediumImpact();
+        vm.startMatch(court.matchId);
+      },
+      onFinishMatch: () => _confirmFinishMatch(context, court, vm),
+      onSwapLineup: () => _showSwapLineupDialog(context, court, queuePlayers, vm),
+      onRestoreProposal: court.isManualSwapped
+          ? () {
+              HapticFeedback.lightImpact();
+              vm.restoreProposal(court.matchId);
+            }
+          : null,
     );
   }
 
@@ -632,7 +431,7 @@ class SessionRotationScreen extends ConsumerWidget {
       builder: (ctx) => AlertDialog(
         title: Text('Kết thúc trận sân ${court.courtNumber}?'),
         content: const Text(
-          'Hệ thống sẽ giải phóng sân và tự động kích hoạt thời gian nghỉ 5 phút cho 4 tay vợt.',
+          'Hệ thống sẽ giải phóng sân và tự động kích hoạt thời gian hồi sức 5 phút cho 4 tay vợt.',
         ),
         actions: [
           TextButton(
@@ -656,8 +455,10 @@ class SessionRotationScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildQueueSection(BuildContext context, List<RotationPlayer> queue, SessionRotationNotifier vm) {
+  Widget _buildQueueSection(BuildContext context, SessionRotationSnapshot snapshot, SessionRotationNotifier vm) {
     final colors = context.colors;
+    final queue = snapshot.queuePlayers;
+    final hasActiveMatch = snapshot.courts.any((c) => c.isPlaying || c.isProposed);
 
     if (queue.isEmpty) {
       return Container(
@@ -668,8 +469,13 @@ class SessionRotationScreen extends ConsumerWidget {
           border: Border.all(color: colors.cardBorder),
         ),
         child: Center(
-          child: Text('Tất cả hội viên đều đang thi đấu trên sân',
-              style: AppTypography.bodySmall.colored(colors.textMuted)),
+          child: Text(
+            hasActiveMatch
+                ? 'Tất cả hội viên đều đang thi đấu trên sân'
+                : 'Chưa có hội viên check-in ra sân. Cần tối thiểu 4 người để hệ thống tự động ghép cặp thi đấu.',
+            style: AppTypography.bodySmall.colored(colors.textMuted),
+            textAlign: TextAlign.center,
+          ),
         ),
       );
     }
@@ -694,7 +500,7 @@ class SessionRotationScreen extends ConsumerWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(
-                  p.isPaused ? Icons.pause_circle_outline_rounded : Icons.person_outline_rounded,
+                  p.isPaused ? Icons.pause_circle_outline_rounded : Icons.sports_tennis_rounded,
                   size: 14,
                   color: p.isPaused ? colors.warning : colors.primary,
                 ),
@@ -732,7 +538,7 @@ class SessionRotationScreen extends ConsumerWidget {
                       color: colors.warning.withValues(alpha: 0.15),
                       borderRadius: AppRadius.tag,
                     ),
-                    child: Text('Nghỉ 5p', style: AppTypography.labelSmall.colored(colors.warning)),
+                    child: Text('Hồi sức 5p', style: AppTypography.labelSmall.colored(colors.warning)),
                   ),
                 ],
               ],

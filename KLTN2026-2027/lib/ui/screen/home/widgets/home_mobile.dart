@@ -2,6 +2,7 @@ import '../tab/dashboard/dashboard_vm/dashboard_vm.dart';
 // lib/ui/screen/home/widgets/home_mobile.dart
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kltn2026_2027/app/consts/app_config.dart';
@@ -85,6 +86,7 @@ class HomeMobile extends ConsumerWidget {
     final currentIndex = tabIndex.clamp(0, destinations.length - 1);
 
     return Scaffold(
+      extendBody: true,
       backgroundColor: colors.background,
       body: PageView(
         key: pageViewKey,
@@ -92,29 +94,77 @@ class HomeMobile extends ConsumerWidget {
         physics: const NeverScrollableScrollPhysics(),
         children: pages,
       ),
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: colors.surface,
-          border: Border(
-            top: BorderSide(color: colors.divider, width: 1),
+      bottomNavigationBar: SafeArea(
+        top: false,
+        child: _buildFloatingPillNavBar(context, currentIndex),
+      ),
+    );
+  }
+
+  Widget _buildFloatingPillNavBar(BuildContext context, int currentIndex) {
+    final colors = context.colors;
+    return Container(
+      margin: const EdgeInsets.only(left: 20, right: 20, bottom: 12),
+      height: 64,
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        color: colors.surface,
+        borderRadius: BorderRadius.circular(36),
+        border: Border.all(color: colors.cardBorder, width: 1.2),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.neutral900.withValues(alpha: 0.08),
+            blurRadius: 20,
+            offset: const Offset(0, 6),
           ),
-        ),
-        child: NavigationBar(
-          selectedIndex: currentIndex,
-          onDestinationSelected: onTabSelected,
-          backgroundColor: colors.surface,
-          indicatorColor: colors.primaryContainer,
-          elevation: 0,
-          height: 68,
-          destinations: destinations.map((item) {
-            return NavigationDestination(
-              icon: item.icon,
-              selectedIcon: item.selectedIcon,
-              label: item.title,
-            );
-          }).toList(),
-        ),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: List.generate(destinations.length, (index) {
+          final isSelected = index == currentIndex;
+          final destination = destinations[index];
+          return Tooltip(
+            message: destination.title,
+            child: GestureDetector(
+              onTap: () {
+                HapticFeedback.lightImpact();
+                onTabSelected(index);
+              },
+              behavior: HitTestBehavior.opaque,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                curve: Curves.easeOutCubic,
+                width: isSelected ? 48 : 42,
+                height: isSelected ? 48 : 42,
+                decoration: BoxDecoration(
+                  color: isSelected ? colors.primary : AppColors.transparent,
+                  shape: BoxShape.circle,
+                  boxShadow: isSelected
+                      ? [
+                          BoxShadow(
+                            color: colors.primary.withValues(alpha: 0.35),
+                            blurRadius: 10,
+                            spreadRadius: 1,
+                          ),
+                        ]
+                      : null,
+                ),
+                child: Center(
+                  child: IconTheme(
+                    data: IconThemeData(
+                      color: isSelected ? AppColors.white : colors.textMuted,
+                      size: isSelected ? 22 : 20,
+                    ),
+                    child: isSelected ? destination.selectedIcon : destination.icon,
+                  ),
+                ),
+              ),
+            ),
+          );
+        }),
       ),
     );
   }
 }
+

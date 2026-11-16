@@ -970,15 +970,17 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
         final payload = res.data is Map<String, dynamic> && res.data.containsKey('result') ? res.data['result'] : res.data;
         if (payload is Map<String, dynamic>) {
           final entity = SessionSettlementDto.fromJson(payload).toEntity();
-          _settlementCache[sessionId] = entity;
-          return entity;
+          if (entity.memberFees.isNotEmpty || entity.isSettled) {
+            _settlementCache[sessionId] = entity;
+            return entity;
+          }
         }
       }
     } catch (_) {
       // Fallback local cache
     }
 
-    if (!_settlementCache.containsKey(sessionId)) {
+    if (!_settlementCache.containsKey(sessionId) || _settlementCache[sessionId]!.memberFees.isEmpty) {
       final attendance = await getAttendance(sessionId);
       final activePlayers = attendance.players.where((p) => !p.isNoShow).toList();
       final totalCost = 300000;
@@ -1022,28 +1024,60 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
     required int shuttlecockUsed,
     required int extraFee,
   }) async {
+    final current = await getSettlement(sessionId);
+    final courtCost = current.courtFee > 0 ? current.courtFee : 300000;
+    final shuttlePrice = current.shuttlecockPrice > 0 ? current.shuttlecockPrice : 25000;
+
     try {
-      final res = await dio.post(
-        '/api/v1/sessions/$sessionId/settlement',
+      final previewRes = await dio.post(
+        '/api/v1/sessions/$sessionId/settlement/preview',
         data: {
           'shuttlecockUsed': shuttlecockUsed,
-          'shuttlecockPrice': 25000,
-          'extraFee': extraFee,
+          'shuttlecockPrice': shuttlePrice,
+          'courtRentalCost': courtCost,
+          'extraExpense': extraFee,
+          'overrides': [],
+          'confirmRemainingNoShows': true,
         },
       );
-      if (res.statusCode == 200 && res.data != null) {
-        final payload = res.data is Map<String, dynamic> && res.data.containsKey('result') ? res.data['result'] : res.data;
-        if (payload is Map<String, dynamic>) {
-          final entity = SessionSettlementDto.fromJson(payload).toEntity();
-          _settlementCache[sessionId] = entity;
-          return entity;
+      if (previewRes.statusCode == 200 && previewRes.data != null) {
+        final pData = previewRes.data is Map<String, dynamic> && previewRes.data.containsKey('result')
+            ? previewRes.data['result']
+            : previewRes.data;
+        final previewToken = pData is Map<String, dynamic>
+            ? (pData['previewToken'] ?? pData['PreviewToken'])
+            : null;
+        if (previewToken is String) {
+          final approveRes = await dio.post(
+            '/api/v1/sessions/$sessionId/settlement/approve',
+            data: {
+              'input': {
+                'shuttlecockUsed': shuttlecockUsed,
+                'shuttlecockPrice': shuttlePrice,
+                'courtRentalCost': courtCost,
+                'extraExpense': extraFee,
+                'overrides': [],
+                'confirmRemainingNoShows': true,
+              },
+              'previewToken': previewToken,
+            },
+          );
+          if (approveRes.statusCode == 200 && approveRes.data != null) {
+            final payload = approveRes.data is Map<String, dynamic> && approveRes.data.containsKey('result')
+                ? approveRes.data['result']
+                : approveRes.data;
+            if (payload is Map<String, dynamic>) {
+              final entity = SessionSettlementDto.fromJson(payload).toEntity();
+              _settlementCache[sessionId] = entity;
+              return entity;
+            }
+          }
         }
       }
     } catch (_) {
       // Fallback local engine calculation
     }
 
-    final current = await getSettlement(sessionId);
     final totalShuttle = shuttlecockUsed * current.shuttlecockPrice;
     final total = current.courtFee + totalShuttle + extraFee;
 
