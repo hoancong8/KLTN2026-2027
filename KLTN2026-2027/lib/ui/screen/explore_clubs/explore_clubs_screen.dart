@@ -143,7 +143,7 @@ class _ExploreClubsScreenState extends ConsumerState<ExploreClubsScreen> {
                         child: ResponsiveLayout(
                           mobile: ListView.builder(
                             physics: const AlwaysScrollableScrollPhysics(),
-                            padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
+                            padding: const EdgeInsets.fromLTRB(16, 4, 16, 120),
                             itemCount: state.clubs.length,
                             itemBuilder: (ctx, index) {
                               final club = state.clubs[index];
@@ -157,7 +157,7 @@ class _ExploreClubsScreenState extends ConsumerState<ExploreClubsScreen> {
                           ),
                           tablet: GridView.builder(
                             physics: const AlwaysScrollableScrollPhysics(),
-                            padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
+                            padding: const EdgeInsets.fromLTRB(16, 4, 16, 32),
                             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                               crossAxisCount: 2,
                               mainAxisSpacing: 16,

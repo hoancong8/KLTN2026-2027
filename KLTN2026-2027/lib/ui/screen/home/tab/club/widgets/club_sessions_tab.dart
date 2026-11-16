@@ -216,20 +216,24 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
     return Scaffold(
       backgroundColor: colors.background,
       floatingActionButton: canCreateSession
-          ? FloatingActionButton.extended(
-              backgroundColor: colors.primary,
-              foregroundColor: AppColors.white,
-              icon: const Icon(Icons.add_rounded),
-              label: Text('Tạo buổi chơi', style: AppTypography.labelLarge.bold.colored(AppColors.white)),
-              onPressed: () async {
-                final created = await context.push<bool>(
-                  AppConfig.createSessionRoutePath(widget.clubId),
-                  extra: {'clubName': widget.clubName},
-                );
-                if (created == true && context.mounted) {
-                  ref.read(clubSessionsViewModelProvider(widget.clubId).notifier).loadSessions();
-                }
-              },
+          ? Padding(
+              padding: const EdgeInsets.only(bottom: 82),
+              child: FloatingActionButton.extended(
+                backgroundColor: colors.primary,
+                foregroundColor: AppColors.white,
+                elevation: 3,
+                icon: const Icon(Icons.add_rounded),
+                label: Text('Tạo buổi chơi', style: AppTypography.labelLarge.bold.colored(AppColors.white)),
+                onPressed: () async {
+                  final created = await context.push<bool>(
+                    AppConfig.createSessionRoutePath(widget.clubId),
+                    extra: {'clubName': widget.clubName},
+                  );
+                  if (created == true && context.mounted) {
+                    ref.read(clubSessionsViewModelProvider(widget.clubId).notifier).loadSessions();
+                  }
+                },
+              ),
             )
           : null,
       body: RefreshIndicator(
@@ -238,14 +242,18 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
         child: state.sessions.isEmpty
             ? _buildEmptyState(context, canCreateSession)
             : ListView(
-                padding: const EdgeInsets.only(left: 16, right: 16, top: 12, bottom: 110),
+                padding: const EdgeInsets.only(left: 16, right: 16, top: 12, bottom: 120),
                 children: [
+                  // 0. Banner Tạo Buổi Chơi Mới nổi bật trên đầu trang (Tránh bị che khuất)
+                  if (canCreateSession)
+                    _buildCreateSessionActionBanner(context),
+
                   // 1. Buổi tập gần nhất (Đưa lên trên cùng để nhận biết lịch tiếp theo)
                   if (nearestSession != null)
                     _buildNearestSessionHero(context, nearestSession),
 
                   // 2. Lịch tháng trực quan về các ngày tập
-                  _buildMonthCalendarCard(sortedSessions, nearestSession),
+                  _buildMonthCalendarCard(sortedSessions, nearestSession, canCreateSession),
 
                   // 3. Thanh lọc trạng thái: Tất cả / Sắp tới / Đã kết thúc
                   _buildFilterChips(sortedSessions, now),
@@ -423,6 +431,76 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
               ),
           ],
         ),
+      ),
+    );
+  }
+
+  /// 0. Banner Tạo Buổi Chơi Mới đặt trên đầu danh sách (Thuận tiện thao tác, không bị che bởi dock)
+  Widget _buildCreateSessionActionBanner(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 14),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: colors.cardBackground,
+        borderRadius: AppRadius.card,
+        border: Border.all(color: colors.primary.withValues(alpha: 0.35), width: 1.2),
+        boxShadow: AppShadows.sm,
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
+              color: colors.primary.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(Icons.add_circle_outline_rounded, color: colors.primary, size: 22),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Tạo Buổi Chơi Mới',
+                  style: AppTypography.titleSmall.bold.colored(colors.textPrimary),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'Lên lịch tập, mở slot & quản lý người chơi',
+                  style: AppTypography.labelSmall.colored(colors.textMuted),
+                ),
+              ],
+            ),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: colors.primary,
+              foregroundColor: AppColors.white,
+              elevation: 0,
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              shape: const RoundedRectangleBorder(borderRadius: AppRadius.buttonPill),
+            ),
+            onPressed: () async {
+              final created = await context.push<bool>(
+                AppConfig.createSessionRoutePath(widget.clubId),
+                extra: {'clubName': widget.clubName},
+              );
+              if (created == true && context.mounted) {
+                ref.read(clubSessionsViewModelProvider(widget.clubId).notifier).loadSessions();
+              }
+            },
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.add_rounded, size: 16),
+                const SizedBox(width: 4),
+                Text('Tạo ngay', style: AppTypography.labelMedium.bold.colored(AppColors.white)),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -706,7 +784,7 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
   }
 
   /// 2. Giao diện Lịch Tháng trực quan về các ngày tập
-  Widget _buildMonthCalendarCard(List<Session> allSessions, Session? nearestSession) {
+  Widget _buildMonthCalendarCard(List<Session> allSessions, Session? nearestSession, bool canCreateSession) {
     final now = DateTime.now();
     final totalDaysInMonth = DateTime(_focusedMonth.year, _focusedMonth.month + 1, 0).day;
     final firstWeekday = DateTime(_focusedMonth.year, _focusedMonth.month, 1).weekday;
@@ -750,20 +828,21 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
                 child: const Icon(Icons.calendar_month_rounded, size: 18, color: AppColors.primary),
               ),
               const SizedBox(width: 10),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Lịch Tập Tháng ${DateFormat('MM/yyyy').format(_focusedMonth)}',
-                    style: AppTypography.titleSmall.bold.colored(colors.textPrimary),
-                  ),
-                  Text(
-                    '${sessionsInMonth.length} buổi tập dự kiến',
-                    style: AppTypography.labelSmall.colored(colors.textMuted),
-                  ),
-                ],
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Lịch Tập Tháng ${DateFormat('MM/yyyy').format(_focusedMonth)}',
+                      style: AppTypography.titleSmall.bold.colored(colors.textPrimary),
+                    ),
+                    Text(
+                      '${sessionsInMonth.length} buổi tập dự kiến',
+                      style: AppTypography.labelSmall.colored(colors.textMuted),
+                    ),
+                  ],
+                ),
               ),
-              const Spacer(),
               // Month Navigation Buttons
               IconButton(
                 icon: Icon(Icons.chevron_left_rounded, size: 22, color: colors.textPrimary),
@@ -787,6 +866,43 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
               ),
             ],
           ),
+          if (canCreateSession) ...[
+            const SizedBox(height: 10),
+            InkWell(
+              onTap: () async {
+                final created = await context.push<bool>(
+                  AppConfig.createSessionRoutePath(widget.clubId),
+                  extra: {'clubName': widget.clubName},
+                );
+                if (created == true && context.mounted) {
+                  ref.read(clubSessionsViewModelProvider(widget.clubId).notifier).loadSessions();
+                }
+              },
+              borderRadius: BorderRadius.circular(10),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: colors.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: colors.primary.withValues(alpha: 0.25)),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.add_circle_outline_rounded, size: 16, color: colors.primary),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Tạo buổi chơi mới trong tháng ${DateFormat('MM/yyyy').format(_focusedMonth)}',
+                      style: AppTypography.labelSmall.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: colors.primary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
           const SizedBox(height: 12),
 
           // Weekday Header Row
@@ -807,117 +923,120 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
           ),
           const SizedBox(height: 8),
 
-          // Calendar Days Grid (Adaptive aspect ratio for mobile & tablet/web)
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final availableWidth = constraints.maxWidth;
-              final cellWidth = (availableWidth - 36) / 7;
-              final targetHeight = availableWidth > 500 ? 44.0 : 42.0;
-              final aspectRatio = (cellWidth / targetHeight).clamp(0.9, 3.5);
+          // Calendar Days Grid (Clean Column of Rows - zero shrinkWrap bugs, exact fit)
+          Builder(
+            builder: (context) {
+              final totalCells = leadingBlanks + totalDaysInMonth;
+              final numRows = (totalCells / 7).ceil();
 
-              return GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: leadingBlanks + totalDaysInMonth,
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 7,
-                  mainAxisSpacing: 6,
-                  crossAxisSpacing: 6,
-                  childAspectRatio: aspectRatio,
-                ),
-                itemBuilder: (context, index) {
-                  if (index < leadingBlanks) {
-                    return const SizedBox.shrink();
-                  }
-
-                  final day = index - leadingBlanks + 1;
-                  final date = DateTime(_focusedMonth.year, _focusedMonth.month, day);
-                  final daySessions = sessionsByDay[day] ?? [];
-                  final hasSessions = daySessions.isNotEmpty;
-
-                  final isToday = date.year == now.year && date.month == now.month && date.day == now.day;
-                  final isSelected = _selectedDate != null &&
-                      date.year == _selectedDate!.year &&
-                      date.month == _selectedDate!.month &&
-                      date.day == _selectedDate!.day;
-                  final isNearest = nearestSession != null &&
-                      date.year == nearestSession.startTime.year &&
-                      date.month == nearestSession.startTime.month &&
-                      date.day == nearestSession.startTime.day;
-
-                  // Visual styling
-                  Color bgColor = AppColors.transparent;
-                  Color textColor = colors.textPrimary;
-                  Border? border;
-
-                  if (isSelected) {
-                    bgColor = colors.primary;
-                    textColor = AppColors.white;
-                  } else if (hasSessions) {
-                    if (isNearest) {
-                      bgColor = colors.primary.withValues(alpha: 0.18);
-                      border = Border.all(color: colors.primary, width: 1.5);
-                      textColor = colors.primary;
-                    } else {
-                      bgColor = colors.primary.withValues(alpha: 0.08);
-                      textColor = colors.primary;
-                    }
-                  } else if (isToday) {
-                    border = Border.all(color: colors.border, width: 1);
-                  }
-
-                  return InkWell(
-                    onTap: () {
-                      setState(() {
-                        if (isSelected) {
-                          _selectedDate = null;
-                        } else {
-                          _selectedDate = date;
+              return Column(
+                children: List.generate(numRows, (rowIndex) {
+                  return Padding(
+                    padding: EdgeInsets.only(bottom: rowIndex == numRows - 1 ? 0 : 6),
+                    child: Row(
+                      children: List.generate(7, (colIndex) {
+                        final index = rowIndex * 7 + colIndex;
+                        if (index < leadingBlanks || index >= totalCells) {
+                          return const Expanded(child: SizedBox(height: 42));
                         }
-                      });
-                    },
-                    borderRadius: AppRadius.borderSm,
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 180),
-                      decoration: BoxDecoration(
-                        color: bgColor,
-                        borderRadius: AppRadius.borderSm,
-                        border: border,
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            '$day',
-                            style: AppTypography.labelSmall.copyWith(
-                              fontWeight: (hasSessions || isSelected || isToday) ? FontWeight.bold : FontWeight.w500,
-                              color: textColor,
-                            ),
-                          ),
-                          if (hasSessions) ...[
-                            const SizedBox(height: 2),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 1),
-                              decoration: BoxDecoration(
-                                color: isSelected ? AppColors.white.withValues(alpha: 0.25) : colors.primary,
-                                borderRadius: BorderRadius.circular(3),
-                              ),
-                              child: Text(
-                                '${DateFormat('HH:mm').format(daySessions.first.startTime)} - ${DateFormat('HH:mm').format(daySessions.first.endTime)}',
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                  fontSize: 7.5,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.white,
+
+                        final day = index - leadingBlanks + 1;
+                        final date = DateTime(_focusedMonth.year, _focusedMonth.month, day);
+                        final daySessions = sessionsByDay[day] ?? [];
+                        final hasSessions = daySessions.isNotEmpty;
+
+                        final isToday = date.year == now.year && date.month == now.month && date.day == now.day;
+                        final isSelected = _selectedDate != null &&
+                            date.year == _selectedDate!.year &&
+                            date.month == _selectedDate!.month &&
+                            date.day == _selectedDate!.day;
+                        final isNearest = nearestSession != null &&
+                            date.year == nearestSession.startTime.year &&
+                            date.month == nearestSession.startTime.month &&
+                            date.day == nearestSession.startTime.day;
+
+                        // Visual styling
+                        Color bgColor = AppColors.transparent;
+                        Color textColor = colors.textPrimary;
+                        Border? border;
+
+                        if (isSelected) {
+                          bgColor = colors.primary;
+                          textColor = AppColors.white;
+                        } else if (hasSessions) {
+                          if (isNearest) {
+                            bgColor = colors.primary.withValues(alpha: 0.18);
+                            border = Border.all(color: colors.primary, width: 1.5);
+                            textColor = colors.primary;
+                          } else {
+                            bgColor = colors.primary.withValues(alpha: 0.08);
+                            textColor = colors.primary;
+                          }
+                        } else if (isToday) {
+                          border = Border.all(color: colors.border, width: 1);
+                        }
+
+                        return Expanded(
+                          child: Container(
+                            height: 42,
+                            margin: const EdgeInsets.symmetric(horizontal: 3),
+                            child: InkWell(
+                              onTap: () {
+                                setState(() {
+                                  if (isSelected) {
+                                    _selectedDate = null;
+                                  } else {
+                                    _selectedDate = date;
+                                  }
+                                });
+                              },
+                              borderRadius: AppRadius.borderSm,
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 180),
+                                decoration: BoxDecoration(
+                                  color: bgColor,
+                                  borderRadius: AppRadius.borderSm,
+                                  border: border,
+                                ),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      '$day',
+                                      style: AppTypography.labelSmall.copyWith(
+                                        fontWeight: (hasSessions || isSelected || isToday) ? FontWeight.bold : FontWeight.w500,
+                                        color: textColor,
+                                      ),
+                                    ),
+                                    if (hasSessions) ...[
+                                      const SizedBox(height: 2),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 1),
+                                        decoration: BoxDecoration(
+                                          color: isSelected ? AppColors.white.withValues(alpha: 0.25) : colors.primary,
+                                          borderRadius: BorderRadius.circular(3),
+                                        ),
+                                        child: Text(
+                                          '${DateFormat('HH:mm').format(daySessions.first.startTime)} - ${DateFormat('HH:mm').format(daySessions.first.endTime)}',
+                                          textAlign: TextAlign.center,
+                                          style: const TextStyle(
+                                            fontSize: 7.5,
+                                            fontWeight: FontWeight.bold,
+                                            color: AppColors.white,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ],
                                 ),
                               ),
                             ),
-                          ],
-                        ],
-                      ),
+                          ),
+                        );
+                      }),
                     ),
                   );
-                },
+                }),
               );
             },
           ),

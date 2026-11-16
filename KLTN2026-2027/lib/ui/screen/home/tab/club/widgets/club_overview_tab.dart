@@ -75,7 +75,7 @@ class _ClubOverviewTabState extends ConsumerState<ClubOverviewTab> {
       onRefresh: () => vm.loadDetail(),
       color: AppColors.primary,
       child: ListView(
-        padding: AppSpacing.allBase,
+        padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 120),
         children: [
           // 1. Invite Friends Card (Discord Style)
           Container(

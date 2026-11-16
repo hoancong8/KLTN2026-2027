@@ -37,7 +37,7 @@ class _ReportMobileState extends ConsumerState<ReportMobile> {
           AppSpacing.base,
           AppSpacing.sm,
           AppSpacing.base,
-          AppSpacing.xl,
+          120,
         ),
         children: [
           // 1. Header Title & 4 Mini Stats

@@ -31,7 +31,7 @@ class SettingsPageMobile extends ConsumerWidget {
       },
       child: ListView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 120),
         children: [
           // Thẻ hồ sơ cá nhân nổi bật ở đầu trang
           _buildUserProfileHeaderCard(context, ref),

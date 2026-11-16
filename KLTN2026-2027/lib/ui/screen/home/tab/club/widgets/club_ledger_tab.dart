@@ -36,13 +36,16 @@ class _ClubLedgerTabState extends ConsumerState<ClubLedgerTab> {
     return Scaffold(
       backgroundColor: AppColors.transparent,
       floatingActionButton: canManageFinance
-          ? FloatingActionButton.extended(
-              onPressed: () => _showCreateTransactionSheet(context, vm, currentProfile?.userName ?? 'Thủ quỹ'),
-              backgroundColor: colors.primary,
-              foregroundColor: AppColors.white,
-              elevation: 2,
-              icon: const Icon(Icons.add_card_rounded),
-              label: Text('Tạo phiếu thu/chi', style: AppTypography.labelLarge.bold.colored(AppColors.white)),
+          ? Padding(
+              padding: const EdgeInsets.only(bottom: 84),
+              child: FloatingActionButton.extended(
+                onPressed: () => _showCreateTransactionSheet(context, vm, currentProfile?.userName ?? 'Thủ quỹ'),
+                backgroundColor: colors.primary,
+                foregroundColor: AppColors.white,
+                elevation: 2,
+                icon: const Icon(Icons.add_card_rounded),
+                label: Text('Tạo phiếu thu/chi', style: AppTypography.labelLarge.bold.colored(AppColors.white)),
+              ),
             )
           : null,
       body: Center(
@@ -54,7 +57,7 @@ class _ClubLedgerTabState extends ConsumerState<ClubLedgerTab> {
                   onRefresh: () => vm.loadLedger(),
                   color: colors.primary,
                   child: ListView(
-                    padding: AppSpacing.allBase,
+                    padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 120),
                     children: [
                       _buildBalanceCard(state),
                       AppSpacing.gapH16,

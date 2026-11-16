@@ -71,7 +71,7 @@ class DashboardPage extends ConsumerWidget {
                           _buildTabletLayout(context, ref, state, vm)
                         else
                           _buildMobileLayout(context, ref, state, vm),
-                        const SizedBox(height: 96),
+                        const SizedBox(height: 120),
                       ],
                     ),
                   ),

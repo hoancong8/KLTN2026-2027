@@ -219,7 +219,7 @@ class _ClubMemberSectionState extends ConsumerState<ClubMemberSection> {
                   ),
                 )
               : ListView(
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.base, vertical: AppSpacing.xs),
+                  padding: const EdgeInsets.only(left: 16, right: 16, top: 4, bottom: 120),
                   children: [
                     if (hosts.isNotEmpty) _buildRoleGroup(context, 'CHỦ CÂU LẠC BỘ', hosts, AppColors.roleHost, currentProfile, canManageRoles: canManageRoles, canRemoveMember: canRemoveMember),
                     if (deputies.isNotEmpty) _buildRoleGroup(context, 'PHÓ NHÓM', deputies, AppColors.roleDeputy, currentProfile, canManageRoles: canManageRoles, canRemoveMember: canRemoveMember),

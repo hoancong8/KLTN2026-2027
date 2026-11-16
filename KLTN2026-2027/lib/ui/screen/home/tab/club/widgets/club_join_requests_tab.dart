@@ -160,7 +160,7 @@ class _ClubJoinRequestsTabState extends ConsumerState<ClubJoinRequestsTab> {
             color: colors.primary,
             child: ListView(
               physics: const AlwaysScrollableScrollPhysics(),
-              padding: AppSpacing.allBase,
+              padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 120),
               children: [
                 if (_selectedStatus == JoinRequestStatus.pending && filteredRequests.isNotEmpty) ...[
                   Container(

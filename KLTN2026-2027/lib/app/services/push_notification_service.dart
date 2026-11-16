@@ -135,7 +135,12 @@ class PushNotificationService {
           label: 'Xem',
           textColor: colors.primary,
           onPressed: () {
-            context.push(AppConfig.notificationsPath);
+            final sessionId = message.data['sessionId'];
+            if (sessionId != null && sessionId.toString().isNotEmpty) {
+              context.push(AppConfig.sessionDetailRoutePath(sessionId.toString()));
+            } else {
+              context.push(AppConfig.notificationsPath);
+            }
           },
         ),
       ),

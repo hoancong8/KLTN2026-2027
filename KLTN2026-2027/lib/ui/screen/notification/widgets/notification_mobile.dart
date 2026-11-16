@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import '../../../../app/consts/app_config.dart';
 import '../../../../app/provider/localization_provider.dart';
 import '../../../../app/theme/theme.dart';
 import '../notification_vm/notification_state.dart';
@@ -72,6 +74,11 @@ class NotificationMobile extends StatelessWidget {
                               onTap: () {
                                 if (!item.isRead) {
                                   vm.markAsRead(item.id);
+                                }
+                                if ((item.type.toUpperCase() == 'SESSION' || item.referenceType == 'Session') &&
+                                    item.referenceId != null &&
+                                    item.referenceId!.isNotEmpty) {
+                                  context.push(AppConfig.sessionDetailRoutePath(item.referenceId!));
                                 }
                               },
                             );
