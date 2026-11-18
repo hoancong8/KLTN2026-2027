@@ -60,4 +60,27 @@ class GuestRecruitment {
     final discount = femaleDiscount ?? 10000.0;
     return (sharedCost - discount).clamp(0.0, sharedCost);
   }
+
+  bool get isPassCourt =>
+      courtLocation.toUpperCase().contains('PASS SÂN') ||
+      courtLocation.toUpperCase().contains('[PASS') ||
+      courtLocation.toUpperCase().contains('PASS') ||
+      courtLocation.contains('(LH:') ||
+      courtLocation.contains('LH:') ||
+      clubName.toUpperCase().contains('PASS SÂN');
+
+  String get cleanCourtLocation {
+    var loc = courtLocation.replaceAll(RegExp(r'\(LH:\s*[^\)]+\)'), '').trim();
+    if (loc.toUpperCase().startsWith('[PASS SÂN]')) {
+      loc = loc.substring('[PASS SÂN]'.length).trim();
+    }
+    return loc.isEmpty ? courtLocation : loc;
+  }
+
+  double get passCourtPrice {
+    if (slotsNeeded > 1 && sharedCost > 0 && sharedCost < 30000) {
+      return (sharedCost * slotsNeeded).roundToDouble();
+    }
+    return sharedCost;
+  }
 }

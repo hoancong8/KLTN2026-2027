@@ -711,6 +711,10 @@ final cancelRecruitmentBookingUseCaseProvider = Provider<CancelRecruitmentBookin
   return CancelRecruitmentBookingUseCase(ref.watch(sessionRepositoryProvider));
 });
 
+final createCourtPassUseCaseProvider = Provider<CreateCourtPassUseCase>((ref) {
+  return CreateCourtPassUseCase(ref.watch(sessionRepositoryProvider));
+});
+
 // ============================================================================
 // NOTIFICATION PROVIDERS
 // ============================================================================

@@ -1,5 +1,6 @@
 // lib/domain/usecases/session/session_usecases.dart
 
+import '../../entities/session/create_court_pass_params.dart';
 import '../../entities/session/guest_recruitment.dart';
 import '../../entities/session/session.dart';
 import '../../entities/session/session_booking.dart';
@@ -254,4 +255,12 @@ class CancelRecruitmentBookingUseCase {
 
   Future<void> execute(String recruitmentId) =>
       repository.cancelRecruitmentBooking(recruitmentId);
+}
+
+class CreateCourtPassUseCase {
+  final SessionRepository repository;
+  CreateCourtPassUseCase(this.repository);
+
+  Future<String> execute(CreateCourtPassParams params) =>
+      repository.createCourtPass(params);
 }

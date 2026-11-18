@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import '../../../../app/provider.dart';
 import '../../../../domain/entities/club/my_club.dart';
+import '../../../../domain/entities/session/create_court_pass_params.dart';
 import '../../../../domain/entities/session/guest_recruitment.dart';
 import '../../../../domain/entities/session/my_booking_item.dart';
 import '../../../../domain/enums/session_enums.dart';
@@ -198,4 +199,31 @@ class ExploreRecruitmentsViewModel extends StateNotifier<ExploreRecruitmentsStat
       return false;
     }
   }
+
+  Future<String?> createCourtPass(CreateCourtPassParams params) async {
+    state = state.copyWith(isLoading: true, clearError: true, errorMessage: null);
+    try {
+      final createCourtPassUseCase = ref?.read(createCourtPassUseCaseProvider);
+      if (createCourtPassUseCase == null) {
+        throw AppException(message: 'Không tìm thấy dịch vụ pass sân.');
+      }
+      final sessionId = await createCourtPassUseCase.execute(params);
+      await explore();
+      state = state.copyWith(
+        isLoading: false,
+        successMessage: 'Đăng tin pass sân thành công!',
+      );
+      return sessionId;
+    } catch (e) {
+      final appException = e is AppException ? e : AppException(message: e.toString(), originalError: e);
+      state = state.copyWith(
+        isLoading: false,
+        error: appException,
+        errorMessage: appException.message ?? appException.toString(),
+      );
+      return null;
+    }
+  }
+
+  String? get lastErrorMessage => state.errorMessage;
 }

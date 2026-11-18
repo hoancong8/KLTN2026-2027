@@ -52,4 +52,25 @@ class Session {
   bool get isFull => confirmedCount >= maxPlayers;
   int get slotsRemaining => (maxPlayers - confirmedCount).clamp(0, maxPlayers);
   bool get isExpired => DateTime.now().toUtc().isAfter(deadlineBooking);
+
+  bool get isCourtPass =>
+      title.toUpperCase().contains('[PASS SÂN]') ||
+      title.toUpperCase().contains('PASS SÂN') ||
+      courtLocation.toUpperCase().contains('PASS SÂN') ||
+      courtLocation.toUpperCase().contains('[PASS');
+
+  String get cleanCourtLocation {
+    var loc = courtLocation;
+    loc = loc.replaceAll(RegExp(r'\(LH:\s*[^\)]+\)'), '').trim();
+    if (loc.toUpperCase().startsWith('[PASS SÂN]')) {
+      loc = loc.substring('[PASS SÂN]'.length).trim();
+    }
+    return loc.isEmpty ? courtLocation : loc;
+  }
+
+  String? get contactPhone {
+    final match = RegExp(r'\(LH:\s*([^\)]+)\)').firstMatch(courtLocation);
+    if (match != null) return match.group(1)?.trim();
+    return null;
+  }
 }
