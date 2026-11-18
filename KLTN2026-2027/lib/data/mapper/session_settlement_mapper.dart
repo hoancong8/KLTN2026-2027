@@ -6,6 +6,7 @@ import '../dto/session/session_settlement_dto.dart';
 extension MemberSettlementFeeDtoMapper on MemberSettlementFeeDto {
   MemberSettlementFee toEntity() {
     return MemberSettlementFee(
+      feeId: feeId,
       userId: userId,
       fullName: fullName,
       avatarUrl: avatarUrl,

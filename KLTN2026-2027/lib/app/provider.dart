@@ -1,5 +1,6 @@
 import '../domain/repositories/session_operations_repository.dart';
 import '../domain/entities/session/session_settlement.dart';
+import '../domain/entities/payment/personal_fee.dart';
 import '../data/repositories/session_operations_repository_impl.dart';
 import 'package:dio/dio.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
@@ -40,6 +41,11 @@ import '../domain/repositories/media_repository.dart';
 import '../domain/usecases/media/upload_image_usecase.dart';
 import '../domain/usecases/notification/mark_all_notifications_read_usecase.dart';
 import '../domain/usecases/notification/mark_notification_read_usecase.dart';
+import '../data/datasource/remote/abstract/payment_remote_datasource.dart';
+import '../data/datasource/remote/implement/payment_remote_datasource_impl.dart';
+import '../data/repositories/payment_repository_impl.dart';
+import '../domain/repositories/payment_repository.dart';
+import '../domain/usecases/payment/payment_usecases.dart';
 
 // User & Role imports
 import '../data/datasource/remote/abstract/role_remote_datasource.dart';
@@ -734,6 +740,43 @@ final markNotificationReadUseCaseProvider = Provider<MarkNotificationReadUseCase
 final markAllNotificationsReadUseCaseProvider = Provider<MarkAllNotificationsReadUseCase>((ref) {
   return MarkAllNotificationsReadUseCase(ref.watch(notificationRepositoryProvider));
 });
+
+// ============================================================================
+// UC17 - PERSONAL FEES AND CLUB PAYMENT BANK
+// ============================================================================
+
+final paymentRemoteDatasourceProvider = Provider<PaymentRemoteDatasource>((ref) {
+  return PaymentRemoteDatasourceImpl(ref.watch(dioProvider));
+});
+
+final paymentRepositoryProvider = Provider<PaymentRepository>((ref) {
+  return PaymentRepositoryImpl(ref.watch(paymentRemoteDatasourceProvider));
+});
+
+final getMyFeesUseCaseProvider = Provider<GetMyFeesUseCase>((ref) =>
+    GetMyFeesUseCase(ref.watch(paymentRepositoryProvider)));
+final mySessionFeeProvider = FutureProvider.autoDispose.family<PersonalFee?, String>((ref, sessionId) async {
+  final page = await ref.watch(getMyFeesUseCaseProvider).execute(
+    page: 1,
+    pageSize: 1,
+    sessionId: sessionId,
+  );
+  return page.items.where((fee) => fee.sessionId.toLowerCase() == sessionId.toLowerCase()).firstOrNull;
+});
+final getMyFeeUseCaseProvider = Provider<GetMyFeeUseCase>((ref) =>
+    GetMyFeeUseCase(ref.watch(paymentRepositoryProvider)));
+final prepareBankTransferUseCaseProvider = Provider<PrepareBankTransferUseCase>((ref) =>
+    PrepareBankTransferUseCase(ref.watch(paymentRepositoryProvider)));
+final getFeeQrImageUseCaseProvider = Provider<GetFeeQrImageUseCase>((ref) =>
+    GetFeeQrImageUseCase(ref.watch(paymentRepositoryProvider)));
+final reportFeeTransferUseCaseProvider = Provider<ReportFeeTransferUseCase>((ref) =>
+    ReportFeeTransferUseCase(ref.watch(paymentRepositoryProvider)));
+final requestCashPaymentUseCaseProvider = Provider<RequestCashPaymentUseCase>((ref) =>
+    RequestCashPaymentUseCase(ref.watch(paymentRepositoryProvider)));
+final getClubPaymentBankUseCaseProvider = Provider<GetClubPaymentBankUseCase>((ref) =>
+    GetClubPaymentBankUseCase(ref.watch(paymentRepositoryProvider)));
+final updateClubPaymentBankUseCaseProvider = Provider<UpdateClubPaymentBankUseCase>((ref) =>
+    UpdateClubPaymentBankUseCase(ref.watch(paymentRepositoryProvider)));
 
 // ============================================================================
 // FR14 - FR23: SESSION ON-COURT OPERATIONS & SETTLEMENT PROVIDERS

@@ -23,6 +23,8 @@ import '../../ui/screen/explore_clubs/explore_clubs_screen.dart';
 import '../../ui/screen/home/tab/explore/explore_recruitments_page.dart';
 import '../../ui/screen/login/register_screen.dart';
 import '../../ui/screen/notification/notification_screen.dart';
+import '../../ui/screen/payment/my_fees/fee_detail_screen.dart';
+import '../../ui/screen/payment/my_fees/my_fees_screen.dart';
 import 'app_config.dart';
 
 /// Global navigator key for accessing navigation from anywhere (e.g., Dio interceptor)
@@ -53,6 +55,16 @@ GoRouter generateAppRouter(String initialRoute) {
       GoRoute(
         path: AppConfig.notificationsPath,
         builder: (_, _) => const NotificationScreen(),
+      ),
+      GoRoute(
+        path: AppConfig.myFeesPath,
+        builder: (_, _) => const MyFeesScreen(),
+      ),
+      GoRoute(
+        path: '/my-fees/:feeId',
+        builder: (_, state) => FeeDetailScreen(
+          feeId: state.pathParameters['feeId'] ?? '',
+        ),
       ),
       GoRoute(
         path: AppConfig.profilePath,

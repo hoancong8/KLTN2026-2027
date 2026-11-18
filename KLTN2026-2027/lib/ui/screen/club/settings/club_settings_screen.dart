@@ -7,7 +7,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:kltn2026_2027/app/provider.dart';
+import 'package:kltn2026_2027/app/consts/vietqr_bank_directory.dart';
+import 'package:kltn2026_2027/app/provider/localization_provider.dart';
 import 'package:kltn2026_2027/app/theme/theme.dart';
+import 'package:kltn2026_2027/app/utils/exception_ext.dart';
+import 'package:kltn2026_2027/domain/exceptions/app_exception.dart';
 import '../../../../domain/entities/club/club_detail.dart';
 import '../../../../domain/entities/club/club_fee_rule.dart';
 import '../../../../domain/enums/club_role.dart';
@@ -47,9 +51,14 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
   late final TextEditingController _guestFemaleFeeController;
   late final TextEditingController _dynamicFemaleDiscountController;
 
-  String _bankName = 'Vietcombank';
   late final TextEditingController _bankAccountController;
   late final TextEditingController _bankHolderController;
+  VietQrBankOption? _selectedBank;
+  bool _isBankLoading = false;
+  bool _isBankSaving = false;
+  bool _bankMissing = false;
+  String? _bankError;
+  String? _bankLoadedForClub;
 
   double? _lat;
   double? _lng;
@@ -95,8 +104,8 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
       });
     }
 
-    _bankAccountController = TextEditingController(text: '1029384756');
-    _bankHolderController = TextEditingController(text: 'CLB CAU LONG CHIEN BINH');
+    _bankAccountController = TextEditingController();
+    _bankHolderController = TextEditingController();
 
     _avatarUrlController.addListener(() {
       if (mounted) setState(() {});
@@ -152,17 +161,27 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
       _feeMode = feeRule.feeMode;
       _roundRule = feeRule.roundRule;
       _monthlyFeeController.text = _formatCurrency(feeRule.monthlyFee.toInt());
-      final monthlyFemale = (feeRule.monthlyFee - feeRule.femaleDiscountMonthly).clamp(0.0, feeRule.monthlyFee).toInt();
+      final monthlyFemale = (feeRule.monthlyFee - feeRule.femaleDiscountMonthly)
+          .clamp(0.0, feeRule.monthlyFee)
+          .toInt();
       _monthlyFemaleFeeController.text = _formatCurrency(monthlyFemale);
 
-      _dailyMemberFeeController.text = _formatCurrency(feeRule.dailyMemberFee.toInt());
-      final dailyFemale = (feeRule.dailyMemberFee - feeRule.femaleDiscountDaily).clamp(0.0, feeRule.dailyMemberFee).toInt();
+      _dailyMemberFeeController.text = _formatCurrency(
+        feeRule.dailyMemberFee.toInt(),
+      );
+      final dailyFemale = (feeRule.dailyMemberFee - feeRule.femaleDiscountDaily)
+          .clamp(0.0, feeRule.dailyMemberFee)
+          .toInt();
       _dailyFemaleFeeController.text = _formatCurrency(dailyFemale);
 
       _guestFeeController.text = _formatCurrency(feeRule.guestFee.toInt());
-      final guestFemale = (feeRule.guestFee - feeRule.femaleDiscountGuest).clamp(0.0, feeRule.guestFee).toInt();
+      final guestFemale = (feeRule.guestFee - feeRule.femaleDiscountGuest)
+          .clamp(0.0, feeRule.guestFee)
+          .toInt();
       _guestFemaleFeeController.text = _formatCurrency(guestFemale);
-      final dynDisc = feeRule.femaleDiscountDaily > 0 ? feeRule.femaleDiscountDaily.toInt() : 10000;
+      final dynDisc = feeRule.femaleDiscountDaily > 0
+          ? feeRule.femaleDiscountDaily.toInt()
+          : 10000;
       _dynamicFemaleDiscountController.text = _formatCurrency(dynDisc);
     }
   }
@@ -252,7 +271,9 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
             children: [
               Text(
                 'Thay Đổi Ảnh Đại Diện CLB',
-                style: AppTypography.titleMedium.bold.colored(colors.textPrimary),
+                style: AppTypography.titleMedium.bold.colored(
+                  colors.textPrimary,
+                ),
               ),
               AppSpacing.gapH4,
               Text(
@@ -270,8 +291,16 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                   ),
                   child: Icon(Icons.camera_alt_rounded, color: colors.primary),
                 ),
-                title: Text('Chụp ảnh từ camera', style: AppTypography.labelLarge.bold.colored(colors.textPrimary)),
-                subtitle: Text('Sử dụng camera của thiết bị', style: AppTypography.bodySmall.colored(colors.textMuted)),
+                title: Text(
+                  'Chụp ảnh từ camera',
+                  style: AppTypography.labelLarge.bold.colored(
+                    colors.textPrimary,
+                  ),
+                ),
+                subtitle: Text(
+                  'Sử dụng camera của thiết bị',
+                  style: AppTypography.bodySmall.colored(colors.textMuted),
+                ),
                 onTap: () {
                   Navigator.of(ctx).pop();
                   _pickAndUploadAvatar(ImageSource.camera);
@@ -285,10 +314,21 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                     color: colors.primaryContainer,
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(Icons.photo_library_rounded, color: colors.primary),
+                  child: Icon(
+                    Icons.photo_library_rounded,
+                    color: colors.primary,
+                  ),
                 ),
-                title: Text('Chọn ảnh từ thư viện', style: AppTypography.labelLarge.bold.colored(colors.textPrimary)),
-                subtitle: Text('Tải ảnh có sẵn từ thiết bị', style: AppTypography.bodySmall.colored(colors.textMuted)),
+                title: Text(
+                  'Chọn ảnh từ thư viện',
+                  style: AppTypography.labelLarge.bold.colored(
+                    colors.textPrimary,
+                  ),
+                ),
+                subtitle: Text(
+                  'Tải ảnh có sẵn từ thiết bị',
+                  style: AppTypography.bodySmall.colored(colors.textMuted),
+                ),
                 onTap: () {
                   Navigator.of(ctx).pop();
                   _pickAndUploadAvatar(ImageSource.gallery);
@@ -324,7 +364,9 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Không thể lấy tọa độ GPS. Vui lòng kiểm tra quyền vị trí.'),
+          content: const Text(
+            'Không thể lấy tọa độ GPS. Vui lòng kiểm tra quyền vị trí.',
+          ),
           backgroundColor: colors.error,
           behavior: SnackBarBehavior.floating,
         ),
@@ -348,10 +390,18 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
       if (canManageInfo) {
         await vm.updateInfo(
           groupName: _nameController.text.trim(),
-          description: _descController.text.trim().isNotEmpty ? _descController.text.trim() : null,
-          avatarUrl: _avatarUrlController.text.trim().isNotEmpty ? _avatarUrlController.text.trim() : null,
-          fixedVenueName: _venueController.text.trim().isNotEmpty ? _venueController.text.trim() : null,
-          fixedAddress: _addressController.text.trim().isNotEmpty ? _addressController.text.trim() : null,
+          description: _descController.text.trim().isNotEmpty
+              ? _descController.text.trim()
+              : null,
+          avatarUrl: _avatarUrlController.text.trim().isNotEmpty
+              ? _avatarUrlController.text.trim()
+              : null,
+          fixedVenueName: _venueController.text.trim().isNotEmpty
+              ? _venueController.text.trim()
+              : null,
+          fixedAddress: _addressController.text.trim().isNotEmpty
+              ? _addressController.text.trim()
+              : null,
           lat: _lat,
           lng: _lng,
           minSkillLevel: _minLevel,
@@ -375,17 +425,63 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
 
       if (canManageFee) {
         final feeModeInt = _feeMode == 'DYNAMIC' ? 1 : 2;
-        final monthlyFee = (int.tryParse(_monthlyFeeController.text.replaceAll('.', '').trim()) ?? 0).toDouble();
-        final monthlyFemaleFee = (int.tryParse(_monthlyFemaleFeeController.text.replaceAll('.', '').trim()) ?? 0).toDouble();
-        final dailyMemberFee = (int.tryParse(_dailyMemberFeeController.text.replaceAll('.', '').trim()) ?? 0).toDouble();
-        final dailyFemaleFee = (int.tryParse(_dailyFemaleFeeController.text.replaceAll('.', '').trim()) ?? 0).toDouble();
-        final guestFee = (int.tryParse(_guestFeeController.text.replaceAll('.', '').trim()) ?? 0).toDouble();
-        final guestFemaleFee = (int.tryParse(_guestFemaleFeeController.text.replaceAll('.', '').trim()) ?? 0).toDouble();
+        final monthlyFee =
+            (int.tryParse(
+                      _monthlyFeeController.text.replaceAll('.', '').trim(),
+                    ) ??
+                    0)
+                .toDouble();
+        final monthlyFemaleFee =
+            (int.tryParse(
+                      _monthlyFemaleFeeController.text
+                          .replaceAll('.', '')
+                          .trim(),
+                    ) ??
+                    0)
+                .toDouble();
+        final dailyMemberFee =
+            (int.tryParse(
+                      _dailyMemberFeeController.text.replaceAll('.', '').trim(),
+                    ) ??
+                    0)
+                .toDouble();
+        final dailyFemaleFee =
+            (int.tryParse(
+                      _dailyFemaleFeeController.text.replaceAll('.', '').trim(),
+                    ) ??
+                    0)
+                .toDouble();
+        final guestFee =
+            (int.tryParse(
+                      _guestFeeController.text.replaceAll('.', '').trim(),
+                    ) ??
+                    0)
+                .toDouble();
+        final guestFemaleFee =
+            (int.tryParse(
+                      _guestFemaleFeeController.text.replaceAll('.', '').trim(),
+                    ) ??
+                    0)
+                .toDouble();
 
-        final dynDisc = (int.tryParse(_dynamicFemaleDiscountController.text.replaceAll('.', '').trim()) ?? 10000).toDouble();
-        final femaleDiscountMonthly = (monthlyFee - monthlyFemaleFee).clamp(0.0, monthlyFee);
-        final femaleDiscountDaily = _feeMode == 'DYNAMIC' ? dynDisc : (dailyMemberFee - dailyFemaleFee).clamp(0.0, dailyMemberFee);
-        final femaleDiscountGuest = _feeMode == 'DYNAMIC' ? dynDisc : (guestFee - guestFemaleFee).clamp(0.0, guestFee);
+        final dynDisc =
+            (int.tryParse(
+                      _dynamicFemaleDiscountController.text
+                          .replaceAll('.', '')
+                          .trim(),
+                    ) ??
+                    10000)
+                .toDouble();
+        final femaleDiscountMonthly = (monthlyFee - monthlyFemaleFee).clamp(
+          0.0,
+          monthlyFee,
+        );
+        final femaleDiscountDaily = _feeMode == 'DYNAMIC'
+            ? dynDisc
+            : (dailyMemberFee - dailyFemaleFee).clamp(0.0, dailyMemberFee);
+        final femaleDiscountGuest = _feeMode == 'DYNAMIC'
+            ? dynDisc
+            : (guestFee - guestFemaleFee).clamp(0.0, guestFee);
 
         await vm.updateFeeRule(
           feeMode: feeModeInt,
@@ -424,6 +520,183 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
     }
   }
 
+  Future<void> _loadPaymentBank() async {
+    if (_isBankLoading || _bankLoadedForClub == widget.clubId) return;
+    _bankLoadedForClub = widget.clubId;
+    setState(() {
+      _isBankLoading = true;
+      _bankError = null;
+    });
+    try {
+      final account = await ref
+          .read(getClubPaymentBankUseCaseProvider)
+          .execute(widget.clubId);
+      if (!mounted) return;
+      setState(() {
+        _bankMissing = account == null;
+        _selectedBank = _findVietQrBank(account?.bankBin, account?.bankName);
+        _bankAccountController.text = account?.accountNumber ?? '';
+        _bankHolderController.text = account?.accountHolder ?? '';
+        _isBankLoading = false;
+      });
+    } on AppException catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isBankLoading = false;
+        _bankError = e.getDisplayMessage(context.l10n);
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isBankLoading = false;
+        _bankError = e.toString();
+      });
+    }
+  }
+
+  VietQrBankOption? _findVietQrBank(String? bankBin, String? bankName) {
+    final normalizedBin = bankBin?.trim();
+    if (normalizedBin != null && normalizedBin.isNotEmpty) {
+      for (final bank in vietQrBankDirectory) {
+        if (bank.bin == normalizedBin) return bank;
+      }
+    }
+
+    final normalizedName = bankName?.trim().toLowerCase();
+    if (normalizedName == null || normalizedName.isEmpty) return null;
+    for (final bank in vietQrBankDirectory) {
+      if (bank.name.toLowerCase() == normalizedName) return bank;
+    }
+    return null;
+  }
+
+  Widget _buildBankOptionTile(
+    VietQrBankOption bank,
+    AppThemeColors colors, {
+    required bool selected,
+  }) {
+    final foreground = bank.transferSupported
+        ? colors.textPrimary
+        : colors.textDisabled;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      child: Row(
+        children: [
+          Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: colors.primary.withValues(alpha: 0.12),
+              borderRadius: AppRadius.borderSm,
+            ),
+            child: Icon(
+              Icons.account_balance_rounded,
+              size: 18,
+              color: bank.transferSupported
+                  ? colors.primary
+                  : colors.textDisabled,
+            ),
+          ),
+          AppSpacing.gapW8,
+          Expanded(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  bank.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTypography.labelMedium.bold.colored(foreground),
+                ),
+              ],
+            ),
+          ),
+          if (!bank.transferSupported)
+            Tooltip(
+              message: context.l10n.payment_bank_transfer_unsupported,
+              child: Icon(
+                Icons.block_rounded,
+                size: 18,
+                color: colors.textDisabled,
+              ),
+            )
+          else if (selected)
+            Icon(Icons.check_circle_rounded, size: 19, color: colors.primary),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _savePaymentBank() async {
+    if (_isBankSaving) return;
+    final l10n = context.l10n;
+    final bank = _selectedBank;
+    final accountNumber = _bankAccountController.text.trim();
+    final accountHolder = _bankHolderController.text.trim();
+    if (bank == null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.payment_required)));
+      return;
+    }
+    final validationMessage = !bank.transferSupported
+        ? l10n.payment_bank_transfer_unsupported
+        : !RegExp(r'^\d{1,19}$').hasMatch(accountNumber)
+        ? l10n.payment_bank_invalid_account
+        : accountHolder.isEmpty || accountHolder.length > 255
+        ? l10n.payment_required
+        : null;
+    if (validationMessage != null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(validationMessage)));
+      return;
+    }
+    setState(() => _isBankSaving = true);
+    try {
+      final account = await ref
+          .read(updateClubPaymentBankUseCaseProvider)
+          .execute(
+            clubId: widget.clubId,
+            bankBin: bank.bin,
+            bankName: bank.name,
+            accountNumber: accountNumber,
+            accountHolder: accountHolder,
+          );
+      if (!mounted) return;
+      setState(() {
+        _bankMissing = false;
+        _selectedBank = _findVietQrBank(account.bankBin, account.bankName);
+        _bankAccountController.text = account.accountNumber;
+        _bankHolderController.text = account.accountHolder;
+        _bankError = null;
+        _isBankSaving = false;
+      });
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(context.l10n.payment_bank_saved)));
+    } on AppException catch (e) {
+      if (!mounted) return;
+      setState(() => _isBankSaving = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.getDisplayMessage(context.l10n))),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isBankSaving = false);
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.toString())));
+    }
+  }
+
+  Future<void> _retryLoadPaymentBank() async {
+    _bankLoadedForClub = null;
+    await _loadPaymentBank();
+  }
+
   void _showLockClubDialog(ClubDetailViewModel vm) {
     showDialog(
       context: context,
@@ -434,7 +707,10 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
           children: [
             Icon(Icons.warning_amber_rounded, color: colors.warning, size: 24),
             AppSpacing.gapW8,
-            Text('Tạm Dừng / Khóa Nhóm', style: AppTypography.titleMedium.bold.colored(colors.textPrimary)),
+            Text(
+              'Tạm Dừng / Khóa Nhóm',
+              style: AppTypography.titleMedium.bold.colored(colors.textPrimary),
+            ),
           ],
         ),
         content: Text(
@@ -444,7 +720,10 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: Text('Hủy', style: AppTypography.labelLarge.colored(colors.textMuted)),
+            child: Text(
+              'Hủy',
+              style: AppTypography.labelLarge.colored(colors.textMuted),
+            ),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
@@ -454,7 +733,12 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
             onPressed: () async {
               Navigator.of(ctx).pop();
               setState(() => _isRecruiting = false);
-              await _saveAllChanges(vm, canManageInfo: true, canManageSchedule: false, canManageFee: false);
+              await _saveAllChanges(
+                vm,
+                canManageInfo: true,
+                canManageSchedule: false,
+                canManageFee: false,
+              );
             },
             child: const Text('Xác nhận khóa'),
           ),
@@ -473,7 +757,10 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
           children: [
             Icon(Icons.exit_to_app_rounded, color: colors.error, size: 24),
             AppSpacing.gapW8,
-            Text('Rời Câu Lạc Bộ', style: AppTypography.titleMedium.bold.colored(colors.textPrimary)),
+            Text(
+              'Rời Câu Lạc Bộ',
+              style: AppTypography.titleMedium.bold.colored(colors.textPrimary),
+            ),
           ],
         ),
         content: Text(
@@ -483,7 +770,10 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: Text('Hủy', style: AppTypography.labelLarge.colored(colors.textMuted)),
+            child: Text(
+              'Hủy',
+              style: AppTypography.labelLarge.colored(colors.textMuted),
+            ),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
@@ -507,7 +797,9 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: const Text('Chủ nhóm (Host) không thể tự rời khi chưa chuyển giao quyền.'),
+                      content: const Text(
+                        'Chủ nhóm (Host) không thể tự rời khi chưa chuyển giao quyền.',
+                      ),
                       backgroundColor: colors.error,
                     ),
                   );
@@ -527,7 +819,9 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
       child: Column(
         children: [
           GestureDetector(
-            onTap: (canEdit && !_isUploadingAvatar) ? _showImageSourcePicker : null,
+            onTap: (canEdit && !_isUploadingAvatar)
+                ? _showImageSourcePicker
+                : null,
             child: Stack(
               children: [
                 Container(
@@ -536,7 +830,10 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: colors.primary.withValues(alpha: 0.1),
-                    border: Border.all(color: colors.primary.withValues(alpha: 0.35), width: 2),
+                    border: Border.all(
+                      color: colors.primary.withValues(alpha: 0.35),
+                      width: 2,
+                    ),
                   ),
                   child: ClipOval(
                     child: _isUploadingAvatar
@@ -544,7 +841,10 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                             child: SizedBox(
                               width: 24,
                               height: 24,
-                              child: CircularProgressIndicator(strokeWidth: 2.5, color: colors.primary),
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2.5,
+                                color: colors.primary,
+                              ),
                             ),
                           )
                         : (avatarUrl.isNotEmpty
@@ -573,9 +873,16 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                       decoration: BoxDecoration(
                         color: colors.primary,
                         shape: BoxShape.circle,
-                        border: Border.all(color: colors.cardBackground, width: 2),
+                        border: Border.all(
+                          color: colors.cardBackground,
+                          width: 2,
+                        ),
                       ),
-                      child: const Icon(Icons.camera_alt_rounded, size: 14, color: AppColors.white),
+                      child: const Icon(
+                        Icons.camera_alt_rounded,
+                        size: 14,
+                        color: AppColors.white,
+                      ),
                     ),
                   ),
               ],
@@ -584,8 +891,12 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
           AppSpacing.gapH8,
           Text(
             canEdit
-                ? (avatarUrl.isNotEmpty ? 'Nhấn để thay đổi ảnh đại diện' : 'Nhấn để tải ảnh đại diện CLB')
-                : (avatarUrl.isNotEmpty ? 'Ảnh đại diện câu lạc bộ' : 'Chưa có ảnh đại diện'),
+                ? (avatarUrl.isNotEmpty
+                      ? 'Nhấn để thay đổi ảnh đại diện'
+                      : 'Nhấn để tải ảnh đại diện CLB')
+                : (avatarUrl.isNotEmpty
+                      ? 'Ảnh đại diện câu lạc bộ'
+                      : 'Chưa có ảnh đại diện'),
             style: AppTypography.labelSmall.colored(colors.textMuted),
           ),
           if (canEdit) ...[
@@ -594,14 +905,22 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
               style: OutlinedButton.styleFrom(
                 foregroundColor: colors.primary,
                 side: BorderSide(color: colors.primary.withValues(alpha: 0.4)),
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 8,
+                ),
+                shape: const RoundedRectangleBorder(
+                  borderRadius: AppRadius.button,
+                ),
               ),
               icon: _isUploadingAvatar
                   ? SizedBox(
                       width: 14,
                       height: 14,
-                      child: CircularProgressIndicator(strokeWidth: 2, color: colors.primary),
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: colors.primary,
+                      ),
                     )
                   : const Icon(Icons.cloud_upload_outlined, size: 16),
               label: Text(
@@ -638,10 +957,16 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                 isExpanded: true,
                 decoration: InputDecoration(
                   labelText: 'Tối thiểu',
-                  labelStyle: AppTypography.labelSmall.colored(colors.textMuted),
+                  labelStyle: AppTypography.labelSmall.colored(
+                    colors.textMuted,
+                  ),
                   filled: true,
                   fillColor: colors.inputFill,
-                  prefixIcon: Icon(Icons.trending_up_rounded, size: 18, color: colors.primary),
+                  prefixIcon: Icon(
+                    Icons.trending_up_rounded,
+                    size: 18,
+                    color: colors.primary,
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: AppRadius.borderMd,
                     borderSide: BorderSide(color: colors.inputBorder),
@@ -652,12 +977,16 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                     value: lvl,
                     child: Text(
                       '${lvl.code} - ${lvl.displayName}',
-                      style: AppTypography.bodySmall.colored(colors.textPrimary),
+                      style: AppTypography.bodySmall.colored(
+                        colors.textPrimary,
+                      ),
                       overflow: TextOverflow.ellipsis,
                     ),
                   );
                 }).toList(),
-                onChanged: enabled ? (val) => setState(() => _minLevel = val) : null,
+                onChanged: enabled
+                    ? (val) => setState(() => _minLevel = val)
+                    : null,
               ),
             ),
             AppSpacing.gapW12,
@@ -667,10 +996,16 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                 isExpanded: true,
                 decoration: InputDecoration(
                   labelText: 'Tối đa',
-                  labelStyle: AppTypography.labelSmall.colored(colors.textMuted),
+                  labelStyle: AppTypography.labelSmall.colored(
+                    colors.textMuted,
+                  ),
                   filled: true,
                   fillColor: colors.inputFill,
-                  prefixIcon: Icon(Icons.military_tech_outlined, size: 18, color: colors.primary),
+                  prefixIcon: Icon(
+                    Icons.military_tech_outlined,
+                    size: 18,
+                    color: colors.primary,
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: AppRadius.borderMd,
                     borderSide: BorderSide(color: colors.inputBorder),
@@ -681,12 +1016,16 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                     value: lvl,
                     child: Text(
                       '${lvl.code} - ${lvl.displayName}',
-                      style: AppTypography.bodySmall.colored(colors.textPrimary),
+                      style: AppTypography.bodySmall.colored(
+                        colors.textPrimary,
+                      ),
                       overflow: TextOverflow.ellipsis,
                     ),
                   );
                 }).toList(),
-                onChanged: enabled ? (val) => setState(() => _maxLevel = val) : null,
+                onChanged: enabled
+                    ? (val) => setState(() => _maxLevel = val)
+                    : null,
               ),
             ),
           ],
@@ -708,15 +1047,39 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
     final currentProfile = ref.watch(currentUserProfileProvider);
     final activeContext = ref.watch(activeClubContextProvider);
     final isSameClub = activeContext?.clubId == widget.clubId;
-    final isHostOwner = club != null && currentProfile != null && club.host.userId == currentProfile.id;
-    final isHost = isHostOwner || (club?.currentUserStatus.isHost ?? false) || (isSameClub && activeContext?.role == ClubRole.host);
-    final canManageInfo = isHost || (isSameClub && ref.hasClubPermission('MEMBER.INFO.UPDATE'));
-    final canManageSchedule = isHost || (isSameClub && ref.hasClubPermission('OPERATIONS.SCHEDULE.MANAGE'));
-    final canManageRoles = isHost || (isSameClub && ref.hasClubPermission('MEMBER.ROLE.MANAGE'));
-    final canManageFee = isHost || (isSameClub && ref.hasClubPermission('FINANCE.BANK.MANAGE'));
+    final isHostOwner =
+        club != null &&
+        currentProfile != null &&
+        club.host.userId == currentProfile.id;
+    final isHost =
+        isHostOwner ||
+        (club?.currentUserStatus.isHost ?? false) ||
+        (isSameClub && activeContext?.role == ClubRole.host);
+    final canManageInfo =
+        isHost || (isSameClub && ref.hasClubPermission('MEMBER.INFO.UPDATE'));
+    final canManageSchedule =
+        isHost ||
+        (isSameClub && ref.hasClubPermission('OPERATIONS.SCHEDULE.MANAGE'));
+    final canManageRoles =
+        isHost || (isSameClub && ref.hasClubPermission('MEMBER.ROLE.MANAGE'));
+    final canManageFee =
+        isHost || (isSameClub && ref.hasClubPermission('FINANCE.BANK.MANAGE'));
     final canSave = canManageInfo || canManageSchedule || canManageFee;
 
-    if (club != null && !isHost && !canManageInfo && !canManageSchedule && !canManageRoles && !canManageFee) {
+    if (canManageFee &&
+        _bankLoadedForClub != widget.clubId &&
+        !_isBankLoading) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _loadPaymentBank();
+      });
+    }
+
+    if (club != null &&
+        !isHost &&
+        !canManageInfo &&
+        !canManageSchedule &&
+        !canManageRoles &&
+        !canManageFee) {
       return Scaffold(
         backgroundColor: colors.background,
         appBar: AppBar(
@@ -738,7 +1101,9 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                 const SizedBox(height: 16),
                 Text(
                   'Không Có Quyền Chỉnh Sửa',
-                  style: AppTypography.titleMedium.bold.colored(colors.textPrimary),
+                  style: AppTypography.titleMedium.bold.colored(
+                    colors.textPrimary,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 Text(
@@ -754,7 +1119,9 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: colors.primary,
                     foregroundColor: AppColors.white,
-                    shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: AppRadius.button,
+                    ),
                   ),
                 ),
               ],
@@ -785,11 +1152,23 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                 child: IconButton(
                   tooltip: 'Lưu thay đổi',
                   icon: _isSaving
-                      ? SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: colors.primary))
+                      ? SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: colors.primary,
+                          ),
+                        )
                       : Icon(Icons.done_all_rounded, color: colors.primary),
                   onPressed: _isSaving
                       ? null
-                      : () => _saveAllChanges(vm, canManageInfo: canManageInfo, canManageSchedule: canManageSchedule, canManageFee: canManageFee),
+                      : () => _saveAllChanges(
+                          vm,
+                          canManageInfo: canManageInfo,
+                          canManageSchedule: canManageSchedule,
+                          canManageFee: canManageFee,
+                        ),
                 ),
               ),
           ],
@@ -802,18 +1181,33 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
             labelStyle: AppTypography.labelMedium.bold,
             unselectedLabelStyle: AppTypography.labelMedium,
             tabs: [
-              const Tab(icon: Icon(Icons.info_outline_rounded, size: 18), text: 'Thông Tin'),
-              const Tab(icon: Icon(Icons.place_outlined, size: 18), text: 'Sân & Lịch'),
-              const Tab(icon: Icon(Icons.account_balance_wallet_outlined, size: 18), text: 'Biểu Phí & Ngân Hàng'),
+              const Tab(
+                icon: Icon(Icons.info_outline_rounded, size: 18),
+                text: 'Thông Tin',
+              ),
+              const Tab(
+                icon: Icon(Icons.place_outlined, size: 18),
+                text: 'Sân & Lịch',
+              ),
+              const Tab(
+                icon: Icon(Icons.account_balance_wallet_outlined, size: 18),
+                text: 'Biểu Phí & Ngân Hàng',
+              ),
               if (hasRolePermission)
-                const Tab(icon: Icon(Icons.shield_outlined, size: 18), text: 'Phân Quyền'),
+                const Tab(
+                  icon: Icon(Icons.shield_outlined, size: 18),
+                  text: 'Phân Quyền',
+                ),
             ],
           ),
         ),
       bottomNavigationBar: (club != null && canSave)
           ? SafeArea(
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
                 decoration: BoxDecoration(
                   color: colors.surface,
                   border: Border(top: BorderSide(color: colors.cardBorder)),
@@ -836,23 +1230,37 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                           backgroundColor: colors.primary,
                           foregroundColor: AppColors.white,
                           padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                            shape: const RoundedRectangleBorder(
+                              borderRadius: AppRadius.button,
+                            ),
                           elevation: 0,
                         ),
                         icon: _isSaving
                             ? const SizedBox(
                                 width: 18,
                                 height: 18,
-                                child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.white),
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: AppColors.white,
+                                  ),
                               )
                             : const Icon(Icons.check_rounded, size: 20),
                         label: Text(
-                          _isSaving ? 'Đang lưu thay đổi...' : 'Lưu Thay Đổi Cài Đặt',
-                          style: AppTypography.bodyMedium.bold.colored(AppColors.white),
+                            _isSaving
+                                ? 'Đang lưu thay đổi...'
+                                : 'Lưu Thay Đổi Cài Đặt',
+                            style: AppTypography.bodyMedium.bold.colored(
+                              AppColors.white,
+                            ),
                         ),
                         onPressed: _isSaving
                             ? null
-                            : () => _saveAllChanges(vm, canManageInfo: canManageInfo, canManageSchedule: canManageSchedule, canManageFee: canManageFee),
+                              : () => _saveAllChanges(
+                                  vm,
+                                  canManageInfo: canManageInfo,
+                                  canManageSchedule: canManageSchedule,
+                                  canManageFee: canManageFee,
+                                ),
                       ),
                     ),
                   ),
@@ -868,7 +1276,10 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                 children: [
                   // Tab 1: Thông tin chung
                   SingleChildScrollView(
-                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.base, vertical: AppSpacing.md),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.base,
+                        vertical: AppSpacing.md,
+                      ),
                     child: Align(
                       alignment: Alignment.topCenter,
                       child: ConstrainedBox(
@@ -883,7 +1294,11 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                           children: [
                             _buildAvatarPreview(canManageInfo),
                             AppSpacing.gapH16,
-                            Text('Tên Câu Lạc Bộ *', style: AppTypography.labelMedium.bold.colored(colors.textPrimary)),
+                                  Text(
+                                    'Tên Câu Lạc Bộ *',
+                                    style: AppTypography.labelMedium.bold
+                                        .colored(colors.textPrimary),
+                                  ),
                             AppSpacing.gapH8,
                             TextFormField(
                               controller: _nameController,
@@ -892,19 +1307,29 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                                 hintText: 'Nhập tên câu lạc bộ',
                                 filled: true,
                                 fillColor: colors.inputFill,
-                                prefixIcon: Icon(Icons.groups_rounded, color: colors.primary),
+                                      prefixIcon: Icon(
+                                        Icons.groups_rounded,
+                                        color: colors.primary,
+                                      ),
                                 border: OutlineInputBorder(
                                   borderRadius: AppRadius.borderMd,
-                                  borderSide: BorderSide(color: colors.inputBorder),
+                                        borderSide: BorderSide(
+                                          color: colors.inputBorder,
+                                        ),
                                 ),
                               ),
                               validator: (v) {
-                                if (v == null || v.trim().isEmpty) return 'Tên câu lạc bộ không được để trống';
+                                      if (v == null || v.trim().isEmpty)
+                                        return 'Tên câu lạc bộ không được để trống';
                                 return null;
                               },
                             ),
                             AppSpacing.gapH16,
-                            Text('Đường dẫn ảnh đại diện (Avatar URL)', style: AppTypography.labelMedium.bold.colored(colors.textPrimary)),
+                                  Text(
+                                    'Đường dẫn ảnh đại diện (Avatar URL)',
+                                    style: AppTypography.labelMedium.bold
+                                        .colored(colors.textPrimary),
+                                  ),
                             AppSpacing.gapH8,
                             TextFormField(
                               controller: _avatarUrlController,
@@ -913,27 +1338,39 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                                 hintText: 'https://...',
                                 filled: true,
                                 fillColor: colors.inputFill,
-                                prefixIcon: Icon(Icons.link_rounded, color: colors.primary),
+                                      prefixIcon: Icon(
+                                        Icons.link_rounded,
+                                        color: colors.primary,
+                                      ),
                                 border: OutlineInputBorder(
                                   borderRadius: AppRadius.borderMd,
-                                  borderSide: BorderSide(color: colors.inputBorder),
+                                        borderSide: BorderSide(
+                                          color: colors.inputBorder,
+                                        ),
                                 ),
                               ),
                             ),
                             AppSpacing.gapH16,
-                            Text('Mô tả câu lạc bộ', style: AppTypography.labelMedium.bold.colored(colors.textPrimary)),
+                                  Text(
+                                    'Mô tả câu lạc bộ',
+                                    style: AppTypography.labelMedium.bold
+                                        .colored(colors.textPrimary),
+                                  ),
                             AppSpacing.gapH8,
                             TextFormField(
                               controller: _descController,
                               enabled: canManageInfo,
                               maxLines: 3,
                               decoration: InputDecoration(
-                                hintText: 'Giới thiệu về hoạt động và tiêu chí của câu lạc bộ',
+                                      hintText:
+                                          'Giới thiệu về hoạt động và tiêu chí của câu lạc bộ',
                                 filled: true,
                                 fillColor: colors.inputFill,
                                 border: OutlineInputBorder(
                                   borderRadius: AppRadius.borderMd,
-                                  borderSide: BorderSide(color: colors.inputBorder),
+                                        borderSide: BorderSide(
+                                          color: colors.inputBorder,
+                                        ),
                                 ),
                               ),
                             ),
@@ -944,23 +1381,34 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                               color: colors.surfaceSubtle,
                               shape: RoundedRectangleBorder(
                                 borderRadius: AppRadius.borderMd,
-                                side: BorderSide(color: colors.cardBorder),
+                                      side: BorderSide(
+                                        color: colors.cardBorder,
+                                      ),
                               ),
                               child: Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 14,
+                                        vertical: 6,
+                                      ),
                                 child: SwitchListTile(
                                   contentPadding: EdgeInsets.zero,
                                   activeThumbColor: colors.primary,
                                   title: Text(
                                     'Mở tuyển thành viên mới',
-                                    style: AppTypography.titleSmall.bold.colored(colors.textPrimary),
+                                          style: AppTypography.titleSmall.bold
+                                              .colored(colors.textPrimary),
                                   ),
                                   subtitle: Text(
                                     'Cho phép người chơi khác tìm thấy và nộp đơn gia nhập CLB',
-                                    style: AppTypography.bodySmall.colored(colors.textMuted),
+                                          style: AppTypography.bodySmall
+                                              .colored(colors.textMuted),
                                   ),
                                   value: _isRecruiting,
-                                  onChanged: canManageInfo ? (val) => setState(() => _isRecruiting = val) : null,
+                                        onChanged: canManageInfo
+                                            ? (val) => setState(
+                                                () => _isRecruiting = val,
+                                              )
+                                            : null,
                                 ),
                               ),
                             ),
@@ -975,10 +1423,17 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                               style: OutlinedButton.styleFrom(
                                 foregroundColor: colors.warning,
                                 side: BorderSide(color: colors.warning),
-                                padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-                                shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: AppSpacing.md,
+                                      ),
+                                      shape: const RoundedRectangleBorder(
+                                        borderRadius: AppRadius.button,
+                                      ),
+                                    ),
+                                    icon: const Icon(
+                                      Icons.pause_circle_outline_rounded,
+                                      size: 18,
                               ),
-                              icon: const Icon(Icons.pause_circle_outline_rounded, size: 18),
                               label: const Text('Tạm dừng hoạt động CLB'),
                               onPressed: () => _showLockClubDialog(vm),
                             ),
@@ -992,10 +1447,17 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                               style: OutlinedButton.styleFrom(
                                 foregroundColor: colors.error,
                                 side: BorderSide(color: colors.error),
-                                padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-                                shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: AppSpacing.md,
+                                      ),
+                                      shape: const RoundedRectangleBorder(
+                                        borderRadius: AppRadius.button,
+                                      ),
+                                    ),
+                                    icon: const Icon(
+                                      Icons.exit_to_app_rounded,
+                                      size: 18,
                               ),
-                              icon: const Icon(Icons.exit_to_app_rounded, size: 18),
                               label: const Text('Rời câu lạc bộ'),
                               onPressed: _showLeaveClubDialog,
                             ),
@@ -1011,7 +1473,10 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
 
                   // Tab 2: Sân & Lịch sinh hoạt
                   SingleChildScrollView(
-                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.base, vertical: AppSpacing.md),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.base,
+                        vertical: AppSpacing.md,
+                      ),
                     child: Align(
                       alignment: Alignment.topCenter,
                       child: ConstrainedBox(
@@ -1024,36 +1489,56 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                           title: 'Sân Sinh Hoạt & Vị Trí',
                           icon: Icons.place_outlined,
                           children: [
-                            Text('Tên Sân Cố Định', style: AppTypography.labelMedium.bold.colored(colors.textPrimary)),
+                                  Text(
+                                    'Tên Sân Cố Định',
+                                    style: AppTypography.labelMedium.bold
+                                        .colored(colors.textPrimary),
+                                  ),
                             AppSpacing.gapH8,
                             TextFormField(
                               controller: _venueController,
                               enabled: canManageInfo,
                               decoration: InputDecoration(
-                                hintText: 'Ví dụ: Sân Cầu Lông Kỳ Hòa Q10',
+                                      hintText:
+                                          'Ví dụ: Sân Cầu Lông Kỳ Hòa Q10',
                                 filled: true,
                                 fillColor: colors.inputFill,
-                                prefixIcon: Icon(Icons.sports_tennis_rounded, color: colors.primary),
+                                      prefixIcon: Icon(
+                                        Icons.sports_tennis_rounded,
+                                        color: colors.primary,
+                                      ),
                                 border: OutlineInputBorder(
                                   borderRadius: AppRadius.borderMd,
-                                  borderSide: BorderSide(color: colors.inputBorder),
+                                        borderSide: BorderSide(
+                                          color: colors.inputBorder,
+                                        ),
                                 ),
                               ),
                             ),
                             AppSpacing.gapH16,
-                            Text('Địa Chỉ Cụ Thể', style: AppTypography.labelMedium.bold.colored(colors.textPrimary)),
+                                  Text(
+                                    'Địa Chỉ Cụ Thể',
+                                    style: AppTypography.labelMedium.bold
+                                        .colored(colors.textPrimary),
+                                  ),
                             AppSpacing.gapH8,
                             TextFormField(
                               controller: _addressController,
                               enabled: canManageInfo,
                               decoration: InputDecoration(
-                                hintText: 'Ví dụ: 238 Ba Tháng Hai, P.12, Q.10',
+                                      hintText:
+                                          'Ví dụ: 238 Ba Tháng Hai, P.12, Q.10',
                                 filled: true,
                                 fillColor: colors.inputFill,
-                                prefixIcon: Icon(Icons.location_on_outlined, color: colors.primary),
+                                      prefixIcon: Icon(
+                                        Icons.location_on_outlined,
+                                        color: colors.primary,
+                                      ),
                                 border: OutlineInputBorder(
                                   borderRadius: AppRadius.borderMd,
-                                  borderSide: BorderSide(color: colors.inputBorder),
+                                        borderSide: BorderSide(
+                                          color: colors.inputBorder,
+                                        ),
                                 ),
                               ),
                             ),
@@ -1063,35 +1548,59 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                               decoration: BoxDecoration(
                                 color: colors.surfaceSubtle,
                                 borderRadius: AppRadius.borderMd,
-                                border: Border.all(color: colors.cardBorder),
+                                      border: Border.all(
+                                        color: colors.cardBorder,
+                                      ),
                               ),
                               child: Row(
                                 children: [
                                   Container(
                                     padding: const EdgeInsets.all(8),
                                     decoration: BoxDecoration(
-                                      color: (_lat != null ? colors.success : colors.textMuted).withValues(alpha: 0.15),
+                                            color:
+                                                (_lat != null
+                                                        ? colors.success
+                                                        : colors.textMuted)
+                                                    .withValues(alpha: 0.15),
                                       borderRadius: AppRadius.borderSm,
                                     ),
                                     child: Icon(
-                                      _lat != null ? Icons.gps_fixed_rounded : Icons.gps_not_fixed_rounded,
-                                      color: _lat != null ? colors.success : colors.textMuted,
+                                            _lat != null
+                                                ? Icons.gps_fixed_rounded
+                                                : Icons.gps_not_fixed_rounded,
+                                            color: _lat != null
+                                                ? colors.success
+                                                : colors.textMuted,
                                       size: 20,
                                     ),
                                   ),
                                   AppSpacing.gapW12,
                                   Expanded(
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
                                       children: [
-                                        Text('Tọa độ vị trí GPS', style: AppTypography.labelMedium.bold.colored(colors.textPrimary)),
+                                              Text(
+                                                'Tọa độ vị trí GPS',
+                                                style: AppTypography
+                                                    .labelMedium
+                                                    .bold
+                                                    .colored(
+                                                      colors.textPrimary,
+                                                    ),
+                                              ),
                                         AppSpacing.gapH4,
                                         Text(
                                           _lat != null
                                               ? '${_lat!.toStringAsFixed(4)}, ${_lng!.toStringAsFixed(4)}'
                                               : 'Chưa có tọa độ',
-                                          style: AppTypography.bodySmall.semiBold.colored(
-                                            _lat != null ? colors.primary : colors.textMuted,
+                                                style: AppTypography
+                                                    .bodySmall
+                                                    .semiBold
+                                                    .colored(
+                                                      _lat != null
+                                                          ? colors.primary
+                                                          : colors.textMuted,
                                           ),
                                         ),
                                       ],
@@ -1101,19 +1610,39 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                                     style: OutlinedButton.styleFrom(
                                       foregroundColor: colors.primary,
                                       minimumSize: const Size(0, 36),
-                                      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
-                                      side: BorderSide(color: colors.primary.withValues(alpha: 0.4)),
-                                      shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: AppSpacing.md,
+                                              vertical: AppSpacing.sm,
+                                            ),
+                                            side: BorderSide(
+                                              color: colors.primary.withValues(
+                                                alpha: 0.4,
+                                              ),
+                                            ),
+                                            shape: const RoundedRectangleBorder(
+                                              borderRadius: AppRadius.button,
+                                            ),
                                     ),
                                     icon: _isGettingLocation
                                         ? SizedBox(
                                             width: 14,
                                             height: 14,
-                                            child: CircularProgressIndicator(strokeWidth: 2, color: colors.primary),
+                                                  child:
+                                                      CircularProgressIndicator(
+                                                        strokeWidth: 2,
+                                                        color: colors.primary,
+                                                      ),
                                           )
-                                        : const Icon(Icons.my_location_rounded, size: 16),
+                                              : const Icon(
+                                                  Icons.my_location_rounded,
+                                                  size: 16,
+                                                ),
                                     label: const Text('Cập nhật GPS'),
-                                    onPressed: (_isGettingLocation || !canManageInfo) ? null : _getCurrentLocation,
+                                          onPressed:
+                                              (_isGettingLocation ||
+                                                  !canManageInfo)
+                                              ? null
+                                              : _getCurrentLocation,
                                   ),
                                 ],
                               ),
@@ -1121,7 +1650,6 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                           ],
                         ),
                         AppSpacing.gapH16,
-
 
                             AppSpacing.gapH16,
                         // Section 3: Lịch sinh hoạt định kỳ
@@ -1146,7 +1674,6 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                         ),
                         AppSpacing.gapH16,
 
-
                             AppSpacing.gapH32,
                           ],
                         ),
@@ -1156,7 +1683,10 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
 
                   // Tab 3: Biểu phí & Ngân hàng
                   SingleChildScrollView(
-                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.base, vertical: AppSpacing.md),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.base,
+                        vertical: AppSpacing.md,
+                      ),
                     child: Align(
                       alignment: Alignment.topCenter,
                       child: ConstrainedBox(
@@ -1171,38 +1701,57 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                           children: [
                             Text(
                               '1. Cách tính tiền & Làm tròn tiền lẻ',
-                              style: AppTypography.labelMedium.bold.colored(colors.textPrimary),
+                                    style: AppTypography.labelMedium.bold
+                                        .colored(colors.textPrimary),
                             ),
                             AppSpacing.gapH8,
                             Row(
                               children: [
                                 Expanded(
                                   child: ChoiceChip(
-                                    label: const Center(child: Text('Chia Thực Tế')),
+                                          label: const Center(
+                                            child: Text('Chia Thực Tế'),
+                                          ),
                                     selected: _feeMode == 'DYNAMIC',
                                     selectedColor: colors.primary,
-                                    labelStyle: AppTypography.bodySmall.copyWith(
-                                      color: _feeMode == 'DYNAMIC' ? AppColors.white : colors.textPrimary,
+                                          labelStyle: AppTypography.bodySmall
+                                              .copyWith(
+                                                color: _feeMode == 'DYNAMIC'
+                                                    ? AppColors.white
+                                                    : colors.textPrimary,
                                       fontWeight: FontWeight.bold,
                                     ),
                                     backgroundColor: colors.surfaceSubtle,
-                                    shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
-                                    onSelected: (_) => setState(() => _feeMode = 'DYNAMIC'),
+                                          shape: const RoundedRectangleBorder(
+                                            borderRadius: AppRadius.button,
+                                          ),
+                                          onSelected: (_) => setState(
+                                            () => _feeMode = 'DYNAMIC',
+                                          ),
                                   ),
                                 ),
                                 AppSpacing.gapW8,
                                 Expanded(
                                   child: ChoiceChip(
-                                    label: const Center(child: Text('Định Mức Cố Định')),
+                                          label: const Center(
+                                            child: Text('Định Mức Cố Định'),
+                                          ),
                                     selected: _feeMode == 'FIXED',
                                     selectedColor: colors.primary,
-                                    labelStyle: AppTypography.bodySmall.copyWith(
-                                      color: _feeMode == 'FIXED' ? AppColors.white : colors.textPrimary,
+                                          labelStyle: AppTypography.bodySmall
+                                              .copyWith(
+                                                color: _feeMode == 'FIXED'
+                                                    ? AppColors.white
+                                                    : colors.textPrimary,
                                       fontWeight: FontWeight.bold,
                                     ),
                                     backgroundColor: colors.surfaceSubtle,
-                                    shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
-                                    onSelected: (_) => setState(() => _feeMode = 'FIXED'),
+                                          shape: const RoundedRectangleBorder(
+                                            borderRadius: AppRadius.button,
+                                          ),
+                                          onSelected: (_) => setState(
+                                            () => _feeMode = 'FIXED',
+                                          ),
                                   ),
                                 ),
                               ],
@@ -1212,33 +1761,46 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                               _feeMode == 'DYNAMIC'
                                   ? 'Tổng tiền sân + (Số quả cầu bóc mới × Đơn giá) + Phụ phí chia cho người tham gia.'
                                   : 'Thu theo đơn giá buổi cố định đã thiết lập cho từng nhóm đối tượng.',
-                              style: AppTypography.labelSmall.colored(colors.textMuted),
+                                    style: AppTypography.labelSmall.colored(
+                                      colors.textMuted,
+                                    ),
                             ),
                             AppSpacing.gapH12,
                             Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                               children: [
                                 Text(
                                   'Làm tròn hóa đơn thanh toán:',
-                                  style: AppTypography.labelSmall.bold.colored(colors.textSecondary),
+                                        style: AppTypography.labelSmall.bold
+                                            .colored(colors.textSecondary),
                                 ),
                                 AppSpacing.gapH8,
                                 Wrap(
                                   spacing: 6,
                                   runSpacing: 6,
-                                  children: [1000, 2000, 5000].map((rule) {
+                                        children: [1000, 2000, 5000].map((
+                                          rule,
+                                        ) {
                                     final isSelected = _roundRule == rule;
                                     return ChoiceChip(
                                       label: Text('${rule ~/ 1000}.000đ'),
                                       selected: isSelected,
                                       selectedColor: colors.primary,
-                                      visualDensity: VisualDensity.compact,
-                                      labelStyle: AppTypography.labelSmall.copyWith(
-                                        color: isSelected ? AppColors.white : colors.textPrimary,
+                                            visualDensity:
+                                                VisualDensity.compact,
+                                            labelStyle: AppTypography.labelSmall
+                                                .copyWith(
+                                                  color: isSelected
+                                                      ? AppColors.white
+                                                      : colors.textPrimary,
                                         fontWeight: FontWeight.bold,
                                       ),
-                                      backgroundColor: colors.surfaceSubtle,
-                                      onSelected: (_) => setState(() => _roundRule = rule),
+                                            backgroundColor:
+                                                colors.surfaceSubtle,
+                                            onSelected: (_) => setState(
+                                              () => _roundRule = rule,
+                                            ),
                                     );
                                   }).toList(),
                                 ),
@@ -1252,7 +1814,8 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                               _feeMode == 'DYNAMIC'
                                   ? '2. Ưu đãi giới tính khi chia tiền thực tế'
                                   : '2. Biểu phí theo 3 nhóm đối tượng & Ưu đãi giới tính',
-                              style: AppTypography.labelMedium.bold.colored(colors.textPrimary),
+                                    style: AppTypography.labelMedium.bold
+                                        .colored(colors.textPrimary),
                             ),
                             AppSpacing.gapH12,
 
@@ -1262,19 +1825,31 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                                 decoration: BoxDecoration(
                                   color: colors.surfaceSubtle,
                                   borderRadius: AppRadius.borderMd,
-                                  border: Border.all(color: colors.cardBorder),
+                                        border: Border.all(
+                                          color: colors.cardBorder,
+                                        ),
                                 ),
                                 child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                   children: [
                                     Row(
                                       children: [
-                                        const Icon(Icons.female_rounded, color: AppColors.pink, size: 20),
+                                              const Icon(
+                                                Icons.female_rounded,
+                                                color: AppColors.pink,
+                                                size: 20,
+                                              ),
                                         AppSpacing.gapW8,
                                         Expanded(
                                           child: Text(
                                             'Ưu đãi giảm giá cho Nữ',
-                                            style: AppTypography.labelMedium.bold.colored(colors.textPrimary),
+                                                  style: AppTypography
+                                                      .labelMedium
+                                                      .bold
+                                                      .colored(
+                                                        colors.textPrimary,
+                                                      ),
                                           ),
                                         ),
                                       ],
@@ -1282,26 +1857,40 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                                     AppSpacing.gapH4,
                                     Text(
                                       'Khi quyết toán chia đều chi phí (sân + cầu + phụ phí), hệ thống sẽ trừ trực tiếp số tiền này vào phần đóng của người chơi Nữ.',
-                                      style: AppTypography.labelSmall.colored(colors.textMuted),
+                                            style: AppTypography.labelSmall
+                                                .colored(colors.textMuted),
                                     ),
                                     AppSpacing.gapH12,
-                                    Text('Mức giảm trừ cho Nữ mỗi buổi (VNĐ)',
-                                        style: AppTypography.labelSmall.bold.colored(colors.textSecondary)),
+                                          Text(
+                                            'Mức giảm trừ cho Nữ mỗi buổi (VNĐ)',
+                                            style: AppTypography.labelSmall.bold
+                                                .colored(colors.textSecondary),
+                                          ),
                                     AppSpacing.gapH4,
                                     TextFormField(
-                                      controller: _dynamicFemaleDiscountController,
+                                            controller:
+                                                _dynamicFemaleDiscountController,
                                       keyboardType: TextInputType.number,
-                                      inputFormatters: const [CurrencyThousandsFormatter()],
-                                      style: AppTypography.bodyMedium.colored(colors.textPrimary),
+                                            inputFormatters: const [
+                                              CurrencyThousandsFormatter(),
+                                            ],
+                                            style: AppTypography.bodyMedium
+                                                .colored(colors.textPrimary),
                                       decoration: InputDecoration(
                                         suffixText: 'đ/buổi',
                                         filled: true,
                                         fillColor: colors.inputFill,
                                         border: OutlineInputBorder(
                                           borderRadius: AppRadius.input,
-                                          borderSide: BorderSide(color: colors.inputBorder),
+                                                borderSide: BorderSide(
+                                                  color: colors.inputBorder,
+                                                ),
+                                              ),
+                                              contentPadding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 10,
+                                                    vertical: 8,
                                         ),
-                                        contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                                       ),
                                     ),
                                   ],
@@ -1313,24 +1902,40 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                               decoration: BoxDecoration(
                                 color: colors.surfaceSubtle,
                                 borderRadius: AppRadius.borderMd,
-                                border: Border.all(color: colors.cardBorder),
+                                        border: Border.all(
+                                          color: colors.cardBorder,
+                                        ),
                               ),
                               child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                 children: [
                                   Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
                                     children: [
                                       Expanded(
                                         child: Row(
                                           children: [
-                                            Icon(Icons.calendar_month_rounded, size: 17, color: colors.success),
+                                                    Icon(
+                                                      Icons
+                                                          .calendar_month_rounded,
+                                                      size: 17,
+                                                      color: colors.success,
+                                                    ),
                                             AppSpacing.gapW8,
                                             Flexible(
                                               child: Text(
                                                 'Hội viên Cố định (Gói Tháng)',
-                                                style: AppTypography.labelMedium.bold.colored(colors.textPrimary),
-                                                overflow: TextOverflow.ellipsis,
+                                                        style: AppTypography
+                                                            .labelMedium
+                                                            .bold
+                                                            .colored(
+                                                              colors
+                                                                  .textPrimary,
+                                                            ),
+                                                        overflow: TextOverflow
+                                                            .ellipsis,
                                               ),
                                             ),
                                           ],
@@ -1338,14 +1943,22 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                                       ),
                                       AppSpacing.gapW8,
                                       Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      horizontal: 8,
+                                                      vertical: 2.5,
+                                                    ),
                                         decoration: BoxDecoration(
-                                          color: colors.success.withValues(alpha: 0.14),
+                                                  color: colors.success
+                                                      .withValues(alpha: 0.14),
                                           borderRadius: AppRadius.tag,
                                         ),
                                         child: Text(
                                           '0đ / buổi chơi',
-                                          style: AppTypography.labelSmall.bold.colored(colors.success),
+                                                  style: AppTypography
+                                                      .labelSmall
+                                                      .bold
+                                                      .colored(colors.success),
                                         ),
                                       ),
                                     ],
@@ -1353,28 +1966,59 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                                   AppSpacing.gapH4,
                                   Text(
                                     'Đóng quỹ đầu tháng, miễn phí tiền sân & cầu trong các buổi sinh hoạt định kỳ.',
-                                    style: AppTypography.labelSmall.colored(colors.textMuted),
+                                            style: AppTypography.labelSmall
+                                                .colored(colors.textMuted),
                                   ),
                                   AppSpacing.gapH12,
                                   Row(
                                     children: [
                                       Expanded(
                                         child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
                                           children: [
-                                            Text('Quỹ tháng chuẩn (Nam)', style: AppTypography.labelSmall.bold.colored(colors.textSecondary)),
+                                                    Text(
+                                                      'Quỹ tháng chuẩn (Nam)',
+                                                      style: AppTypography
+                                                          .labelSmall
+                                                          .bold
+                                                          .colored(
+                                                            colors
+                                                                .textSecondary,
+                                                          ),
+                                                    ),
                                             AppSpacing.gapH4,
                                             TextFormField(
-                                              controller: _monthlyFeeController,
-                                              keyboardType: TextInputType.number,
-                                              inputFormatters: const [CurrencyThousandsFormatter()],
-                                              style: AppTypography.bodyMedium.colored(colors.textPrimary),
+                                                      controller:
+                                                          _monthlyFeeController,
+                                                      keyboardType:
+                                                          TextInputType.number,
+                                                      inputFormatters: const [
+                                                        CurrencyThousandsFormatter(),
+                                                      ],
+                                                      style: AppTypography
+                                                          .bodyMedium
+                                                          .colored(
+                                                            colors.textPrimary,
+                                                          ),
                                               decoration: InputDecoration(
                                                 suffixText: 'đ/tháng',
                                                 filled: true,
-                                                fillColor: colors.inputFill,
-                                                border: OutlineInputBorder(borderRadius: AppRadius.input, borderSide: BorderSide(color: colors.inputBorder)),
-                                                contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                                        fillColor:
+                                                            colors.inputFill,
+                                                        border: OutlineInputBorder(
+                                                          borderRadius:
+                                                              AppRadius.input,
+                                                          borderSide: BorderSide(
+                                                            color: colors
+                                                                .inputBorder,
+                                                          ),
+                                                        ),
+                                                        contentPadding:
+                                                            const EdgeInsets.symmetric(
+                                                              horizontal: 10,
+                                                              vertical: 8,
+                                                            ),
                                               ),
                                             ),
                                           ],
@@ -1383,21 +2027,51 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                                       AppSpacing.gapW12,
                                       Expanded(
                                         child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
                                           children: [
-                                            Text('Quỹ tháng (Nữ)', style: AppTypography.labelSmall.bold.colored(colors.textSecondary)),
+                                                    Text(
+                                                      'Quỹ tháng (Nữ)',
+                                                      style: AppTypography
+                                                          .labelSmall
+                                                          .bold
+                                                          .colored(
+                                                            colors
+                                                                .textSecondary,
+                                                          ),
+                                                    ),
                                             AppSpacing.gapH4,
                                             TextFormField(
-                                              controller: _monthlyFemaleFeeController,
-                                              keyboardType: TextInputType.number,
-                                              inputFormatters: const [CurrencyThousandsFormatter()],
-                                              style: AppTypography.bodyMedium.colored(colors.textPrimary),
+                                                      controller:
+                                                          _monthlyFemaleFeeController,
+                                                      keyboardType:
+                                                          TextInputType.number,
+                                                      inputFormatters: const [
+                                                        CurrencyThousandsFormatter(),
+                                                      ],
+                                                      style: AppTypography
+                                                          .bodyMedium
+                                                          .colored(
+                                                            colors.textPrimary,
+                                                          ),
                                               decoration: InputDecoration(
                                                 suffixText: 'đ/tháng',
                                                 filled: true,
-                                                fillColor: colors.inputFill,
-                                                border: OutlineInputBorder(borderRadius: AppRadius.input, borderSide: BorderSide(color: colors.inputBorder)),
-                                                contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                                        fillColor:
+                                                            colors.inputFill,
+                                                        border: OutlineInputBorder(
+                                                          borderRadius:
+                                                              AppRadius.input,
+                                                          borderSide: BorderSide(
+                                                            color: colors
+                                                                .inputBorder,
+                                                          ),
+                                                        ),
+                                                        contentPadding:
+                                                            const EdgeInsets.symmetric(
+                                                              horizontal: 10,
+                                                              vertical: 8,
+                                                            ),
                                               ),
                                             ),
                                           ],
@@ -1407,25 +2081,73 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                                   ),
                                   Builder(
                                     builder: (context) {
-                                      final monthlyMale = int.tryParse(_monthlyFeeController.text.replaceAll('.', '').trim()) ?? 0;
-                                      final monthlyFemale = int.tryParse(_monthlyFemaleFeeController.text.replaceAll('.', '').trim()) ?? 0;
-                                      final monthlyDisc = (monthlyMale - monthlyFemale).clamp(0, 999999999);
+                                              final monthlyMale =
+                                                  int.tryParse(
+                                                    _monthlyFeeController.text
+                                                        .replaceAll('.', '')
+                                                        .trim(),
+                                                  ) ??
+                                                  0;
+                                              final monthlyFemale =
+                                                  int.tryParse(
+                                                    _monthlyFemaleFeeController
+                                                        .text
+                                                        .replaceAll('.', '')
+                                                        .trim(),
+                                                  ) ??
+                                                  0;
+                                              final monthlyDisc =
+                                                  (monthlyMale - monthlyFemale)
+                                                      .clamp(0, 999999999);
                                       return Padding(
-                                        padding: const EdgeInsets.only(top: 8),
+                                                padding: const EdgeInsets.only(
+                                                  top: 8,
+                                                ),
                                         child: Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                                  padding:
+                                                      const EdgeInsets.symmetric(
+                                                        horizontal: 10,
+                                                        vertical: 5,
+                                                      ),
                                           decoration: BoxDecoration(
-                                            color: colors.success.withValues(alpha: 0.1),
+                                                    color: colors.success
+                                                        .withValues(alpha: 0.1),
                                             borderRadius: AppRadius.tag,
-                                            border: Border.all(color: colors.success.withValues(alpha: 0.25)),
+                                                    border: Border.all(
+                                                      color: colors.success
+                                                          .withValues(
+                                                            alpha: 0.25,
+                                                          ),
+                                                    ),
                                           ),
                                           child: Row(
-                                            mainAxisSize: MainAxisSize.min,
+                                                    mainAxisSize:
+                                                        MainAxisSize.min,
                                             children: [
-                                              Icon(Icons.female_rounded, size: 15, color: colors.success),
+                                                      Icon(
+                                                        Icons.female_rounded,
+                                                        size: 15,
+                                                        color: colors.success,
+                                                      ),
                                               AppSpacing.gapW4,
-                                              Text('Ưu đãi tự động giảm trừ cho Nữ: ', style: AppTypography.labelSmall.colored(colors.textSecondary)),
-                                              Text('- ${_formatCurrency(monthlyDisc)} đ/tháng', style: AppTypography.labelSmall.bold.colored(colors.success)),
+                                                      Text(
+                                                        'Ưu đãi tự động giảm trừ cho Nữ: ',
+                                                        style: AppTypography
+                                                            .labelSmall
+                                                            .colored(
+                                                              colors
+                                                                  .textSecondary,
+                                                            ),
+                                                      ),
+                                                      Text(
+                                                        '- ${_formatCurrency(monthlyDisc)} đ/tháng',
+                                                        style: AppTypography
+                                                            .labelSmall
+                                                            .bold
+                                                            .colored(
+                                                              colors.success,
+                                                            ),
+                                                      ),
                                             ],
                                           ),
                                         ),
@@ -1443,24 +2165,40 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                               decoration: BoxDecoration(
                                 color: colors.surfaceSubtle,
                                 borderRadius: AppRadius.borderMd,
-                                border: Border.all(color: colors.cardBorder),
+                                        border: Border.all(
+                                          color: colors.cardBorder,
+                                        ),
                               ),
                               child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                 children: [
                                   Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
                                     children: [
                                       Expanded(
                                         child: Row(
                                           children: [
-                                            Icon(Icons.sports_tennis_rounded, size: 17, color: colors.primary),
+                                                    Icon(
+                                                      Icons
+                                                          .sports_tennis_rounded,
+                                                      size: 17,
+                                                      color: colors.primary,
+                                                    ),
                                             AppSpacing.gapW8,
                                             Flexible(
                                               child: Text(
                                                 'Hội viên Đóng theo buổi',
-                                                style: AppTypography.labelMedium.bold.colored(colors.textPrimary),
-                                                overflow: TextOverflow.ellipsis,
+                                                        style: AppTypography
+                                                            .labelMedium
+                                                            .bold
+                                                            .colored(
+                                                              colors
+                                                                  .textPrimary,
+                                                            ),
+                                                        overflow: TextOverflow
+                                                            .ellipsis,
                                               ),
                                             ),
                                           ],
@@ -1468,14 +2206,22 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                                       ),
                                       AppSpacing.gapW8,
                                       Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      horizontal: 8,
+                                                      vertical: 2.5,
+                                                    ),
                                         decoration: BoxDecoration(
-                                          color: colors.primary.withValues(alpha: 0.14),
+                                                  color: colors.primary
+                                                      .withValues(alpha: 0.14),
                                           borderRadius: AppRadius.tag,
                                         ),
                                         child: Text(
                                           'Đi buổi nào tính buổi đó',
-                                          style: AppTypography.labelSmall.bold.colored(colors.primary),
+                                                  style: AppTypography
+                                                      .labelSmall
+                                                      .bold
+                                                      .colored(colors.primary),
                                         ),
                                       ),
                                     ],
@@ -1485,21 +2231,51 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                                     children: [
                                       Expanded(
                                         child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
                                           children: [
-                                            Text('Phí buổi chuẩn (Nam)', style: AppTypography.labelSmall.bold.colored(colors.textSecondary)),
+                                                    Text(
+                                                      'Phí buổi chuẩn (Nam)',
+                                                      style: AppTypography
+                                                          .labelSmall
+                                                          .bold
+                                                          .colored(
+                                                            colors
+                                                                .textSecondary,
+                                                          ),
+                                                    ),
                                             AppSpacing.gapH4,
                                             TextFormField(
-                                              controller: _dailyMemberFeeController,
-                                              keyboardType: TextInputType.number,
-                                              inputFormatters: const [CurrencyThousandsFormatter()],
-                                              style: AppTypography.bodyMedium.colored(colors.textPrimary),
+                                                      controller:
+                                                          _dailyMemberFeeController,
+                                                      keyboardType:
+                                                          TextInputType.number,
+                                                      inputFormatters: const [
+                                                        CurrencyThousandsFormatter(),
+                                                      ],
+                                                      style: AppTypography
+                                                          .bodyMedium
+                                                          .colored(
+                                                            colors.textPrimary,
+                                                          ),
                                               decoration: InputDecoration(
                                                 suffixText: 'đ/buổi',
                                                 filled: true,
-                                                fillColor: colors.inputFill,
-                                                border: OutlineInputBorder(borderRadius: AppRadius.input, borderSide: BorderSide(color: colors.inputBorder)),
-                                                contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                                        fillColor:
+                                                            colors.inputFill,
+                                                        border: OutlineInputBorder(
+                                                          borderRadius:
+                                                              AppRadius.input,
+                                                          borderSide: BorderSide(
+                                                            color: colors
+                                                                .inputBorder,
+                                                          ),
+                                                        ),
+                                                        contentPadding:
+                                                            const EdgeInsets.symmetric(
+                                                              horizontal: 10,
+                                                              vertical: 8,
+                                                            ),
                                               ),
                                             ),
                                           ],
@@ -1508,21 +2284,51 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                                       AppSpacing.gapW12,
                                       Expanded(
                                         child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
                                           children: [
-                                            Text('Phí buổi (Nữ)', style: AppTypography.labelSmall.bold.colored(colors.textSecondary)),
+                                                    Text(
+                                                      'Phí buổi (Nữ)',
+                                                      style: AppTypography
+                                                          .labelSmall
+                                                          .bold
+                                                          .colored(
+                                                            colors
+                                                                .textSecondary,
+                                                          ),
+                                                    ),
                                             AppSpacing.gapH4,
                                             TextFormField(
-                                              controller: _dailyFemaleFeeController,
-                                              keyboardType: TextInputType.number,
-                                              inputFormatters: const [CurrencyThousandsFormatter()],
-                                              style: AppTypography.bodyMedium.colored(colors.textPrimary),
+                                                      controller:
+                                                          _dailyFemaleFeeController,
+                                                      keyboardType:
+                                                          TextInputType.number,
+                                                      inputFormatters: const [
+                                                        CurrencyThousandsFormatter(),
+                                                      ],
+                                                      style: AppTypography
+                                                          .bodyMedium
+                                                          .colored(
+                                                            colors.textPrimary,
+                                                          ),
                                               decoration: InputDecoration(
                                                 suffixText: 'đ/buổi',
                                                 filled: true,
-                                                fillColor: colors.inputFill,
-                                                border: OutlineInputBorder(borderRadius: AppRadius.input, borderSide: BorderSide(color: colors.inputBorder)),
-                                                contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                                        fillColor:
+                                                            colors.inputFill,
+                                                        border: OutlineInputBorder(
+                                                          borderRadius:
+                                                              AppRadius.input,
+                                                          borderSide: BorderSide(
+                                                            color: colors
+                                                                .inputBorder,
+                                                          ),
+                                                        ),
+                                                        contentPadding:
+                                                            const EdgeInsets.symmetric(
+                                                              horizontal: 10,
+                                                              vertical: 8,
+                                                            ),
                                               ),
                                             ),
                                           ],
@@ -1532,25 +2338,74 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                                   ),
                                   Builder(
                                     builder: (context) {
-                                      final dailyMale = int.tryParse(_dailyMemberFeeController.text.replaceAll('.', '').trim()) ?? 0;
-                                      final dailyFemale = int.tryParse(_dailyFemaleFeeController.text.replaceAll('.', '').trim()) ?? 0;
-                                      final dailyDisc = (dailyMale - dailyFemale).clamp(0, 999999999);
+                                              final dailyMale =
+                                                  int.tryParse(
+                                                    _dailyMemberFeeController
+                                                        .text
+                                                        .replaceAll('.', '')
+                                                        .trim(),
+                                                  ) ??
+                                                  0;
+                                              final dailyFemale =
+                                                  int.tryParse(
+                                                    _dailyFemaleFeeController
+                                                        .text
+                                                        .replaceAll('.', '')
+                                                        .trim(),
+                                                  ) ??
+                                                  0;
+                                              final dailyDisc =
+                                                  (dailyMale - dailyFemale)
+                                                      .clamp(0, 999999999);
                                       return Padding(
-                                        padding: const EdgeInsets.only(top: 8),
+                                                padding: const EdgeInsets.only(
+                                                  top: 8,
+                                                ),
                                         child: Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                                  padding:
+                                                      const EdgeInsets.symmetric(
+                                                        horizontal: 10,
+                                                        vertical: 5,
+                                                      ),
                                           decoration: BoxDecoration(
-                                            color: colors.primary.withValues(alpha: 0.1),
+                                                    color: colors.primary
+                                                        .withValues(alpha: 0.1),
                                             borderRadius: AppRadius.tag,
-                                            border: Border.all(color: colors.primary.withValues(alpha: 0.25)),
+                                                    border: Border.all(
+                                                      color: colors.primary
+                                                          .withValues(
+                                                            alpha: 0.25,
+                                                          ),
+                                                    ),
                                           ),
                                           child: Row(
-                                            mainAxisSize: MainAxisSize.min,
+                                                    mainAxisSize:
+                                                        MainAxisSize.min,
                                             children: [
-                                              Icon(Icons.female_rounded, size: 15, color: colors.primary),
+                                                      Icon(
+                                                        Icons.female_rounded,
+                                                        size: 15,
+                                                        color: colors.primary,
+                                                      ),
                                               AppSpacing.gapW4,
-                                              Text('Ưu đãi tự động giảm trừ cho Nữ: ', style: AppTypography.labelSmall.colored(colors.textSecondary)),
-                                              Text('- ${_formatCurrency(dailyDisc)} đ/buổi', style: AppTypography.labelSmall.bold.colored(colors.primary)),
+                                                      Text(
+                                                        'Ưu đãi tự động giảm trừ cho Nữ: ',
+                                                        style: AppTypography
+                                                            .labelSmall
+                                                            .colored(
+                                                              colors
+                                                                  .textSecondary,
+                                                            ),
+                                                      ),
+                                                      Text(
+                                                        '- ${_formatCurrency(dailyDisc)} đ/buổi',
+                                                        style: AppTypography
+                                                            .labelSmall
+                                                            .bold
+                                                            .colored(
+                                                              colors.primary,
+                                                            ),
+                                                      ),
                                             ],
                                           ),
                                         ),
@@ -1568,24 +2423,40 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                               decoration: BoxDecoration(
                                 color: colors.surfaceSubtle,
                                 borderRadius: AppRadius.borderMd,
-                                border: Border.all(color: colors.cardBorder),
+                                        border: Border.all(
+                                          color: colors.cardBorder,
+                                        ),
                               ),
                               child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                 children: [
                                   Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
                                     children: [
                                       Expanded(
                                         child: Row(
                                           children: [
-                                            Icon(Icons.person_pin_circle_outlined, size: 18, color: colors.warning),
+                                                    Icon(
+                                                      Icons
+                                                          .person_pin_circle_outlined,
+                                                      size: 18,
+                                                      color: colors.warning,
+                                                    ),
                                             AppSpacing.gapW8,
                                             Flexible(
                                               child: Text(
                                                 'Khách giao lưu',
-                                                style: AppTypography.labelMedium.bold.colored(colors.textPrimary),
-                                                overflow: TextOverflow.ellipsis,
+                                                        style: AppTypography
+                                                            .labelMedium
+                                                            .bold
+                                                            .colored(
+                                                              colors
+                                                                  .textPrimary,
+                                                            ),
+                                                        overflow: TextOverflow
+                                                            .ellipsis,
                                               ),
                                             ),
                                           ],
@@ -1593,14 +2464,22 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                                       ),
                                       AppSpacing.gapW8,
                                       Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      horizontal: 8,
+                                                      vertical: 2.5,
+                                                    ),
                                         decoration: BoxDecoration(
-                                          color: colors.warning.withValues(alpha: 0.15),
+                                                  color: colors.warning
+                                                      .withValues(alpha: 0.15),
                                           borderRadius: AppRadius.tag,
                                         ),
                                         child: Text(
                                           'Phí giao lưu',
-                                          style: AppTypography.labelSmall.bold.colored(colors.warning),
+                                                  style: AppTypography
+                                                      .labelSmall
+                                                      .bold
+                                                      .colored(colors.warning),
                                         ),
                                       ),
                                     ],
@@ -1610,21 +2489,51 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                                     children: [
                                       Expanded(
                                         child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
                                           children: [
-                                            Text('Phí vãng lai chuẩn (Nam)', style: AppTypography.labelSmall.bold.colored(colors.textSecondary)),
+                                                    Text(
+                                                      'Phí vãng lai chuẩn (Nam)',
+                                                      style: AppTypography
+                                                          .labelSmall
+                                                          .bold
+                                                          .colored(
+                                                            colors
+                                                                .textSecondary,
+                                                          ),
+                                                    ),
                                             AppSpacing.gapH4,
                                             TextFormField(
-                                              controller: _guestFeeController,
-                                              keyboardType: TextInputType.number,
-                                              inputFormatters: const [CurrencyThousandsFormatter()],
-                                              style: AppTypography.bodyMedium.colored(colors.textPrimary),
+                                                      controller:
+                                                          _guestFeeController,
+                                                      keyboardType:
+                                                          TextInputType.number,
+                                                      inputFormatters: const [
+                                                        CurrencyThousandsFormatter(),
+                                                      ],
+                                                      style: AppTypography
+                                                          .bodyMedium
+                                                          .colored(
+                                                            colors.textPrimary,
+                                                          ),
                                               decoration: InputDecoration(
                                                 suffixText: 'đ/buổi',
                                                 filled: true,
-                                                fillColor: colors.inputFill,
-                                                border: OutlineInputBorder(borderRadius: AppRadius.input, borderSide: BorderSide(color: colors.inputBorder)),
-                                                contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                                        fillColor:
+                                                            colors.inputFill,
+                                                        border: OutlineInputBorder(
+                                                          borderRadius:
+                                                              AppRadius.input,
+                                                          borderSide: BorderSide(
+                                                            color: colors
+                                                                .inputBorder,
+                                                          ),
+                                                        ),
+                                                        contentPadding:
+                                                            const EdgeInsets.symmetric(
+                                                              horizontal: 10,
+                                                              vertical: 8,
+                                                            ),
                                               ),
                                             ),
                                           ],
@@ -1633,21 +2542,51 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                                       AppSpacing.gapW12,
                                       Expanded(
                                         child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
                                           children: [
-                                            Text('Phí vãng lai (Nữ)', style: AppTypography.labelSmall.bold.colored(colors.textSecondary)),
+                                                    Text(
+                                                      'Phí vãng lai (Nữ)',
+                                                      style: AppTypography
+                                                          .labelSmall
+                                                          .bold
+                                                          .colored(
+                                                            colors
+                                                                .textSecondary,
+                                                          ),
+                                                    ),
                                             AppSpacing.gapH4,
                                             TextFormField(
-                                              controller: _guestFemaleFeeController,
-                                              keyboardType: TextInputType.number,
-                                              inputFormatters: const [CurrencyThousandsFormatter()],
-                                              style: AppTypography.bodyMedium.colored(colors.textPrimary),
+                                                      controller:
+                                                          _guestFemaleFeeController,
+                                                      keyboardType:
+                                                          TextInputType.number,
+                                                      inputFormatters: const [
+                                                        CurrencyThousandsFormatter(),
+                                                      ],
+                                                      style: AppTypography
+                                                          .bodyMedium
+                                                          .colored(
+                                                            colors.textPrimary,
+                                                          ),
                                               decoration: InputDecoration(
                                                 suffixText: 'đ/buổi',
                                                 filled: true,
-                                                fillColor: colors.inputFill,
-                                                border: OutlineInputBorder(borderRadius: AppRadius.input, borderSide: BorderSide(color: colors.inputBorder)),
-                                                contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                                        fillColor:
+                                                            colors.inputFill,
+                                                        border: OutlineInputBorder(
+                                                          borderRadius:
+                                                              AppRadius.input,
+                                                          borderSide: BorderSide(
+                                                            color: colors
+                                                                .inputBorder,
+                                                          ),
+                                                        ),
+                                                        contentPadding:
+                                                            const EdgeInsets.symmetric(
+                                                              horizontal: 10,
+                                                              vertical: 8,
+                                                            ),
                                               ),
                                             ),
                                           ],
@@ -1657,25 +2596,73 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                                   ),
                                   Builder(
                                     builder: (context) {
-                                      final guestFee = int.tryParse(_guestFeeController.text.replaceAll('.', '').trim()) ?? 0;
-                                      final guestFemale = int.tryParse(_guestFemaleFeeController.text.replaceAll('.', '').trim()) ?? 0;
-                                      final guestDisc = (guestFee - guestFemale).clamp(0, 999999999);
+                                              final guestFee =
+                                                  int.tryParse(
+                                                    _guestFeeController.text
+                                                        .replaceAll('.', '')
+                                                        .trim(),
+                                                  ) ??
+                                                  0;
+                                              final guestFemale =
+                                                  int.tryParse(
+                                                    _guestFemaleFeeController
+                                                        .text
+                                                        .replaceAll('.', '')
+                                                        .trim(),
+                                                  ) ??
+                                                  0;
+                                              final guestDisc =
+                                                  (guestFee - guestFemale)
+                                                      .clamp(0, 999999999);
                                       return Padding(
-                                        padding: const EdgeInsets.only(top: 8),
+                                                padding: const EdgeInsets.only(
+                                                  top: 8,
+                                                ),
                                         child: Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                                  padding:
+                                                      const EdgeInsets.symmetric(
+                                                        horizontal: 10,
+                                                        vertical: 5,
+                                                      ),
                                           decoration: BoxDecoration(
-                                            color: colors.warning.withValues(alpha: 0.1),
+                                                    color: colors.warning
+                                                        .withValues(alpha: 0.1),
                                             borderRadius: AppRadius.tag,
-                                            border: Border.all(color: colors.warning.withValues(alpha: 0.25)),
+                                                    border: Border.all(
+                                                      color: colors.warning
+                                                          .withValues(
+                                                            alpha: 0.25,
+                                                          ),
+                                                    ),
                                           ),
                                           child: Row(
-                                            mainAxisSize: MainAxisSize.min,
+                                                    mainAxisSize:
+                                                        MainAxisSize.min,
                                             children: [
-                                              Icon(Icons.female_rounded, size: 15, color: colors.warning),
+                                                      Icon(
+                                                        Icons.female_rounded,
+                                                        size: 15,
+                                                        color: colors.warning,
+                                                      ),
                                               AppSpacing.gapW4,
-                                              Text('Ưu đãi tự động giảm trừ cho Nữ: ', style: AppTypography.labelSmall.colored(colors.textSecondary)),
-                                              Text('- ${_formatCurrency(guestDisc)} đ/buổi', style: AppTypography.labelSmall.bold.colored(colors.warning)),
+                                                      Text(
+                                                        'Ưu đãi tự động giảm trừ cho Nữ: ',
+                                                        style: AppTypography
+                                                            .labelSmall
+                                                            .colored(
+                                                              colors
+                                                                  .textSecondary,
+                                                            ),
+                                                      ),
+                                                      Text(
+                                                        '- ${_formatCurrency(guestDisc)} đ/buổi',
+                                                        style: AppTypography
+                                                            .labelSmall
+                                                            .bold
+                                                            .colored(
+                                                              colors.warning,
+                                                            ),
+                                                      ),
                                             ],
                                           ),
                                         ),
@@ -1686,7 +2673,6 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                               ),
                             ),
                             AppSpacing.gapH16,
-
                             ],
                             AppSpacing.gapH16,
 
@@ -1696,115 +2682,165 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                         ),
                         AppSpacing.gapH16,
 
-
-                            AppSpacing.gapH16,
                         // Section: Tài khoản ngân hàng
-                        _buildSectionCard(
-                          title: 'Tài Khoản Ngân Hàng Nhận Tiền',
-                          icon: Icons.qr_code_2_rounded,
-                          children: [
-                            Text(
-                              'Ngân hàng thụ hưởng',
-                              style: AppTypography.labelMedium.bold.colored(colors.textPrimary),
-                            ),
-                            AppSpacing.gapH8,
-                            SingleChildScrollView(
-                              scrollDirection: Axis.horizontal,
-                              child: Row(
-                                children: ['Vietcombank', 'MB Bank', 'Techcombank', 'ACB', 'BIDV', 'VPBank', 'TPBank'].map((bank) {
-                                  final isSelected = _bankName == bank;
-                                  return Padding(
-                                    padding: const EdgeInsets.only(right: 8),
-                                    child: ChoiceChip(
-                                      label: Text(bank),
-                                      selected: isSelected,
-                                      selectedColor: colors.primary,
-                                      labelStyle: AppTypography.labelSmall.copyWith(
-                                        color: isSelected ? AppColors.white : colors.textPrimary,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                      backgroundColor: colors.surfaceSubtle,
-                                      shape: const RoundedRectangleBorder(borderRadius: AppRadius.tag),
-                                      onSelected: (_) => setState(() => _bankName = bank),
-                                    ),
-                                  );
-                                }).toList(),
+                        if (canManageFee)
+                          _buildSectionCard(
+                            title: context.l10n.payment_bank_settings,
+                            icon: Icons.qr_code_2_rounded,
+                            children: [
+                              Text(
+                                context.l10n.payment_bank_snapshot_note,
+                                style: AppTypography.bodySmall.colored(
+                                  colors.textSecondary,
+                                ),
                               ),
-                            ),
-                            AppSpacing.gapH12,
-                            Text('Số tài khoản ngân hàng', style: AppTypography.labelMedium.colored(colors.textPrimary)),
-                            AppSpacing.gapH4,
-                            TextFormField(
-                              controller: _bankAccountController,
-                              keyboardType: TextInputType.number,
-                              validator: (v) {
-                                if (v == null || v.trim().isEmpty) return 'Vui lòng nhập số tài khoản';
-                                if (!RegExp(r'^\d{6,20}$').hasMatch(v.trim())) {
-                                  return 'Số tài khoản phải gồm 6–20 chữ số';
-                                }
-                                return null;
-                              },
-                              style: AppTypography.bodyMedium.colored(colors.textPrimary),
-                              decoration: InputDecoration(
-                                hintText: 'Ví dụ: 1029384756',
-                                filled: true,
-                                fillColor: colors.inputFill,
-                                border: OutlineInputBorder(borderRadius: AppRadius.input, borderSide: BorderSide(color: colors.inputBorder)),
-                                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                              ),
-                            ),
-                            AppSpacing.gapH12,
-                            Text('Tên chủ tài khoản (In hoa không dấu)', style: AppTypography.labelMedium.colored(colors.textPrimary)),
-                            AppSpacing.gapH4,
-                            TextFormField(
-                              controller: _bankHolderController,
-                              textCapitalization: TextCapitalization.characters,
-                              validator: (v) {
-                                if (v == null || v.trim().isEmpty) return 'Vui lòng nhập tên chủ tài khoản';
-                                if (v.trim().length < 3) return 'Tên chủ tài khoản tối thiểu 3 ký tự';
-                                return null;
-                              },
-                              style: AppTypography.bodyMedium.colored(colors.textPrimary),
-                              decoration: InputDecoration(
-                                hintText: 'Ví dụ: NGUYEN VAN A',
-                                filled: true,
-                                fillColor: colors.inputFill,
-                                border: OutlineInputBorder(borderRadius: AppRadius.input, borderSide: BorderSide(color: colors.inputBorder)),
-                                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                              ),
-                            ),
-                            AppSpacing.gapH12,
-                            Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: colors.surfaceSubtle,
-                                borderRadius: AppRadius.borderSm,
-                                border: Border.all(color: colors.cardBorder),
-                              ),
-                              child: Row(
-                                children: [
-                                  Icon(Icons.account_balance_rounded, size: 28, color: colors.primary),
-                                  AppSpacing.gapW12,
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text('Tự Động Xác Nhận Thanh Toán', style: AppTypography.labelSmall.bold.colored(colors.textPrimary)),
-                                        Text(
-                                          'Khi thành viên quét mã chuyển khoản, hệ thống ngân hàng sẽ tự động xác nhận đã hoàn tất giao dịch.',
-                                          style: AppTypography.bodySmall.colored(colors.textMuted),
-                                        ),
-                                      ],
+                              AppSpacing.gapH8,
+                              if (_bankMissing)
+                                Padding(
+                                  padding: const EdgeInsets.only(bottom: 12),
+                                  child: Text(
+                                    context.l10n.payment_bank_unavailable,
+                                    style: AppTypography.bodySmall.colored(
+                                      colors.warning,
                                     ),
                                   ),
-                                ],
+                                ),
+                              if (_isBankLoading)
+                                const Center(
+                                  child: Padding(
+                                    padding: EdgeInsets.all(16),
+                                    child: CircularProgressIndicator(),
+                                  ),
+                                ),
+                              if (_bankError != null)
+                                Padding(
+                                  padding: const EdgeInsets.only(bottom: 12),
+                                  child: Text(
+                                    _bankError!,
+                                    style: AppTypography.bodySmall.colored(
+                                      colors.error,
+                                    ),
+                                  ),
+                                ),
+                              if (_bankError != null)
+                                Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: TextButton(
+                                    onPressed: _isBankLoading
+                                        ? null
+                                        : _retryLoadPaymentBank,
+                                    child: Text(context.l10n.payment_retry),
+                                  ),
+                                ),
+                              DropdownButtonFormField<VietQrBankOption>(
+                                value: _selectedBank,
+                                isExpanded: true,
+                                itemHeight: null,
+                                menuMaxHeight: 420,
+                                dropdownColor: colors.cardBackground,
+                                borderRadius: AppRadius.borderMd,
+                                elevation: 6,
+                                focusColor: colors.primaryContainer,
+                                decoration: InputDecoration(
+                                  labelText: context.l10n.payment_bank_select,
+                                  prefixIcon: const Icon(
+                                    Icons.account_balance_rounded,
+                                  ),
+                                  filled: true,
+                                  fillColor: colors.inputFill,
+                                ),
+                                items: vietQrBankDirectory
+                                    .map(
+                                      (bank) => DropdownMenuItem<
+                                        VietQrBankOption
+                                      >(
+                                        value: bank,
+                                        enabled: bank.transferSupported,
+                                        child: _buildBankOptionTile(
+                                          bank,
+                                          colors,
+                                          selected: bank == _selectedBank,
+                                        ),
+                                      ),
+                                    )
+                                    .toList(),
+                                selectedItemBuilder: (context) =>
+                                    vietQrBankDirectory
+                                        .map(
+                                          (bank) => Align(
+                                            alignment: Alignment.centerLeft,
+                                            child: Text(
+                                              bank.name,
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: AppTypography.titleSmall
+                                                  .bold
+                                                  .colored(
+                                                    bank.transferSupported
+                                                        ? colors.textPrimary
+                                                        : colors.textDisabled,
+                                                  ),
+                                            ),
+                                          ),
+                                        )
+                                        .toList(),
+                                onChanged: _isBankSaving || _isBankLoading
+                                    ? null
+                                    : (bank) => setState(
+                                        () => _selectedBank = bank,
+                                      ),
                               ),
-                            ),
-                          ],
-                        ),
-                        AppSpacing.gapH16,
-
-                        // Section 4: Quản lý vai trò (Nếu là Host hoặc có quyền quản lý vai trò)
+                              AppSpacing.gapH16,
+                              TextField(
+                                controller: _bankAccountController,
+                                keyboardType: TextInputType.number,
+                                inputFormatters: [
+                                  FilteringTextInputFormatter.digitsOnly,
+                                ],
+                                maxLength: 19,
+                                decoration: InputDecoration(
+                                  labelText:
+                                      context.l10n.payment_account_number,
+                                  counterText: '',
+                                ),
+                              ),
+                              AppSpacing.gapH16,
+                              TextField(
+                                controller: _bankHolderController,
+                                textCapitalization:
+                                    TextCapitalization.characters,
+                                maxLength: 255,
+                                decoration: InputDecoration(
+                                  labelText:
+                                      context.l10n.payment_account_holder,
+                                  counterText: '',
+                                ),
+                              ),
+                              AppSpacing.gapH16,
+                              SizedBox(
+                                width: double.infinity,
+                                child: FilledButton.icon(
+                                  onPressed: _isBankSaving || _isBankLoading
+                                      ? null
+                                      : _savePaymentBank,
+                                  icon: _isBankSaving
+                                      ? const SizedBox(
+                                          width: 18,
+                                          height: 18,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                          ),
+                                        )
+                                      : const Icon(Icons.save_rounded),
+                                  label: Text(
+                                    context.l10n.payment_bank_save,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        AppSpacing
+                            .gapH16, // Section 4: Quản lý vai trò (Nếu là Host hoặc có quyền quản lý vai trò)
 
                             AppSpacing.gapH32,
                           ],
@@ -1838,7 +2874,9 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
         color: colors.cardBackground,
         borderRadius: AppRadius.card,
         border: Border.all(
-          color: isDanger ? colors.error.withValues(alpha: 0.35) : colors.cardBorder,
+          color: isDanger
+              ? colors.error.withValues(alpha: 0.35)
+              : colors.cardBorder,
         ),
         boxShadow: AppShadows.sm,
       ),
@@ -1850,7 +2888,9 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
               Container(
                 padding: const EdgeInsets.all(7),
                 decoration: BoxDecoration(
-                  color: (isDanger ? colors.error : colors.primary).withValues(alpha: 0.12),
+                  color: (isDanger ? colors.error : colors.primary).withValues(
+                    alpha: 0.12,
+                  ),
                   borderRadius: AppRadius.borderSm,
                 ),
                 child: Icon(
@@ -1891,7 +2931,11 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
 
   Widget _buildLiveFeeSimulationPreview() {
     if (_feeMode == 'DYNAMIC') {
-      final dynDisc = int.tryParse(_dynamicFemaleDiscountController.text.replaceAll('.', '').trim()) ?? 10000;
+      final dynDisc =
+          int.tryParse(
+            _dynamicFemaleDiscountController.text.replaceAll('.', '').trim(),
+          ) ??
+          10000;
       return Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
@@ -1909,7 +2953,9 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                 Flexible(
                   child: Text(
                     'Bảng Tóm Tắt Áp Dụng Khi Chốt Sổ Buổi Chơi',
-                    style: AppTypography.labelMedium.bold.colored(colors.primary),
+                    style: AppTypography.labelMedium.bold.colored(
+                      colors.primary,
+                    ),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
@@ -1923,7 +2969,8 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
             AppSpacing.gapH4,
             _buildPreviewRow(
               label: 'Ưu đãi tay vợt Nữ',
-              value: 'Trừ trực tiếp ${_formatCurrency(dynDisc)} đ/người vào phần chia',
+              value:
+                  'Trừ trực tiếp ${_formatCurrency(dynDisc)} đ/người vào phần chia',
             ),
             AppSpacing.gapH4,
             _buildPreviewRow(
@@ -1935,14 +2982,34 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
       );
     }
 
-    final monthlyMale = int.tryParse(_monthlyFeeController.text.replaceAll('.', '').trim()) ?? 500000;
-    final monthlyFemale = int.tryParse(_monthlyFemaleFeeController.text.replaceAll('.', '').trim()) ?? 450000;
+    final monthlyMale =
+        int.tryParse(_monthlyFeeController.text.replaceAll('.', '').trim()) ??
+        500000;
+    final monthlyFemale =
+        int.tryParse(
+          _monthlyFemaleFeeController.text.replaceAll('.', '').trim(),
+        ) ??
+        450000;
 
-    final dailyMale = int.tryParse(_dailyMemberFeeController.text.replaceAll('.', '').trim()) ?? 50000;
-    final dailyFemale = int.tryParse(_dailyFemaleFeeController.text.replaceAll('.', '').trim()) ?? 40000;
+    final dailyMale =
+        int.tryParse(
+          _dailyMemberFeeController.text.replaceAll('.', '').trim(),
+        ) ??
+        50000;
+    final dailyFemale =
+        int.tryParse(
+          _dailyFemaleFeeController.text.replaceAll('.', '').trim(),
+        ) ??
+        40000;
 
-    final guestFee = int.tryParse(_guestFeeController.text.replaceAll('.', '').trim()) ?? 70000;
-    final guestFemale = int.tryParse(_guestFemaleFeeController.text.replaceAll('.', '').trim()) ?? 60000;
+    final guestFee =
+        int.tryParse(_guestFeeController.text.replaceAll('.', '').trim()) ??
+        70000;
+    final guestFemale =
+        int.tryParse(
+          _guestFemaleFeeController.text.replaceAll('.', '').trim(),
+        ) ??
+        60000;
 
     return Container(
       padding: const EdgeInsets.all(12),
@@ -1970,17 +3037,20 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
           AppSpacing.gapH8,
           _buildPreviewRow(
             label: 'Hội viên Gói Tháng (Nam / Nữ)',
-            value: '${_formatCurrency(monthlyMale)} đ / ${_formatCurrency(monthlyFemale)} đ (Ra sân: 0 đ/buổi)',
+            value:
+                '${_formatCurrency(monthlyMale)} đ / ${_formatCurrency(monthlyFemale)} đ (Ra sân: 0 đ/buổi)',
           ),
           AppSpacing.gapH4,
           _buildPreviewRow(
             label: 'Hội viên Theo buổi (Nam / Nữ)',
-            value: '${_formatCurrency(dailyMale)} đ / ${_formatCurrency(dailyFemale)} đ mỗi buổi',
+            value:
+                '${_formatCurrency(dailyMale)} đ / ${_formatCurrency(dailyFemale)} đ mỗi buổi',
           ),
           AppSpacing.gapH4,
           _buildPreviewRow(
             label: 'Khách giao lưu (Nam / Nữ)',
-            value: '${_formatCurrency(guestFee)} đ / ${_formatCurrency(guestFemale)} đ mỗi buổi',
+            value:
+                '${_formatCurrency(guestFee)} đ / ${_formatCurrency(guestFemale)} đ mỗi buổi',
           ),
           AppSpacing.gapH4,
           _buildPreviewRow(
@@ -2051,7 +3121,10 @@ class CurrencyThousandsFormatter extends TextInputFormatter {
 
     final digitsBeforeCursor = newValue.selection.baseOffset >= 0
         ? newValue.text
-            .substring(0, newValue.selection.baseOffset.clamp(0, newValue.text.length))
+              .substring(
+                0,
+                newValue.selection.baseOffset.clamp(0, newValue.text.length),
+              )
             .replaceAll(RegExp(r'\D'), '')
             .length
         : cleanDigits.length;

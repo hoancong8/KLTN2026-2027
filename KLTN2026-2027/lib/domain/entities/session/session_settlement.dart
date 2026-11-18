@@ -1,6 +1,7 @@
 // lib/domain/entities/session/session_settlement.dart
 
 class MemberSettlementFee {
+  final String feeId;
   final String userId;
   final String fullName;
   final String? avatarUrl;
@@ -14,6 +15,7 @@ class MemberSettlementFee {
   final String paymentCode;
 
   const MemberSettlementFee({
+    required this.feeId,
     required this.userId,
     required this.fullName,
     this.avatarUrl,
@@ -28,8 +30,10 @@ class MemberSettlementFee {
   });
 
   bool get isPaid => paymentStatus == 'PAID';
+  bool get isExempt => paymentStatus == 'EXEMPT';
 
   MemberSettlementFee copyWith({
+    String? feeId,
     String? userId,
     String? fullName,
     String? avatarUrl,
@@ -43,6 +47,7 @@ class MemberSettlementFee {
     String? paymentCode,
   }) {
     return MemberSettlementFee(
+      feeId: feeId ?? this.feeId,
       userId: userId ?? this.userId,
       fullName: fullName ?? this.fullName,
       avatarUrl: avatarUrl ?? this.avatarUrl,

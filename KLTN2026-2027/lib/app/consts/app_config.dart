@@ -51,6 +51,8 @@ class AppConfig {
   static String clubInfoPath(String id) => '$clubsPath/$id/info';
   static String clubSchedulesPath(String id) => '$clubsPath/$id/schedules';
   static String clubFeeRulePath(String id) => '$clubsPath/$id/fee-rule';
+  static String clubPaymentBankAccountPath(String id) =>
+      '$clubsPath/$id/payment-bank-account';
   static String clubMembersPath(String id) => '$clubsPath/$id/members';
   static String clubMemberRolePath(String id, String userId) =>
       '$clubsPath/$id/members/$userId/role';
@@ -109,6 +111,15 @@ class AppConfig {
   static String sessionConfirmBookingPath(String sessionId, String bookingId) =>
       '$sessionsPath/$sessionId/bookings/$bookingId/confirm';
   static const myBookingsPath = '$sessionsPath/my-bookings';
+  static const myFeesEndpoint = '$userMePath/fees';
+  static String myFeePath(String feeId) => '$myFeesEndpoint/$feeId';
+  static String myFeeBankTransferPath(String feeId) =>
+      '${myFeePath(feeId)}/bank-transfer';
+  static String myFeeQrPath(String feeId) => '${myFeePath(feeId)}/qr.png';
+  static String myFeeTransferNoticePath(String feeId) =>
+      '${myFeePath(feeId)}/transfer-notice';
+  static String myFeeCashRequestPath(String feeId) =>
+      '${myFeePath(feeId)}/cash-request';
   static String sessionRecruitmentsPath(String sessionId) =>
       '$sessionsPath/$sessionId/recruitments';
   static const exploreRecruitmentsPath = '$sessionsPath/recruitments/explore';
@@ -147,4 +158,8 @@ class AppConfig {
   static const markAllNotificationsReadEndpoint =
       '/api/v1/user/me/notifications/read-all';
   static const notificationsPath = '/notifications';
+  static const myFeesPath = '/my-fees';
+  static String myFeeDetailPath(String feeId) => '/my-fees/$feeId';
+  static String sessionSettlementScreenPath(String sessionId) =>
+      '/session/$sessionId/settlement';
 }

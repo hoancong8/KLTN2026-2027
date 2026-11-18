@@ -1,6 +1,7 @@
 // lib/data/dto/session/session_settlement_dto.dart
 
 class MemberSettlementFeeDto {
+  final String feeId;
   final String userId;
   final String fullName;
   final String? avatarUrl;
@@ -14,6 +15,7 @@ class MemberSettlementFeeDto {
   final String paymentCode;
 
   const MemberSettlementFeeDto({
+    required this.feeId,
     required this.userId,
     required this.fullName,
     this.avatarUrl,
@@ -29,6 +31,7 @@ class MemberSettlementFeeDto {
 
   factory MemberSettlementFeeDto.fromJson(Map<String, dynamic> json) {
     return MemberSettlementFeeDto(
+      feeId: _parseString(json['feeId'] ?? json['FeeId']),
       userId: _parseString(json['userId'] ?? json['UserId']),
       fullName: _parseString(json['fullName'] ?? json['FullName']),
       avatarUrl: json['avatarUrl'] ?? json['AvatarUrl'] as String?,
