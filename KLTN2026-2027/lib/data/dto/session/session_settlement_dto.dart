@@ -11,6 +11,7 @@ class MemberSettlementFeeDto {
   final int discount;
   final int finalFee;
   final String paymentStatus;
+  final String? paymentMethod;
   final String vietQrUrl;
   final String paymentCode;
 
@@ -25,6 +26,7 @@ class MemberSettlementFeeDto {
     required this.discount,
     required this.finalFee,
     required this.paymentStatus,
+    this.paymentMethod,
     required this.vietQrUrl,
     required this.paymentCode,
   });
@@ -41,12 +43,18 @@ class MemberSettlementFeeDto {
       discount: _parseInt(json['discount'] ?? json['Discount']),
       finalFee: _parseInt(json['finalFee'] ?? json['FinalFee']),
       paymentStatus: _parseString(json['paymentStatus'] ?? json['PaymentStatus']),
+      paymentMethod: _parseNullableString(json['paymentMethod'] ?? json['PaymentMethod']),
       vietQrUrl: _parseString(json['vietQrUrl'] ?? json['VietQrUrl'] ?? json['qrCodePayload'] ?? json['QrCodePayload']),
       paymentCode: _parseString(json['paymentCode'] ?? json['PaymentCode']),
     );
   }
 
   static String _parseString(dynamic v) => v?.toString() ?? '';
+  static String? _parseNullableString(dynamic v) {
+    if (v == null) return null;
+    final s = v.toString().trim();
+    return s.isEmpty ? null : s;
+  }
   static int _parseInt(dynamic v, {int defaultValue = 0}) {
     if (v is int) return v;
     if (v is double) return v.toInt();

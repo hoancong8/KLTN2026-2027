@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/legacy.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../../app/provider.dart';
+import '../../../../app/provider/localization_provider.dart';
 import '../../../../app/theme/theme.dart';
 import '../../../../domain/entities/session/session_settlement.dart';
 import '../../../../widget/app_shimmer.dart';
@@ -89,11 +90,11 @@ class SessionSettlementScreen extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Tổng Kết Chi Phí Trận Đấu',
+              context.l10n.settlement_screen_title,
               style: AppTypography.titleMedium.bold.colored(colors.textPrimary),
             ),
             Text(
-              'Công thức đa hệ số & tự động xác nhận thanh toán',
+              context.l10n.settlement_screen_subtitle,
               style: AppTypography.labelSmall.colored(colors.textMuted),
             ),
           ],
@@ -112,7 +113,7 @@ class SessionSettlementScreen extends ConsumerWidget {
         actions: [
           IconButton(
             icon: Icon(Icons.rate_review_outlined, color: colors.primary),
-            tooltip: 'Đánh giá tín nhiệm buổi chơi',
+            tooltip: context.l10n.settlement_reviews_tooltip,
             onPressed: () => context.push('/session/$sessionId/reviews'),
           ),
         ],
@@ -145,14 +146,14 @@ class SessionSettlementScreen extends ConsumerWidget {
                   ),
                   AppSpacing.gapH12,
                   Text(
-                    'Không thể tải bảng tổng kết chi phí',
+                    context.l10n.settlement_load_error,
                     style: AppTypography.titleMedium.bold.colored(
                       colors.textPrimary,
                     ),
                   ),
                   AppSpacing.gapH4,
                   Text(
-                    '$err',
+                    context.l10n.error_system_retry,
                     style: AppTypography.bodySmall.colored(colors.textMuted),
                     textAlign: TextAlign.center,
                   ),
@@ -160,7 +161,7 @@ class SessionSettlementScreen extends ConsumerWidget {
                   ElevatedButton.icon(
                     onPressed: vm.loadSettlement,
                     icon: const Icon(Icons.refresh_rounded, size: 18),
-                    label: const Text('Thử lại'),
+                    label: Text(context.l10n.com_retry),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: colors.primary,
                       foregroundColor: AppColors.white,
@@ -193,7 +194,7 @@ class SessionSettlementScreen extends ConsumerWidget {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                'Tổng Chi Phí Buổi Chơi',
+                                context.l10n.settlement_total_cost,
                                 style: AppTypography.labelMedium.colored(
                                   colors.textMuted,
                                 ),
@@ -208,7 +209,11 @@ class SessionSettlementScreen extends ConsumerWidget {
                                   borderRadius: AppRadius.tag,
                                 ),
                                 child: Text(
-                                  'Đã thu: ${currencyFormat.format(settlement.totalCollected)} đ',
+                                  context.l10n.settlement_collected_amount(
+                                    currencyFormat.format(
+                                      settlement.totalCollected,
+                                    ),
+                                  ),
                                   style: AppTypography.labelSmall.bold.colored(
                                     colors.success,
                                   ),
@@ -218,7 +223,9 @@ class SessionSettlementScreen extends ConsumerWidget {
                           ),
                           AppSpacing.gapH8,
                           Text(
-                            '${currencyFormat.format(settlement.totalCost)} đ',
+                            context.l10n.settlement_amount(
+                              currencyFormat.format(settlement.totalCost),
+                            ),
                             style: AppTypography.headlineMedium.bold.colored(
                               colors.textPrimary,
                             ),
@@ -231,24 +238,35 @@ class SessionSettlementScreen extends ConsumerWidget {
                               Expanded(
                                 child: _buildFeeItem(
                                   context,
-                                  'Tiền sân',
-                                  '${currencyFormat.format(settlement.courtFee)} đ',
+                                  context.l10n.settlement_court_fee,
+                                  context.l10n.settlement_amount(
+                                    currencyFormat.format(settlement.courtFee),
+                                  ),
                                   Icons.stadium_rounded,
                                 ),
                               ),
                               Expanded(
                                 child: _buildFeeItem(
                                   context,
-                                  'Cầu lông (${settlement.shuttlecockUsed} quả)',
-                                  '${currencyFormat.format(settlement.shuttlecockUsed * settlement.shuttlecockPrice)} đ',
+                                  context.l10n.settlement_shuttlecock_fee(
+                                    settlement.shuttlecockUsed.toString(),
+                                  ),
+                                  context.l10n.settlement_amount(
+                                    currencyFormat.format(
+                                      settlement.shuttlecockUsed *
+                                          settlement.shuttlecockPrice,
+                                    ),
+                                  ),
                                   Icons.sports_tennis_rounded,
                                 ),
                               ),
                               Expanded(
                                 child: _buildFeeItem(
                                   context,
-                                  'Phụ phí',
-                                  '${currencyFormat.format(settlement.extraFee)} đ',
+                                  context.l10n.settlement_extra_fee,
+                                  context.l10n.settlement_amount(
+                                    currencyFormat.format(settlement.extraFee),
+                                  ),
                                   Icons.local_drink_rounded,
                                 ),
                               ),
@@ -266,8 +284,8 @@ class SessionSettlementScreen extends ConsumerWidget {
                                 ),
                               ),
                               icon: const Icon(Icons.calculate_rounded),
-                              label: const Text(
-                                'Hạch toán vật tư & Phát hành thu phí',
+                              label: Text(
+                                context.l10n.settlement_publish_fees,
                               ),
                               onPressed: () => _showUpdateConsumablesDialog(
                                 context,
@@ -288,9 +306,7 @@ class SessionSettlementScreen extends ConsumerWidget {
                                 ),
                               ),
                               icon: const Icon(Icons.edit_note_rounded),
-                              label: const Text(
-                                'Cập nhật lại số quả cầu & phụ phí',
-                              ),
+                              label: Text(context.l10n.settlement_update_costs),
                               onPressed: () => _showUpdateConsumablesDialog(
                                 context,
                                 settlement,
@@ -340,16 +356,29 @@ class SessionSettlementScreen extends ConsumerWidget {
                                   children: [
                                     Text(
                                       isDynamic
-                                          ? 'Cách tính tiền: Chia đều thực tế'
-                                          : 'Cách tính tiền: Định mức cố định',
+                                          ? context.l10n
+                                                .settlement_calculation_dynamic_title
+                                          : context.l10n
+                                                .settlement_calculation_fixed_title,
                                       style: AppTypography.labelSmall.bold
                                           .colored(colors.textPrimary),
                                     ),
                                     const SizedBox(height: 2),
                                     Text(
                                       isDynamic
-                                          ? 'Tiền sân (${currencyFormat.format(settlement.courtFee)} đ) + Cầu bóc mới (${settlement.shuttlecockUsed} quả) + Phụ phí (${currencyFormat.format(settlement.extraFee)} đ) được chia đều cho tất cả người chơi tham gia. Nữ nhận ưu đãi giảm giá trừ thẳng vào phần chia.'
-                                          : 'Thu tiền theo định mức cố định đã cấu hình của CLB (Hội viên tháng miễn phí buổi, Hội viên theo buổi và Khách vãng lai thu theo mức cố định, có ưu đãi Nữ).',
+                                          ? context.l10n
+                                                .settlement_calculation_dynamic_description(
+                                                  currencyFormat.format(
+                                                    settlement.courtFee,
+                                                  ),
+                                                  settlement.shuttlecockUsed
+                                                      .toString(),
+                                                  currencyFormat.format(
+                                                    settlement.extraFee,
+                                                  ),
+                                                )
+                                          : context.l10n
+                                                .settlement_calculation_fixed_description,
                                       style: AppTypography.bodySmall.colored(
                                         colors.textSecondary,
                                       ),
@@ -363,7 +392,9 @@ class SessionSettlementScreen extends ConsumerWidget {
                       },
                     ),
                     Text(
-                      'Tiền đóng từng người & Mã quét VietQR (${settlement.memberFees.length})',
+                      context.l10n.settlement_member_fees_title(
+                        settlement.memberFees.length.toString(),
+                      ),
                       style: AppTypography.titleSmall.bold.colored(
                         colors.textPrimary,
                       ),
@@ -383,7 +414,7 @@ class SessionSettlementScreen extends ConsumerWidget {
                             ),
                             AppSpacing.gapH12,
                             Text(
-                              'Chưa có danh sách hội viên cần thu tiền',
+                              context.l10n.settlement_no_members_to_charge,
                               style: AppTypography.bodyMedium.colored(
                                 colors.textMuted,
                               ),
@@ -439,18 +470,18 @@ class SessionSettlementScreen extends ConsumerWidget {
     );
   }
 
-  String _formatRoleName(String role) {
+  String _formatRoleName(BuildContext context, String role) {
     switch (role.trim().toUpperCase()) {
       case 'MONTHLY_MEMBER':
       case 'MEMBER_MONTHLY':
-        return 'Hội viên tháng';
+        return context.l10n.settlement_role_monthly_member;
       case 'DAILY_MEMBER':
       case 'MEMBER_DAILY':
-        return 'Hội viên ngày';
+        return context.l10n.settlement_role_daily_member;
       case 'GUEST':
-        return 'Khách vãng lai';
+        return context.l10n.settlement_role_guest;
       default:
-        return role;
+        return context.l10n.settlement_role_unknown;
     }
   }
 
@@ -501,7 +532,12 @@ class SessionSettlementScreen extends ConsumerWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      '${_formatRoleName(fee.roleName)} • ${fee.gender == "FEMALE" ? "Nữ (Giảm giá)" : "Nam"}',
+                      context.l10n.settlement_role_gender(
+                        _formatRoleName(context, fee.roleName),
+                        fee.gender == 'FEMALE'
+                            ? context.l10n.settlement_gender_female_discount
+                            : context.l10n.settlement_gender_male,
+                      ),
                       style: AppTypography.labelSmall.colored(colors.textMuted),
                     ),
                   ],
@@ -511,48 +547,60 @@ class SessionSettlementScreen extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                    '${currencyFormat.format(fee.finalFee)} đ',
+                    context.l10n.settlement_amount(
+                      currencyFormat.format(fee.finalFee),
+                    ),
                     style: AppTypography.titleSmall.bold.colored(
                       isPaid ? colors.success : colors.textPrimary,
                     ),
                   ),
                   const SizedBox(height: 2),
                   isPaid
-                      ? const AppStatusBadge.success(label: 'ĐÃ ĐÓNG TIỀN')
-                      : const AppStatusBadge.warning(label: 'CHƯA ĐÓNG'),
+                      ? AppStatusBadge.success(
+                          label: context.l10n.settlement_paid_badge,
+                        )
+                      : AppStatusBadge.warning(
+                          label: context.l10n.settlement_unpaid_badge,
+                        ),
                 ],
               ),
             ],
           ),
-          if (!isPaid && fee.vietQrUrl.isNotEmpty) ...[
+          if (!isPaid &&
+              !fee.isExempt &&
+              (fee.vietQrUrl.isNotEmpty || fee.isCashEligible)) ...[
             AppSpacing.gapH12,
             Divider(height: 1, color: colors.cardBorder),
             const SizedBox(height: 10),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                OutlinedButton.icon(
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: colors.primary,
-                    side: BorderSide(
-                      color: colors.primary.withValues(alpha: 0.4),
+                if (fee.vietQrUrl.isNotEmpty)
+                  OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: colors.primary,
+                      side: BorderSide(
+                        color: colors.primary.withValues(alpha: 0.4),
+                      ),
+                      minimumSize: const Size(0, 44),
                     ),
-                    minimumSize: const Size(0, 44),
+                    icon: const Icon(Icons.qr_code_rounded, size: 16),
+                    label: Text(context.l10n.settlement_vietqr_label),
+                    onPressed: () => _showVietQrModal(context, fee),
+                  )
+                else
+                  const SizedBox.shrink(),
+                if (fee.isCashEligible)
+                  ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: colors.success,
+                      foregroundColor: AppColors.white,
+                      minimumSize: const Size(0, 44),
+                    ),
+                    icon: const Icon(Icons.check_rounded, size: 16),
+                    label: Text(context.l10n.settlement_confirm_cash),
+                    onPressed: () => _confirmMarkPaid(context, fee, vm),
                   ),
-                  icon: const Icon(Icons.qr_code_rounded, size: 16),
-                  label: const Text('Mã VietQR'),
-                  onPressed: () => _showVietQrModal(context, fee),
-                ),
-                ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: colors.success,
-                    foregroundColor: AppColors.white,
-                    minimumSize: const Size(0, 44),
-                  ),
-                  icon: const Icon(Icons.check_rounded, size: 16),
-                  label: const Text('Xác nhận tiền mặt'),
-                  onPressed: () => _confirmMarkPaid(context, fee, vm),
-                ),
               ],
             ),
           ],
@@ -570,14 +618,17 @@ class SessionSettlementScreen extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Xác nhận thu tiền mặt'),
+        title: Text(context.l10n.settlement_confirm_cash_title),
         content: Text(
-          'Xác nhận đã nhận đủ ${currencyFormat.format(fee.finalFee)} đ từ "${fee.fullName}"?',
+          context.l10n.settlement_confirm_cash_message(
+            currencyFormat.format(fee.finalFee),
+            fee.fullName,
+          ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Hủy'),
+            child: Text(context.l10n.com_cancel),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
@@ -589,7 +640,7 @@ class SessionSettlementScreen extends ConsumerWidget {
               vm.markPaid(fee.userId);
               Navigator.of(ctx).pop();
             },
-            child: const Text('Xác nhận đã nhận tiền'),
+            child: Text(context.l10n.settlement_confirm_received_money),
           ),
         ],
       ),
@@ -606,7 +657,7 @@ class SessionSettlementScreen extends ConsumerWidget {
         backgroundColor: colors.cardBackground,
         title: Center(
           child: Text(
-            'Mã VietQR Chuyển Khoản',
+            context.l10n.settlement_vietqr_title,
             style: AppTypography.titleMedium.bold.colored(colors.textPrimary),
           ),
         ),
@@ -632,12 +683,14 @@ class SessionSettlementScreen extends ConsumerWidget {
             ),
             AppSpacing.gapH4,
             Text(
-              'Số tiền: ${currencyFormat.format(fee.finalFee)} đ',
+              context.l10n.settlement_transfer_amount(
+                currencyFormat.format(fee.finalFee),
+              ),
               style: AppTypography.titleMedium.bold.colored(colors.primary),
             ),
             AppSpacing.gapH4,
             Text(
-              'Nội dung: ${fee.paymentCode}',
+              context.l10n.settlement_transfer_description(fee.paymentCode),
               style: AppTypography.bodySmall.colored(colors.textMuted),
             ),
             AppSpacing.gapH12,
@@ -650,12 +703,16 @@ class SessionSettlementScreen extends ConsumerWidget {
                 ),
               ),
               icon: const Icon(Icons.copy_rounded, size: 16),
-              label: const Text('Sao chép cú pháp chuyển khoản'),
+              label: Text(context.l10n.settlement_copy_transfer_description),
               onPressed: () {
                 Clipboard.setData(ClipboardData(text: fee.paymentCode));
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text('Đã sao chép cú pháp: ${fee.paymentCode}'),
+                    content: Text(
+                      context.l10n.settlement_transfer_description_copied(
+                        fee.paymentCode,
+                      ),
+                    ),
                     backgroundColor: colors.primary,
                     behavior: SnackBarBehavior.floating,
                   ),
@@ -667,7 +724,7 @@ class SessionSettlementScreen extends ConsumerWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Đóng'),
+            child: Text(context.l10n.com_close),
           ),
         ],
       ),
@@ -687,25 +744,25 @@ class SessionSettlementScreen extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Ghi Nhận Tiền Cầu & Nước Uống'),
+        title: Text(context.l10n.settlement_consumables_dialog_title),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
               controller: shuttleCtrl,
               keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                labelText: 'Số lượng quả cầu bóc mới *',
-                hintText: 'Ví dụ: 4',
+              decoration: InputDecoration(
+                labelText: context.l10n.settlement_shuttlecock_quantity,
+                hintText: context.l10n.settlement_shuttlecock_quantity_hint,
               ),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: extraCtrl,
               keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                labelText: 'Phụ phí nước uống, phát sinh (VNĐ)',
-                hintText: 'Ví dụ: 40000',
+              decoration: InputDecoration(
+                labelText: context.l10n.settlement_extra_expense_label,
+                hintText: context.l10n.settlement_extra_expense_hint,
               ),
             ),
           ],
@@ -713,7 +770,7 @@ class SessionSettlementScreen extends ConsumerWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Hủy'),
+            child: Text(context.l10n.com_cancel),
           ),
           ElevatedButton(
             onPressed: () {
@@ -725,8 +782,8 @@ class SessionSettlementScreen extends ConsumerWidget {
             },
             child: Text(
               settlement.isSettled
-                  ? 'Cập nhật tổng kết chi phí'
-                  : 'Phát hành tổng kết chi phí',
+                  ? context.l10n.settlement_update_summary
+                  : context.l10n.settlement_publish_summary,
             ),
           ),
         ],

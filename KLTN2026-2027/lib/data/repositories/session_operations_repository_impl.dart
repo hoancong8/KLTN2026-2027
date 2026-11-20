@@ -1152,6 +1152,7 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
           discount: m.discount,
           finalFee: m.finalFee,
           paymentStatus: 'PAID',
+          paymentMethod: 'CASH',
           vietQrUrl: m.vietQrUrl,
           paymentCode: m.paymentCode,
         );

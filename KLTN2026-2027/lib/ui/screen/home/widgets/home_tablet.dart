@@ -53,9 +53,7 @@ class _HomeTabletState extends ConsumerState<HomeTablet> {
       });
       return Scaffold(
         backgroundColor: colors.surface,
-        body: Center(
-          child: CircularProgressIndicator(color: colors.primary),
-        ),
+        body: Center(child: CircularProgressIndicator(color: colors.primary)),
       );
     }
 
@@ -120,7 +118,11 @@ class _HomeTabletState extends ConsumerState<HomeTablet> {
     final canReadClubs = ref.hasPermission(Permissions.clubsRead);
     final canReadUsers = ref.hasPermission(Permissions.usersRead);
     final canReadRoles = ref.hasPermission(Permissions.rolesRead);
-    final hasAdminSection = canReadClubs || canReadUsers || canReadRoles;
+    final canManageSepay = ref.hasPermission(
+      Permissions.integrationsSepayManage,
+    );
+    final hasAdminSection =
+        canReadClubs || canReadUsers || canReadRoles || canManageSepay;
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 220),
@@ -129,9 +131,7 @@ class _HomeTabletState extends ConsumerState<HomeTablet> {
       height: double.infinity,
       decoration: BoxDecoration(
         color: colors.surface,
-        border: Border(
-          right: BorderSide(color: colors.divider, width: 1),
-        ),
+        border: Border(right: BorderSide(color: colors.divider, width: 1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -227,6 +227,14 @@ class _HomeTabletState extends ConsumerState<HomeTablet> {
                       isSelected: false,
                       onTap: () => context.push(AppConfig.adminRolesPath),
                     ),
+                  if (canManageSepay)
+                    _buildNavItem(
+                      context,
+                      icon: Icons.account_balance_outlined,
+                      title: context.l10n.sepay_admin_title,
+                      isSelected: false,
+                      onTap: () => context.push(AppConfig.adminSepayPath),
+                    ),
                 ],
               ],
             ),
@@ -285,9 +293,7 @@ class _HomeTabletState extends ConsumerState<HomeTablet> {
       decoration: BoxDecoration(
         color: colors.surfaceSubtle,
         borderRadius: BorderRadius.circular(AppRadius.md),
-        border: Border.all(
-          color: colors.primary.withValues(alpha: 0.2),
-        ),
+        border: Border.all(color: colors.primary.withValues(alpha: 0.2)),
       ),
       child: InkWell(
         onTap: () => ClubSwitcherDialog.show(context),
@@ -332,11 +338,7 @@ class _HomeTabletState extends ConsumerState<HomeTablet> {
                 ],
               ),
             ),
-            Icon(
-              Icons.swap_horiz_rounded,
-              size: 16,
-              color: colors.textMuted,
-            ),
+            Icon(Icons.swap_horiz_rounded, size: 16, color: colors.textMuted),
           ],
         ),
       ),
@@ -475,7 +477,9 @@ class _HomeTabletState extends ConsumerState<HomeTablet> {
                     title,
                     style: AppTypography.bodySmall.copyWith(
                       color: isSelected ? colors.primary : colors.textPrimary,
-                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                      fontWeight: isSelected
+                          ? FontWeight.w700
+                          : FontWeight.w500,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -498,9 +502,7 @@ class _HomeTabletState extends ConsumerState<HomeTablet> {
         vertical: AppSpacing.md,
       ),
       decoration: BoxDecoration(
-        border: Border(
-          top: BorderSide(color: colors.divider, width: 1),
-        ),
+        border: Border(top: BorderSide(color: colors.divider, width: 1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

@@ -47,6 +47,19 @@ import '../data/repositories/payment_repository_impl.dart';
 import '../domain/repositories/payment_repository.dart';
 import '../domain/usecases/payment/payment_usecases.dart';
 
+// UC18 SePay & Reconciliation imports
+import '../data/datasource/remote/abstract/sepay_remote_datasource.dart';
+import '../data/datasource/remote/implement/sepay_remote_datasource_impl.dart';
+import '../data/repositories/sepay_repository_impl.dart';
+import '../domain/repositories/sepay_repository.dart';
+import '../domain/usecases/sepay/sepay_usecases.dart';
+
+import '../data/datasource/remote/abstract/reconciliation_remote_datasource.dart';
+import '../data/datasource/remote/implement/reconciliation_remote_datasource_impl.dart';
+import '../data/repositories/reconciliation_repository_impl.dart';
+import '../domain/repositories/reconciliation_repository.dart';
+import '../domain/usecases/reconciliation/reconciliation_usecases.dart';
+
 // User & Role imports
 import '../data/datasource/remote/abstract/role_remote_datasource.dart';
 import '../data/datasource/remote/implement/role_remote_datasource_impl.dart';
@@ -292,7 +305,10 @@ final dioProvider = Provider<Dio>((ref) {
   final dio = Dio(
     BaseOptions(
       baseUrl: AppConfig.baseUrl,
-      headers: {'Content-Type': 'application/json'},
+      headers: {
+        'Content-Type': 'application/json',
+        ...AppConfig.developmentTunnelHeaders,
+      },
     ),
   );
   if (!kIsWeb) {
@@ -805,3 +821,63 @@ final mediaRepositoryProvider = Provider<MediaRepository>((ref) {
 final uploadImageUseCaseProvider = Provider<UploadImageUseCase>((ref) {
   return UploadImageUseCase(ref.watch(mediaRepositoryProvider));
 });
+
+// ============================================================================
+// UC18: SEPAY & PAYMENT RECONCILIATION PROVIDERS
+// ============================================================================
+
+final sepayRemoteDatasourceProvider = Provider<SepayRemoteDatasource>((ref) {
+  return SepayRemoteDatasourceImpl(ref.watch(dioProvider));
+});
+
+final sepayRepositoryProvider = Provider<SepayRepository>((ref) {
+  return SepayRepositoryImpl(ref.watch(sepayRemoteDatasourceProvider));
+});
+
+final getSepayApplicationUseCaseProvider = Provider<GetSepayApplicationUseCase>((ref) =>
+    GetSepayApplicationUseCase(ref.watch(sepayRepositoryProvider)));
+
+final configureSepayApplicationUseCaseProvider = Provider<ConfigureSepayApplicationUseCase>((ref) =>
+    ConfigureSepayApplicationUseCase(ref.watch(sepayRepositoryProvider)));
+
+final getClubSepayConnectionUseCaseProvider = Provider<GetClubSepayConnectionUseCase>((ref) =>
+    GetClubSepayConnectionUseCase(ref.watch(sepayRepositoryProvider)));
+
+final startClubSepayConnectionUseCaseProvider = Provider<StartClubSepayConnectionUseCase>((ref) =>
+    StartClubSepayConnectionUseCase(ref.watch(sepayRepositoryProvider)));
+
+final completeClubSepayConnectionUseCaseProvider = Provider<CompleteClubSepayConnectionUseCase>((ref) =>
+    CompleteClubSepayConnectionUseCase(ref.watch(sepayRepositoryProvider)));
+
+final getClubSepayBankAccountsUseCaseProvider = Provider<GetClubSepayBankAccountsUseCase>((ref) =>
+    GetClubSepayBankAccountsUseCase(ref.watch(sepayRepositoryProvider)));
+
+final selectClubSepayBankAccountUseCaseProvider = Provider<SelectClubSepayBankAccountUseCase>((ref) =>
+    SelectClubSepayBankAccountUseCase(ref.watch(sepayRepositoryProvider)));
+
+final activateClubSepayConnectionUseCaseProvider = Provider<ActivateClubSepayConnectionUseCase>((ref) =>
+    ActivateClubSepayConnectionUseCase(ref.watch(sepayRepositoryProvider)));
+
+final listClubSepayConnectionsUseCaseProvider = Provider<ListClubSepayConnectionsUseCase>((ref) =>
+    ListClubSepayConnectionsUseCase(ref.watch(sepayRepositoryProvider)));
+
+final disconnectClubSepayConnectionUseCaseProvider = Provider<DisconnectClubSepayConnectionUseCase>((ref) =>
+    DisconnectClubSepayConnectionUseCase(ref.watch(sepayRepositoryProvider)));
+
+final reconciliationRemoteDatasourceProvider = Provider<ReconciliationRemoteDatasource>((ref) {
+  return ReconciliationRemoteDatasourceImpl(ref.watch(dioProvider));
+});
+
+final reconciliationRepositoryProvider = Provider<ReconciliationRepository>((ref) {
+  return ReconciliationRepositoryImpl(ref.watch(reconciliationRemoteDatasourceProvider));
+});
+
+final getReconciliationsUseCaseProvider = Provider<GetReconciliationsUseCase>((ref) =>
+    GetReconciliationsUseCase(ref.watch(reconciliationRepositoryProvider)));
+
+final getReconciliationDetailUseCaseProvider = Provider<GetReconciliationDetailUseCase>((ref) =>
+    GetReconciliationDetailUseCase(ref.watch(reconciliationRepositoryProvider)));
+
+final confirmManualReconciliationUseCaseProvider = Provider<ConfirmManualReconciliationUseCase>((ref) =>
+    ConfirmManualReconciliationUseCase(ref.watch(reconciliationRepositoryProvider)));
+

@@ -12,6 +12,10 @@ import 'package:kltn2026_2027/ui/screen/profile/profile_screen.dart';
 import 'package:kltn2026_2027/ui/screen/change_password/change_password_screen.dart';
 import '../../ui/screen/admin/role_management/role_management_screen.dart';
 import '../../ui/screen/admin/user_management/user_management_screen.dart';
+import '../../ui/screen/admin/sepay_settings/admin_sepay_screen.dart';
+import '../../ui/screen/club/sepay_connection/club_sepay_screen.dart';
+import '../../ui/screen/club/reconciliation/club_reconciliations_screen.dart';
+import '../../ui/screen/club/reconciliation/club_reconciliation_detail_screen.dart';
 import '../../ui/screen/home/tab/club/my_clubs_page.dart';
 import '../../ui/screen/club/create_club/create_club_screen.dart';
 import '../../ui/screen/club/ledger/club_ledger_screen.dart';
@@ -83,6 +87,10 @@ GoRouter generateAppRouter(String initialRoute) {
         builder: (_, _) => const RoleManagementScreen(),
       ),
       GoRoute(
+        path: AppConfig.adminSepayPath,
+        builder: (_, _) => const AdminSepayScreen(),
+      ),
+      GoRoute(
         path: AppConfig.clubManagementPath,
         builder: (_, _) => const MyClubsPage(),
       ),
@@ -124,6 +132,37 @@ GoRouter generateAppRouter(String initialRoute) {
         builder: (_, state) {
           final clubId = state.pathParameters['clubId'] ?? '';
           return ClubRoleManagementScreen(clubId: clubId);
+        },
+      ),
+      GoRoute(
+        path: '/club/:clubId/sepay',
+        builder: (_, state) {
+          final clubId = state.pathParameters['clubId'] ?? '';
+          final sepay = state.uri.queryParameters['sepay'];
+          final ticket = state.uri.queryParameters['ticket'];
+          return ClubSepayScreen(
+            clubId: clubId,
+            sepayCallbackStatus: sepay,
+            ticket: ticket,
+          );
+        },
+      ),
+      GoRoute(
+        path: '/club/:clubId/reconciliations',
+        builder: (_, state) {
+          final clubId = state.pathParameters['clubId'] ?? '';
+          return ClubReconciliationsScreen(clubId: clubId);
+        },
+      ),
+      GoRoute(
+        path: '/club/:clubId/reconciliations/:transactionId',
+        builder: (_, state) {
+          final clubId = state.pathParameters['clubId'] ?? '';
+          final transactionId = state.pathParameters['transactionId'] ?? '';
+          return ClubReconciliationDetailScreen(
+            clubId: clubId,
+            transactionId: transactionId,
+          );
         },
       ),
       GoRoute(

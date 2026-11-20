@@ -11,6 +11,7 @@ class MemberSettlementFee {
   final int discount;
   final int finalFee;
   final String paymentStatus; // 'PENDING' | 'PAID'
+  final String? paymentMethod;
   final String vietQrUrl;
   final String paymentCode;
 
@@ -25,12 +26,17 @@ class MemberSettlementFee {
     required this.discount,
     required this.finalFee,
     required this.paymentStatus,
+    this.paymentMethod,
     required this.vietQrUrl,
     required this.paymentCode,
   });
 
   bool get isPaid => paymentStatus == 'PAID';
   bool get isExempt => paymentStatus == 'EXEMPT';
+  bool get isCashEligible =>
+      !isPaid &&
+      !isExempt &&
+      (paymentMethod == null || paymentMethod == 'CASH');
 
   MemberSettlementFee copyWith({
     String? feeId,
@@ -43,6 +49,7 @@ class MemberSettlementFee {
     int? discount,
     int? finalFee,
     String? paymentStatus,
+    String? paymentMethod,
     String? vietQrUrl,
     String? paymentCode,
   }) {
@@ -57,6 +64,7 @@ class MemberSettlementFee {
       discount: discount ?? this.discount,
       finalFee: finalFee ?? this.finalFee,
       paymentStatus: paymentStatus ?? this.paymentStatus,
+      paymentMethod: paymentMethod ?? this.paymentMethod,
       vietQrUrl: vietQrUrl ?? this.vietQrUrl,
       paymentCode: paymentCode ?? this.paymentCode,
     );

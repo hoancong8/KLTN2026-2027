@@ -191,7 +191,11 @@ class AppAuthInterceptor extends Interceptor {
       _refreshDio = Dio(
         BaseOptions(
           baseUrl: AppConfig.baseUrl,
-          headers: {'Content-Type': 'application/json', 'FromMobile': 'true'},
+          headers: {
+            'Content-Type': 'application/json',
+            'FromMobile': 'true',
+            ...AppConfig.developmentTunnelHeaders,
+          },
         ),
       );
       if (!kIsWeb) {

@@ -14,6 +14,16 @@ class AppConfig {
     return _defaultBaseUrl;
   }
 
+  /// Bypass ngrok's free browser warning for browser API calls in development.
+  /// Keep this scoped to ngrok so production requests do not carry the header.
+  static Map<String, String> get developmentTunnelHeaders {
+    final host = Uri.tryParse(baseUrl)?.host.toLowerCase() ?? '';
+    if (env == 'dev' && host.endsWith('.ngrok-free.dev')) {
+      return const {'ngrok-skip-browser-warning': '1'};
+    }
+    return const {};
+  }
+
   // URL mặc định theo environment và platform
   static String get _defaultBaseUrl {
     if (env == 'prod') {
@@ -162,4 +172,40 @@ class AppConfig {
   static String myFeeDetailPath(String feeId) => '/my-fees/$feeId';
   static String sessionSettlementScreenPath(String sessionId) =>
       '/session/$sessionId/settlement';
+
+  // ===== [API & ROUTER] UC18 SePay & Payment Reconciliation APIs =====
+  static const sepayApplicationEndpoint = '/api/v1/sepay/application';
+  static String clubSepayEndpoint(String groupId) => '$clubsPath/$groupId/sepay';
+  static String clubSepayAuthorizeEndpoint(String groupId) =>
+      '${clubSepayEndpoint(groupId)}/authorize';
+  static String clubSepayCompleteEndpoint(String groupId) =>
+      '${clubSepayEndpoint(groupId)}/complete';
+  static String clubSepayAccountsEndpoint(String groupId) =>
+      '${clubSepayEndpoint(groupId)}/accounts';
+  static String clubSepayAccountEndpoint(String groupId) =>
+      '${clubSepayEndpoint(groupId)}/account';
+  static String clubSepayActivateEndpoint(String groupId) =>
+      '${clubSepayEndpoint(groupId)}/activate';
+  static String clubSepayConnectionsEndpoint(String groupId) =>
+      '${clubSepayEndpoint(groupId)}/connections';
+  static String clubSepayDisconnectConnectionEndpoint(
+          String groupId, String connectionId) =>
+      '${clubSepayEndpoint(groupId)}/connections/$connectionId';
+
+  static String clubReconciliationsEndpoint(String groupId) =>
+      '$clubsPath/$groupId/reconciliations';
+  static String clubReconciliationDetailEndpoint(
+          String groupId, String transactionId) =>
+      '${clubReconciliationsEndpoint(groupId)}/$transactionId';
+  static String clubReconciliationConfirmEndpoint(
+          String groupId, String transactionId) =>
+      '${clubReconciliationDetailEndpoint(groupId, transactionId)}/confirm';
+
+  static const adminSepayPath = '/admin/sepay';
+  static String clubSepayScreenPath(String clubId) => '/club/$clubId/sepay';
+  static String clubReconciliationsScreenPath(String clubId) =>
+      '/club/$clubId/reconciliations';
+  static String clubReconciliationDetailScreenPath(
+          String clubId, String transactionId) =>
+      '/club/$clubId/reconciliations/$transactionId';
 }

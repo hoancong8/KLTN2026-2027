@@ -16,6 +16,7 @@ extension MemberSettlementFeeDtoMapper on MemberSettlementFeeDto {
       discount: discount,
       finalFee: finalFee,
       paymentStatus: paymentStatus,
+      paymentMethod: paymentMethod,
       vietQrUrl: vietQrUrl,
       paymentCode: paymentCode,
     );
