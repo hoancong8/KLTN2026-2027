@@ -1,5 +1,6 @@
 import '../domain/repositories/session_operations_repository.dart';
 import '../domain/entities/session/session_settlement.dart';
+import '../domain/entities/payment/personal_fee.dart';
 import '../data/repositories/session_operations_repository_impl.dart';
 import 'package:dio/dio.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
@@ -40,6 +41,24 @@ import '../domain/repositories/media_repository.dart';
 import '../domain/usecases/media/upload_image_usecase.dart';
 import '../domain/usecases/notification/mark_all_notifications_read_usecase.dart';
 import '../domain/usecases/notification/mark_notification_read_usecase.dart';
+import '../data/datasource/remote/abstract/payment_remote_datasource.dart';
+import '../data/datasource/remote/implement/payment_remote_datasource_impl.dart';
+import '../data/repositories/payment_repository_impl.dart';
+import '../domain/repositories/payment_repository.dart';
+import '../domain/usecases/payment/payment_usecases.dart';
+
+// UC18 SePay & Reconciliation imports
+import '../data/datasource/remote/abstract/sepay_remote_datasource.dart';
+import '../data/datasource/remote/implement/sepay_remote_datasource_impl.dart';
+import '../data/repositories/sepay_repository_impl.dart';
+import '../domain/repositories/sepay_repository.dart';
+import '../domain/usecases/sepay/sepay_usecases.dart';
+
+import '../data/datasource/remote/abstract/reconciliation_remote_datasource.dart';
+import '../data/datasource/remote/implement/reconciliation_remote_datasource_impl.dart';
+import '../data/repositories/reconciliation_repository_impl.dart';
+import '../domain/repositories/reconciliation_repository.dart';
+import '../domain/usecases/reconciliation/reconciliation_usecases.dart';
 
 // User & Role imports
 import '../data/datasource/remote/abstract/role_remote_datasource.dart';
@@ -286,7 +305,10 @@ final dioProvider = Provider<Dio>((ref) {
   final dio = Dio(
     BaseOptions(
       baseUrl: AppConfig.baseUrl,
-      headers: {'Content-Type': 'application/json'},
+      headers: {
+        'Content-Type': 'application/json',
+        ...AppConfig.developmentTunnelHeaders,
+      },
     ),
   );
   if (!kIsWeb) {
@@ -301,6 +323,7 @@ final dioProvider = Provider<Dio>((ref) {
   if (kDebugMode) {
     dio.interceptors.add(
       PrettyDioLogger(
+        filter: (options, _) => !options.path.contains('/sepay'),
         requestHeader: true,
         requestBody: true,
         responseBody: true,
@@ -740,6 +763,43 @@ final markAllNotificationsReadUseCaseProvider = Provider<MarkAllNotificationsRea
 });
 
 // ============================================================================
+// UC17 - PERSONAL FEES AND CLUB PAYMENT BANK
+// ============================================================================
+
+final paymentRemoteDatasourceProvider = Provider<PaymentRemoteDatasource>((ref) {
+  return PaymentRemoteDatasourceImpl(ref.watch(dioProvider));
+});
+
+final paymentRepositoryProvider = Provider<PaymentRepository>((ref) {
+  return PaymentRepositoryImpl(ref.watch(paymentRemoteDatasourceProvider));
+});
+
+final getMyFeesUseCaseProvider = Provider<GetMyFeesUseCase>((ref) =>
+    GetMyFeesUseCase(ref.watch(paymentRepositoryProvider)));
+final mySessionFeeProvider = FutureProvider.autoDispose.family<PersonalFee?, String>((ref, sessionId) async {
+  final page = await ref.watch(getMyFeesUseCaseProvider).execute(
+    page: 1,
+    pageSize: 1,
+    sessionId: sessionId,
+  );
+  return page.items.where((fee) => fee.sessionId.toLowerCase() == sessionId.toLowerCase()).firstOrNull;
+});
+final getMyFeeUseCaseProvider = Provider<GetMyFeeUseCase>((ref) =>
+    GetMyFeeUseCase(ref.watch(paymentRepositoryProvider)));
+final prepareBankTransferUseCaseProvider = Provider<PrepareBankTransferUseCase>((ref) =>
+    PrepareBankTransferUseCase(ref.watch(paymentRepositoryProvider)));
+final getFeeQrImageUseCaseProvider = Provider<GetFeeQrImageUseCase>((ref) =>
+    GetFeeQrImageUseCase(ref.watch(paymentRepositoryProvider)));
+final reportFeeTransferUseCaseProvider = Provider<ReportFeeTransferUseCase>((ref) =>
+    ReportFeeTransferUseCase(ref.watch(paymentRepositoryProvider)));
+final requestCashPaymentUseCaseProvider = Provider<RequestCashPaymentUseCase>((ref) =>
+    RequestCashPaymentUseCase(ref.watch(paymentRepositoryProvider)));
+final getClubPaymentBankUseCaseProvider = Provider<GetClubPaymentBankUseCase>((ref) =>
+    GetClubPaymentBankUseCase(ref.watch(paymentRepositoryProvider)));
+final updateClubPaymentBankUseCaseProvider = Provider<UpdateClubPaymentBankUseCase>((ref) =>
+    UpdateClubPaymentBankUseCase(ref.watch(paymentRepositoryProvider)));
+
+// ============================================================================
 // FR14 - FR23: SESSION ON-COURT OPERATIONS & SETTLEMENT PROVIDERS
 // ============================================================================
 
@@ -766,3 +826,63 @@ final mediaRepositoryProvider = Provider<MediaRepository>((ref) {
 final uploadImageUseCaseProvider = Provider<UploadImageUseCase>((ref) {
   return UploadImageUseCase(ref.watch(mediaRepositoryProvider));
 });
+
+// ============================================================================
+// UC18: SEPAY & PAYMENT RECONCILIATION PROVIDERS
+// ============================================================================
+
+final sepayRemoteDatasourceProvider = Provider<SepayRemoteDatasource>((ref) {
+  return SepayRemoteDatasourceImpl(ref.watch(dioProvider));
+});
+
+final sepayRepositoryProvider = Provider<SepayRepository>((ref) {
+  return SepayRepositoryImpl(ref.watch(sepayRemoteDatasourceProvider));
+});
+
+final getSepayApplicationUseCaseProvider = Provider<GetSepayApplicationUseCase>((ref) =>
+    GetSepayApplicationUseCase(ref.watch(sepayRepositoryProvider)));
+
+final configureSepayApplicationUseCaseProvider = Provider<ConfigureSepayApplicationUseCase>((ref) =>
+    ConfigureSepayApplicationUseCase(ref.watch(sepayRepositoryProvider)));
+
+final getClubSepayConnectionUseCaseProvider = Provider<GetClubSepayConnectionUseCase>((ref) =>
+    GetClubSepayConnectionUseCase(ref.watch(sepayRepositoryProvider)));
+
+final startClubSepayConnectionUseCaseProvider = Provider<StartClubSepayConnectionUseCase>((ref) =>
+    StartClubSepayConnectionUseCase(ref.watch(sepayRepositoryProvider)));
+
+final completeClubSepayConnectionUseCaseProvider = Provider<CompleteClubSepayConnectionUseCase>((ref) =>
+    CompleteClubSepayConnectionUseCase(ref.watch(sepayRepositoryProvider)));
+
+final getClubSepayBankAccountsUseCaseProvider = Provider<GetClubSepayBankAccountsUseCase>((ref) =>
+    GetClubSepayBankAccountsUseCase(ref.watch(sepayRepositoryProvider)));
+
+final selectClubSepayBankAccountUseCaseProvider = Provider<SelectClubSepayBankAccountUseCase>((ref) =>
+    SelectClubSepayBankAccountUseCase(ref.watch(sepayRepositoryProvider)));
+
+final activateClubSepayConnectionUseCaseProvider = Provider<ActivateClubSepayConnectionUseCase>((ref) =>
+    ActivateClubSepayConnectionUseCase(ref.watch(sepayRepositoryProvider)));
+
+final listClubSepayConnectionsUseCaseProvider = Provider<ListClubSepayConnectionsUseCase>((ref) =>
+    ListClubSepayConnectionsUseCase(ref.watch(sepayRepositoryProvider)));
+
+final disconnectClubSepayConnectionUseCaseProvider = Provider<DisconnectClubSepayConnectionUseCase>((ref) =>
+    DisconnectClubSepayConnectionUseCase(ref.watch(sepayRepositoryProvider)));
+
+final reconciliationRemoteDatasourceProvider = Provider<ReconciliationRemoteDatasource>((ref) {
+  return ReconciliationRemoteDatasourceImpl(ref.watch(dioProvider));
+});
+
+final reconciliationRepositoryProvider = Provider<ReconciliationRepository>((ref) {
+  return ReconciliationRepositoryImpl(ref.watch(reconciliationRemoteDatasourceProvider));
+});
+
+final getReconciliationsUseCaseProvider = Provider<GetReconciliationsUseCase>((ref) =>
+    GetReconciliationsUseCase(ref.watch(reconciliationRepositoryProvider)));
+
+final getReconciliationDetailUseCaseProvider = Provider<GetReconciliationDetailUseCase>((ref) =>
+    GetReconciliationDetailUseCase(ref.watch(reconciliationRepositoryProvider)));
+
+final confirmManualReconciliationUseCaseProvider = Provider<ConfirmManualReconciliationUseCase>((ref) =>
+    ConfirmManualReconciliationUseCase(ref.watch(reconciliationRepositoryProvider)));
+

@@ -8,6 +8,10 @@ abstract class Permissions {
   static const String system = 'System';
   static const String systemAdministrator = 'System.Administrator';
 
+  // --- Tích hợp hệ thống (Integrations) ---
+  static const String integrations = 'Integrations';
+  static const String integrationsSepayManage = 'Integrations.SepayManage';
+
   // --- Vai trò & Quyền hạn (Roles) ---
   static const String roles = 'Roles';
   static const String rolesRead = 'Roles.Read';

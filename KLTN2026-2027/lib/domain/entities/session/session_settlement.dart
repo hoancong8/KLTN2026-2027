@@ -1,6 +1,7 @@
 // lib/domain/entities/session/session_settlement.dart
 
 class MemberSettlementFee {
+  final String feeId;
   final String userId;
   final String fullName;
   final String? avatarUrl;
@@ -10,10 +11,12 @@ class MemberSettlementFee {
   final int discount;
   final int finalFee;
   final String paymentStatus; // 'PENDING' | 'PAID'
+  final String? paymentMethod;
   final String vietQrUrl;
   final String paymentCode;
 
   const MemberSettlementFee({
+    required this.feeId,
     required this.userId,
     required this.fullName,
     this.avatarUrl,
@@ -23,13 +26,20 @@ class MemberSettlementFee {
     required this.discount,
     required this.finalFee,
     required this.paymentStatus,
+    this.paymentMethod,
     required this.vietQrUrl,
     required this.paymentCode,
   });
 
   bool get isPaid => paymentStatus == 'PAID';
+  bool get isExempt => paymentStatus == 'EXEMPT';
+  bool get isCashEligible =>
+      !isPaid &&
+      !isExempt &&
+      (paymentMethod == null || paymentMethod == 'CASH');
 
   MemberSettlementFee copyWith({
+    String? feeId,
     String? userId,
     String? fullName,
     String? avatarUrl,
@@ -39,10 +49,12 @@ class MemberSettlementFee {
     int? discount,
     int? finalFee,
     String? paymentStatus,
+    String? paymentMethod,
     String? vietQrUrl,
     String? paymentCode,
   }) {
     return MemberSettlementFee(
+      feeId: feeId ?? this.feeId,
       userId: userId ?? this.userId,
       fullName: fullName ?? this.fullName,
       avatarUrl: avatarUrl ?? this.avatarUrl,
@@ -52,6 +64,7 @@ class MemberSettlementFee {
       discount: discount ?? this.discount,
       finalFee: finalFee ?? this.finalFee,
       paymentStatus: paymentStatus ?? this.paymentStatus,
+      paymentMethod: paymentMethod ?? this.paymentMethod,
       vietQrUrl: vietQrUrl ?? this.vietQrUrl,
       paymentCode: paymentCode ?? this.paymentCode,
     );

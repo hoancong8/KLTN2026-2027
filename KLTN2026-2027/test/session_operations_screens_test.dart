@@ -129,6 +129,7 @@ class FakeSessionOperationsRepository implements SessionOperationsRepository {
       isSettled: false,
       memberFees: [
         MemberSettlementFee(
+          feeId: 'fee-1',
           userId: 'u1',
           fullName: 'Nguyễn Văn An',
           roleName: 'Hội viên ngày',

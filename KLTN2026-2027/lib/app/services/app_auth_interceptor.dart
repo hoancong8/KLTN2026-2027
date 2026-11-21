@@ -109,7 +109,7 @@ class AppAuthInterceptor extends Interceptor {
               contentType: opts.contentType,
             ),
           );
-          AppLog.info('[AppAuthInterceptor] Waiter Retry Response Data: ${retryResponse.data?.toString().substring(0, retryResponse.data?.toString().length.clamp(0, 500))}');
+          AppLog.info('[AppAuthInterceptor] Waiter retry status: ${retryResponse.statusCode}');
           return handler.resolve(retryResponse);
         } catch (e) {
           if (e is DioException && e.response?.statusCode == 401) {
@@ -158,7 +158,7 @@ class AppAuthInterceptor extends Interceptor {
         );
         final retryResponse = await baseDio.fetch(opts);
         AppLog.info(
-          '[AppAuthInterceptor] Initiator Retry complete, status: ${retryResponse.statusCode} | Data: ${retryResponse.data?.toString().substring(0, retryResponse.data?.toString().length.clamp(0, 500))}',
+          '[AppAuthInterceptor] Initiator retry status: ${retryResponse.statusCode}',
         );
         return handler.resolve(retryResponse);
       } catch (e) {
@@ -191,7 +191,11 @@ class AppAuthInterceptor extends Interceptor {
       _refreshDio = Dio(
         BaseOptions(
           baseUrl: AppConfig.baseUrl,
-          headers: {'Content-Type': 'application/json', 'FromMobile': 'true'},
+          headers: {
+            'Content-Type': 'application/json',
+            'FromMobile': 'true',
+            ...AppConfig.developmentTunnelHeaders,
+          },
         ),
       );
       if (!kIsWeb) {

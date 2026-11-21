@@ -999,6 +999,7 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
         memberFees: activePlayers
             .map(
               (p) => MemberSettlementFee(
+                feeId: '',
                 userId: p.userId,
                 fullName: p.fullName,
                 avatarUrl: p.avatarUrl,
@@ -1141,6 +1142,7 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
     final updatedFees = current.memberFees.map((m) {
       if (m.userId == userId) {
         return MemberSettlementFee(
+          feeId: m.feeId,
           userId: m.userId,
           fullName: m.fullName,
           avatarUrl: m.avatarUrl,
@@ -1150,6 +1152,7 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
           discount: m.discount,
           finalFee: m.finalFee,
           paymentStatus: 'PAID',
+          paymentMethod: 'CASH',
           vietQrUrl: m.vietQrUrl,
           paymentCode: m.paymentCode,
         );

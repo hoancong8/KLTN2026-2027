@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../app/consts/permissions.dart';
 import '../../../app/provider.dart';
 import '../../../app/theme/theme.dart';
 import '../../../domain/enums/club_role.dart';
@@ -22,19 +23,21 @@ class ClubDetailScreen extends ConsumerStatefulWidget {
   ConsumerState<ClubDetailScreen> createState() => _ClubDetailScreenState();
 }
 
-class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with SingleTickerProviderStateMixin {
+class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
   AppThemeColors get colors => context.colors;
   AppLocalizations get l10n => context.l10n;
-
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(clubDetailViewModelProvider(widget.clubId).notifier).loadDetail();
+      ref
+          .read(clubDetailViewModelProvider(widget.clubId).notifier)
+          .loadDetail();
       ref.read(clubContextViewModelProvider.notifier).loadMyClubs();
     });
   }
@@ -44,6 +47,7 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
     _tabController.dispose();
     super.dispose();
   }
+
   void _copyToClipboard(String text, String message) {
     Clipboard.setData(ClipboardData(text: text));
     ScaffoldMessenger.of(context).showSnackBar(
@@ -66,7 +70,14 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
           children: [
             Icon(Icons.edit_note_rounded, color: colors.primary, size: 26),
             const SizedBox(width: 8),
-            Text(l10n.club_join_request_title, style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: colors.textPrimary)),
+            Text(
+              l10n.club_join_request_title,
+              style: TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.bold,
+                color: colors.textPrimary,
+              ),
+            ),
           ],
         ),
         content: Column(
@@ -98,13 +109,18 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: Text(l10n.com_cancel, style: TextStyle(color: colors.textMuted)),
+            child: Text(
+              l10n.com_cancel,
+              style: TextStyle(color: colors.textMuted),
+            ),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: colors.primary,
               foregroundColor: AppColors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
             ),
             onPressed: () async {
               Navigator.of(ctx).pop();
@@ -134,7 +150,8 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
           ),
         );
       }
-      if (next.successMessage != null && next.successMessage != prev?.successMessage) {
+      if (next.successMessage != null &&
+          next.successMessage != prev?.successMessage) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(next.successMessage!),
@@ -149,11 +166,27 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
     final currentProfile = ref.watch(currentUserProfileProvider);
     final activeContext = ref.watch(activeClubContextProvider);
     final isSameClub = activeContext?.clubId == widget.clubId;
-    final isHostOwner = club != null && currentProfile != null && club.host.userId == currentProfile.id;
-    final isHost = isHostOwner || (club?.currentUserStatus.isHost ?? false) || (isSameClub && activeContext?.role == ClubRole.host);
-    final canManageRoles = isHost || (isSameClub && ref.hasClubPermission('MEMBER.ROLE.MANAGE'));
-    final canManageSchedule = isHost || (isSameClub && ref.hasClubPermission('OPERATIONS.SCHEDULE.MANAGE'));
-    final canManageClub = isHost ||
+    final isHostOwner =
+        club != null &&
+        currentProfile != null &&
+        club.host.userId == currentProfile.id;
+    final isHost =
+        isHostOwner ||
+        (club?.currentUserStatus.isHost ?? false) ||
+        (isSameClub && activeContext?.role == ClubRole.host);
+    final canManageRoles =
+        isHost || (isSameClub && ref.hasClubPermission('MEMBER.ROLE.MANAGE'));
+    final canManageSchedule =
+        isHost ||
+        (isSameClub && ref.hasClubPermission('OPERATIONS.SCHEDULE.MANAGE'));
+    final canManageFinance =
+        isHost ||
+        (isSameClub &&
+            (ref.hasClubPermission(ClubPermissions.feeManage) ||
+                ref.hasClubPermission(ClubPermissions.bankManage) ||
+                ref.hasClubPermission(ClubPermissions.ledgerView)));
+    final canManageClub =
+        isHost ||
         (isSameClub &&
             (ref.hasClubPermission('MEMBER.INFO.UPDATE') ||
                 ref.hasClubPermission('OPERATIONS.SCHEDULE.MANAGE') ||
@@ -173,12 +206,21 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
           ),
         ),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: colors.textPrimary),
-          onPressed: () => context.canPop() ? context.pop() : context.go('/home'),
+          icon: Icon(
+            Icons.arrow_back_ios_new_rounded,
+            size: 20,
+            color: colors.textPrimary,
+          ),
+          onPressed: () =>
+              context.canPop() ? context.pop() : context.go('/home'),
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.refresh_rounded, color: colors.textPrimary, size: 22),
+            icon: Icon(
+              Icons.refresh_rounded,
+              color: colors.textPrimary,
+              size: 22,
+            ),
             tooltip: 'Làm mới',
             onPressed: () async {
               await Future.wait([
@@ -189,13 +231,32 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
           ),
           if (club != null && canManageClub)
             IconButton(
-              icon: Icon(Icons.settings_outlined, color: colors.textPrimary, size: 22),
+              icon: Icon(
+                Icons.settings_outlined,
+                color: colors.textPrimary,
+                size: 22,
+              ),
               tooltip: 'Cài đặt CLB',
               onPressed: () => context.push('/club/${widget.clubId}/settings'),
             ),
+          if (club != null && canManageFinance)
+            IconButton(
+              icon: Icon(
+                Icons.receipt_long_rounded,
+                color: colors.textPrimary,
+                size: 22,
+              ),
+              tooltip: context.l10n.sepay_reconciliation_tooltip,
+              onPressed: () =>
+                  context.push('/club/${widget.clubId}/reconciliations'),
+            ),
           if (club != null && canManageRoles)
             IconButton(
-              icon: Icon(Icons.people_outline_rounded, color: colors.textPrimary, size: 22),
+              icon: Icon(
+                Icons.people_outline_rounded,
+                color: colors.textPrimary,
+                size: 22,
+              ),
               tooltip: 'Quản lý thành viên',
               onPressed: () => context.push('/club/${widget.clubId}/roles'),
             ),
@@ -237,31 +298,37 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
         ),
       ),
       body: state.isLoading && club == null
-          ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
+          ? const Center(
+              child: CircularProgressIndicator(color: AppColors.primary),
+            )
           : club == null
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.error_outline_rounded, size: 56, color: colors.textMuted),
-                      const SizedBox(height: 12),
-                      const Text(
-                        'Không thể tải thông tin câu lạc bộ',
-                        style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: () => vm.loadDetail(),
-                        child: const Text('Thử lại'),
-                      ),
-                    ],
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.error_outline_rounded,
+                    size: 56,
+                    color: colors.textMuted,
                   ),
-                )
-              : Center(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 800),
-                    child: TabBarView(
-                      controller: _tabController,
+                  const SizedBox(height: 12),
+                  const Text(
+                    'Không thể tải thông tin câu lạc bộ',
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () => vm.loadDetail(),
+                    child: const Text('Thử lại'),
+                  ),
+                ],
+              ),
+            )
+          : Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 800),
+                child: TabBarView(
+                  controller: _tabController,
                   children: [
                     // Tab 1: Danh sách các buổi tập 14 ngày tới (tự động khởi tạo)
                     ClubSessionsTab(
@@ -276,7 +343,9 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
                       onRefresh: () async {
                         await Future.wait([
                           vm.loadDetail(),
-                          ref.read(clubContextViewModelProvider.notifier).loadMyClubs(),
+                          ref
+                              .read(clubContextViewModelProvider.notifier)
+                              .loadMyClubs(),
                         ]);
                       },
                       child: ListView(
@@ -299,7 +368,9 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
                 ),
               ),
             ),
-      bottomNavigationBar: club != null ? _buildBottomActionBar(club, vm, state.isSubmitting) : null,
+      bottomNavigationBar: club != null
+          ? _buildBottomActionBar(club, vm, state.isSubmitting)
+          : null,
     );
   }
 
@@ -358,10 +429,16 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
                     Row(
                       children: [
                         InkWell(
-                          onTap: () => _copyToClipboard(club.code, 'Đã sao chép mã nhóm: ${club.code}'),
+                          onTap: () => _copyToClipboard(
+                            club.code,
+                            'Đã sao chép mã nhóm: ${club.code}',
+                          ),
                           borderRadius: BorderRadius.circular(6),
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 3,
+                            ),
                             decoration: BoxDecoration(
                               color: colors.surfaceSubtle,
                               borderRadius: BorderRadius.circular(6),
@@ -371,10 +448,18 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
                               children: [
                                 Text(
                                   'Mã: ${club.code}',
-                                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: colors.textMuted),
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: colors.textMuted,
+                                  ),
                                 ),
                                 const SizedBox(width: 4),
-                                Icon(Icons.copy_rounded, size: 12, color: colors.textMuted),
+                                Icon(
+                                  Icons.copy_rounded,
+                                  size: 12,
+                                  color: colors.textMuted,
+                                ),
                               ],
                             ),
                           ),
@@ -390,20 +475,33 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
                           ),
                           borderRadius: BorderRadius.circular(6),
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 3,
+                            ),
                             decoration: BoxDecoration(
                               color: colors.primary.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(6),
-                              border: Border.all(color: colors.primary.withValues(alpha: 0.3)),
+                              border: Border.all(
+                                color: colors.primary.withValues(alpha: 0.3),
+                              ),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(Icons.qr_code_rounded, size: 12, color: colors.primary),
+                                Icon(
+                                  Icons.qr_code_rounded,
+                                  size: 12,
+                                  color: colors.primary,
+                                ),
                                 const SizedBox(width: 4),
                                 Text(
                                   'Mã QR',
-                                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: colors.primary),
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                    color: colors.primary,
+                                  ),
                                 ),
                               ],
                             ),
@@ -414,16 +512,25 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
                     if (club.currentUserStatus.isHost) ...[
                       const SizedBox(height: 6),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
                           color: AppColors.roleHost.withValues(alpha: 0.12),
                           borderRadius: BorderRadius.circular(6),
-                          border: Border.all(color: AppColors.roleHost.withValues(alpha: 0.3)),
+                          border: Border.all(
+                            color: AppColors.roleHost.withValues(alpha: 0.3),
+                          ),
                         ),
                         child: const Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.shield_rounded, size: 12, color: AppColors.roleHost),
+                            Icon(
+                              Icons.shield_rounded,
+                              size: 12,
+                              color: AppColors.roleHost,
+                            ),
                             SizedBox(width: 4),
                             Text(
                               'CHỦ NHÓM (HOST)',
@@ -446,8 +553,18 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildHeaderStat('Thành viên', '${club.memberCount}', Icons.groups_rounded, AppColors.roleDeputy),
-              _buildHeaderStat('Chất lượng', club.qualityScore.toStringAsFixed(1), Icons.star_rounded, AppColors.warning),
+              _buildHeaderStat(
+                'Thành viên',
+                '${club.memberCount}',
+                Icons.groups_rounded,
+                AppColors.roleDeputy,
+              ),
+              _buildHeaderStat(
+                'Chất lượng',
+                club.qualityScore.toStringAsFixed(1),
+                Icons.star_rounded,
+                AppColors.warning,
+              ),
               _buildHeaderStat(
                 'Tuyển thành viên',
                 club.isRecruiting ? 'Đang mở' : 'Đã đủ',
@@ -456,7 +573,8 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
               ),
             ],
           ),
-          if (club.schedulesSummary != null && club.schedulesSummary!.isNotEmpty) ...[
+          if (club.schedulesSummary != null &&
+              club.schedulesSummary!.isNotEmpty) ...[
             const SizedBox(height: 14),
             Container(
               width: double.infinity,
@@ -464,11 +582,17 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
               decoration: BoxDecoration(
                 color: colors.primaryContainer,
                 borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: colors.primary.withValues(alpha: 0.25)),
+                border: Border.all(
+                  color: colors.primary.withValues(alpha: 0.25),
+                ),
               ),
               child: Row(
                 children: [
-                  Icon(Icons.event_repeat_rounded, size: 16, color: colors.primary),
+                  Icon(
+                    Icons.event_repeat_rounded,
+                    size: 16,
+                    color: colors.primary,
+                  ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
@@ -489,7 +613,12 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
     );
   }
 
-  Widget _buildHeaderStat(String label, String value, IconData icon, Color color) {
+  Widget _buildHeaderStat(
+    String label,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
     return Column(
       children: [
         Row(
@@ -499,21 +628,23 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
             const SizedBox(width: 4),
             Text(
               value,
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: color),
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: color,
+              ),
             ),
           ],
         ),
         const SizedBox(height: 2),
-        Text(
-          label,
-          style: TextStyle(fontSize: 11, color: colors.textMuted),
-        ),
+        Text(label, style: TextStyle(fontSize: 11, color: colors.textMuted)),
       ],
     );
   }
 
   Widget _buildVenueCard(ClubDetail club) {
-    final hasVenue = club.fixedVenueName != null && club.fixedVenueName!.isNotEmpty;
+    final hasVenue =
+        club.fixedVenueName != null && club.fixedVenueName!.isNotEmpty;
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -532,7 +663,11 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
               SizedBox(width: 8),
               Text(
                 'Sân sinh hoạt cố định',
-                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: colors.textPrimary),
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  color: colors.textPrimary,
+                ),
               ),
             ],
           ),
@@ -540,14 +675,22 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
           if (hasVenue) ...[
             Text(
               club.fixedVenueName!,
-              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: colors.textPrimary),
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                color: colors.textPrimary,
+              ),
             ),
             if (club.fixedAddress != null && club.fixedAddress!.isNotEmpty) ...[
               const SizedBox(height: 4),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Icon(Icons.location_on_rounded, size: 14, color: AppColors.error),
+                  const Icon(
+                    Icons.location_on_rounded,
+                    size: 14,
+                    color: AppColors.error,
+                  ),
                   const SizedBox(width: 4),
                   Expanded(
                     child: Text(
@@ -569,7 +712,11 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.gps_fixed_rounded, size: 12, color: colors.primary),
+                    Icon(
+                      Icons.gps_fixed_rounded,
+                      size: 12,
+                      color: colors.primary,
+                    ),
                     const SizedBox(width: 4),
                     Text(
                       'Tọa độ GPS: ${club.lat!.toStringAsFixed(4)}, ${club.lng!.toStringAsFixed(4)}',
@@ -592,7 +739,10 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
               },
               borderRadius: BorderRadius.circular(8),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
                   color: colors.infoContainer,
                   borderRadius: BorderRadius.circular(8),
@@ -601,11 +751,19 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.directions_rounded, size: 16, color: colors.info),
+                    Icon(
+                      Icons.directions_rounded,
+                      size: 16,
+                      color: colors.info,
+                    ),
                     const SizedBox(width: 6),
                     Text(
                       'Sao chép link Google Maps chỉ đường',
-                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: colors.info),
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: colors.info,
+                      ),
                     ),
                   ],
                 ),
@@ -636,11 +794,19 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
         children: [
           Row(
             children: [
-              Icon(Icons.calendar_month_rounded, color: colors.primary, size: 20),
+              Icon(
+                Icons.calendar_month_rounded,
+                color: colors.primary,
+                size: 20,
+              ),
               const SizedBox(width: 8),
               Text(
                 'Lịch sinh hoạt định kỳ hàng tuần',
-                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: colors.textPrimary),
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  color: colors.textPrimary,
+                ),
               ),
               const Spacer(),
               if (canManageSchedule)
@@ -648,20 +814,33 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
                   onTap: () => context.push('/club/${widget.clubId}/settings'),
                   borderRadius: BorderRadius.circular(8),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: colors.primary.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: colors.primary.withValues(alpha: 0.25)),
+                      border: Border.all(
+                        color: colors.primary.withValues(alpha: 0.25),
+                      ),
                     ),
                     child: const Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.edit_calendar_rounded, size: 14, color: AppColors.primary),
+                        Icon(
+                          Icons.edit_calendar_rounded,
+                          size: 14,
+                          color: AppColors.primary,
+                        ),
                         SizedBox(width: 4),
                         Text(
                           'Thiết lập',
-                          style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold, color: AppColors.primary),
+                          style: TextStyle(
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.primary,
+                          ),
                         ),
                       ],
                     ),
@@ -679,7 +858,10 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
             ...club.schedules.where((s) => s.isActive).map((s) {
               return Container(
                 margin: const EdgeInsets.only(bottom: 8),
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 10,
+                ),
                 decoration: BoxDecoration(
                   color: colors.inputFill,
                   borderRadius: BorderRadius.circular(10),
@@ -693,7 +875,11 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
                         color: colors.primary.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(6),
                       ),
-                      child: const Icon(Icons.access_time_rounded, size: 16, color: AppColors.primary),
+                      child: const Icon(
+                        Icons.access_time_rounded,
+                        size: 16,
+                        color: AppColors.primary,
+                      ),
                     ),
                     const SizedBox(width: 10),
                     Text(
@@ -706,7 +892,10 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
                     ),
                     const Spacer(),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.infoContainer,
                         borderRadius: BorderRadius.circular(6),
@@ -747,7 +936,11 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
               SizedBox(width: 8),
               Text(
                 'Thông tin Chủ nhiệm / Host',
-                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: colors.textPrimary),
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  color: colors.textPrimary,
+                ),
               ),
             ],
           ),
@@ -757,13 +950,21 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
               CircleAvatar(
                 radius: 22,
                 backgroundColor: AppColors.primary.withValues(alpha: 0.12),
-                backgroundImage: club.host.avatarUrl != null && club.host.avatarUrl!.isNotEmpty
+                backgroundImage:
+                    club.host.avatarUrl != null &&
+                        club.host.avatarUrl!.isNotEmpty
                     ? NetworkImage(club.host.avatarUrl!)
                     : null,
-                child: club.host.avatarUrl == null || club.host.avatarUrl!.isEmpty
+                child:
+                    club.host.avatarUrl == null || club.host.avatarUrl!.isEmpty
                     ? Text(
-                        club.host.fullName.isNotEmpty ? club.host.fullName[0].toUpperCase() : 'H',
-                        style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.primary),
+                        club.host.fullName.isNotEmpty
+                            ? club.host.fullName[0].toUpperCase()
+                            : 'H',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.primary,
+                        ),
                       )
                     : null,
               ),
@@ -774,11 +975,16 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
                   children: [
                     Text(
                       club.host.fullName,
-                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: colors.textPrimary),
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: colors.textPrimary,
+                      ),
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      club.host.phoneNumber != null && club.host.phoneNumber!.isNotEmpty
+                      club.host.phoneNumber != null &&
+                              club.host.phoneNumber!.isNotEmpty
                           ? club.host.phoneNumber!
                           : 'Chưa cập nhật số điện thoại',
                       style: TextStyle(fontSize: 12, color: colors.textMuted),
@@ -786,9 +992,13 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
                   ],
                 ),
               ),
-              if (club.host.phoneNumber != null && club.host.phoneNumber!.isNotEmpty)
+              if (club.host.phoneNumber != null &&
+                  club.host.phoneNumber!.isNotEmpty)
                 IconButton(
-                  icon: const Icon(Icons.phone_rounded, color: AppColors.success),
+                  icon: const Icon(
+                    Icons.phone_rounded,
+                    color: AppColors.success,
+                  ),
                   tooltip: 'Sao chép SĐT Host',
                   onPressed: () => _copyToClipboard(
                     club.host.phoneNumber!,
@@ -820,7 +1030,11 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
               SizedBox(width: 8),
               Text(
                 'Giới thiệu & Tiêu chuẩn',
-                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: colors.textPrimary),
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  color: colors.textPrimary,
+                ),
               ),
             ],
           ),
@@ -829,15 +1043,26 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
             club.description != null && club.description!.isNotEmpty
                 ? club.description!
                 : 'Nhóm sinh hoạt phong trào cầu lông lành mạnh, đoàn kết, vui khỏe.',
-            style: TextStyle(fontSize: 13, height: 1.4, color: colors.textSecondary),
+            style: TextStyle(
+              fontSize: 13,
+              height: 1.4,
+              color: colors.textSecondary,
+            ),
           ),
           const SizedBox(height: 12),
           Row(
             children: [
-              Text('Khoảng trình độ: ', style: TextStyle(fontSize: 12, color: colors.textMuted)),
+              Text(
+                'Khoảng trình độ: ',
+                style: TextStyle(fontSize: 12, color: colors.textMuted),
+              ),
               Text(
                 '${club.minSkillLevel?.code ?? "NB"} - ${club.maxSkillLevel?.code ?? "G"}',
-                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.primary),
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.primary,
+                ),
               ),
             ],
           ),
@@ -846,7 +1071,11 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
     );
   }
 
-  Widget _buildBottomActionBar(ClubDetail club, ClubDetailViewModel vm, bool isSubmitting) {
+  Widget _buildBottomActionBar(
+    ClubDetail club,
+    ClubDetailViewModel vm,
+    bool isSubmitting,
+  ) {
     final status = club.currentUserStatus;
     final myClubs = ref.watch(clubContextViewModelProvider).myClubs;
     final isMemberInClubs = myClubs.any((c) => c.clubId == club.id);
@@ -869,7 +1098,9 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
                   style: ElevatedButton.styleFrom(
                     backgroundColor: colors.success,
                     foregroundColor: AppColors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                   onPressed: isSubmitting
                       ? null
@@ -878,7 +1109,9 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
                           if (success && mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: Text('Đã chuyển sang CLB ${club.groupName}!'),
+                                content: Text(
+                                  'Đã chuyển sang CLB ${club.groupName}!',
+                                ),
                                 backgroundColor: AppColors.primary,
                               ),
                             );
@@ -891,57 +1124,82 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> with Single
                         },
                   icon: const Icon(Icons.login_rounded),
                   label: isSubmitting
-                      ? const CircularProgressIndicator(color: AppColors.white, strokeWidth: 2)
+                      ? const CircularProgressIndicator(
+                          color: AppColors.white,
+                          strokeWidth: 2,
+                        )
                       : const Text(
                           'Vào sinh hoạt CLB',
-                          style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                 )
               : hasPending
-                  ? ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: colors.warningContainer,
-                        foregroundColor: colors.warning,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
-                      onPressed: null,
-                      icon: Icon(Icons.hourglass_top_rounded, color: colors.warning),
-                      label: Text(
-                        'Đơn xin gia nhập đang chờ duyệt',
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: colors.warning),
-                      ),
-                    )
-                  : !club.isRecruiting
-                      ? ElevatedButton.icon(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: colors.inputFill,
-                            foregroundColor: colors.textMuted,
-                            elevation: 0,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          ),
-                          onPressed: null,
-                          icon: const Icon(Icons.lock_outline_rounded),
-                          label: const Text(
-                            'CLB đang tạm dừng nhận đơn mới',
-                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-                          ),
-                        )
-                      : ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: colors.primary,
-                        foregroundColor: AppColors.white,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
-                      onPressed: isSubmitting ? null : _showJoinRequestDialog,
-                      icon: const Icon(Icons.person_add_alt_1_rounded),
-                      label: isSubmitting
-                          ? const CircularProgressIndicator(color: AppColors.white, strokeWidth: 2)
-                          : const Text(
-                              'Gửi đơn xin gia nhập CLB',
-                              style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
-                            ),
+              ? ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: colors.warningContainer,
+                    foregroundColor: colors.warning,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
                     ),
+                  ),
+                  onPressed: null,
+                  icon: Icon(
+                    Icons.hourglass_top_rounded,
+                    color: colors.warning,
+                  ),
+                  label: Text(
+                    'Đơn xin gia nhập đang chờ duyệt',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: colors.warning,
+                    ),
+                  ),
+                )
+              : !club.isRecruiting
+              ? ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: colors.inputFill,
+                    foregroundColor: colors.textMuted,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  onPressed: null,
+                  icon: const Icon(Icons.lock_outline_rounded),
+                  label: const Text(
+                    'CLB đang tạm dừng nhận đơn mới',
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                  ),
+                )
+              : ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: colors.primary,
+                    foregroundColor: AppColors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  onPressed: isSubmitting ? null : _showJoinRequestDialog,
+                  icon: const Icon(Icons.person_add_alt_1_rounded),
+                  label: isSubmitting
+                      ? const CircularProgressIndicator(
+                          color: AppColors.white,
+                          strokeWidth: 2,
+                        )
+                      : const Text(
+                          'Gửi đơn xin gia nhập CLB',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                ),
         ),
       ),
     );

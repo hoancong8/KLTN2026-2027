@@ -463,6 +463,13 @@ class DashboardPage extends ConsumerWidget {
         iconColor: colors.info,
         onTap: () => ref.read(homeTabProvider.notifier).state = 2,
       ),
+      _QuickActionData(
+        title: l10n.payment_my_fees,
+        icon: Icons.receipt_long_rounded,
+        bgColor: colors.warning.withValues(alpha: 0.12),
+        iconColor: colors.warning,
+        onTap: () => context.push(AppConfig.myFeesPath),
+      ),
     ];
 
     return Row(
@@ -496,15 +503,20 @@ class DashboardPage extends ConsumerWidget {
                         child: Icon(action.icon, color: action.iconColor, size: 22),
                       ),
                       AppSpacing.gapH8,
-                      Text(
-                        action.title,
-                        style: AppTypography.labelSmall.copyWith(
-                          fontWeight: FontWeight.w600,
-                          color: colors.textPrimary,
+                      SizedBox(
+                        height: 36,
+                        child: Center(
+                          child: Text(
+                            action.title,
+                            style: AppTypography.labelSmall.copyWith(
+                              fontWeight: FontWeight.w600,
+                              color: colors.textPrimary,
+                            ),
+                            textAlign: TextAlign.center,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
-                        textAlign: TextAlign.center,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
                       ),
                     ],
                   ),

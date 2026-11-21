@@ -11,11 +11,7 @@ class NotificationMobile extends StatelessWidget {
   final NotificationState state;
   final NotificationViewModel vm;
 
-  const NotificationMobile({
-    super.key,
-    required this.state,
-    required this.vm,
-  });
+  const NotificationMobile({super.key, required this.state, required this.vm});
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +33,11 @@ class NotificationMobile extends StatelessWidget {
           if (state.unreadCount > 0)
             TextButton.icon(
               onPressed: () => vm.markAllAsRead(),
-              icon: Icon(Icons.done_all_rounded, size: 18, color: colors.primary),
+              icon: Icon(
+                Icons.done_all_rounded,
+                size: 18,
+                color: colors.primary,
+              ),
               label: Text(
                 l10n.notification_mark_all_read,
                 style: AppTypography.labelMedium.copyWith(
@@ -57,33 +57,51 @@ class NotificationMobile extends StatelessWidget {
               backgroundColor: colors.surface,
               onRefresh: () => vm.refresh(),
               child: state.isLoading && notifications.isEmpty
-                  ? Center(child: CircularProgressIndicator(color: colors.primary))
+                  ? Center(
+                      child: CircularProgressIndicator(color: colors.primary),
+                    )
                   : notifications.isEmpty
-                      ? _buildEmptyState(context)
-                      : ListView.builder(
-                          physics: const AlwaysScrollableScrollPhysics(),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: AppSpacing.base,
-                            vertical: AppSpacing.sm,
-                          ),
-                          itemCount: notifications.length,
-                          itemBuilder: (context, index) {
-                            final item = notifications[index];
-                            return NotificationItemCard(
-                              notification: item,
-                              onTap: () {
-                                if (!item.isRead) {
-                                  vm.markAsRead(item.id);
-                                }
-                                if ((item.type.toUpperCase() == 'SESSION' || item.referenceType == 'Session') &&
-                                    item.referenceId != null &&
-                                    item.referenceId!.isNotEmpty) {
-                                  context.push(AppConfig.sessionDetailRoutePath(item.referenceId!));
-                                }
-                              },
-                            );
+                  ? _buildEmptyState(context)
+                  : ListView.builder(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.base,
+                        vertical: AppSpacing.sm,
+                      ),
+                      itemCount: notifications.length,
+                      itemBuilder: (context, index) {
+                        final item = notifications[index];
+                        return NotificationItemCard(
+                          notification: item,
+                          onTap: () {
+                            if (!item.isRead) {
+                              vm.markAsRead(item.id);
+                            }
+                            final referenceType = item.referenceType
+                                ?.toUpperCase();
+                            final referenceId = item.referenceId;
+                            if (referenceId != null && referenceId.isNotEmpty) {
+                              if (referenceType == 'SESSIONSETTLEMENT') {
+                                context.push(
+                                  AppConfig.sessionSettlementScreenPath(
+                                    referenceId,
+                                  ),
+                                );
+                              } else if (referenceType == 'SESSIONFEE') {
+                                context.push(
+                                  AppConfig.myFeeDetailPath(referenceId),
+                                );
+                              } else if (item.type.toUpperCase() == 'SESSION' ||
+                                  referenceType == 'SESSION') {
+                                context.push(
+                                  AppConfig.sessionDetailRoutePath(referenceId),
+                                );
+                              }
+                            }
                           },
-                        ),
+                        );
+                      },
+                    ),
             ),
           ),
         ],
@@ -97,14 +115,20 @@ class NotificationMobile extends StatelessWidget {
 
     final filters = [
       {'key': 'ALL', 'label': l10n.notification_filter_all},
-      {'key': 'UNREAD', 'label': '${l10n.notification_filter_unread} (${state.unreadCount})'},
+      {
+        'key': 'UNREAD',
+        'label': '${l10n.notification_filter_unread} (${state.unreadCount})',
+      },
       {'key': 'PAYMENT', 'label': l10n.notification_filter_payment},
       {'key': 'MATCH', 'label': l10n.notification_filter_match},
     ];
 
     return Container(
       height: 48,
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.base, vertical: 6),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.base,
+        vertical: 6,
+      ),
       color: colors.surface,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
@@ -128,7 +152,9 @@ class NotificationMobile extends StatelessWidget {
               color: isSelected ? colors.primary : colors.cardBorder,
               width: 1,
             ),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
             showCheckmark: false,
           );
         },
@@ -155,7 +181,11 @@ class NotificationMobile extends StatelessWidget {
                 color: colors.primaryContainer.withValues(alpha: 0.3),
                 shape: BoxShape.circle,
               ),
-              child: Icon(Icons.notifications_none_rounded, size: 48, color: colors.textSecondary),
+              child: Icon(
+                Icons.notifications_none_rounded,
+                size: 48,
+                color: colors.textSecondary,
+              ),
             ),
             AppSpacing.gapH16,
             Text(
@@ -179,4 +209,3 @@ class NotificationMobile extends StatelessWidget {
     );
   }
 }
-

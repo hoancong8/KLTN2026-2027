@@ -53,6 +53,7 @@ List<SettingsSection> buildSettingsSections(
   final currentLocale = ref.watch(localizationProvider);
   final canReadUsers = ref.hasPermission(Permissions.usersRead);
   final canReadRoles = ref.hasPermission(Permissions.rolesRead);
+  final canManageSepay = ref.hasPermission(Permissions.integrationsSepayManage);
 
   return [
     SettingsSection(
@@ -68,10 +69,10 @@ List<SettingsSection> buildSettingsSections(
         ),
       ],
     ),
-    
-    if (canReadUsers || canReadRoles)
+
+    if (canReadUsers || canReadRoles || canManageSepay)
       SettingsSection(
-        title: 'Quản trị hệ thống',
+        title: context.l10n.sepay_admin_section,
         icon: Icons.admin_panel_settings_outlined,
         items: [
           if (canReadUsers)
@@ -89,6 +90,14 @@ List<SettingsSection> buildSettingsSections(
               title: 'Quản lý vai trò',
               subtitle: 'Xem và cấu hình nhóm quyền hạn',
               onTap: () => context.push(AppConfig.adminRolesPath),
+            ),
+          if (canManageSepay)
+            SettingsItemData(
+              icon: Icons.account_balance_outlined,
+              color: AppColors.info,
+              title: context.l10n.sepay_admin_title,
+              subtitle: context.l10n.sepay_admin_subtitle,
+              onTap: () => context.push(AppConfig.adminSepayPath),
             ),
         ],
       ),
@@ -143,7 +152,10 @@ Widget buildSectionTitle(BuildContext context, String title, [IconData? icon]) {
 }
 
 /// Card container
-Widget buildSettingsCard({BuildContext? context, required List<Widget> children}) {
+Widget buildSettingsCard({
+  BuildContext? context,
+  required List<Widget> children,
+}) {
   return Builder(
     builder: (ctx) {
       final colors = ctx.colors;
@@ -207,7 +219,10 @@ Widget buildSettingsItem({
                   const SizedBox(height: 2),
                   Text(
                     subtitle,
-                    style: TextStyle(fontSize: 13, color: context.colors.textMuted),
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: context.colors.textMuted,
+                    ),
                   ),
                 ],
               ),
@@ -462,7 +477,9 @@ Widget _buildLanguageOption({
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
             decoration: BoxDecoration(
-              color: isSelected ? context.colors.primary.withValues(alpha: 0.1) : context.colors.surfaceSubtle,
+              color: isSelected
+                  ? context.colors.primary.withValues(alpha: 0.1)
+                  : context.colors.surfaceSubtle,
               borderRadius: BorderRadius.circular(6),
             ),
             child: Text(
@@ -470,7 +487,9 @@ Widget _buildLanguageOption({
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.bold,
-                color: isSelected ? context.colors.primary : context.colors.textPrimary,
+                color: isSelected
+                    ? context.colors.primary
+                    : context.colors.textPrimary,
               ),
             ),
           ),
@@ -481,7 +500,9 @@ Widget _buildLanguageOption({
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
-                color: isSelected ? context.colors.primary : context.colors.textPrimary,
+                color: isSelected
+                    ? context.colors.primary
+                    : context.colors.textPrimary,
               ),
             ),
           ),
