@@ -30,7 +30,7 @@ class ClubSepayScreen extends ConsumerStatefulWidget {
 
 class _ClubSepayScreenState extends ConsumerState<ClubSepayScreen> {
   AppThemeColors get colors => context.colors;
-  bool _processedCallback = false;
+  String? _processedCallback;
 
   String? _messageForKey(String? key) => switch (key) {
     'sepay_load_status_failed' => context.l10n.sepay_load_status_failed,
@@ -73,21 +73,30 @@ class _ClubSepayScreenState extends ConsumerState<ClubSepayScreen> {
     });
   }
 
-  void _checkCallback() {
-    if (_processedCallback) return;
+  @override
+  void didUpdateWidget(covariant ClubSepayScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.sepayCallbackStatus != widget.sepayCallbackStatus ||
+        oldWidget.ticket != widget.ticket || oldWidget.clubId != widget.clubId) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _checkCallback();
+      });
+    }
+  }
 
-    // Check query params passed via widget or GoRouter
+  void _checkCallback() {
     final status = widget.sepayCallbackStatus;
     final ticket = widget.ticket;
 
-    if (status != null && status.isNotEmpty) {
-      _processedCallback = true;
-      // Clean query params from URL so ticket is not retained in browser history
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          context.replace('/club/${widget.clubId}/sepay');
-        }
-      });
+    if (status == null || status.isEmpty) {
+      _processedCallback = null;
+      return;
+    }
+    {
+      final callback = '${widget.clubId}:$status:${ticket ?? ''}';
+      if (_processedCallback == callback) return;
+      _processedCallback = callback;
+      context.replace('/club/${widget.clubId}/sepay');
 
       if (status == 'authorized' && ticket != null && ticket.isNotEmpty) {
         ref

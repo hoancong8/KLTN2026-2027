@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 class AppConfig {
   // ===== Environment =====
   static const env = String.fromEnvironment('ENV', defaultValue: 'dev');
+  static bool get isWeb => kIsWeb;
 
   // ===== Base URL =====
   static const _overrideBaseUrl = String.fromEnvironment('BASE_URL');

@@ -1,7 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../app/consts/app_config.dart';
 import '../../../../app/consts/permissions.dart';
 import '../../../../app/provider.dart';
 import '../../../../app/provider/localization_provider.dart';
@@ -22,7 +24,6 @@ class _AdminSepayScreenState extends ConsumerState<AdminSepayScreen> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _clientIdController;
   late final TextEditingController _clientSecretController;
-  late final TextEditingController _publicApiUrlController;
   late final TextEditingController _frontendUrlController;
 
   bool _enabled = true;
@@ -47,7 +48,6 @@ class _AdminSepayScreenState extends ConsumerState<AdminSepayScreen> {
     super.initState();
     _clientIdController = TextEditingController();
     _clientSecretController = TextEditingController();
-    _publicApiUrlController = TextEditingController();
     _frontendUrlController = TextEditingController();
   }
 
@@ -55,7 +55,6 @@ class _AdminSepayScreenState extends ConsumerState<AdminSepayScreen> {
   void dispose() {
     _clientIdController.dispose();
     _clientSecretController.dispose();
-    _publicApiUrlController.dispose();
     _frontendUrlController.dispose();
     super.dispose();
   }
@@ -66,13 +65,11 @@ class _AdminSepayScreenState extends ConsumerState<AdminSepayScreen> {
       _isPopulated = false;
       _clientIdController.clear();
       _clientSecretController.clear();
-      _publicApiUrlController.clear();
       _frontendUrlController.clear();
       return;
     }
     if (!_isPopulated) {
       _clientIdController.text = app.clientId;
-      _publicApiUrlController.text = app.publicApiBaseUrl;
       _frontendUrlController.text = app.frontendBaseUrl;
       _enabled = app.enabled;
       _clientSecretController.clear();
@@ -94,11 +91,19 @@ class _AdminSepayScreenState extends ConsumerState<AdminSepayScreen> {
   Future<void> _handleSave() async {
     if (!_formKey.currentState!.validate()) return;
     final vm = ref.read(adminSepayViewModelProvider.notifier);
+    final savedFrontendUrl = ref
+        .read(adminSepayViewModelProvider)
+        .application
+        ?.frontendBaseUrl;
     final success = await vm.saveApplication(
       clientId: _clientIdController.text,
       clientSecret: _clientSecretController.text,
-      publicApiBaseUrl: _publicApiUrlController.text,
-      frontendBaseUrl: _frontendUrlController.text,
+      publicApiBaseUrl: AppConfig.baseUrl,
+      frontendBaseUrl: kIsWeb
+          ? _frontendUrlController.text
+          : (savedFrontendUrl != null && savedFrontendUrl.isNotEmpty
+                ? savedFrontendUrl
+                : AppConfig.baseUrl),
       enabled: _enabled,
     );
     if (success && mounted) {
@@ -317,8 +322,6 @@ class _AdminSepayScreenState extends ConsumerState<AdminSepayScreen> {
                         _buildStatusCard(app),
                         AppSpacing.gapH16,
                         _buildFormCard(app),
-                        AppSpacing.gapH16,
-                        _buildInstructionsCard(),
                         AppSpacing.gapH24,
                       ],
                     ),
@@ -550,6 +553,8 @@ class _AdminSepayScreenState extends ConsumerState<AdminSepayScreen> {
             ],
           ),
           AppSpacing.gapH16,
+          _buildInstructions(),
+          AppSpacing.gapH16,
           Text(
             context.l10n.sepay_client_id_label,
             style: AppTypography.labelMedium.bold.colored(colors.textPrimary),
@@ -628,77 +633,46 @@ class _AdminSepayScreenState extends ConsumerState<AdminSepayScreen> {
                 ? context.l10n.sepay_client_secret_existing_helper
                 : context.l10n.sepay_client_secret_new_helper,
           ),
-          AppSpacing.gapH16,
-          Text(
-            context.l10n.sepay_public_api_url_label,
-            style: AppTypography.labelMedium.bold.colored(colors.textPrimary),
-          ),
-          AppSpacing.gapH4,
-          TextFormField(
-            controller: _publicApiUrlController,
-            keyboardType: TextInputType.url,
-            onChanged: (_) => setState(() {}),
-            decoration: InputDecoration(
-              hintText: context.l10n.sepay_public_api_url_hint,
-              filled: true,
-              fillColor: colors.inputFill,
-              border: OutlineInputBorder(
-                borderRadius: AppRadius.input,
-                borderSide: BorderSide(color: colors.inputBorder),
-              ),
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 14,
-                vertical: 12,
-              ),
+          if (kIsWeb) ...[
+            AppSpacing.gapH16,
+            Text(
+              context.l10n.sepay_frontend_url_label,
+              style: AppTypography.labelMedium.bold.colored(colors.textPrimary),
             ),
-            validator: (v) {
-              if (v == null || v.trim().isEmpty) {
-                return context.l10n.sepay_public_api_url_required;
-              }
-              if (!v.trim().startsWith('http://') &&
-                  !v.trim().startsWith('https://')) {
-                return context.l10n.sepay_url_invalid;
-              }
-              return null;
-            },
-          ),
-          AppSpacing.gapH4,
-          _buildFieldHelper(context.l10n.sepay_public_api_url_helper),
-          AppSpacing.gapH16,
-          Text(
-            context.l10n.sepay_frontend_url_label,
-            style: AppTypography.labelMedium.bold.colored(colors.textPrimary),
-          ),
-          AppSpacing.gapH4,
-          TextFormField(
-            controller: _frontendUrlController,
-            keyboardType: TextInputType.url,
-            decoration: InputDecoration(
-              hintText: context.l10n.sepay_frontend_url_hint,
-              filled: true,
-              fillColor: colors.inputFill,
-              border: OutlineInputBorder(
-                borderRadius: AppRadius.input,
-                borderSide: BorderSide(color: colors.inputBorder),
+            AppSpacing.gapH4,
+            TextFormField(
+              controller: _frontendUrlController,
+              keyboardType: TextInputType.url,
+              decoration: InputDecoration(
+                hintText: context.l10n.sepay_frontend_url_hint,
+                filled: true,
+                fillColor: colors.inputFill,
+                border: OutlineInputBorder(
+                  borderRadius: AppRadius.input,
+                  borderSide: BorderSide(color: colors.inputBorder),
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 12,
+                ),
               ),
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 14,
-                vertical: 12,
-              ),
+              validator: (v) {
+                if (v == null || v.trim().isEmpty) {
+                  return context.l10n.sepay_frontend_url_required;
+                }
+                if (!v.trim().startsWith('http://') &&
+                    !v.trim().startsWith('https://')) {
+                  return context.l10n.sepay_url_invalid;
+                }
+                return null;
+              },
             ),
-            validator: (v) {
-              if (v == null || v.trim().isEmpty) {
-                return context.l10n.sepay_frontend_url_required;
-              }
-              if (!v.trim().startsWith('http://') &&
-                  !v.trim().startsWith('https://')) {
-                return context.l10n.sepay_url_invalid;
-              }
-              return null;
-            },
-          ),
-          AppSpacing.gapH4,
-          _buildFieldHelper(context.l10n.sepay_frontend_url_helper),
+            AppSpacing.gapH4,
+            _buildFieldHelper(context.l10n.sepay_frontend_url_helper),
+          ] else ...[
+            AppSpacing.gapH16,
+            _buildFieldHelper(context.l10n.sepay_mobile_return_helper),
+          ],
           AppSpacing.gapH16,
           AnimatedContainer(
             duration: const Duration(milliseconds: 180),
@@ -796,96 +770,114 @@ class _AdminSepayScreenState extends ConsumerState<AdminSepayScreen> {
     );
   }
 
-  Widget _buildInstructionsCard() {
-    final apiBaseUrl = _publicApiUrlController.text.trim().replaceFirst(
+  Widget _buildInstructions() {
+    final apiBaseUrl = AppConfig.baseUrl.trim().replaceFirst(
       RegExp(r'/+$'),
       '',
     );
     final parsedApiBaseUrl = Uri.tryParse(apiBaseUrl);
     final callbackUrl =
         parsedApiBaseUrl != null &&
-            parsedApiBaseUrl.hasScheme &&
+            parsedApiBaseUrl.scheme == 'https' &&
             parsedApiBaseUrl.host.isNotEmpty
         ? '$apiBaseUrl/api/v1/sepay/oauth/callback'
         : null;
 
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.base),
-      decoration: BoxDecoration(
-        color: colors.cardBackground,
-        borderRadius: AppRadius.card,
-        border: Border.all(color: colors.cardBorder),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(
-                Icons.info_outline_rounded,
-                color: colors.textSecondary,
-                size: 20,
-              ),
-              AppSpacing.gapW8,
-              Expanded(
-                child: Text(
-                  context.l10n.sepay_developer_setup_title,
-                  style: AppTypography.labelMedium.bold.colored(
-                    colors.textPrimary,
-                  ),
+    final scopesText = context.l10n.sepay_developer_setup_scopes;
+    final scopePattern = RegExp(
+      r'bank-account:read|webhook:read|webhook:write|webhook:delete|company',
+    );
+    final scopeSpans = <TextSpan>[];
+    var cursor = 0;
+    for (final match in scopePattern.allMatches(scopesText)) {
+      scopeSpans.add(TextSpan(text: scopesText.substring(cursor, match.start)));
+      scopeSpans.add(TextSpan(
+        text: match.group(0),
+        style: const TextStyle(fontWeight: FontWeight.bold),
+      ));
+      cursor = match.end;
+    }
+    scopeSpans.add(TextSpan(text: scopesText.substring(cursor)));
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(
+              Icons.info_outline_rounded,
+              color: colors.textSecondary,
+              size: 20,
+            ),
+            AppSpacing.gapW8,
+            Expanded(
+              child: Text(
+                context.l10n.sepay_developer_setup_title,
+                style: AppTypography.labelMedium.bold.colored(
+                  colors.textPrimary,
                 ),
               ),
+            ),
+          ],
+        ),
+        AppSpacing.gapH12,
+        Text(
+          context.l10n.sepay_developer_setup_steps,
+          style: AppTypography.bodySmall.colored(colors.textMuted),
+        ),
+        AppSpacing.gapH12,
+        Text(
+          context.l10n.sepay_callback_url_label,
+          style: AppTypography.labelMedium.bold.colored(colors.textPrimary),
+        ),
+        AppSpacing.gapH8,
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            color: colors.inputFill,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: colors.cardBorder),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: callbackUrl == null
+                    ? Text(
+                        context.l10n.sepay_callback_url_missing,
+                        style: AppTypography.bodySmall.colored(
+                          colors.textMuted,
+                        ),
+                      )
+                    : SelectableText(
+                        callbackUrl,
+                        style: AppTypography.bodySmall.colored(
+                          colors.textPrimary,
+                        ),
+                      ),
+              ),
+              if (callbackUrl != null) ...[
+                AppSpacing.gapW4,
+                IconButton(
+                  icon: const Icon(Icons.copy_rounded, size: 18),
+                  tooltip: context.l10n.sepay_callback_url_tooltip,
+                  onPressed: () =>
+                      _copyToClipboard(callbackUrl, context.l10n.com_copied),
+                ),
+              ],
             ],
           ),
-          AppSpacing.gapH12,
-          Text(
-            context.l10n.sepay_developer_setup_steps,
-            style: AppTypography.bodySmall.colored(colors.textMuted),
-          ),
-          AppSpacing.gapH8,
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(
-              color: colors.inputFill,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: colors.cardBorder),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: callbackUrl == null
-                      ? Text(
-                          context.l10n.sepay_callback_url_missing,
-                          style: AppTypography.bodySmall.colored(
-                            colors.textMuted,
-                          ),
-                        )
-                      : SelectableText(
-                          callbackUrl,
-                          style: AppTypography.bodySmall.colored(
-                            colors.textPrimary,
-                          ),
-                        ),
-                ),
-                if (callbackUrl != null) ...[
-                  AppSpacing.gapW4,
-                  IconButton(
-                    icon: const Icon(Icons.copy_rounded, size: 18),
-                    tooltip: context.l10n.sepay_callback_url_tooltip,
-                    onPressed: () =>
-                        _copyToClipboard(callbackUrl, context.l10n.com_copied),
-                  ),
-                ],
-              ],
-            ),
-          ),
-          AppSpacing.gapH8,
-          Text(
-            context.l10n.sepay_developer_setup_scopes,
-            style: AppTypography.bodySmall.colored(colors.textMuted),
-          ),
-        ],
-      ),
+        ),
+        AppSpacing.gapH8,
+        Text(
+          context.l10n.sepay_callback_url_description,
+          style: AppTypography.bodySmall.colored(colors.textMuted),
+        ),
+        AppSpacing.gapH12,
+        Text.rich(
+          TextSpan(children: scopeSpans),
+          style: AppTypography.bodySmall.colored(colors.textMuted),
+        ),
+      ],
     );
   }
 }

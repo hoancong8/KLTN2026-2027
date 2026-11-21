@@ -323,6 +323,7 @@ final dioProvider = Provider<Dio>((ref) {
   if (kDebugMode) {
     dio.interceptors.add(
       PrettyDioLogger(
+        filter: (options, _) => !options.path.contains('/sepay'),
         requestHeader: true,
         requestBody: true,
         responseBody: true,

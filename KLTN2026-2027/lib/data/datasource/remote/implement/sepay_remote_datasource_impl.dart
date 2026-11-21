@@ -62,7 +62,10 @@ class SepayRemoteDatasourceImpl extends BaseRemoteDatasource
   Future<String> startClubSepayConnection(String clubId) async {
     try {
       final response =
-          await dio.post(AppConfig.clubSepayAuthorizeEndpoint(clubId));
+          await dio.post(
+        AppConfig.clubSepayAuthorizeEndpoint(clubId),
+        queryParameters: {'returnToMobileApp': !AppConfig.isWeb},
+      );
       final authDto =
           handleResponse(response, SepayAuthorizationDto.fromJson);
       return authDto.authorizationUrl;
