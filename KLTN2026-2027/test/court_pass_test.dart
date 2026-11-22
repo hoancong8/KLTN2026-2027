@@ -13,6 +13,7 @@ import 'package:kltn2026_2027/domain/entities/session/session_detail.dart';
 
 class _FakeSessionRepository implements SessionRepository {
   CreateCourtPassParams? lastParams;
+  UpdateSessionParams? lastUpdateParams;
 
   @override
   Future<String> createCourtPass(CreateCourtPassParams params) async {
@@ -76,7 +77,27 @@ class _FakeSessionRepository implements SessionRepository {
   @override
   Future<SessionBooking> joinRecruitment(String recruitmentId) async => throw UnimplementedError();
   @override
-  Future<void> updateSession({required String sessionId, required String title, required DateTime startTime, required DateTime endTime, required String courtLocation, required int courtCount, required int maxPlayers, required DateTime deadlineBooking}) async {}
+  Future<void> updateSession({
+    required String sessionId,
+    required String title,
+    required DateTime startTime,
+    required DateTime endTime,
+    required String courtLocation,
+    required int courtCount,
+    required int maxPlayers,
+    required DateTime deadlineBooking,
+  }) async {
+    lastUpdateParams = UpdateSessionParams(
+      sessionId: sessionId,
+      title: title,
+      startTime: startTime,
+      endTime: endTime,
+      courtLocation: courtLocation,
+      courtCount: courtCount,
+      maxPlayers: maxPlayers,
+      deadlineBooking: deadlineBooking,
+    );
+  }
   @override
   Future<void> updateSessionStatus(String sessionId, String status) async {}
   @override
@@ -129,6 +150,50 @@ void main() {
       expect(fakeRepo.lastParams?.courtLocation, 'Sân Cầu Lông Tia Chớp');
       expect(fakeRepo.lastParams?.passPrice, 150000.0);
       expect(fakeRepo.lastParams?.contactPhone, '0988776655');
+    });
+
+    test('Partial court pass retains remaining session with reduced courts and capacity', () async {
+      final fakeRepo = _FakeSessionRepository();
+      final passUseCase = CreateCourtPassUseCase(fakeRepo);
+      final updateUseCase = UpdateSessionUseCase(fakeRepo);
+
+      final now = DateTime.now();
+      const totalCourts = 2;
+      const passCourts = 1;
+      const remainingCourts = totalCourts - passCourts;
+      const targetPerCourt = 6;
+      final remainingMaxPlayers = targetPerCourt * remainingCourts;
+
+      // 1. Host passes 1 court out of 2
+      final passParams = CreateCourtPassParams(
+        clubId: 'club-1',
+        courtLocation: 'Sân Cầu Lông Viettel',
+        startTime: now,
+        endTime: now.add(const Duration(hours: 2)),
+        courtCount: passCourts,
+        passPrice: 150000,
+        contactPhone: '0912345678',
+        note: 'Pass lại 1 sân',
+      );
+      final passResult = await passUseCase.execute(passParams);
+      expect(passResult, 'fake-session-id-123');
+      expect(fakeRepo.lastParams?.courtCount, 1);
+
+      // 2. Original session is updated to 1 court and 6 max players
+      await updateUseCase.execute(UpdateSessionParams(
+        sessionId: 'session-original-1',
+        title: 'Buổi sinh hoạt HOAN TET',
+        startTime: now,
+        endTime: now.add(const Duration(hours: 2)),
+        courtLocation: 'Sân Cầu Lông Viettel',
+        courtCount: remainingCourts,
+        maxPlayers: remainingMaxPlayers,
+        deadlineBooking: now.add(const Duration(hours: 1)),
+      ));
+
+      expect(fakeRepo.lastUpdateParams?.courtCount, 1);
+      expect(fakeRepo.lastUpdateParams?.maxPlayers, 6);
+      expect(fakeRepo.lastUpdateParams?.title, 'Buổi sinh hoạt HOAN TET');
     });
   });
 }
