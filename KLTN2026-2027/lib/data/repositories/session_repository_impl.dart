@@ -1,5 +1,6 @@
 // lib/data/repositories/session_repository_impl.dart
 
+import '../../domain/entities/session/create_court_pass_params.dart';
 import '../../domain/entities/session/guest_recruitment.dart';
 import '../../domain/entities/session/my_booking_item.dart';
 import '../../domain/entities/session/session.dart';
@@ -7,6 +8,7 @@ import '../../domain/entities/session/session_booking.dart';
 import '../../domain/entities/session/session_detail.dart';
 import '../../domain/repositories/session_repository.dart';
 import '../datasource/remote/abstract/session_remote_datasource.dart';
+import '../dto/session/create_court_pass_request_dto.dart';
 import '../dto/session/create_recruitment_request_dto.dart';
 import '../dto/session/create_session_request_dto.dart';
 import '../dto/session/update_session_request_dto.dart';
@@ -189,5 +191,24 @@ class SessionRepositoryImpl implements SessionRepository {
   @override
   Future<void> cancelRecruitmentBooking(String recruitmentId) async {
     await remote.cancelRecruitmentBooking(recruitmentId);
+  }
+
+  @override
+  Future<String> createCourtPass(CreateCourtPassParams params) async {
+    final dto = CreateCourtPassRequestDto(
+      clubId: params.clubId,
+      courtLocation: params.courtLocation,
+      address: params.address,
+      startTime: params.startTime.toUtc().toIso8601String(),
+      endTime: params.endTime.toUtc().toIso8601String(),
+      courtCount: params.courtCount,
+      passPrice: params.passPrice,
+      contactPhone: params.contactPhone,
+      note: params.note,
+      lat: params.lat,
+      lng: params.lng,
+      minSkillLevel: params.minSkillLevel,
+    );
+    return await remote.createCourtPass(dto);
   }
 }

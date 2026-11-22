@@ -2,6 +2,7 @@
 
 import 'package:dio/dio.dart';
 import '../../../../app/consts/app_config.dart';
+import '../../../dto/session/create_court_pass_request_dto.dart';
 import '../../../dto/session/create_recruitment_request_dto.dart';
 import '../../../dto/session/create_session_request_dto.dart';
 import '../../../dto/session/guest_recruitment_dto.dart';
@@ -230,6 +231,24 @@ class SessionRemoteDataSourceImpl extends BaseRemoteDatasource implements Sessio
   Future<void> cancelRecruitmentBooking(String recruitmentId) async {
     try {
       await dio.delete(AppConfig.cancelRecruitmentPath(recruitmentId));
+    } catch (e) {
+      throw handleError(e);
+    }
+  }
+
+  @override
+  Future<String> createCourtPass(CreateCourtPassRequestDto request) async {
+    try {
+      final response = await dio.post(
+        AppConfig.passCourtPath,
+        data: request.toJson(),
+      );
+      return handleResponse(response, (data) {
+        if (data is Map && data.containsKey('sessionId')) {
+          return data['sessionId'].toString();
+        }
+        return data?.toString() ?? '';
+      });
     } catch (e) {
       throw handleError(e);
     }

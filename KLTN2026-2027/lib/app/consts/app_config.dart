@@ -134,6 +134,7 @@ class AppConfig {
   static String sessionRecruitmentsPath(String sessionId) =>
       '$sessionsPath/$sessionId/recruitments';
   static const exploreRecruitmentsPath = '$sessionsPath/recruitments/explore';
+  static const passCourtPath = '$sessionsPath/pass-court';
   static String joinRecruitmentPath(String recruitmentId) =>
       '$sessionsPath/recruitments/$recruitmentId/join';
   static String cancelRecruitmentPath(String recruitmentId) =>

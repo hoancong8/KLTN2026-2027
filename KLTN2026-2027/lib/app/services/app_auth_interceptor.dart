@@ -212,7 +212,15 @@ class AppAuthInterceptor extends Interceptor {
       );
       final response = await _refreshDio!.post(
         AppConfig.refreshToken,
-        queryParameters: {'refreshToken': currentToken.refreshToken},
+        queryParameters: {
+          'refreshToken': currentToken.refreshToken,
+          'accessToken': currentToken.accessToken,
+        },
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer ${currentToken.accessToken}',
+          },
+        ),
       );
 
       final data = response.data is Map<String, dynamic>

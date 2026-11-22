@@ -1,4 +1,5 @@
 import '../../../../app/consts/app_config.dart';
+import '../../../../app/services/secure_storage_service.dart';
 import '../../../dto/auth/change_password_request_dto.dart';
 import '../../../dto/auth/login_request_dto.dart';
 import '../../../dto/auth/login_response_dto.dart';
@@ -67,9 +68,20 @@ class AuthRemoteDatasourceImpl extends BaseRemoteDatasource implements AuthRemot
   @override
   Future<LoginResponseDto> refreshToken(String refreshToken) async {
     try {
+      final token = await SecureStorageService.instance.getAuthToken();
       final res = await dio.post(
         AppConfig.refreshToken,
-        queryParameters: {'refreshToken': refreshToken},
+        queryParameters: {
+          'refreshToken': refreshToken,
+          if (token?.accessToken != null && token!.accessToken.isNotEmpty)
+            'accessToken': token.accessToken,
+        },
+        options: Options(
+          headers: {
+            if (token?.accessToken != null && token!.accessToken.isNotEmpty)
+              'Authorization': 'Bearer ${token.accessToken}',
+          },
+        ),
       );
       return handleResponse(res, (data) => LoginResponseDto.fromJson(data));
     } catch (e) {

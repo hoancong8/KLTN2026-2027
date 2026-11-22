@@ -10,9 +10,11 @@ import 'package:kltn2026_2027/app/theme/theme.dart';
 import '../../../app/consts/app_config.dart';
 import '../../../app/provider.dart';
 import '../../../domain/enums/club_role.dart';
+import '../../../domain/entities/session/create_court_pass_params.dart';
 import '../../../domain/entities/session/guest_recruitment.dart';
 import '../../../domain/entities/club/club_fee_rule.dart';
 import '../../../domain/entities/session/session.dart';
+import '../../../domain/entities/session/session_detail.dart';
 import '../../../domain/entities/session/session_booking.dart';
 import '../../common/player_gender_helper.dart';
 import '../../../domain/utils/session_fee_calculator.dart';
@@ -20,6 +22,7 @@ import '../../../domain/enums/session_enums.dart';
 import '../../../domain/usecases/session/session_usecases.dart';
 import 'club_vm/club_context_vm.dart';
 import 'session_vm/session_detail_vm.dart';
+import 'session_vm/explore_recruitments_vm.dart';
 
 class SessionDetailScreen extends ConsumerStatefulWidget {
   final String sessionId;
@@ -32,10 +35,6 @@ class SessionDetailScreen extends ConsumerStatefulWidget {
 
 class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  bool _isCourtPassActive = false;
-  int _courtPassPrice = 0;
-  String _courtPassPhone = '';
-  String _courtPassNote = '';
 
   @override
   void initState() {
@@ -660,22 +659,44 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
     );
   }
 
-  void _showPassCourtModal(BuildContext context, Session session) {
+  void _showPassCourtModal(BuildContext context, Session session, {required bool isHost}) {
     final colors = context.colors;
+    if (!isHost) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Chỉ người tạo buổi chơi mới có quyền chuyển nhượng / pass sân.'),
+          backgroundColor: colors.error,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+    final totalCourts = session.courtCount > 0 ? session.courtCount : 1;
+    final playersPerCourt = session.targetPlayerPerCourt > 0
+        ? session.targetPlayerPerCourt
+        : (totalCourts > 0 ? (session.maxPlayers / totalCourts).round() : 6);
     final courtRentalCost = session.courtRentalCost > 0 ? session.courtRentalCost.toInt() : 300000;
+
+    int calculateBasePrice(int count) {
+      if (totalCourts <= 0) return courtRentalCost;
+      return ((courtRentalCost * count) / totalCourts).round();
+    }
+
+    int passCourtCount = (totalCourts > 1 && session.confirmedCount > 0) ? 1 : totalCourts;
+
     final passPriceCtl = TextEditingController(
-      text: _courtPassPrice > 0 ? _courtPassPrice.toString() : courtRentalCost.toString(),
+      text: calculateBasePrice(passCourtCount).toString(),
     );
-    final contactPhoneCtl = TextEditingController(text: _courtPassPhone);
-    final noteCtl = TextEditingController(
-      text: _courtPassNote.isNotEmpty
-          ? _courtPassNote
-          : 'Sân thảm tiêu chuẩn, ánh sáng tốt. CLB bận việc đột xuất cần pass lại giờ sân.',
-    );
+    final contactPhoneCtl = TextEditingController();
     final userProfile = ref.read(currentUserProfileProvider);
-    if (contactPhoneCtl.text.isEmpty && userProfile?.phoneNumber != null && userProfile!.phoneNumber!.isNotEmpty) {
+    if (userProfile?.phoneNumber != null && userProfile!.phoneNumber!.isNotEmpty) {
       contactPhoneCtl.text = userProfile.phoneNumber!;
     }
+    final noteCtl = TextEditingController(
+      text: passCourtCount == totalCourts
+          ? 'Pass lại giờ sân của CLB ${session.clubName}. Sân thảm đẹp, ánh sáng chuẩn.'
+          : 'Pass lại $passCourtCount sân của CLB ${session.clubName}. Sân thảm đẹp, ánh sáng chuẩn.',
+    );
 
     int discountPercent = 0;
 
@@ -727,14 +748,16 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              _isCourtPassActive ? 'Điều Chỉnh Tin Pass Sân' : 'Chuyển Nhượng / Pass Sân Cố Định',
+                              totalCourts > 1 ? 'Chuyển Nhượng / Pass Sân' : 'Chuyển Nhượng / Pass Sân Cố Định',
                               style: AppTypography.titleMedium.copyWith(
                                 color: colors.textPrimary,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
                             Text(
-                              'Sang nhượng lại giờ sân cho nhóm khác khi CLB không đủ người chơi',
+                              passCourtCount == totalCourts
+                                  ? 'Sang nhượng toàn bộ giờ sân và hủy lịch ca chơi của CLB'
+                                  : 'Pass $passCourtCount sân lẻ và giữ lại ${totalCourts - passCourtCount} sân cho CLB',
                               style: AppTypography.bodySmall.copyWith(color: colors.textMuted),
                             ),
                           ],
@@ -742,6 +765,55 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                       ),
                     ],
                   ),
+                  if (totalCourts > 1) ...[
+                    AppSpacing.gapH16,
+                    Text(
+                      'Số lượng sân muốn pass',
+                      style: AppTypography.labelMedium.copyWith(
+                        color: colors.textPrimary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    AppSpacing.gapH8,
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        for (int i = 1; i <= totalCourts; i++)
+                          ChoiceChip(
+                            label: Text(
+                              i == totalCourts
+                                  ? 'Tất cả ($i sân - Hủy ca)'
+                                  : 'Pass $i sân (Giữ lại ${totalCourts - i} sân)',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: passCourtCount == i ? AppColors.white : colors.textPrimary,
+                              ),
+                            ),
+                            selected: passCourtCount == i,
+                            selectedColor: colors.primary,
+                            backgroundColor: colors.surfaceSubtle,
+                            side: BorderSide(
+                              color: passCourtCount == i ? colors.primary : colors.cardBorder,
+                            ),
+                            onSelected: (selected) {
+                              if (selected) {
+                                setModalState(() {
+                                  passCourtCount = i;
+                                  discountPercent = 0;
+                                  final base = calculateBasePrice(i);
+                                  passPriceCtl.text = base.toString();
+                                  noteCtl.text = i == totalCourts
+                                      ? 'Pass lại giờ sân của CLB ${session.clubName}. Sân thảm đẹp, ánh sáng chuẩn.'
+                                      : 'Pass lại $i sân của CLB ${session.clubName}. Sân thảm đẹp, ánh sáng chuẩn.';
+                                });
+                              }
+                            },
+                          ),
+                      ],
+                    ),
+                  ],
                   AppSpacing.gapH16,
                   Container(
                     padding: const EdgeInsets.all(12),
@@ -773,7 +845,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                             Icon(Icons.access_time_rounded, size: 16, color: colors.textSecondary),
                             AppSpacing.gapW8,
                             Text(
-                              '${DateFormat('HH:mm').format(session.startTime)} - ${DateFormat('HH:mm, dd/MM/yyyy').format(session.endTime)} (${session.courtCount} sân)',
+                              '${DateFormat('HH:mm').format(session.startTime)} - ${DateFormat('HH:mm, dd/MM/yyyy').format(session.endTime)} (Tổng $totalCourts sân)',
                               style: AppTypography.bodySmall.copyWith(color: colors.textSecondary),
                             ),
                           ],
@@ -783,21 +855,23 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              'Giá gốc CLB thuê:',
+                              totalCourts > 1
+                                  ? 'Giá gốc thuê cho $passCourtCount sân:'
+                                  : 'Giá gốc CLB thuê:',
                               style: AppTypography.bodySmall.copyWith(color: colors.textMuted),
                             ),
                             Text(
-                              '${NumberFormat('#,###').format(courtRentalCost)} đ',
+                              '${NumberFormat('#,###').format(calculateBasePrice(passCourtCount))} đ',
                               style: AppTypography.labelMedium.copyWith(
                                 fontWeight: FontWeight.bold,
                                 color: colors.textPrimary,
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                      ],
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
                   AppSpacing.gapH16,
                   Text(
                     'Giá Pass Lại Cho Nhóm Khác (VNĐ)',
@@ -836,7 +910,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                         onTap: () {
                           setModalState(() {
                             discountPercent = 0;
-                            passPriceCtl.text = courtRentalCost.toString();
+                            passPriceCtl.text = calculateBasePrice(passCourtCount).toString();
                           });
                         },
                       ),
@@ -847,7 +921,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                         onTap: () {
                           setModalState(() {
                             discountPercent = 15;
-                            final discounted = (courtRentalCost * 0.85).round();
+                            final discounted = (calculateBasePrice(passCourtCount) * 0.85).round();
                             passPriceCtl.text = discounted.toString();
                           });
                         },
@@ -859,7 +933,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                         onTap: () {
                           setModalState(() {
                             discountPercent = 30;
-                            final discounted = (courtRentalCost * 0.70).round();
+                            final discounted = (calculateBasePrice(passCourtCount) * 0.70).round();
                             passPriceCtl.text = discounted.toString();
                           });
                         },
@@ -916,61 +990,248 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                     ),
                   ),
                   AppSpacing.gapH16,
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: colors.info.withValues(alpha: 0.1),
-                      borderRadius: AppRadius.card,
-                      border: Border.all(color: colors.info.withValues(alpha: 0.25)),
-                    ),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Icon(Icons.info_outline_rounded, size: 16, color: colors.info),
-                        AppSpacing.gapW8,
-                        Expanded(
-                          child: Text(
-                            'Khi nhóm khác nhận sân và thanh toán, số tiền pass sân sẽ được tự động cộng vào Quỹ CLB (Club Ledger) để cấn trừ chi phí thuê sân của ca này.',
-                            style: AppTypography.labelSmall.copyWith(color: colors.info, fontSize: 11),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  AppSpacing.gapH16,
-                  ElevatedButton(
-                    onPressed: () {
-                      final price = int.tryParse(passPriceCtl.text.replaceAll(',', '')) ?? courtRentalCost;
-                      final phone = contactPhoneCtl.text.trim();
-                      final note = noteCtl.text.trim();
-                      Navigator.of(ctx).pop();
+                  Builder(
+                    builder: (context) {
+                      final isFullPass = (passCourtCount == totalCourts);
+                      final remainingCourts = totalCourts - passCourtCount;
+                      final remainingMaxPlayers = playersPerCourt * remainingCourts;
+                      final isOverCapacity = !isFullPass && (session.confirmedCount > remainingMaxPlayers);
 
-                      setState(() {
-                        _isCourtPassActive = true;
-                        _courtPassPrice = price;
-                        _courtPassPhone = phone;
-                        _courtPassNote = note;
-                      });
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          if (isOverCapacity)
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: colors.error.withValues(alpha: 0.12),
+                                borderRadius: AppRadius.card,
+                                border: Border.all(color: colors.error.withValues(alpha: 0.4)),
+                              ),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Icon(Icons.error_outline_rounded, size: 18, color: colors.error),
+                                  AppSpacing.gapW8,
+                                  Expanded(
+                                    child: Text(
+                                      'Không thể pass $passCourtCount sân: Hiện có ${session.confirmedCount} thành viên đã đăng ký, vượt quá sức chứa $remainingMaxPlayers người của $remainingCourts sân còn lại. Vui lòng giảm bớt danh sách trước khi pass bớt sân.',
+                                      style: AppTypography.labelSmall.copyWith(color: colors.error, fontSize: 11.5, height: 1.4),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )
+                          else if (isFullPass)
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: colors.warning.withValues(alpha: 0.12),
+                                borderRadius: AppRadius.card,
+                                border: Border.all(color: colors.warning.withValues(alpha: 0.4)),
+                              ),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Icon(Icons.warning_amber_rounded, size: 18, color: colors.warning),
+                                  AppSpacing.gapW8,
+                                  Expanded(
+                                    child: Text(
+                                      'Lưu ý quan trọng: Khi xác nhận Pass toàn bộ sân, ca chơi hiện tại của CLB sẽ tự động bị HỦY và thông tin pass sân sẽ được đăng công khai lên Radar Giao Lưu để người khác nhận sân.',
+                                      style: AppTypography.labelSmall.copyWith(color: colors.warning, fontSize: 11.5, height: 1.4),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )
+                          else
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: colors.primary.withValues(alpha: 0.10),
+                                borderRadius: AppRadius.card,
+                                border: Border.all(color: colors.primary.withValues(alpha: 0.3)),
+                              ),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Icon(Icons.info_outline_rounded, size: 18, color: colors.primary),
+                                  AppSpacing.gapW8,
+                                  Expanded(
+                                    child: Text(
+                                      'Giữ lịch CLB: Buổi chơi vẫn tiếp tục với $remainingCourts sân ($remainingMaxPlayers slot cho ${session.confirmedCount} người đã đăng ký). Bài đăng pass $passCourtCount sân riêng (${NumberFormat('#,###').format(int.tryParse(passPriceCtl.text.replaceAll(',', '')) ?? calculateBasePrice(passCourtCount))} đ) sẽ xuất hiện trên Radar Giao Lưu.',
+                                      style: AppTypography.labelSmall.copyWith(color: colors.primary, fontSize: 11.5, height: 1.4),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          AppSpacing.gapH16,
+                          ElevatedButton(
+                            onPressed: isOverCapacity
+                                ? null
+                                : () async {
+                                    final basePrice = calculateBasePrice(passCourtCount);
+                                    final price = int.tryParse(passPriceCtl.text.replaceAll(',', '')) ?? basePrice;
+                                    final phone = contactPhoneCtl.text.trim();
+                                    final note = noteCtl.text.trim();
+                                    final navigator = Navigator.of(context);
+                                    final scaffoldMessenger = ScaffoldMessenger.of(context);
+                                    Navigator.of(ctx).pop();
 
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            'Đã đăng tin Pass Sân (${NumberFormat('#,###').format(price)} đ) lên Radar thành công!',
+                                    final confirm = await showDialog<bool>(
+                                      context: context,
+                                      builder: (dCtx) => AlertDialog(
+                                        backgroundColor: colors.cardBackground,
+                                        shape: const RoundedRectangleBorder(borderRadius: AppRadius.dialog),
+                                        title: Row(
+                                          children: [
+                                            Icon(
+                                              isFullPass ? Icons.warning_amber_rounded : Icons.swap_horiz_rounded,
+                                              color: isFullPass ? colors.warning : colors.primary,
+                                            ),
+                                            AppSpacing.gapW8,
+                                            Text(
+                                              isFullPass ? 'Xác Nhận Pass Sân' : 'Xác Nhận Pass $passCourtCount Sân',
+                                              style: AppTypography.titleMedium.copyWith(color: colors.textPrimary),
+                                            ),
+                                          ],
+                                        ),
+                                        content: Text(
+                                          isFullPass
+                                              ? 'Ca chơi này của CLB sẽ bị hủy và thông tin pass sân (${NumberFormat('#,###').format(price)} đ) sẽ được đăng công khai lên Radar Giao Lưu. Bạn có chắc chắn muốn thực hiện?'
+                                              : 'Bạn sẽ pass $passCourtCount sân (${NumberFormat('#,###').format(price)} đ) lên Radar Giao Lưu. Buổi chơi của CLB vẫn được GIỮ LẠI với $remainingCourts sân cho $remainingMaxPlayers thành viên. Bạn có chắc chắn muốn thực hiện?',
+                                          style: AppTypography.bodyMedium.copyWith(color: colors.textSecondary),
+                                        ),
+                                        actions: [
+                                          TextButton(
+                                            onPressed: () => Navigator.of(dCtx).pop(false),
+                                            child: Text(context.l10n.com_cancel, style: TextStyle(color: colors.textMuted)),
+                                          ),
+                                          ElevatedButton(
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: isFullPass ? colors.accent : colors.primary,
+                                              foregroundColor: AppColors.white,
+                                              shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                                            ),
+                                            onPressed: () => Navigator.of(dCtx).pop(true),
+                                            child: Text(isFullPass ? 'Xác nhận & Hủy ca chơi' : 'Xác nhận Pass Sân'),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+
+                                    if (confirm != true || !mounted) return;
+
+                                    final createCourtPassUseCase = ref.read(createCourtPassUseCaseProvider);
+                                    final params = CreateCourtPassParams(
+                                      clubId: session.groupId,
+                                      courtLocation: session.cleanCourtLocation,
+                                      address: session.address,
+                                      startTime: session.startTime,
+                                      endTime: session.endTime,
+                                      courtCount: passCourtCount,
+                                      passPrice: price > 0 ? price.toDouble() : basePrice.toDouble(),
+                                      contactPhone: phone.isNotEmpty ? phone : null,
+                                      note: note.isNotEmpty
+                                          ? note
+                                          : (isFullPass
+                                              ? 'Pass lại từ ca chơi của CLB ${session.clubName}'
+                                              : 'Pass lại $passCourtCount sân từ ca chơi của CLB ${session.clubName}'),
+                                      lat: session.lat,
+                                      lng: session.lng,
+                                      minSkillLevel: 'NB',
+                                    );
+
+                                    try {
+                                      final newSessionId = await createCourtPassUseCase.execute(params);
+                                      if (newSessionId.isNotEmpty) {
+                                        final vm = ref.read(sessionDetailViewModelProvider(widget.sessionId).notifier);
+                                        if (isFullPass) {
+                                          await vm.deleteSession();
+                                          ref.invalidate(exploreRecruitmentsViewModelProvider);
+
+                                          if (mounted) {
+                                            scaffoldMessenger.showSnackBar(
+                                              SnackBar(
+                                                content: Text(
+                                                  'Đã đăng tin Pass Sân (${NumberFormat('#,###').format(price)} đ) lên Radar Giao Lưu và hủy ca chơi CLB thành công!',
+                                                ),
+                                                backgroundColor: colors.success,
+                                                behavior: SnackBarBehavior.floating,
+                                              ),
+                                            );
+                                            if (navigator.canPop()) {
+                                              navigator.pop();
+                                            }
+                                          }
+                                        } else {
+                                          final updated = await vm.updateSession(
+                                            title: session.title,
+                                            startTime: session.startTime,
+                                            endTime: session.endTime,
+                                            courtLocation: session.courtLocation,
+                                            courtCount: remainingCourts,
+                                            maxPlayers: remainingMaxPlayers,
+                                            deadlineBooking: session.deadlineBooking,
+                                          );
+                                          ref.invalidate(exploreRecruitmentsViewModelProvider);
+
+                                          if (mounted) {
+                                            if (updated) {
+                                              scaffoldMessenger.showSnackBar(
+                                                SnackBar(
+                                                  content: Text(
+                                                    'Đã pass $passCourtCount sân (${NumberFormat('#,###').format(price)} đ) lên Radar và cập nhật buổi chơi CLB còn $remainingCourts sân!',
+                                                  ),
+                                                  backgroundColor: colors.success,
+                                                  behavior: SnackBarBehavior.floating,
+                                                ),
+                                              );
+                                              await vm.loadDetail();
+                                            } else {
+                                              scaffoldMessenger.showSnackBar(
+                                                SnackBar(
+                                                  content: const Text(
+                                                    'Đã đăng tin pass sân lên Radar nhưng không thể cập nhật buổi chơi CLB. Vui lòng kiểm tra lại.',
+                                                  ),
+                                                  backgroundColor: colors.warning,
+                                                  behavior: SnackBarBehavior.floating,
+                                                ),
+                                              );
+                                            }
+                                          }
+                                        }
+                                      }
+                                    } catch (_) {
+                                      if (mounted) {
+                                        scaffoldMessenger.showSnackBar(
+                                          SnackBar(
+                                            content: const Text('Đăng tin pass sân thất bại. Vui lòng kiểm tra lại kết nối và thử lại.'),
+                                            backgroundColor: colors.error,
+                                            behavior: SnackBarBehavior.floating,
+                                          ),
+                                        );
+                                      }
+                                    }
+                                  },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: isFullPass ? colors.accent : colors.primary,
+                              foregroundColor: AppColors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                              textStyle: AppTypography.labelMedium.copyWith(fontWeight: FontWeight.bold),
+                              elevation: 0,
+                            ),
+                            child: Text(
+                              isFullPass
+                                  ? 'Xác Nhận Pass Sân & Hủy Ca Chơi'
+                                  : 'Xác Nhận Pass $passCourtCount Sân & Giữ Lịch CLB',
+                            ),
                           ),
-                          backgroundColor: colors.success,
-                          behavior: SnackBarBehavior.floating,
-                        ),
+                        ],
                       );
                     },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: colors.primary,
-                      foregroundColor: AppColors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
-                      textStyle: AppTypography.labelMedium.copyWith(fontWeight: FontWeight.bold),
-                      elevation: 0,
-                    ),
-                    child: Text(_isCourtPassActive ? 'Cập Nhật Tin Pass Sân' : 'Đăng Tin Pass Sân Lên Radar'),
                   ),
                 ],
               ),
@@ -1050,6 +1311,32 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
     final myClubs = ref.watch(clubContextViewModelProvider).myClubs;
     final isMember = isSameClub || myClubs.any((c) => c.clubId == session.groupId);
 
+    final now = DateTime.now();
+    final isEnded = session.status == SessionStatus.completed ||
+        session.status == SessionStatus.calculated ||
+        session.endTime.isBefore(now);
+    final isPlaying = !isEnded && (session.status == SessionStatus.playing ||
+        (session.startTime.isBefore(now) && session.endTime.isAfter(now)));
+    final isExpired = session.isExpired || session.deadlineBooking.isBefore(now);
+    final canPassCourt = isHost && session.status == SessionStatus.open && !isEnded && !isPlaying && !isExpired;
+
+    final isMyClubSession = isSameClub || myClubs.any((c) => c.clubId == session.groupId);
+    final canDeleteCourtPass = canDeleteSession ||
+        isHost ||
+        myClubs.any((c) => c.clubId == session.groupId && (c.role == ClubRole.host || c.role == ClubRole.deputy));
+
+    if (session.isCourtPass) {
+      return _buildCourtPassDetailScaffold(
+        context,
+        detail,
+        session,
+        vm,
+        colors,
+        isMyCourtPass: isMyClubSession,
+        canDeletePass: canDeleteCourtPass,
+      );
+    }
+
     return Scaffold(
       backgroundColor: colors.background,
       appBar: AppBar(
@@ -1092,6 +1379,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                 canManageSession: canManageSession,
                 canRecruit: canRecruit,
                 canDeleteSession: canDeleteSession,
+                canPassCourt: canPassCourt,
               ),
             ),
         ],
@@ -1534,6 +1822,967 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
     }
   }
 
+  Future<void> _confirmDeleteCourtPass(BuildContext context, SessionDetailViewModel vm) async {
+    final colors = context.colors;
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: colors.cardBackground,
+        shape: const RoundedRectangleBorder(borderRadius: AppRadius.dialog),
+        title: Row(
+          children: [
+            Icon(Icons.delete_outline_rounded, color: colors.error),
+            AppSpacing.gapW8,
+            Text(
+              'Hủy Tin Pass Sân',
+              style: AppTypography.titleMedium.copyWith(color: colors.textPrimary),
+            ),
+          ],
+        ),
+        content: Text(
+          'Hành động này sẽ gỡ bài đăng pass sân khỏi Radar Giao Lưu và hủy lịch sân này.',
+          style: AppTypography.bodyMedium.copyWith(color: colors.textSecondary),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(context.l10n.com_cancel, style: TextStyle(color: colors.textMuted)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: colors.error,
+              foregroundColor: AppColors.white,
+              shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+            ),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Hủy tin ngay'),
+          ),
+        ],
+      ),
+    );
+    if (ok == true && mounted) {
+      await vm.deleteSession();
+      ref.invalidate(exploreRecruitmentsViewModelProvider);
+      if (context.mounted) Navigator.of(context).pop();
+    }
+  }
+
+  Widget _buildTransferStepItem(String step, String text) {
+    final colors = context.colors;
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: 18,
+          height: 18,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: colors.primary.withValues(alpha: 0.15),
+            shape: BoxShape.circle,
+          ),
+          child: Text(
+            step,
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+              color: colors.primary,
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            text,
+            style: TextStyle(fontSize: 12.5, color: colors.textSecondary, height: 1.3),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _showContactCourtPassModal(
+    BuildContext context,
+    String courtName,
+    String phone,
+    double price,
+    String timeStr,
+    String dateStr, {
+    String? address,
+  }) {
+    final colors = context.colors;
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: colors.cardBackground,
+      shape: const RoundedRectangleBorder(borderRadius: AppRadius.bottomSheet),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: colors.borderStrong,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: colors.primary.withValues(alpha: 0.15),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(Icons.flash_on_rounded, color: colors.primary, size: 22),
+                  ),
+                  const SizedBox(width: 10),
+                  Text(
+                    'Nhận Chuyển Nhượng Giờ Sân',
+                    style: AppTypography.titleMedium.copyWith(
+                      color: colors.textPrimary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 14),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: colors.surfaceSubtle,
+                  borderRadius: AppRadius.card,
+                  border: Border.all(color: colors.cardBorder),
+                ),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('Sân đấu:', style: TextStyle(color: colors.textMuted, fontSize: 13)),
+                        Flexible(
+                          child: Text(
+                            courtName,
+                            style: TextStyle(fontWeight: FontWeight.bold, color: colors.textPrimary, fontSize: 13),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (address != null && address.trim().isNotEmpty) ...[
+                      const SizedBox(height: 6),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Địa chỉ:', style: TextStyle(color: colors.textMuted, fontSize: 13)),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              address.trim(),
+                              style: TextStyle(fontWeight: FontWeight.w600, color: colors.textPrimary, fontSize: 12),
+                              textAlign: TextAlign.end,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                    const SizedBox(height: 6),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('Thời gian:', style: TextStyle(color: colors.textMuted, fontSize: 13)),
+                        Text('$dateStr • $timeStr', style: TextStyle(fontWeight: FontWeight.bold, color: colors.textPrimary, fontSize: 13)),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('Giá pass lại:', style: TextStyle(color: colors.textMuted, fontSize: 13)),
+                        Text('${NumberFormat('#,###').format(price)} đ', style: TextStyle(fontWeight: FontWeight.bold, color: colors.primary, fontSize: 14)),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              if (phone.isNotEmpty) ...[
+                Text(
+                  'Số điện thoại người pass:',
+                  style: TextStyle(fontSize: 13, color: colors.textMuted),
+                ),
+                const SizedBox(height: 4),
+                SelectableText(
+                  phone,
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: colors.primary,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton.icon(
+                  onPressed: () {
+                    Clipboard.setData(ClipboardData(text: phone));
+                    Navigator.of(ctx).pop();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Đã sao chép SĐT: $phone. Hãy liên hệ ngay để chốt sân!'),
+                        backgroundColor: colors.primary,
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.copy_rounded, size: 18),
+                  label: const Text('Sao Chép SĐT & Liên Hệ Ngay', style: TextStyle(fontWeight: FontWeight.bold)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: colors.primary,
+                    foregroundColor: AppColors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                  ),
+                ),
+              ] else ...[
+                ElevatedButton(
+                  onPressed: () => Navigator.of(ctx).pop(),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: colors.primary,
+                    foregroundColor: AppColors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                  ),
+                  child: const Text('Đã hiểu'),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCourtPassDetailScaffold(
+    BuildContext context,
+    SessionDetail detail,
+    Session session,
+    SessionDetailViewModel vm,
+    AppThemeColors colors, {
+    required bool isMyCourtPass,
+    required bool canDeletePass,
+  }) {
+    final now = DateTime.now();
+    final isEnded = session.endTime.isBefore(now);
+    final weekdayStr = _getWeekdayName(session.startTime);
+    final dateStr = '$weekdayStr, ${DateFormat('dd/MM/yyyy').format(session.startTime)}';
+    final timeStr = '${DateFormat('HH:mm').format(session.startTime)} - ${DateFormat('HH:mm').format(session.endTime)}';
+    final durationMinutes = session.endTime.difference(session.startTime).inMinutes;
+    final durationStr = durationMinutes % 60 == 0
+        ? '${durationMinutes ~/ 60} tiếng'
+        : '${(durationMinutes / 60).toStringAsFixed(1)} tiếng';
+
+    final courtName = session.cleanCourtLocation;
+    final phone = session.contactPhone ?? '';
+
+    String displayAddress = '';
+    String displayNote = '';
+    if (session.address != null && session.address!.trim().isNotEmpty) {
+      final raw = session.address!.trim();
+      if (raw.contains('[Ghi chú]:')) {
+        final parts = raw.split('[Ghi chú]:');
+        displayAddress = parts[0].trim();
+        if (parts.length > 1) {
+          displayNote = parts[1].trim();
+        }
+      } else {
+        displayAddress = raw;
+      }
+    }
+
+    return Scaffold(
+      backgroundColor: colors.background,
+      appBar: AppBar(
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Chi Tiết Pass Sân',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            Text(
+              courtName,
+              style: TextStyle(fontSize: 11, color: colors.textMuted),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+        backgroundColor: colors.surface,
+        foregroundColor: colors.textPrimary,
+        elevation: 0.5,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh_rounded),
+            onPressed: vm.loadDetail,
+            tooltip: context.l10n.com_refresh,
+          ),
+          if (canDeletePass)
+            IconButton(
+              icon: Icon(Icons.delete_outline_rounded, color: colors.error),
+              tooltip: 'Hủy bài đăng pass sân',
+              onPressed: () => _confirmDeleteCourtPass(context, vm),
+            ),
+        ],
+      ),
+      bottomNavigationBar: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: colors.cardBackground,
+          border: Border(top: BorderSide(color: colors.cardBorder)),
+          boxShadow: AppShadows.sm,
+        ),
+        child: SafeArea(
+          child: isMyCourtPass
+              ? Row(
+                  children: [
+                    if (canDeletePass)
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () => _confirmDeleteCourtPass(context, vm),
+                          icon: Icon(Icons.delete_outline_rounded, size: 18, color: colors.error),
+                          label: Text(
+                            'Hủy tin pass sân',
+                            style: TextStyle(fontWeight: FontWeight.bold, color: colors.error),
+                          ),
+                          style: OutlinedButton.styleFrom(
+                            side: BorderSide(color: colors.error.withValues(alpha: 0.5)),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                          ),
+                        ),
+                      )
+                    else
+                      Expanded(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          decoration: BoxDecoration(
+                            color: colors.surfaceSubtle,
+                            borderRadius: AppRadius.button,
+                            border: Border.all(color: colors.cardBorder),
+                          ),
+                          child: Center(
+                            child: Text(
+                              'Tin pass sân do CLB của bạn đăng',
+                              style: TextStyle(fontWeight: FontWeight.bold, color: colors.textSecondary),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                )
+              : Row(
+                  children: [
+                    if (phone.isNotEmpty) ...[
+                      OutlinedButton.icon(
+                        onPressed: () {
+                          Clipboard.setData(ClipboardData(text: phone));
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Đã sao chép số điện thoại liên hệ: $phone'),
+                              backgroundColor: colors.primary,
+                              behavior: SnackBarBehavior.floating,
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.copy_rounded, size: 16),
+                        label: const Text('Sao chép SĐT'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: colors.textPrimary,
+                          side: BorderSide(color: colors.cardBorder),
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                          shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                    ],
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: () => _showContactCourtPassModal(
+                          context,
+                          courtName,
+                          phone,
+                          session.courtRentalCost,
+                          timeStr,
+                          dateStr,
+                          address: displayAddress,
+                        ),
+                        icon: const Icon(Icons.phone_in_talk_rounded, size: 18),
+                        label: const Text('Nhận Pass Sân Ngay', style: TextStyle(fontWeight: FontWeight.bold)),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: colors.primary,
+                          foregroundColor: AppColors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                          elevation: 0,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+        ),
+      ),
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 800),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // 1. Hero Card: Pass Sân info & status
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: colors.cardBackground,
+                    borderRadius: AppRadius.card,
+                    border: Border.all(color: colors.cardBorder),
+                    boxShadow: AppShadows.sm,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                            decoration: BoxDecoration(
+                              color: isMyCourtPass
+                                  ? colors.primary.withValues(alpha: 0.12)
+                                  : colors.warning.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: isMyCourtPass
+                                    ? colors.primary.withValues(alpha: 0.4)
+                                    : colors.warning.withValues(alpha: 0.4),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  isMyCourtPass ? Icons.person_pin_rounded : Icons.swap_horiz_rounded,
+                                  size: 14,
+                                  color: isMyCourtPass ? colors.primary : colors.warning,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  isMyCourtPass ? 'SÂN BẠN PASS' : 'PASS SÂN CẦU LÔNG',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                    color: isMyCourtPass ? colors.primary : colors.warning,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: isEnded
+                                  ? colors.surfaceSubtle
+                                  : (isMyCourtPass
+                                      ? colors.primary.withValues(alpha: 0.12)
+                                      : colors.success.withValues(alpha: 0.12)),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: isEnded
+                                    ? colors.cardBorder
+                                    : (isMyCourtPass
+                                        ? colors.primary.withValues(alpha: 0.35)
+                                        : colors.success.withValues(alpha: 0.35)),
+                              ),
+                            ),
+                            child: Text(
+                              isEnded
+                                  ? 'Đã hết hạn'
+                                  : (isMyCourtPass ? 'Đang phát sóng trên Radar' : 'Đang tìm người nhận'),
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: isEnded
+                                    ? colors.textMuted
+                                    : (isMyCourtPass ? colors.primary : colors.success),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        courtName,
+                        style: AppTypography.titleLarge.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: colors.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Row(
+                        children: [
+                          Icon(Icons.person_pin_circle_outlined, size: 14, color: colors.textMuted),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: Text(
+                              'Đăng bởi: ${session.clubName}',
+                              style: AppTypography.bodySmall.copyWith(color: colors.textMuted),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                      if (displayAddress.isNotEmpty) ...[
+                        const SizedBox(height: 6),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Icon(Icons.location_on_rounded, size: 14, color: colors.primary),
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: Text(
+                                displayAddress,
+                                style: AppTypography.bodySmall.copyWith(color: colors.textSecondary),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                // 2. Address Card (Venue & Detailed Address with Copy & Map Coordinates)
+                Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: colors.cardBackground,
+                    borderRadius: AppRadius.card,
+                    border: Border.all(color: colors.cardBorder),
+                    boxShadow: AppShadows.sm,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(Icons.location_on_rounded, size: 18, color: colors.primary),
+                              const SizedBox(width: 6),
+                              Text(
+                                'Địa Chỉ Sân Thi Đấu',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.bold,
+                                  color: colors.textPrimary,
+                                ),
+                              ),
+                            ],
+                          ),
+                          if (displayAddress.isNotEmpty)
+                            InkWell(
+                              onTap: () {
+                                final textToCopy = displayAddress.isNotEmpty ? '$courtName, $displayAddress' : courtName;
+                                Clipboard.setData(ClipboardData(text: textToCopy));
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Đã sao chép địa chỉ: $textToCopy'),
+                                    backgroundColor: colors.primary,
+                                    behavior: SnackBarBehavior.floating,
+                                  ),
+                                );
+                              },
+                              borderRadius: BorderRadius.circular(4),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.copy_rounded, size: 13, color: colors.primary),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      'Sao chép',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                        color: colors.primary,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        courtName,
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: colors.textPrimary,
+                        ),
+                      ),
+                      if (displayAddress.isNotEmpty) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          displayAddress,
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: colors.textSecondary,
+                            height: 1.35,
+                          ),
+                        ),
+                      ] else ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          'Chưa cập nhật địa chỉ đường cụ thể. Vui lòng liên hệ người pass để biết vị trí chính xác.',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: colors.textMuted,
+                            fontStyle: FontStyle.italic,
+                          ),
+                        ),
+                      ],
+                      if (session.lat != null && session.lng != null) ...[
+                        const SizedBox(height: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: colors.surfaceSubtle,
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(color: colors.cardBorder),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.my_location_rounded, size: 13, color: colors.primary),
+                              const SizedBox(width: 4),
+                              Text(
+                                'Tọa độ GPS: ${session.lat!.toStringAsFixed(5)}, ${session.lng!.toStringAsFixed(5)}',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: colors.textMuted,
+                                  fontFamily: 'monospace',
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                // 3. Schedule Card (Date, Time, Duration)
+                Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: colors.surfaceSubtle,
+                    borderRadius: AppRadius.card,
+                    border: Border.all(color: colors.cardBorder),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: colors.primary.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(Icons.calendar_month_rounded, color: colors.primary, size: 22),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              dateStr,
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: colors.textPrimary,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              '$timeStr ($durationStr)',
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: colors.textSecondary,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                // 3. Specs & Price Card (Number of courts & Pass price)
+                Row(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: colors.cardBackground,
+                          borderRadius: AppRadius.card,
+                          border: Border.all(color: colors.cardBorder),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(Icons.sports_tennis_rounded, size: 16, color: colors.primary),
+                                const SizedBox(width: 6),
+                                Text(
+                                  'Quy mô sân',
+                                  style: TextStyle(fontSize: 12, color: colors.textMuted),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              '${session.courtCount} sân tiêu chuẩn',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: colors.textPrimary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: colors.cardBackground,
+                          borderRadius: AppRadius.card,
+                          border: Border.all(color: colors.primary.withValues(alpha: 0.3)),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(Icons.payments_outlined, size: 16, color: colors.primary),
+                                const SizedBox(width: 6),
+                                Text(
+                                  'Giá pass lại',
+                                  style: TextStyle(fontSize: 12, color: colors.textMuted),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              '${NumberFormat('#,###').format(session.courtRentalCost)} đ',
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                                color: colors.primary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+
+                // 4. Contact Card
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: colors.primary.withValues(alpha: 0.06),
+                    borderRadius: AppRadius.card,
+                    border: Border.all(color: colors.primary.withValues(alpha: 0.3)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.phone_in_talk_rounded, color: colors.primary, size: 20),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Thông Tin Liên Hệ Nhận Sân',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: colors.textPrimary,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      if (phone.isNotEmpty) ...[
+                        Row(
+                          children: [
+                            Text(
+                              'Số điện thoại / Zalo:',
+                              style: TextStyle(fontSize: 13, color: colors.textSecondary),
+                            ),
+                            const SizedBox(width: 8),
+                            SelectableText(
+                              phone,
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: colors.primary,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        Row(
+                          children: [
+                            ElevatedButton.icon(
+                              onPressed: () {
+                                Clipboard.setData(ClipboardData(text: phone));
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Đã sao chép SĐT: $phone'),
+                                    backgroundColor: colors.primary,
+                                    behavior: SnackBarBehavior.floating,
+                                  ),
+                                );
+                              },
+                              icon: const Icon(Icons.copy_rounded, size: 14),
+                              label: const Text('Sao chép SĐT', style: TextStyle(fontSize: 12)),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: colors.primary,
+                                foregroundColor: AppColors.white,
+                                elevation: 0,
+                                shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ] else ...[
+                        Text(
+                          'Chủ sân chưa cung cấp SĐT công khai. Vui lòng liên hệ trực tiếp qua câu lạc bộ ${session.clubName}.',
+                          style: TextStyle(fontSize: 13, color: colors.textMuted),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                // 5. Notes / Description (if any)
+                if (displayNote.isNotEmpty) ...[
+                  Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: colors.surfaceSubtle,
+                      borderRadius: AppRadius.card,
+                      border: Border.all(color: colors.cardBorder),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(Icons.notes_rounded, size: 16, color: colors.textSecondary),
+                            const SizedBox(width: 6),
+                            Text(
+                              'Ghi chú từ người pass',
+                              style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: colors.textPrimary),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          displayNote,
+                          style: TextStyle(fontSize: 13, color: colors.textSecondary, height: 1.4),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                ],
+
+                // 6. Safe Transfer Steps Guide
+                Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: colors.cardBackground,
+                    borderRadius: AppRadius.card,
+                    border: Border.all(color: colors.cardBorder),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            isMyCourtPass ? Icons.info_outline_rounded : Icons.verified_user_outlined,
+                            size: 16,
+                            color: colors.primary,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            isMyCourtPass ? 'Hướng dẫn cho người đăng pass sân' : 'Quy trình nhận pass sân an toàn',
+                            style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: colors.textPrimary),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      if (isMyCourtPass) ...[
+                        _buildTransferStepItem('1', 'Đảm bảo số điện thoại liên hệ luôn sẵn sàng khi có người nhận pass liên lạc.'),
+                        const SizedBox(height: 6),
+                        _buildTransferStepItem('2', 'Thỏa thuận chi phí pass và xác nhận cọc/tiền thuê sân trước khi chuyển nhượng.'),
+                        const SizedBox(height: 6),
+                        _buildTransferStepItem('3', 'Bấm nút "Hủy tin pass sân" ở dưới nếu đã tìm được người nhận hoặc muốn hủy bài đăng.'),
+                      ] else ...[
+                        _buildTransferStepItem('1', 'Liên hệ số điện thoại người đăng ở trên để chốt tình trạng sân.'),
+                        const SizedBox(height: 6),
+                        _buildTransferStepItem('2', 'Thỏa thuận chi phí pass và chuyển khoản cọc/tiền thuê sân.'),
+                        const SizedBox(height: 6),
+                        _buildTransferStepItem('3', 'Đến sân thi đấu đúng giờ và cung cấp tên/mã đặt sân tại lễ tân.'),
+                      ],
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   void _showSettlementRequiredDialog(BuildContext context, Session session) {
     final colors = context.colors;
     showDialog(
@@ -1579,6 +2828,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
     required bool canManageSession,
     required bool canRecruit,
     required bool canDeleteSession,
+    required bool canPassCourt,
   }) {
     final colors = context.colors;
     final vm = ref.read(sessionDetailViewModelProvider(widget.sessionId).notifier);
@@ -1643,16 +2893,18 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                     _showRecruitmentModal(context, session, activeRecruitment: activeRecruitment);
                   },
                 ),
+              ],
+              if (canPassCourt) ...[
                 _buildActionTile(
                   icon: Icons.swap_horiz_rounded,
                   color: colors.accent,
-                  label: _isCourtPassActive ? 'Đang Đăng Pass Sân' : 'Chuyển Nhượng / Pass Sân (Radar)',
-                  subtitle: _isCourtPassActive
-                      ? 'Đang đăng sang nhượng giờ sân trên Radar. Bấm để điều chỉnh hoặc hủy'
-                      : 'Sang nhượng toàn bộ giờ sân cho nhóm khác khi CLB không đủ người chơi',
+                  label: 'Chuyển Nhượng / Pass Sân (Radar)',
+                  subtitle: session.courtCount > 1
+                      ? 'Pass 1 phần hoặc toàn bộ giờ sân cho nhóm khác trên Radar'
+                      : 'Sang nhượng toàn bộ giờ sân cho nhóm khác và hủy lịch ca chơi của CLB',
                   onTap: () {
                     Navigator.of(ctx).pop();
-                    _showPassCourtModal(context, session);
+                    _showPassCourtModal(context, session, isHost: true);
                   },
                 ),
               ],
@@ -1821,6 +3073,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
     final isPlaying = !isEnded && (session.status == SessionStatus.playing ||
         (session.startTime.isBefore(now) && session.endTime.isAfter(now)));
     final isExpired = session.endTime.isBefore(now) || (session.status != SessionStatus.open && session.status != SessionStatus.locked);
+    final canPassCourt = isHost && session.status == SessionStatus.open && !isEnded && !isPlaying && !isExpired;
 
     final dateFormat = DateFormat('HH:mm, dd/MM/yyyy');
     final timeStr = '${DateFormat('HH:mm').format(session.startTime)} - ${dateFormat.format(session.endTime)}';
@@ -2042,7 +3295,8 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
           // Quy mô sân, Tiền sân gốc & Chi phí phát sinh
           Builder(
             builder: (context) {
-              final settlementAsync = isFeeDynamic ? ref.watch(sessionSettlementProvider(session.id)) : null;
+              final isSettled = session.status == SessionStatus.calculated || session.status == SessionStatus.completed;
+              final settlementAsync = (isFeeDynamic && isSettled) ? ref.watch(sessionSettlementProvider(session.id)) : null;
               final settlement = settlementAsync?.asData?.value;
               final shuttleCost = (settlement != null && settlement.shuttlecockUsed > 0)
                   ? settlement.shuttlecockUsed * settlement.shuttlecockPrice
@@ -2473,8 +3727,9 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                       final femaleCount = confirmedPlayers.where((p) => PlayerGenderHelper.isFemale(explicitGender: p.gender)).length;
                       final disc = feeRule?.femaleDiscountDaily.toInt() ?? 10000;
 
-                      final settlementAsync = ref.watch(sessionSettlementProvider(session.id));
-                      final settlement = settlementAsync.asData?.value;
+                      final isSettled = session.status == SessionStatus.calculated || session.status == SessionStatus.completed;
+                      final settlementAsync = isSettled ? ref.watch(sessionSettlementProvider(session.id)) : null;
+                      final settlement = settlementAsync?.asData?.value;
                       final totalCost = settlement?.totalCost ?? session.courtRentalCost.round();
 
                       final feeResult = SessionFeeCalculator.calculate(
@@ -2827,6 +4082,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                           canManageSession: canManageSession,
                           canRecruit: canRecruit,
                           canDeleteSession: canDeleteSession,
+                          canPassCourt: canPassCourt,
                         ),
                         borderRadius: AppRadius.tag,
                         child: Padding(
@@ -2943,80 +4199,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
             ),
           ],
 
-          // Recruitment status card (Phân định rõ: Đang tuyển vãng lai vs Không tuyển / Nội bộ vs Pass Sân)
-          if (_isCourtPassActive) ...[
-            AppSpacing.gapH12,
-            Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: colors.accent.withValues(alpha: 0.12),
-                borderRadius: AppRadius.card,
-                border: Border.all(color: colors.accent.withValues(alpha: 0.4), width: 1.2),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                            decoration: BoxDecoration(
-                              color: colors.accent,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: const Text(
-                              'ĐANG ĐĂNG PASS SÂN',
-                              style: TextStyle(color: AppColors.white, fontSize: 10, fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                          AppSpacing.gapW8,
-                          Text(
-                            '${NumberFormat('#,###').format(_courtPassPrice)} đ',
-                            style: AppTypography.titleSmall.copyWith(fontWeight: FontWeight.bold, color: colors.accent),
-                          ),
-                        ],
-                      ),
-                      OutlinedButton(
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: colors.error,
-                          side: BorderSide(color: colors.error.withValues(alpha: 0.5)),
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          minimumSize: Size.zero,
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        ),
-                        onPressed: () {
-                          setState(() => _isCourtPassActive = false);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Đã hủy đăng tin pass sân')),
-                          );
-                        },
-                        child: const Text('Hủy pass', style: TextStyle(fontSize: 11)),
-                      ),
-                    ],
-                  ),
-                  AppSpacing.gapH8,
-                  Text(
-                    'Tin chuyển nhượng giờ sân đang được phát sóng trên Radar. Khi có nhóm nhận sân, tiền sẽ tự động chuyển vào Quỹ CLB.',
-                    style: AppTypography.bodySmall.copyWith(color: colors.textSecondary),
-                  ),
-                  if (_courtPassPhone.isNotEmpty) ...[
-                    AppSpacing.gapH4,
-                    Row(
-                      children: [
-                        Icon(Icons.phone_rounded, size: 13, color: colors.textMuted),
-                        AppSpacing.gapW4,
-                        Text('Liên hệ: $_courtPassPhone', style: AppTypography.labelSmall.copyWith(color: colors.textMuted)),
-                      ],
-                    ),
-                  ],
-                ],
-              ),
-            ),
-          ],
-          if (session.status == SessionStatus.open && session.confirmedCount < 4 && !isEnded && !isPlaying && !isExpired && canRecruit && !_isCourtPassActive && activeRecruitment == null) ...[
+          if (session.status == SessionStatus.open && session.confirmedCount < 4 && !isEnded && !isPlaying && !isExpired && canRecruit && activeRecruitment == null) ...[
             AppSpacing.gapH12,
             Container(
               padding: const EdgeInsets.all(12),
@@ -3040,7 +4223,9 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                   ),
                   AppSpacing.gapH4,
                   Text(
-                    'Chưa đủ 4 tay vợt ra sân. Hãy Mở Tuyển Vãng Lai để ghép cặp, hoặc Pass Sân lại cho nhóm khác để tránh lãng phí tiền sân cố định.',
+                    isHost
+                        ? 'Chưa đủ 4 tay vợt ra sân. Hãy Mở Tuyển Vãng Lai để ghép cặp, hoặc Pass Sân lại cho nhóm khác để tránh lãng phí tiền sân cố định.'
+                        : 'Chưa đủ 4 tay vợt ra sân. Hãy liên hệ Host hoặc mở tuyển vãng lai để ghép thêm người chơi.',
                     style: AppTypography.bodySmall.copyWith(color: colors.textSecondary, fontSize: 11.5),
                   ),
                   AppSpacing.gapH8,
@@ -3059,21 +4244,23 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                           ),
                         ),
                       ),
-                      AppSpacing.gapW8,
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          onPressed: () => _showPassCourtModal(context, session),
-                          icon: const Icon(Icons.swap_horiz_rounded, size: 14),
-                          label: const Text('Pass sân lại', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold)),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: colors.accent,
-                            foregroundColor: AppColors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 8),
-                            visualDensity: VisualDensity.compact,
-                            elevation: 0,
+                      if (canPassCourt) ...[
+                        AppSpacing.gapW8,
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            onPressed: () => _showPassCourtModal(context, session, isHost: isHost),
+                            icon: const Icon(Icons.swap_horiz_rounded, size: 14),
+                            label: const Text('Pass sân lại', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold)),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: colors.accent,
+                              foregroundColor: AppColors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              visualDensity: VisualDensity.compact,
+                              elevation: 0,
+                            ),
                           ),
                         ),
-                      ),
+                      ],
                     ],
                   ),
                 ],
@@ -3261,20 +4448,22 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                     ),
                   ),
                   if (canRecruit && session.status == SessionStatus.open && !isEnded && !isPlaying && !isExpired) ...[
-                    OutlinedButton.icon(
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: colors.accent,
-                        side: BorderSide(color: colors.accent.withValues(alpha: 0.5)),
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                        minimumSize: Size.zero,
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                    if (canPassCourt) ...[
+                      OutlinedButton.icon(
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: colors.accent,
+                          side: BorderSide(color: colors.accent.withValues(alpha: 0.5)),
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                          minimumSize: Size.zero,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                        ),
+                        icon: const Icon(Icons.swap_horiz_rounded, size: 14),
+                        label: const Text('Pass sân', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold)),
+                        onPressed: () => _showPassCourtModal(context, session, isHost: isHost),
                       ),
-                      icon: const Icon(Icons.swap_horiz_rounded, size: 14),
-                      label: const Text('Pass sân', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold)),
-                      onPressed: () => _showPassCourtModal(context, session),
-                    ),
-                    AppSpacing.gapW8,
+                      AppSpacing.gapW8,
+                    ],
                     ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: colors.primary,

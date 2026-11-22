@@ -175,23 +175,24 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
     }
 
     final now = DateTime.now();
-    final sortedSessions = List<Session>.from(state.sessions)
+    final regularSessions = state.sessions.where((s) => !s.isCourtPass).toList();
+    final sortedSessions = List<Session>.from(regularSessions)
       ..sort((a, b) => a.startTime.compareTo(b.startTime));
 
-    final upcomingSessions = List<Session>.from(state.sessions)
+    final upcomingSessions = List<Session>.from(regularSessions)
         .where((s) => !_isSessionEnded(s, now))
         .toList()
       ..sort((a, b) => a.startTime.compareTo(b.startTime));
 
     final Session? nearestSession = upcomingSessions.isNotEmpty
         ? upcomingSessions.first
-        : (state.sessions.isNotEmpty
-            ? (List<Session>.from(state.sessions)
+        : (regularSessions.isNotEmpty
+            ? (List<Session>.from(regularSessions)
               ..sort((a, b) => b.startTime.compareTo(a.startTime)))
                 .first
             : null);
 
-    List<Session> displaySessions = List<Session>.from(state.sessions);
+    List<Session> displaySessions = List<Session>.from(regularSessions);
     if (_selectedDate != null) {
       displaySessions = displaySessions.where((s) {
         return s.startTime.year == _selectedDate!.year &&
@@ -215,31 +216,10 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
 
     return Scaffold(
       backgroundColor: colors.background,
-      floatingActionButton: canCreateSession
-          ? Padding(
-              padding: const EdgeInsets.only(bottom: 82),
-              child: FloatingActionButton.extended(
-                backgroundColor: colors.primary,
-                foregroundColor: AppColors.white,
-                elevation: 3,
-                icon: const Icon(Icons.add_rounded),
-                label: Text('Tạo buổi chơi', style: AppTypography.labelLarge.bold.colored(AppColors.white)),
-                onPressed: () async {
-                  final created = await context.push<bool>(
-                    AppConfig.createSessionRoutePath(widget.clubId),
-                    extra: {'clubName': widget.clubName},
-                  );
-                  if (created == true && context.mounted) {
-                    ref.read(clubSessionsViewModelProvider(widget.clubId).notifier).loadSessions();
-                  }
-                },
-              ),
-            )
-          : null,
       body: RefreshIndicator(
         onRefresh: vm.loadSessions,
         color: colors.primary,
-        child: state.sessions.isEmpty
+        child: regularSessions.isEmpty
             ? _buildEmptyState(context, canCreateSession)
             : ListView(
                 padding: const EdgeInsets.only(left: 16, right: 16, top: 12, bottom: 120),

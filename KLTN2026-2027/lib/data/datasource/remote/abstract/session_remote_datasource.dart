@@ -1,5 +1,6 @@
 // lib/data/datasource/remote/abstract/session_remote_datasource.dart
 
+import '../../../dto/session/create_court_pass_request_dto.dart';
 import '../../../dto/session/create_recruitment_request_dto.dart';
 import '../../../dto/session/create_session_request_dto.dart';
 import '../../../dto/session/guest_recruitment_dto.dart';
@@ -51,6 +52,8 @@ abstract class SessionRemoteDataSource {
   Future<SessionBookingDto> joinRecruitment(String recruitmentId);
 
   Future<void> cancelRecruitmentBooking(String recruitmentId);
+
+  Future<String> createCourtPass(CreateCourtPassRequestDto request);
 
   Future<SessionSettlementDto> getSettlement(String sessionId);
 

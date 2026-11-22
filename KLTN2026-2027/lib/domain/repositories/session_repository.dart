@@ -1,5 +1,6 @@
 // lib/domain/repositories/session_repository.dart
 
+import '../entities/session/create_court_pass_params.dart';
 import '../entities/session/guest_recruitment.dart';
 import '../entities/session/my_booking_item.dart';
 import '../entities/session/session.dart';
@@ -79,4 +80,6 @@ abstract class SessionRepository {
   Future<SessionBooking> joinRecruitment(String recruitmentId);
 
   Future<void> cancelRecruitmentBooking(String recruitmentId);
+
+  Future<String> createCourtPass(CreateCourtPassParams params);
 }

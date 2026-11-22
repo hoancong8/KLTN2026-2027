@@ -15,6 +15,7 @@ final sessionDetailViewModelProvider = StateNotifierProvider.autoDispose
     voteBookingUseCase: ref.watch(voteBookingUseCaseProvider),
     cancelBookingUseCase: ref.watch(cancelBookingUseCaseProvider),
     confirmBookingUseCase: ref.watch(confirmBookingUseCaseProvider),
+    updateSessionUseCase: ref.watch(updateSessionUseCaseProvider),
     updateSessionStatusUseCase: ref.watch(updateSessionStatusUseCaseProvider),
     deleteSessionUseCase: ref.watch(deleteSessionUseCaseProvider),
     createRecruitmentUseCase: ref.watch(createRecruitmentUseCaseProvider),
@@ -28,6 +29,7 @@ class SessionDetailViewModel extends StateNotifier<SessionDetailState> {
   final VoteBookingUseCase voteBookingUseCase;
   final CancelBookingUseCase cancelBookingUseCase;
   final ConfirmBookingUseCase confirmBookingUseCase;
+  final UpdateSessionUseCase updateSessionUseCase;
   final UpdateSessionStatusUseCase updateSessionStatusUseCase;
   final DeleteSessionUseCase deleteSessionUseCase;
   final CreateRecruitmentUseCase createRecruitmentUseCase;
@@ -39,6 +41,7 @@ class SessionDetailViewModel extends StateNotifier<SessionDetailState> {
     required this.voteBookingUseCase,
     required this.cancelBookingUseCase,
     required this.confirmBookingUseCase,
+    required this.updateSessionUseCase,
     required this.updateSessionStatusUseCase,
     required this.deleteSessionUseCase,
     required this.createRecruitmentUseCase,
@@ -100,6 +103,39 @@ class SessionDetailViewModel extends StateNotifier<SessionDetailState> {
       return true;
     } catch (e) {
       state = state.copyWith(isSubmitting: false, errorMessage: e.toString());
+      return false;
+    }
+  }
+
+  Future<bool> updateSession({
+    required String title,
+    required DateTime startTime,
+    required DateTime endTime,
+    required String courtLocation,
+    required int courtCount,
+    required int maxPlayers,
+    required DateTime deadlineBooking,
+  }) async {
+    state = state.copyWith(isSubmitting: true, errorMessage: null);
+    try {
+      await updateSessionUseCase.execute(UpdateSessionParams(
+        sessionId: sessionId,
+        title: title,
+        startTime: startTime,
+        endTime: endTime,
+        courtLocation: courtLocation,
+        courtCount: courtCount,
+        maxPlayers: maxPlayers,
+        deadlineBooking: deadlineBooking,
+      ));
+      if (!mounted) return true;
+      await loadDetail();
+      if (!mounted) return true;
+      state = state.copyWith(isSubmitting: false);
+      return true;
+    } catch (e) {
+      if (!mounted) return false;
+      state = state.copyWith(isSubmitting: false, errorMessage: _resolveErrorMessage(e));
       return false;
     }
   }
