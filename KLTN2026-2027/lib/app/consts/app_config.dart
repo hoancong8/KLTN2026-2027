@@ -3,6 +3,8 @@ import 'package:flutter/foundation.dart';
 class AppConfig {
   // ===== Environment =====
   static const env = String.fromEnvironment('ENV', defaultValue: 'dev');
+  static const ledgerClubRequestKey = 'ledgerClubId';
+  static String clubLedgerEndpoint(String clubId) => '$clubsPath/$clubId/ledger';
   static bool get isWeb => kIsWeb;
 
   // ===== Base URL =====

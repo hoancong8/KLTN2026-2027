@@ -1,11 +1,13 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import 'package:url_launcher/url_launcher.dart';
+import '../../../../app/consts/app_config.dart';
 import '../../../../app/consts/permissions.dart';
 import '../../../../app/provider.dart';
 import '../../../../app/provider/localization_provider.dart';
+import '../../../../app/services/sepay_authorization_browser.dart';
 import '../../../../app/theme/theme.dart';
 import '../../../../domain/entities/sepay/sepay_connection.dart';
 import '../../../../widget/app_status_badge.dart';
@@ -30,7 +32,8 @@ class ClubSepayScreen extends ConsumerStatefulWidget {
 
 class _ClubSepayScreenState extends ConsumerState<ClubSepayScreen> {
   AppThemeColors get colors => context.colors;
-  String? _processedCallback;
+  String? _completedTicket;
+  bool _openingAuthorization = false;
 
   String? _messageForKey(String? key) => switch (key) {
     'sepay_load_status_failed' => context.l10n.sepay_load_status_failed,
@@ -77,7 +80,8 @@ class _ClubSepayScreenState extends ConsumerState<ClubSepayScreen> {
   void didUpdateWidget(covariant ClubSepayScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.sepayCallbackStatus != widget.sepayCallbackStatus ||
-        oldWidget.ticket != widget.ticket || oldWidget.clubId != widget.clubId) {
+        oldWidget.ticket != widget.ticket ||
+        oldWidget.clubId != widget.clubId) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) _checkCallback();
       });
@@ -85,117 +89,108 @@ class _ClubSepayScreenState extends ConsumerState<ClubSepayScreen> {
   }
 
   void _checkCallback() {
+    if (!mounted) return;
     final status = widget.sepayCallbackStatus;
+    if (status == null || status.isEmpty) return;
+
     final ticket = widget.ticket;
+    context.replace(AppConfig.clubSepayScreenPath(widget.clubId));
+    _handleAuthorizationCallback(status, ticket);
+  }
 
-    if (status == null || status.isEmpty) {
-      _processedCallback = null;
-      return;
-    }
-    {
-      final callback = '${widget.clubId}:$status:${ticket ?? ''}';
-      if (_processedCallback == callback) return;
-      _processedCallback = callback;
-      context.replace('/club/${widget.clubId}/sepay');
-
-      if (status == 'authorized' && ticket != null && ticket.isNotEmpty) {
-        ref
-            .read(clubSepayViewModelProvider(widget.clubId).notifier)
-            .completeOAuth(ticket);
-      } else if (status == 'denied') {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(context.l10n.sepay_authorization_cancelled),
-            backgroundColor: colors.warning,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
+  Future<void> _handleAuthorizationCallback(
+    String? status,
+    String? ticket,
+  ) async {
+    if (status == 'authorized' && ticket != null && ticket.isNotEmpty) {
+      if (_completedTicket == ticket) return;
+      _completedTicket = ticket;
+      await ref
+          .read(clubSepayViewModelProvider(widget.clubId).notifier)
+          .completeOAuth(ticket);
+    } else if (status == 'denied') {
+      _showAuthorizationCancelled();
+    } else {
+      _showOpenAuthError();
     }
   }
 
   Future<void> _handleStartOAuth() async {
-    final vm = ref.read(clubSepayViewModelProvider(widget.clubId).notifier);
-    final authUrl = await vm.startOAuth();
-    if (authUrl != null && authUrl.isNotEmpty) {
-      if (mounted) {
-        // Show dialog with link or prompt to open browser
-        _showOpenAuthDialog(authUrl);
+    if (_openingAuthorization) return;
+    setState(() => _openingAuthorization = true);
+    final clubId = widget.clubId;
+    try {
+      final authUrl = await ref
+          .read(clubSepayViewModelProvider(clubId).notifier)
+          .startOAuth();
+      if (!mounted || widget.clubId != clubId || authUrl == null) return;
+
+      final uri = Uri.tryParse(authUrl);
+      if (uri == null || !isSepayAuthorizationUrl(uri)) {
+        _showOpenAuthError();
+        return;
       }
+      if (kIsWeb) {
+        await _confirmWebAuthorization(uri);
+        return;
+      }
+      await _openAuthorization(uri, clubId);
+    } finally {
+      if (mounted) setState(() => _openingAuthorization = false);
     }
   }
 
-  void _showOpenAuthDialog(String authUrl) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: colors.cardBackground,
-        shape: RoundedRectangleBorder(borderRadius: AppRadius.card),
-        title: Row(
-          children: [
-            Icon(
-              Icons.open_in_browser_rounded,
-              color: colors.primary,
-              size: 24,
-            ),
-            AppSpacing.gapW8,
-            Text(
-              context.l10n.sepay_authorization_title,
-              style: AppTypography.titleMedium.bold.colored(colors.textPrimary),
-            ),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              context.l10n.sepay_authorization_ready,
-              style: AppTypography.bodySmall.colored(colors.textPrimary),
-            ),
-            AppSpacing.gapH12,
-            SelectableText(
-              authUrl,
-              style: AppTypography.bodySmall.colored(colors.textMuted),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: Text(
-              context.l10n.com_close,
-              style: TextStyle(color: colors.textMuted),
-            ),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: colors.primary,
-              foregroundColor: AppColors.white,
-            ),
-            onPressed: () async {
-              Navigator.of(ctx).pop();
-              final uri = Uri.tryParse(authUrl);
-              if (uri == null ||
-                  uri.scheme != 'https' ||
-                  uri.host != 'my.sepay.vn') {
-                _showOpenAuthError();
-                return;
-              }
+  Future<void> _openAuthorization(Uri uri, String clubId) async {
+    final result = await openSepayAuthorization(uri);
+    if (!mounted || widget.clubId != clubId) return;
 
-              try {
-                final opened = await launchUrl(
-                  uri,
-                  mode: LaunchMode.externalApplication,
-                );
-                if (!opened) _showOpenAuthError();
-              } catch (_) {
-                _showOpenAuthError();
-              }
-            },
-            child: Text(context.l10n.sepay_open_browser),
-          ),
-        ],
+    switch (result.outcome) {
+      case SepayBrowserOutcome.opened:
+        return;
+      case SepayBrowserOutcome.completed:
+        final callback = result.callback;
+        if (callback == null || !isSepayAppCallback(callback, clubId)) {
+          _showOpenAuthError();
+          return;
+        }
+        await _handleAuthorizationCallback(
+          callback.queryParameters['sepay'],
+          callback.queryParameters['ticket'],
+        );
+      case SepayBrowserOutcome.cancelled:
+        _showAuthorizationCancelled();
+      case SepayBrowserOutcome.failed:
+        _showOpenAuthError();
+    }
+  }
+
+  Future<void> _confirmWebAuthorization(Uri uri) => showDialog<void>(
+    context: context,
+    builder: (dialogContext) => AlertDialog(
+      title: Text(context.l10n.sepay_authorization_title),
+      content: Text(context.l10n.sepay_authorization_ready),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(dialogContext).pop(),
+          child: Text(context.l10n.com_close),
+        ),
+        FilledButton(
+          onPressed: () {
+            Navigator.of(dialogContext).pop();
+            _openAuthorization(uri, widget.clubId);
+          },
+          child: Text(context.l10n.sepay_open_browser),
+        ),
+      ],
+    ),
+  );
+
+  void _showAuthorizationCancelled() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(context.l10n.sepay_authorization_cancelled),
+        backgroundColor: colors.warning,
+        behavior: SnackBarBehavior.floating,
       ),
     );
   }
@@ -563,7 +558,7 @@ class _ClubSepayScreenState extends ConsumerState<ClubSepayScreen> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
-                icon: isActionInProgress && state.actionType == 'authorize'
+                icon: _openingAuthorization
                     ? const SizedBox(
                         width: 18,
                         height: 18,
@@ -582,7 +577,10 @@ class _ClubSepayScreenState extends ConsumerState<ClubSepayScreen> {
                     borderRadius: AppRadius.button,
                   ),
                 ),
-                onPressed: isActionInProgress || !applicationReady
+                onPressed:
+                    _openingAuthorization ||
+                        isActionInProgress ||
+                        !applicationReady
                     ? null
                     : _handleStartOAuth,
               ),

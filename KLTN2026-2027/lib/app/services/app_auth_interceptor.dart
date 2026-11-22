@@ -47,6 +47,23 @@ class AppAuthInterceptor extends Interceptor {
       options.headers['Authorization'] = 'Bearer ${token.accessToken}';
     }
 
+    final ledgerClub = options.extra[AppConfig.ledgerClubRequestKey];
+    if (ledgerClub is String) {
+      final actor = token?.userId ?? ref.read(currentUserProfileProvider)?.id;
+      final expectedActor = options.extra['ledgerActorId'];
+      if (token == null || actor == null ||
+          ref.read(activeClubIdProvider) != ledgerClub ||
+          (expectedActor != null && actor != expectedActor)) {
+        return handler.reject(DioException.requestCancelled(
+          requestOptions: options,
+          reason: 'Ledger context changed',
+        ));
+      }
+      options.extra['ledgerActorId'] = actor;
+      options.headers['X-Group-Id'] = ledgerClub;
+      return handler.next(options);
+    }
+
     // Tự động đính kèm X-Group-Id nếu đang đứng trong ngữ cảnh của 1 CLB
     final activeClubId = ref.read(activeClubIdProvider) ??
         await SecureStorageService.instance.getActiveClubId();
@@ -70,6 +87,7 @@ class AppAuthInterceptor extends Interceptor {
       final path = err.requestOptions.path;
 
       if (isLoggingOut ||
+          err.requestOptions.extra['ledgerRetried'] == true ||
           path.contains(AppConfig.login) ||
           path.contains(AppConfig.logOut) ||
           path.contains(AppConfig.refreshToken)) {
@@ -86,7 +104,9 @@ class AppAuthInterceptor extends Interceptor {
         try {
           newToken = await _refreshFuture!;
         } catch (_) { // Bắt mọi lỗi từ Refresh API (Timeout, 400 Bad Request...)
-          _handleSessionExpired(ref);
+          if (identical(ref.read(authTokenProvider), currentToken)) {
+            _handleSessionExpired(ref);
+          }
           return handler.reject(
             DioException(
               requestOptions: err.requestOptions,
@@ -97,6 +117,9 @@ class AppAuthInterceptor extends Interceptor {
 
         try {
           final opts = err.requestOptions;
+          if (opts.extra.containsKey(AppConfig.ledgerClubRequestKey)) {
+            return handler.resolve(await _retryLedgerRequest(opts));
+          }
           opts.headers['Authorization'] = 'Bearer ${newToken.accessToken}';
           final retryResponse = await baseDio.request(
             opts.path,
@@ -134,7 +157,9 @@ class AppAuthInterceptor extends Interceptor {
         newToken = await _refreshFuture!;
       } catch (e) {
         _refreshFuture = null;
-        _handleSessionExpired(ref);
+        if (identical(ref.read(authTokenProvider), currentToken)) {
+          _handleSessionExpired(ref);
+        }
         return handler.reject(
           DioException(
             requestOptions: err.requestOptions,
@@ -145,6 +170,9 @@ class AppAuthInterceptor extends Interceptor {
 
       try {
         final opts = err.requestOptions;
+        if (opts.extra.containsKey(AppConfig.ledgerClubRequestKey)) {
+          return handler.resolve(await _retryLedgerRequest(opts));
+        }
         opts.headers['Authorization'] = 'Bearer ${newToken.accessToken}';
 
         final activeClubId = ref.read(activeClubIdProvider) ??
@@ -180,6 +208,14 @@ class AppAuthInterceptor extends Interceptor {
       }
     }
     return handler.next(err);
+  }
+
+  Future<Response<dynamic>> _retryLedgerRequest(RequestOptions original) {
+    final body = original.data;
+    return baseDio.fetch(original.copyWith(
+      data: body is FormData ? body.clone() : body,
+      extra: {...original.extra, 'ledgerRetried': true},
+    ));
   }
 
   Future<AuthToken> _refreshToken(
@@ -235,6 +271,9 @@ class AppAuthInterceptor extends Interceptor {
         userId: currentToken.userId,
       );
 
+      if (isLoggingOut || !identical(ref.read(authTokenProvider), currentToken)) {
+        throw const FormatException('Auth session changed while refreshing');
+      }
       ref.read(authTokenProvider.notifier).state = newToken;
       await SecureStorageService.instance.saveAuthToken(newToken);
 

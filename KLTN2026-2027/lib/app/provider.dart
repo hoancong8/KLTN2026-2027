@@ -323,7 +323,9 @@ final dioProvider = Provider<Dio>((ref) {
   if (kDebugMode) {
     dio.interceptors.add(
       PrettyDioLogger(
-        filter: (options, _) => !options.path.contains('/sepay'),
+        filter: (options, _) =>
+            !options.path.contains('/sepay') &&
+            !options.extra.containsKey(AppConfig.ledgerClubRequestKey),
         requestHeader: true,
         requestBody: true,
         responseBody: true,

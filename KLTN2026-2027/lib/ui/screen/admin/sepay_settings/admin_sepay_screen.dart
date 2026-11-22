@@ -336,8 +336,6 @@ class _AdminSepayScreenState extends ConsumerState<AdminSepayScreen> {
     final hasSecret = app?.hasClientSecret ?? false;
     final isEnabled = app?.enabled ?? false;
     final webhookEnabled = app?.webhookEnabled ?? false;
-    final revision = app?.revision;
-    final hasRevision = revision != null && revision.isNotEmpty;
     final statusTiles = <Widget>[
       _buildStatusTile(
         title: context.l10n.sepay_application,
@@ -368,19 +366,6 @@ class _AdminSepayScreenState extends ConsumerState<AdminSepayScreen> {
             ? AppStatusBadge.success(label: context.l10n.sepay_webhook_active)
             : AppStatusBadge.neutral(
                 label: context.l10n.sepay_webhook_inactive,
-              ),
-      ),
-      _buildStatusTile(
-        title: context.l10n.sepay_revision_label,
-        subtitle: hasRevision
-            ? (revision.length <= 8 ? revision : revision.substring(0, 8))
-            : context.l10n.sepay_revision_not_initialized,
-        badge: hasRevision
-            ? AppStatusBadge.info(
-                label: context.l10n.sepay_revision_version_one,
-              )
-            : AppStatusBadge.neutral(
-                label: context.l10n.sepay_badge_not_configured,
               ),
       ),
     ];
@@ -429,6 +414,7 @@ class _AdminSepayScreenState extends ConsumerState<AdminSepayScreen> {
               }
 
               return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Row(
                     children: [
@@ -438,13 +424,7 @@ class _AdminSepayScreenState extends ConsumerState<AdminSepayScreen> {
                     ],
                   ),
                   AppSpacing.gapH12,
-                  Row(
-                    children: [
-                      Expanded(child: statusTiles[2]),
-                      AppSpacing.gapW12,
-                      Expanded(child: statusTiles[3]),
-                    ],
-                  ),
+                  statusTiles[2],
                 ],
               );
             },
