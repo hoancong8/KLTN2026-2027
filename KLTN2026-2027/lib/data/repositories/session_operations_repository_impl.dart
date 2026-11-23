@@ -1107,17 +1107,20 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
     required List<String> teamAUserIds,
     required List<String> teamBUserIds,
   }) async {
+    final current = await getRotation(sessionId);
     try {
-      await dio.put(
-        '/api/v1/sessions/$sessionId/matches/$matchId/manual-lineup',
-        data: {
-          'teamA': teamAUserIds,
-          'teamB': teamBUserIds,
-        },
-      );
+      if (teamAUserIds.length == 2 && teamBUserIds.length == 2) {
+        await dio.put(
+          '/api/v1/sessions/$sessionId/matches/$matchId/manual-lineup',
+          data: {
+            'teamA': teamAUserIds,
+            'teamB': teamBUserIds,
+            'expectedRotationVersion': current.rotationVersion,
+          },
+        );
+      }
     } catch (_) {}
 
-    final current = await getRotation(sessionId);
     final allPlayersMap = {
       for (final c in current.courts) ...{
         for (final p in [...c.teamA, ...c.teamB]) p.userId: p
@@ -1130,10 +1133,13 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
 
     final updatedCourts = current.courts.map((c) {
       if (c.matchId == matchId) {
+        final newState = (newTeamA.isNotEmpty || newTeamB.isNotEmpty)
+            ? (c.isPlaying ? 'Playing' : 'Proposed')
+            : 'Empty';
         return CourtMatch(
           matchId: c.matchId,
           courtNumber: c.courtNumber,
-          state: c.state,
+          state: newState,
           startedAt: c.startedAt,
           teamA: newTeamA,
           teamB: newTeamB,
@@ -1149,7 +1155,8 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
       }
     };
 
-    final updatedQueue = current.queuePlayers.where((p) => !usedUserIds.contains(p.userId)).toList();
+    final allKnownPlayers = allPlayersMap.values.toList();
+    final updatedQueue = allKnownPlayers.where((p) => !usedUserIds.contains(p.userId)).toList();
 
     final updated = SessionRotationSnapshot(
       sessionId: current.sessionId,
@@ -1163,7 +1170,186 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
       coolingDownCount: updatedQueue.where((p) => p.isResting || p.isPaused).length,
       courts: updatedCourts,
       queuePlayers: updatedQueue,
+      threePlayerMode: current.threePlayerMode,
     );
+    _rotationCache[sessionId] = updated;
+    return updated;
+  }
+
+  @override
+  Future<SessionRotationSnapshot> movePlayer({
+    required String sessionId,
+    required DraggingPlayerPayload payload,
+    String? targetCourtMatchId,
+    String? targetTeam,
+    int? targetSpotIndex,
+  }) async {
+    final current = await getRotation(sessionId);
+    final movedPlayer = payload.player;
+
+    final allPlayersMap = {
+      for (final c in current.courts) ...{
+        for (final p in [...c.teamA, ...c.teamB]) p.userId: p
+      },
+      for (final p in current.queuePlayers) p.userId: p,
+      movedPlayer.userId: movedPlayer,
+    };
+
+    final courtList = current.courts.map((c) {
+      return CourtMatch(
+        matchId: c.matchId,
+        courtNumber: c.courtNumber,
+        state: c.state,
+        startedAt: c.startedAt,
+        teamA: List<RotationPlayer>.from(c.teamA),
+        teamB: List<RotationPlayer>.from(c.teamB),
+        isManualSwapped: c.isManualSwapped,
+      );
+    }).toList();
+
+    for (int i = 0; i < courtList.length; i++) {
+      final c = courtList[i];
+      final newTeamA = c.teamA.where((p) => p.userId != movedPlayer.userId).toList();
+      final newTeamB = c.teamB.where((p) => p.userId != movedPlayer.userId).toList();
+      if (newTeamA.length != c.teamA.length || newTeamB.length != c.teamB.length) {
+        final newState = (newTeamA.isNotEmpty || newTeamB.isNotEmpty)
+            ? (c.isPlaying ? 'Playing' : 'Proposed')
+            : 'Empty';
+        courtList[i] = CourtMatch(
+          matchId: c.matchId,
+          courtNumber: c.courtNumber,
+          state: newState,
+          startedAt: c.startedAt,
+          teamA: newTeamA,
+          teamB: newTeamB,
+          isManualSwapped: true,
+        );
+      }
+    }
+
+    if (targetCourtMatchId != null && targetTeam != null) {
+      final targetIdx = courtList.indexWhere((c) => c.matchId == targetCourtMatchId);
+      if (targetIdx != -1) {
+        final target = courtList[targetIdx];
+        final isTeamA = targetTeam == 'A';
+        final targetTeamPlayers = List<RotationPlayer>.from(isTeamA ? target.teamA : target.teamB);
+        final otherTeamPlayers = List<RotationPlayer>.from(isTeamA ? target.teamB : target.teamA);
+
+        if (targetSpotIndex != null && targetSpotIndex < targetTeamPlayers.length) {
+          targetTeamPlayers[targetSpotIndex] = movedPlayer;
+        } else if (targetTeamPlayers.length < 2) {
+          targetTeamPlayers.add(movedPlayer);
+        } else {
+          targetTeamPlayers[1] = movedPlayer;
+        }
+
+        final finalTeamA = isTeamA ? targetTeamPlayers : otherTeamPlayers;
+        final finalTeamB = isTeamA ? otherTeamPlayers : targetTeamPlayers;
+        final newState = target.isPlaying ? 'Playing' : 'Proposed';
+
+        courtList[targetIdx] = CourtMatch(
+          matchId: target.matchId,
+          courtNumber: target.courtNumber,
+          state: newState,
+          startedAt: target.startedAt,
+          teamA: finalTeamA,
+          teamB: finalTeamB,
+          isManualSwapped: true,
+        );
+
+        if (finalTeamA.length == 2 && finalTeamB.length == 2) {
+          try {
+            await dio.put(
+              '/api/v1/sessions/$sessionId/matches/${target.matchId}/manual-lineup',
+              data: {
+                'teamA': finalTeamA.map((p) => p.userId).toList(),
+                'teamB': finalTeamB.map((p) => p.userId).toList(),
+                'expectedRotationVersion': current.rotationVersion,
+              },
+            );
+          } catch (_) {}
+        }
+      }
+    }
+
+    final userIdsOnCourts = <String>{
+      for (final c in courtList) ...{
+        for (final p in [...c.teamA, ...c.teamB]) p.userId
+      }
+    };
+
+    final newQueue = allPlayersMap.values.where((p) => !userIdsOnCourts.contains(p.userId)).toList();
+
+    final updated = SessionRotationSnapshot(
+      sessionId: current.sessionId,
+      sessionStatus: current.sessionStatus,
+      rotationVersion: current.rotationVersion + 1,
+      serverTime: DateTime.now(),
+      rotationStartedAt: current.rotationStartedAt,
+      canInitialize: current.canInitialize,
+      canGenerateProposals: current.canGenerateProposals,
+      readyCandidateCount: newQueue.where((p) => !p.isResting && !p.isPaused).length,
+      coolingDownCount: newQueue.where((p) => p.isResting || p.isPaused).length,
+      courts: courtList,
+      queuePlayers: newQueue,
+      threePlayerMode: current.threePlayerMode,
+    );
+
+    _rotationCache[sessionId] = updated;
+    return updated;
+  }
+
+  @override
+  Future<SessionRotationSnapshot> clearCourt({
+    required String sessionId,
+    required String matchId,
+  }) async {
+    final current = await getRotation(sessionId);
+    final allPlayersMap = {
+      for (final c in current.courts) ...{
+        for (final p in [...c.teamA, ...c.teamB]) p.userId: p
+      },
+      for (final p in current.queuePlayers) p.userId: p,
+    };
+
+    final courtList = current.courts.map((c) {
+      if (c.matchId == matchId) {
+        return CourtMatch(
+          matchId: c.matchId,
+          courtNumber: c.courtNumber,
+          state: 'Empty',
+          startedAt: null,
+          teamA: const [],
+          teamB: const [],
+          isManualSwapped: false,
+        );
+      }
+      return c;
+    }).toList();
+
+    final userIdsOnCourts = <String>{
+      for (final c in courtList) ...{
+        for (final p in [...c.teamA, ...c.teamB]) p.userId
+      }
+    };
+
+    final newQueue = allPlayersMap.values.where((p) => !userIdsOnCourts.contains(p.userId)).toList();
+
+    final updated = SessionRotationSnapshot(
+      sessionId: current.sessionId,
+      sessionStatus: current.sessionStatus,
+      rotationVersion: current.rotationVersion + 1,
+      serverTime: DateTime.now(),
+      rotationStartedAt: current.rotationStartedAt,
+      canInitialize: current.canInitialize,
+      canGenerateProposals: current.canGenerateProposals,
+      readyCandidateCount: newQueue.where((p) => !p.isResting && !p.isPaused).length,
+      coolingDownCount: newQueue.where((p) => p.isResting || p.isPaused).length,
+      courts: courtList,
+      queuePlayers: newQueue,
+      threePlayerMode: current.threePlayerMode,
+    );
+
     _rotationCache[sessionId] = updated;
     return updated;
   }

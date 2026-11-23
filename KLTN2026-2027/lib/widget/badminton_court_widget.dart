@@ -7,18 +7,26 @@ import 'app_status_badge.dart';
 
 class BadmintonCourtWidget extends StatelessWidget {
   final CourtMatch court;
+  final bool isManualMode;
   final VoidCallback? onStartMatch;
   final VoidCallback? onFinishMatch;
   final VoidCallback? onSwapLineup;
   final VoidCallback? onRestoreProposal;
+  final void Function(DraggingPlayerPayload payload, String targetTeam, int? spotIndex)? onPlayerDropped;
+  final VoidCallback? onClearCourt;
+  final VoidCallback? onSwapTeams;
 
   const BadmintonCourtWidget({
     super.key,
     required this.court,
+    this.isManualMode = false,
     this.onStartMatch,
     this.onFinishMatch,
     this.onSwapLineup,
     this.onRestoreProposal,
+    this.onPlayerDropped,
+    this.onClearCourt,
+    this.onSwapTeams,
   });
 
   @override
@@ -126,52 +134,134 @@ class BadmintonCourtWidget extends StatelessWidget {
           ),
 
           // 3. Action Buttons
-          if (!isEmpty) ...[
-            Padding(
-              padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
-              child: _buildActionButtons(context),
-            ),
-          ] else ...[
-            const SizedBox(height: 12),
-          ],
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
+            child: _buildActionButtons(context),
+          ),
         ],
       ),
     );
   }
 
   Widget _buildEmptyCourtState(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 36, horizontal: 16),
-      alignment: Alignment.center,
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 10),
       child: Column(
-        mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: AppColors.white.withValues(alpha: 0.15),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(
-              Icons.sports_tennis_rounded,
-              size: 28,
-              color: AppColors.white,
+          // Team A Drop Zone for empty court
+          DragTarget<DraggingPlayerPayload>(
+            onWillAcceptWithDetails: (details) => !court.isPlaying,
+            onAcceptWithDetails: (details) {
+              onPlayerDropped?.call(details.data, 'A', null);
+            },
+            builder: (ctx, candidates, rejected) {
+              final isHovered = candidates.isNotEmpty;
+              return Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 22, horizontal: 12),
+                decoration: BoxDecoration(
+                  color: isHovered
+                      ? AppColors.primaryLight.withValues(alpha: 0.35)
+                      : AppColors.white.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: isHovered ? AppColors.white : AppColors.white.withValues(alpha: 0.25),
+                    width: isHovered ? 2 : 1,
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    Icon(
+                      isHovered ? Icons.add_circle_rounded : Icons.sports_tennis_rounded,
+                      color: AppColors.white,
+                      size: 20,
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      isHovered ? 'Thả vào ĐỘI 1' : 'ĐỘI 1: Kéo thả tay vợt vào đây',
+                      style: AppTypography.labelSmall.bold.copyWith(color: AppColors.white),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+
+          // Net Line & VS
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    height: 1.5,
+                    color: AppColors.white.withValues(alpha: 0.6),
+                  ),
+                ),
+                Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 8),
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: AppColors.white,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    'VS',
+                    style: AppTypography.labelSmall.bold.copyWith(
+                      color: AppColors.courtGreen,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: Container(
+                    height: 1.5,
+                    color: AppColors.white.withValues(alpha: 0.6),
+                  ),
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: 10),
-          Text(
-            'Sân thi đấu đang sẵn sàng',
-            style: AppTypography.titleSmall.bold.copyWith(
-              color: AppColors.white,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Hệ thống tự động ghép cặp khi có từ 2 tay vợt sẵn sàng (1vs1, 2vs1 hoặc 2vs2)',
-            style: AppTypography.bodySmall.copyWith(
-              color: AppColors.white.withValues(alpha: 0.8),
-            ),
-            textAlign: TextAlign.center,
+
+          // Team B Drop Zone for empty court
+          DragTarget<DraggingPlayerPayload>(
+            onWillAcceptWithDetails: (details) => !court.isPlaying,
+            onAcceptWithDetails: (details) {
+              onPlayerDropped?.call(details.data, 'B', null);
+            },
+            builder: (ctx, candidates, rejected) {
+              final isHovered = candidates.isNotEmpty;
+              return Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 22, horizontal: 12),
+                decoration: BoxDecoration(
+                  color: isHovered
+                      ? AppColors.accent.withValues(alpha: 0.35)
+                      : AppColors.white.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: isHovered ? AppColors.white : AppColors.white.withValues(alpha: 0.25),
+                    width: isHovered ? 2 : 1,
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    Icon(
+                      isHovered ? Icons.add_circle_rounded : Icons.sports_tennis_rounded,
+                      color: AppColors.white,
+                      size: 20,
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      isHovered ? 'Thả vào ĐỘI 2' : 'ĐỘI 2: Kéo thả tay vợt vào đây',
+                      style: AppTypography.labelSmall.bold.copyWith(color: AppColors.white),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              );
+            },
           ),
         ],
       ),
@@ -187,6 +277,7 @@ class BadmintonCourtWidget extends StatelessWidget {
           _buildTeamHalfCourt(
             context,
             teamName: 'ĐỘI 1',
+            teamLetter: 'A',
             players: court.teamA,
             totalSkill: court.teamASkill,
             teamColor: AppColors.primaryLight,
@@ -255,6 +346,7 @@ class BadmintonCourtWidget extends StatelessWidget {
           _buildTeamHalfCourt(
             context,
             teamName: 'ĐỘI 2',
+            teamLetter: 'B',
             players: court.teamB,
             totalSkill: court.teamBSkill,
             teamColor: AppColors.accent,
@@ -268,68 +360,203 @@ class BadmintonCourtWidget extends StatelessWidget {
   Widget _buildTeamHalfCourt(
     BuildContext context, {
     required String teamName,
+    required String teamLetter,
     required List<RotationPlayer> players,
     required int totalSkill,
     required Color teamColor,
     required bool isTopTeam,
   }) {
-    return Column(
-      children: [
-        // Team Tag & Total Skill Level
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-              decoration: BoxDecoration(
-                color: teamColor.withValues(alpha: 0.25),
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Text(
-                teamName,
-                style: AppTypography.labelSmall.bold.copyWith(
-                  color: AppColors.white,
-                  letterSpacing: 0.5,
-                ),
-              ),
-            ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
-              decoration: BoxDecoration(
-                color: AppColors.white.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Text(
-                'Tổng Lvl $totalSkill',
-                style: AppTypography.labelSmall.copyWith(
-                  color: AppColors.white,
-                  fontSize: 10.5,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-
-        // 2 Player Spots in Doubles Court
-        Row(
-          children: [
-            for (int i = 0; i < 2; i++)
-              Expanded(
-                child: Padding(
-                  padding: EdgeInsets.only(
-                    right: i == 0 ? 4 : 0,
-                    left: i == 1 ? 4 : 0,
+    return DragTarget<DraggingPlayerPayload>(
+      onWillAcceptWithDetails: (details) => !court.isPlaying,
+      onAcceptWithDetails: (details) {
+        onPlayerDropped?.call(details.data, teamLetter, null);
+      },
+      builder: (ctx, candidates, rejected) {
+        final isHovered = candidates.isNotEmpty;
+        return Container(
+          padding: const EdgeInsets.all(4),
+          decoration: isHovered
+              ? BoxDecoration(
+                  color: teamColor.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: AppColors.white, width: 1.5),
+                )
+              : null,
+          child: Column(
+            children: [
+              // Team Tag & Total Skill Level
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: teamColor.withValues(alpha: 0.25),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      isHovered ? 'Thả vào $teamName' : teamName,
+                      style: AppTypography.labelSmall.bold.copyWith(
+                        color: AppColors.white,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
                   ),
-                  child: i < players.length
-                      ? _buildPlayerSpot(players[i])
-                      : _buildEmptySpot(),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                    decoration: BoxDecoration(
+                      color: AppColors.white.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      'Tổng Lvl $totalSkill',
+                      style: AppTypography.labelSmall.copyWith(
+                        color: AppColors.white,
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+
+              // 2 Player Spots in Doubles Court
+              Row(
+                children: [
+                  for (int i = 0; i < 2; i++)
+                    Expanded(
+                      child: Padding(
+                        padding: EdgeInsets.only(
+                          right: i == 0 ? 4 : 0,
+                          left: i == 1 ? 4 : 0,
+                        ),
+                        child: i < players.length
+                            ? _buildDraggablePlayerSpot(context, players[i], teamLetter, i)
+                            : _buildEmptyDropSpot(teamLetter, i),
+                      ),
+                    ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildDraggablePlayerSpot(
+    BuildContext context,
+    RotationPlayer player,
+    String teamLetter,
+    int spotIndex,
+  ) {
+    final spotWidget = _buildPlayerSpot(player);
+    if (court.isPlaying) {
+      return spotWidget;
+    }
+
+    final payload = DraggingPlayerPayload(
+      player: player,
+      sourceCourtMatchId: court.matchId,
+      sourceTeam: teamLetter,
+      sourceSpotIndex: spotIndex,
+    );
+
+    return LongPressDraggable<DraggingPlayerPayload>(
+      data: payload,
+      delay: const Duration(milliseconds: 150),
+      hapticFeedbackOnStart: true,
+      feedback: _buildDraggingFeedbackCard(player),
+      childWhenDragging: Opacity(
+        opacity: 0.35,
+        child: spotWidget,
+      ),
+      child: DragTarget<DraggingPlayerPayload>(
+        onWillAcceptWithDetails: (details) =>
+            !court.isPlaying && details.data.player.userId != player.userId,
+        onAcceptWithDetails: (details) {
+          onPlayerDropped?.call(details.data, teamLetter, spotIndex);
+        },
+        builder: (ctx, candidates, rejected) {
+          final isHovered = candidates.isNotEmpty;
+          return Container(
+            decoration: isHovered
+                ? BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: AppColors.white, width: 2),
+                    boxShadow: [
+                      BoxShadow(color: AppColors.white.withValues(alpha: 0.6), blurRadius: 8),
+                    ],
+                  )
+                : null,
+            child: spotWidget,
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildDraggingFeedbackCard(RotationPlayer player) {
+    return Material(
+      color: Colors.transparent,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+        decoration: BoxDecoration(
+          color: AppColors.white,
+          borderRadius: BorderRadius.circular(8),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.black.withValues(alpha: 0.2),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+          border: Border.all(color: AppColors.primary, width: 1.5),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CircleAvatar(
+              radius: 12,
+              backgroundColor: AppColors.courtGreen,
+              child: Text(
+                player.fullName.isNotEmpty ? player.fullName[0].toUpperCase() : 'P',
+                style: const TextStyle(
+                  color: AppColors.white,
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
+            ),
+            const SizedBox(width: 6),
+            Text(
+              player.fullName,
+              style: const TextStyle(
+                color: AppColors.neutral900,
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(width: 4),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+              decoration: BoxDecoration(
+                color: AppColors.primaryContainer,
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Text(
+                'L${player.skillLevel}',
+                style: const TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.primary,
+                ),
+              ),
+            ),
           ],
         ),
-      ],
+      ),
     );
   }
 
@@ -395,32 +622,53 @@ class BadmintonCourtWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildEmptySpot() {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      decoration: BoxDecoration(
-        color: AppColors.white.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: AppColors.white.withValues(alpha: 0.4),
-          style: BorderStyle.solid,
-        ),
-      ),
-      child: const Center(
-        child: Text(
-          'Chờ tay vợt',
-          style: TextStyle(
-            color: AppColors.white,
-            fontSize: 11,
-            fontStyle: FontStyle.italic,
+  Widget _buildEmptyDropSpot(String teamLetter, int spotIndex) {
+    return DragTarget<DraggingPlayerPayload>(
+      onWillAcceptWithDetails: (details) => !court.isPlaying,
+      onAcceptWithDetails: (details) {
+        onPlayerDropped?.call(details.data, teamLetter, spotIndex);
+      },
+      builder: (ctx, candidates, rejected) {
+        final isHovered = candidates.isNotEmpty;
+        return Container(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          decoration: BoxDecoration(
+            color: isHovered
+                ? AppColors.white.withValues(alpha: 0.35)
+                : AppColors.white.withValues(alpha: 0.15),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: isHovered ? AppColors.white : AppColors.white.withValues(alpha: 0.4),
+              width: isHovered ? 1.5 : 1,
+            ),
           ),
-        ),
-      ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                isHovered ? Icons.add_circle_rounded : Icons.add_circle_outline_rounded,
+                size: 13,
+                color: AppColors.white.withValues(alpha: isHovered ? 1.0 : 0.7),
+              ),
+              const SizedBox(width: 4),
+              Text(
+                isHovered ? 'Thả tay vợt' : 'Kéo vào đây',
+                style: TextStyle(
+                  color: AppColors.white.withValues(alpha: isHovered ? 1.0 : 0.8),
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
   Widget _buildActionButtons(BuildContext context) {
     final colors = context.colors;
+    final hasPlayers = court.teamA.isNotEmpty || court.teamB.isNotEmpty;
 
     if (court.isPlaying) {
       return ElevatedButton.icon(
@@ -437,6 +685,63 @@ class BadmintonCourtWidget extends StatelessWidget {
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         onPressed: onFinishMatch,
+      );
+    }
+
+    if (isManualMode) {
+      return Column(
+        children: [
+          Row(
+            children: [
+              if (hasPlayers) ...[
+                Expanded(
+                  child: ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: colors.primary,
+                      foregroundColor: AppColors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 11),
+                      shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                    ),
+                    icon: const Icon(Icons.play_arrow_rounded, size: 20),
+                    label: const Text(
+                      'Bắt Đầu Trận Đấu',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    onPressed: onStartMatch,
+                  ),
+                ),
+                const SizedBox(width: 8),
+              ],
+              if (onSwapTeams != null && hasPlayers) ...[
+                OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: colors.textSecondary,
+                    side: BorderSide(color: colors.cardBorder),
+                    padding: const EdgeInsets.symmetric(vertical: 11, horizontal: 10),
+                    shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                  ),
+                  icon: const Icon(Icons.swap_vert_rounded, size: 16),
+                  label: const Text('Đổi bên'),
+                  onPressed: onSwapTeams,
+                ),
+                const SizedBox(width: 8),
+              ],
+              if (onClearCourt != null && hasPlayers) ...[
+                OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: colors.error,
+                    side: BorderSide(color: colors.error.withValues(alpha: 0.5)),
+                    padding: const EdgeInsets.symmetric(vertical: 11, horizontal: 10),
+                    shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                  ),
+                  icon: const Icon(Icons.clear_rounded, size: 16),
+                  label: const Text('Làm trống'),
+                  onPressed: onClearCourt,
+                ),
+              ],
+            ],
+          ),
+        ],
       );
     }
 

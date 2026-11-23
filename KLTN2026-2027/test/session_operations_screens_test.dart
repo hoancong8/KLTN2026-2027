@@ -123,6 +123,21 @@ class FakeSessionOperationsRepository implements SessionOperationsRepository {
   }) async => getRotation(sessionId);
 
   @override
+  Future<SessionRotationSnapshot> movePlayer({
+    required String sessionId,
+    required DraggingPlayerPayload payload,
+    String? targetCourtMatchId,
+    String? targetTeam,
+    int? targetSpotIndex,
+  }) async => getRotation(sessionId);
+
+  @override
+  Future<SessionRotationSnapshot> clearCourt({
+    required String sessionId,
+    required String matchId,
+  }) async => getRotation(sessionId);
+
+  @override
   Future<SessionSettlement> getSettlement(String sessionId) async {
     return const SessionSettlement(
       sessionId: 's1',
@@ -222,6 +237,14 @@ void main() {
     expect(find.text('Điều Phối Trận Đấu & Xoay Tua Sân'), findsOneWidget);
     expect(find.text('Điều Phối Trận Đấu Tự Động'), findsOneWidget);
     expect(find.text('SÂN SỐ 1'), findsOneWidget);
+    expect(find.text('Xoay tua tự động'), findsOneWidget);
+    expect(find.text('Xếp thủ công (Kéo thả)'), findsOneWidget);
+
+    // Switch to manual drag and drop mode
+    await tester.tap(find.text('Xếp thủ công (Kéo thả)'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Chế Độ Xếp Thủ Công Bằng Kéo Thả'), findsOneWidget);
   });
 
   testWidgets('SessionSettlementScreen renders FR18-FR21 fee calculations and breakdown', (tester) async {

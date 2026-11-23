@@ -1,8 +1,29 @@
 // lib/domain/entities/session/session_rotation.dart
 
 enum ThreePlayerMatchMode {
-  twoVsOne, // Ä Ã¡nh 2 vs 1 (cáº£ 3 cÃ¹ng vÃ o sÃ¢n)
-  singlesRotation, // Ä Ã¡nh Ä‘Æ¡n 1 vs 1 (1 ngÆ°á» i nghá»‰ xoay vÃ²ng)
+  twoVsOne, // Đánh 2 vs 1 (cả 3 cùng vào sân)
+  singlesRotation, // Đánh đơn 1 vs 1 (1 người nghỉ xoay vòng)
+}
+
+enum RotationMode {
+  auto,
+  manual,
+}
+
+class DraggingPlayerPayload {
+  final RotationPlayer player;
+  final String? sourceCourtMatchId;
+  final String? sourceTeam; // 'A' | 'B'
+  final int? sourceSpotIndex; // 0 | 1
+
+  const DraggingPlayerPayload({
+    required this.player,
+    this.sourceCourtMatchId,
+    this.sourceTeam,
+    this.sourceSpotIndex,
+  });
+
+  bool get isFromQueue => sourceCourtMatchId == null;
 }
 
 class RotationPlayer {
