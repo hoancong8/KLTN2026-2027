@@ -120,8 +120,16 @@ class UpdateSessionStatusUseCase {
   final SessionRepository repository;
   UpdateSessionStatusUseCase(this.repository);
 
-  Future<void> execute(String sessionId, String status) =>
-      repository.updateSessionStatus(sessionId, status);
+  Future<void> execute(
+    String sessionId,
+    String status, {
+    bool confirmRemainingNoShows = true,
+  }) =>
+      repository.updateSessionStatus(
+        sessionId,
+        status,
+        confirmRemainingNoShows: confirmRemainingNoShows,
+      );
 }
 
 class DeleteSessionUseCase {

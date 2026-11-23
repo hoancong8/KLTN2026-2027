@@ -1460,7 +1460,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
             IconButton(
               icon: const Icon(Icons.receipt_long_rounded),
               tooltip: 'Bảng quyết toán chi phí & QR',
-              onPressed: () => context.push('/session/${session.id}/settlement'),
+              onPressed: () => _openSettlement(session),
             ),
           if (hasAnySessionManagePerm && session.status != SessionStatus.completed)
             IconButton(
@@ -2570,25 +2570,51 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
     );
   }
 
-  void _showSettlementRequiredDialog(BuildContext context, Session session) {
+  Future<void> _openSettlement(Session session) async {
+    await context.push('/session/${session.id}/settlement');
+    if (mounted) {
+      ref.read(sessionDetailViewModelProvider(widget.sessionId).notifier).loadDetail();
+    }
+  }
+
+  Future<void> _confirmCompleteSession(BuildContext context, Session session) async {
     final colors = context.colors;
-    showDialog(
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+    final vm = ref.read(sessionDetailViewModelProvider(widget.sessionId).notifier);
+
+    final action = await showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: colors.cardBackground,
         shape: const RoundedRectangleBorder(borderRadius: AppRadius.dialog),
-        title: Text(
-          'Yêu Cầu Chốt Sổ Chi Phí',
-          style: AppTypography.titleMedium.copyWith(color: colors.textPrimary, fontWeight: FontWeight.bold),
+        title: Row(
+          children: [
+            Icon(Icons.check_circle_outline_rounded, color: colors.primary),
+            AppSpacing.gapW8,
+            Text(
+              'Kết Thúc Buổi Chơi',
+              style: AppTypography.titleMedium.copyWith(color: colors.textPrimary, fontWeight: FontWeight.bold),
+            ),
+          ],
         ),
         content: Text(
-          'Theo quy định, buổi chơi cần được hạch toán chi phí (số cầu bóc mới, phụ phí) và phát hành quyết toán thu tiền (VietQR) trước khi kết thúc buổi chơi.',
+          'Bạn có chắc chắn muốn kết thúc buổi chơi này? Buổi chơi sẽ được chuyển sang trạng thái hoàn thành và lưu lịch sử hoạt động.',
           style: AppTypography.bodyMedium.copyWith(color: colors.textSecondary),
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
+            onPressed: () => Navigator.of(ctx).pop('CANCEL'),
             child: Text(context.l10n.com_cancel, style: TextStyle(color: colors.textMuted)),
+          ),
+          OutlinedButton.icon(
+            style: OutlinedButton.styleFrom(
+              foregroundColor: colors.primary,
+              side: BorderSide(color: colors.primary.withValues(alpha: 0.4)),
+              shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+            ),
+            icon: const Icon(Icons.calculate_outlined, size: 18),
+            label: const Text('Xem quyết toán'),
+            onPressed: () => Navigator.of(ctx).pop('SETTLEMENT'),
           ),
           ElevatedButton.icon(
             style: ElevatedButton.styleFrom(
@@ -2596,16 +2622,43 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
               foregroundColor: AppColors.white,
               shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
             ),
-            icon: const Icon(Icons.calculate_outlined, size: 18),
-            label: const Text('Đến trang tổng kết chi phí'),
-            onPressed: () {
-              Navigator.of(ctx).pop();
-              context.push('/session/${session.id}/settlement');
-            },
+            icon: const Icon(Icons.check_circle_outline_rounded, size: 18),
+            label: const Text('Kết thúc ngay'),
+            onPressed: () => Navigator.of(ctx).pop('COMPLETE'),
           ),
         ],
       ),
     );
+
+    if (!mounted || action == null || action == 'CANCEL') return;
+
+    if (action == 'SETTLEMENT') {
+      _openSettlement(session);
+      return;
+    }
+
+    if (action == 'COMPLETE') {
+      final ok = await vm.updateStatus('COMPLETED', confirmRemainingNoShows: true);
+      if (!mounted) return;
+      if (ok) {
+        scaffoldMessenger.showSnackBar(
+          SnackBar(
+            content: const Text('Buổi chơi đã kết thúc thành công và được lưu lịch sử.'),
+            backgroundColor: colors.success,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      } else {
+        final err = ref.read(sessionDetailViewModelProvider(widget.sessionId)).errorMessage;
+        scaffoldMessenger.showSnackBar(
+          SnackBar(
+            content: Text(err ?? 'Không thể kết thúc buổi chơi. Vui lòng kiểm tra lại trận đấu hoặc quyết toán chi phí.'),
+            backgroundColor: colors.error,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
   }
 
   void _showHostActionSheet(
@@ -2737,11 +2790,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                     subtitle: 'Hoàn tất và lưu lịch sử buổi chơi',
                     onTap: () {
                       Navigator.of(ctx).pop();
-                      if (session.status != SessionStatus.calculated && session.status != SessionStatus.completed) {
-                        _showSettlementRequiredDialog(context, session);
-                      } else {
-                        vm.updateStatus('COMPLETED');
-                      }
+                      _confirmCompleteSession(context, session);
                     },
                   ),
                 if (isEnded ||
@@ -2756,7 +2805,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                     subtitle: 'Tính tiền thực tế sân, cầu bóc mới, ưu đãi Nữ',
                     onTap: () {
                       Navigator.of(ctx).pop();
-                      context.push('/session/${session.id}/settlement');
+                      _openSettlement(session);
                     },
                   ),
               ],
@@ -3341,7 +3390,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                           ),
                           icon: const Icon(Icons.receipt_long_rounded, size: 16),
                           label: const Text('Tổng Kết Chi Phí'),
-                          onPressed: () => context.push('/session/${session.id}/settlement'),
+                          onPressed: () => _openSettlement(session),
                         ),
                     ],
                   ),
@@ -3849,7 +3898,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                         'Xem Bảng Quyết Toán & Quét Mã QR',
                         style: TextStyle(fontWeight: FontWeight.bold),
                       ),
-                      onPressed: () => context.push('/session/${session.id}/settlement'),
+                      onPressed: () => _openSettlement(session),
                     ),
                   ),
                 ],
@@ -4062,13 +4111,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                             backgroundColor: colors.surfaceSubtle,
                             side: BorderSide(color: colors.cardBorder),
                             shape: const RoundedRectangleBorder(borderRadius: AppRadius.tag),
-                            onPressed: () {
-                              if (session.status != SessionStatus.calculated && session.status != SessionStatus.completed) {
-                                _showSettlementRequiredDialog(context, session);
-                              } else {
-                                ref.read(sessionDetailViewModelProvider(widget.sessionId).notifier).updateStatus('COMPLETED');
-                              }
-                            },
+                            onPressed: () => _confirmCompleteSession(context, session),
                           ),
                         if (isEnded ||
                             session.status == SessionStatus.playing ||
@@ -4078,13 +4121,13 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                           ActionChip(
                             avatar: Icon(Icons.calculate_rounded, size: 16, color: colors.primary),
                             label: Text(
-                              'Quyết toán',
+                              'Quyáº¿t toÃ¡n',
                               style: AppTypography.labelSmall.semiBold.colored(colors.primary),
                             ),
                             backgroundColor: colors.primary.withValues(alpha: 0.1),
                             side: BorderSide(color: colors.primary.withValues(alpha: 0.3)),
                             shape: const RoundedRectangleBorder(borderRadius: AppRadius.tag),
-                            onPressed: () => context.push('/session/${session.id}/settlement'),
+                            onPressed: () => _openSettlement(session),
                           ),
                       ],
                     ],
@@ -4777,7 +4820,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                                 }
                                 if (myFeeItem == null || myFeeItem.feeId.isEmpty) {
                                   return ElevatedButton.icon(
-                                    onPressed: () => context.push('/session/${session.id}/settlement'),
+                                    onPressed: () => _openSettlement(session),
                                     icon: const Icon(Icons.receipt_long_rounded, size: 18),
                                     label: const Text('Xem Quyết Toán & Đóng Tiền'),
                                     style: ElevatedButton.styleFrom(

@@ -140,10 +140,14 @@ class SessionDetailViewModel extends StateNotifier<SessionDetailState> {
     }
   }
 
-  Future<bool> updateStatus(String status) async {
+  Future<bool> updateStatus(String status, {bool confirmRemainingNoShows = true}) async {
     state = state.copyWith(isSubmitting: true, errorMessage: null);
     try {
-      await updateSessionStatusUseCase.execute(sessionId, status);
+      await updateSessionStatusUseCase.execute(
+        sessionId,
+        status,
+        confirmRemainingNoShows: confirmRemainingNoShows,
+      );
       if (!mounted) return true;
       await loadDetail();
       if (!mounted) return true;

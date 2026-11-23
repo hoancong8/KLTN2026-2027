@@ -89,8 +89,16 @@ class SessionRepositoryImpl implements SessionRepository {
   }
 
   @override
-  Future<void> updateSessionStatus(String sessionId, String status) async {
-    await remote.updateSessionStatus(sessionId, status);
+  Future<void> updateSessionStatus(
+    String sessionId,
+    String status, {
+    bool confirmRemainingNoShows = true,
+  }) async {
+    await remote.updateSessionStatus(
+      sessionId,
+      status,
+      confirmRemainingNoShows: confirmRemainingNoShows,
+    );
   }
 
   @override

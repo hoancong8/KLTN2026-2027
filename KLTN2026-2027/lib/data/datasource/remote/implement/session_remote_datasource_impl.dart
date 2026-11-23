@@ -72,12 +72,22 @@ class SessionRemoteDataSourceImpl extends BaseRemoteDatasource implements Sessio
   }
 
   @override
-  Future<void> updateSessionStatus(String sessionId, String status) async {
+  Future<void> updateSessionStatus(
+    String sessionId,
+    String status, {
+    bool confirmRemainingNoShows = true,
+  }) async {
     try {
       await dio.patch(
         AppConfig.sessionStatusPath(sessionId),
-        queryParameters: {'status': status},
-        data: {'status': status},
+        queryParameters: {
+          'status': status,
+          'confirmRemainingNoShows': confirmRemainingNoShows,
+        },
+        data: {
+          'status': status,
+          'confirmRemainingNoShows': confirmRemainingNoShows,
+        },
       );
     } catch (e) {
       throw handleError(e);

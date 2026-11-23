@@ -1015,12 +1015,17 @@ class DashboardPage extends ConsumerWidget {
     final colors = context.colors;
     final l10n = context.l10n;
     final timeStr = _formatSessionDateTime(item.startTime, item.endTime);
+    final isPassCourt = item.isPassCourt;
 
     return Container(
       decoration: BoxDecoration(
         color: colors.cardBackground,
         borderRadius: AppRadius.card,
-        border: Border.all(color: colors.cardBorder),
+        border: Border.all(
+          color: isPassCourt
+              ? colors.warning.withValues(alpha: 0.35)
+              : colors.cardBorder,
+        ),
         boxShadow: context.isDark ? AppShadows.none : AppShadows.sm,
       ),
       child: Material(
@@ -1045,8 +1050,12 @@ class DashboardPage extends ConsumerWidget {
                             width: 26,
                             height: 26,
                             borderRadius: BorderRadius.circular(6),
-                            defaultFallbackIcon: Icons.groups_rounded,
-                            backgroundColor: colors.surfaceSubtle,
+                            defaultFallbackIcon: isPassCourt
+                                ? Icons.swap_horiz_rounded
+                                : Icons.groups_rounded,
+                            backgroundColor: isPassCourt
+                                ? colors.warning.withValues(alpha: 0.15)
+                                : colors.surfaceSubtle,
                           ),
                           AppSpacing.gapW8,
                           Expanded(
@@ -1063,39 +1072,79 @@ class DashboardPage extends ConsumerWidget {
                         ],
                       ),
                     ),
-                    if (item.distanceKm != null)
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: colors.surfaceSubtle,
-                          borderRadius: AppRadius.chip,
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.near_me_outlined, size: 10, color: colors.textSecondary),
-                            AppSpacing.gapW4,
-                            Text(
-                              l10n.home_distance_km(item.distanceKm!.toStringAsFixed(1)),
-                              style: AppTypography.labelSmall.copyWith(
-                                fontSize: 10,
-                                color: colors.textSecondary,
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (isPassCourt) ...[
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: colors.warning.withValues(alpha: 0.15),
+                              borderRadius: AppRadius.tag,
+                              border: Border.all(
+                                color: colors.warning.withValues(alpha: 0.4),
                               ),
                             ),
-                          ],
-                        ),
-                      ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.swap_horiz_rounded, size: 11, color: colors.warning),
+                                AppSpacing.gapW4,
+                                Text(
+                                  'PASS SÂN',
+                                  style: AppTypography.labelSmall.copyWith(
+                                    color: colors.warning,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 10,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          AppSpacing.gapW4,
+                        ],
+                        if (item.distanceKm != null)
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: colors.surfaceSubtle,
+                              borderRadius: AppRadius.chip,
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.near_me_outlined, size: 10, color: colors.textSecondary),
+                                AppSpacing.gapW4,
+                                Text(
+                                  l10n.home_distance_km(item.distanceKm!.toStringAsFixed(1)),
+                                  style: AppTypography.labelSmall.copyWith(
+                                    fontSize: 10,
+                                    color: colors.textSecondary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                      ],
+                    ),
                   ],
                 ),
                 const SizedBox(height: 6),
                 Row(
                   children: [
-                    Icon(Icons.location_on_outlined, size: 13, color: colors.textSecondary),
+                    Icon(
+                      Icons.location_on_outlined,
+                      size: 13,
+                      color: isPassCourt ? colors.warning : colors.textSecondary,
+                    ),
                     AppSpacing.gapW4,
                     Expanded(
                       child: Text(
-                        item.courtLocation,
-                        style: AppTypography.bodySmall.copyWith(color: colors.textSecondary),
+                        isPassCourt ? item.cleanCourtLocation : item.courtLocation,
+                        style: AppTypography.bodySmall.copyWith(
+                          color: colors.textSecondary,
+                          fontWeight: isPassCourt ? FontWeight.w500 : FontWeight.normal,
+                        ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -1118,137 +1167,197 @@ class DashboardPage extends ConsumerWidget {
                   ],
                 ),
                 AppSpacing.gapH4,
-                Row(
-                  children: [
-                    Icon(Icons.payments_outlined, size: 13, color: colors.textSecondary),
-                    AppSpacing.gapW4,
-                    Text(
-                      'Tiền sân: ',
-                      style: AppTypography.labelSmall.copyWith(color: colors.textSecondary),
-                    ),
-                    Icon(Icons.male_rounded, size: 13, color: colors.primary),
-                    Text(
-                      '${NumberFormat('#,###').format(item.maleCost)} đ',
-                      style: AppTypography.labelSmall.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: colors.primary,
+                if (!isPassCourt)
+                  Row(
+                    children: [
+                      Icon(Icons.payments_outlined, size: 13, color: colors.textSecondary),
+                      AppSpacing.gapW4,
+                      Text(
+                        'Tiền sân: ',
+                        style: AppTypography.labelSmall.copyWith(color: colors.textSecondary),
                       ),
-                    ),
-                    AppSpacing.gapW8,
-                    Icon(Icons.female_rounded, size: 13, color: colors.secondary),
-                    Text(
-                      '${NumberFormat('#,###').format(item.femaleCost)} đ',
-                      style: AppTypography.labelSmall.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: colors.secondary,
+                      Icon(Icons.male_rounded, size: 13, color: colors.primary),
+                      Text(
+                        '${NumberFormat('#,###').format(item.maleCost)} đ',
+                        style: AppTypography.labelSmall.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: colors.primary,
+                        ),
                       ),
-                    ),
-                  ],
-                ),
+                      AppSpacing.gapW8,
+                      Icon(Icons.female_rounded, size: 13, color: colors.secondary),
+                      Text(
+                        '${NumberFormat('#,###').format(item.femaleCost)} đ',
+                        style: AppTypography.labelSmall.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: colors.secondary,
+                        ),
+                      ),
+                    ],
+                  )
+                else
+                  Row(
+                    children: [
+                      Icon(Icons.payments_outlined, size: 13, color: colors.warning),
+                      AppSpacing.gapW4,
+                      Text(
+                        'Giá pass trọn gói: ',
+                        style: AppTypography.labelSmall.copyWith(color: colors.textSecondary),
+                      ),
+                      Text(
+                        '${NumberFormat('#,###').format(item.passCourtPrice > 0 ? item.passCourtPrice : item.sharedCost)} đ',
+                        style: AppTypography.labelSmall.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: colors.warning,
+                        ),
+                      ),
+                    ],
+                  ),
                 const SizedBox(height: 10),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: colors.primary.withValues(alpha: 0.12),
-                            borderRadius: AppRadius.tag,
-                          ),
-                          child: Text(
-                            l10n.home_slots_remaining(item.slotsRemaining),
-                            style: AppTypography.labelSmall.copyWith(
-                              color: colors.primary,
-                              fontWeight: FontWeight.bold,
+                    if (!isPassCourt)
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: colors.primary.withValues(alpha: 0.12),
+                              borderRadius: AppRadius.tag,
+                            ),
+                            child: Text(
+                              l10n.home_slots_remaining(item.slotsRemaining),
+                              style: AppTypography.labelSmall.copyWith(
+                                color: colors.primary,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
-                        ),
-                        AppSpacing.gapW4,
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: colors.accent.withValues(alpha: 0.15),
-                            borderRadius: AppRadius.tag,
-                          ),
-                          child: Text(
-                            '${context.l10n.home_skill_level_label}: ${item.minSkillLevel.displayName}',
-                            style: AppTypography.labelSmall.copyWith(
-                              color: colors.accent,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 10,
+                          AppSpacing.gapW4,
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: colors.accent.withValues(alpha: 0.15),
+                              borderRadius: AppRadius.tag,
+                            ),
+                            child: Text(
+                              '${context.l10n.home_skill_level_label}: ${item.minSkillLevel.displayName}',
+                              style: AppTypography.labelSmall.copyWith(
+                                color: colors.accent,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 10,
+                              ),
                             ),
                           ),
+                        ],
+                      )
+                    else
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: colors.warning.withValues(alpha: 0.12),
+                          borderRadius: AppRadius.tag,
                         ),
-                      ],
-                    ),
+                        child: Text(
+                          'Nhượng lại giờ sân',
+                          style: AppTypography.labelSmall.copyWith(
+                            color: colors.warning,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 10,
+                          ),
+                        ),
+                      ),
                     Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        OutlinedButton(
-                          onPressed: () => context.push(AppConfig.sessionDetailRoutePath(item.sessionId)),
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: colors.textPrimary,
-                            side: BorderSide(color: colors.cardBorder),
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                            visualDensity: VisualDensity.compact,
-                            shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
-                          ),
-                          child: Text(
-                            l10n.com_view_detail,
-                            style: AppTypography.labelSmall.copyWith(
-                              fontWeight: FontWeight.w600,
-                              color: colors.textPrimary,
+                        if (!isPassCourt) ...[
+                          OutlinedButton(
+                            onPressed: () => context.push(AppConfig.sessionDetailRoutePath(item.sessionId)),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: colors.textPrimary,
+                              side: BorderSide(color: colors.cardBorder),
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                              visualDensity: VisualDensity.compact,
+                              shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                            ),
+                            child: Text(
+                              l10n.com_view_detail,
+                              style: AppTypography.labelSmall.copyWith(
+                                fontWeight: FontWeight.w600,
+                                color: colors.textPrimary,
+                              ),
                             ),
                           ),
-                        ),
-                        AppSpacing.gapW8,
-                        if (isJoined)
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                            decoration: BoxDecoration(
-                              color: colors.primaryContainer.withValues(alpha: 0.3),
-                              borderRadius: AppRadius.button,
-                              border: Border.all(color: colors.primary.withValues(alpha: 0.3)),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(Icons.check_circle_rounded, size: 12, color: colors.primary),
-                                AppSpacing.gapW4,
-                                Text(
-                                  'Đã tham gia',
-                                  style: AppTypography.labelSmall.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                    color: colors.primary,
+                          AppSpacing.gapW8,
+                          if (isJoined)
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: colors.primaryContainer.withValues(alpha: 0.3),
+                                borderRadius: AppRadius.button,
+                                border: Border.all(color: colors.primary.withValues(alpha: 0.3)),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.check_circle_rounded, size: 12, color: colors.primary),
+                                  AppSpacing.gapW4,
+                                  Text(
+                                    'Đã tham gia',
+                                    style: AppTypography.labelSmall.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      color: colors.primary,
+                                    ),
                                   ),
+                                ],
+                              ),
+                            )
+                          else
+                            ElevatedButton(
+                              onPressed: isJoining
+                                  ? null
+                                  : () async {
+                                      final success = await vm.joinRecruitment(item.id);
+                                      if (context.mounted && success) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(
+                                            content: Text(l10n.home_joined_match_success),
+                                            backgroundColor: colors.success,
+                                            behavior: SnackBarBehavior.floating,
+                                          ),
+                                        );
+                                        context.push(AppConfig.sessionDetailRoutePath(item.sessionId));
+                                      }
+                                    },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: colors.primary,
+                                foregroundColor: AppColors.white,
+                                elevation: 0,
+                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                                visualDensity: VisualDensity.compact,
+                                shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                                textStyle: AppTypography.labelSmall.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  inherit: false,
                                 ),
-                              ],
+                              ),
+                              child: isJoining
+                                  ? const SizedBox(
+                                      width: 14,
+                                      height: 14,
+                                      child: CircularProgressIndicator(color: AppColors.white, strokeWidth: 2),
+                                    )
+                                  : Text(l10n.home_join_match),
                             ),
-                          )
-                        else
-                          ElevatedButton(
-                            onPressed: isJoining
-                                ? null
-                                : () async {
-                                    final success = await vm.joinRecruitment(item.id);
-                                    if (context.mounted && success) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(
-                                          content: Text(l10n.home_joined_match_success),
-                                          backgroundColor: colors.success,
-                                          behavior: SnackBarBehavior.floating,
-                                        ),
-                                      );
-                                      context.push(AppConfig.sessionDetailRoutePath(item.sessionId));
-                                    }
-                                  },
+                        ] else ...[
+                          ElevatedButton.icon(
+                            onPressed: () => context.push(AppConfig.sessionDetailRoutePath(item.sessionId)),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: colors.primary,
+                              backgroundColor: colors.warning,
                               foregroundColor: AppColors.white,
                               elevation: 0,
-                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                               visualDensity: VisualDensity.compact,
                               shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
                               textStyle: AppTypography.labelSmall.copyWith(
@@ -1256,14 +1365,10 @@ class DashboardPage extends ConsumerWidget {
                                 inherit: false,
                               ),
                             ),
-                            child: isJoining
-                                ? const SizedBox(
-                                    width: 14,
-                                    height: 14,
-                                    child: CircularProgressIndicator(color: AppColors.white, strokeWidth: 2),
-                                  )
-                                : Text(l10n.home_join_match),
+                            icon: const Icon(Icons.swap_horiz_rounded, size: 14),
+                            label: const Text('Xem tin pass sân'),
                           ),
+                        ],
                       ],
                     ),
                   ],

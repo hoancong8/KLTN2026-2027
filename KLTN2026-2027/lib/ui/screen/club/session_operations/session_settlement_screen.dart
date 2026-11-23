@@ -15,6 +15,7 @@ import '../../../../app/theme/theme.dart';
 import '../../../../domain/entities/payment/personal_fee.dart';
 import '../../../../domain/entities/session/session_settlement.dart';
 import '../../../../domain/enums/club_role.dart';
+import '../../../../domain/enums/session_enums.dart';
 import '../../../../domain/utils/gender_helper.dart';
 import '../../../../domain/utils/vietqr_helper.dart';
 import '../../../../widget/app_shimmer.dart';
@@ -365,6 +366,7 @@ class SessionSettlementScreen extends ConsumerWidget {
                                   context,
                                   settlement,
                                   vm,
+                                  ref,
                                 ),
                               )
                             else
@@ -385,8 +387,29 @@ class SessionSettlementScreen extends ConsumerWidget {
                                   context,
                                   settlement,
                                   vm,
+                                  ref,
                                 ),
                               ),
+                            if (detail?.session.status != SessionStatus.completed) ...[
+                              AppSpacing.gapH8,
+                              ElevatedButton.icon(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: colors.primary,
+                                  foregroundColor: AppColors.white,
+                                  minimumSize: const Size(double.infinity, 48),
+                                  shape: const RoundedRectangleBorder(
+                                    borderRadius: AppRadius.button,
+                                  ),
+                                ),
+                                icon: const Icon(Icons.check_circle_outline_rounded),
+                                label: const Text('Kết thúc buổi chơi'),
+                                onPressed: () => _confirmCompleteSessionFromSettlement(
+                                  context,
+                                  ref,
+                                  sessionId,
+                                ),
+                              ),
+                            ],
                           ] else ...[
                             AppSpacing.gapH12,
                             Container(
@@ -1273,6 +1296,7 @@ class SessionSettlementScreen extends ConsumerWidget {
     BuildContext context,
     SessionSettlement settlement,
     SessionSettlementNotifier vm,
+    WidgetRef ref,
   ) {
     final courtCtrl = TextEditingController(
       text: settlement.courtFee > 0 ? '${settlement.courtFee}' : '',
@@ -1332,6 +1356,7 @@ class SessionSettlementScreen extends ConsumerWidget {
               final extra = int.tryParse(extraCtrl.text.trim()) ?? 0;
               HapticFeedback.lightImpact();
               vm.calculate(courtRentalCost: court, shuttlecockUsed: used, extraFee: extra);
+              ref.read(sessionDetailViewModelProvider(sessionId).notifier).loadDetail();
               Navigator.of(ctx).pop();
             },
             child: Text(
@@ -1343,5 +1368,83 @@ class SessionSettlementScreen extends ConsumerWidget {
         ],
       ),
     );
+  }
+
+  Future<void> _confirmCompleteSessionFromSettlement(
+    BuildContext context,
+    WidgetRef ref,
+    String sessionId,
+  ) async {
+    final colors = context.colors;
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: colors.cardBackground,
+        shape: const RoundedRectangleBorder(borderRadius: AppRadius.dialog),
+        title: Row(
+          children: [
+            Icon(Icons.check_circle_outline_rounded, color: colors.primary),
+            AppSpacing.gapW8,
+            Text(
+              'Kết Thúc Buổi Chơi',
+              style: AppTypography.titleMedium.copyWith(
+                color: colors.textPrimary,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          'Bạn có chắc chắn muốn kết thúc buổi chơi này ngay bây giờ? Buổi chơi sẽ chuyển sang trạng thái hoàn thành và lưu lịch sử hoạt động.',
+          style: AppTypography.bodyMedium.copyWith(color: colors.textSecondary),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(context.l10n.com_cancel, style: TextStyle(color: colors.textMuted)),
+          ),
+          ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: colors.primary,
+              foregroundColor: AppColors.white,
+              shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+            ),
+            icon: const Icon(Icons.check_circle_outline_rounded, size: 18),
+            label: const Text('Xác nhận kết thúc'),
+            onPressed: () => Navigator.of(ctx).pop(true),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true || !context.mounted) return;
+
+    final vm = ref.read(sessionDetailViewModelProvider(sessionId).notifier);
+    final ok = await vm.updateStatus('COMPLETED', confirmRemainingNoShows: true);
+    if (!context.mounted) return;
+
+    if (ok) {
+      scaffoldMessenger.showSnackBar(
+        SnackBar(
+          content: const Text('Buổi chơi đã kết thúc thành công.'),
+          backgroundColor: colors.success,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      ref.invalidate(sessionDetailViewModelProvider(sessionId));
+      ref.read(sessionSettlementNotifierProvider(sessionId).notifier).loadSettlement();
+    } else {
+      final err = ref.read(sessionDetailViewModelProvider(sessionId)).errorMessage;
+      scaffoldMessenger.showSnackBar(
+        SnackBar(
+          content: Text(
+            err ?? 'Không thể kết thúc buổi chơi. Vui lòng kiểm tra lại trận đấu hoặc quyết toán chi phí.',
+          ),
+          backgroundColor: colors.error,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
   }
 }

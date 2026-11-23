@@ -39,7 +39,11 @@ abstract class SessionRepository {
     required DateTime deadlineBooking,
   });
 
-  Future<void> updateSessionStatus(String sessionId, String status);
+  Future<void> updateSessionStatus(
+    String sessionId,
+    String status, {
+    bool confirmRemainingNoShows = true,
+  });
 
   Future<void> deleteSession(String sessionId);
 

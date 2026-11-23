@@ -99,7 +99,11 @@ class _FakeSessionRepository implements SessionRepository {
     );
   }
   @override
-  Future<void> updateSessionStatus(String sessionId, String status) async {}
+  Future<void> updateSessionStatus(
+    String sessionId,
+    String status, {
+    bool confirmRemainingNoShows = true,
+  }) async {}
   @override
   Future<SessionBooking> voteBooking(String sessionId) async => throw UnimplementedError();
 }

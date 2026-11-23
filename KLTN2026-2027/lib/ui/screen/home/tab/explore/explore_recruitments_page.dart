@@ -901,8 +901,8 @@ class _RecruitmentMatchCard extends StatelessWidget {
                                     color: isMyClub ? colors.primary : colors.warning,
                                   ),
                                 ),
-                              ),
-                            if (isWaiting)
+                              )
+                            else if (isWaiting)
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
                                 decoration: BoxDecoration(
@@ -1167,7 +1167,43 @@ class _RecruitmentMatchCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  if (isWaiting)
+                  if (isPassCourt) ...[
+                    if (isMyClub)
+                      OutlinedButton.icon(
+                        onPressed: () => context.push(AppConfig.sessionDetailRoutePath(match.sessionId)),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: colors.primary,
+                          side: BorderSide(color: colors.primary.withValues(alpha: 0.6)),
+                          backgroundColor: colors.primary.withValues(alpha: 0.08),
+                          minimumSize: const Size(64, 36),
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          visualDensity: VisualDensity.compact,
+                        ),
+                        icon: const Icon(Icons.visibility_outlined, size: 14),
+                        label: const Text(
+                          'Quản lý tin pass',
+                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                        ),
+                      )
+                    else
+                      ElevatedButton.icon(
+                        onPressed: () => context.push(AppConfig.sessionDetailRoutePath(match.sessionId)),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: colors.warning,
+                          foregroundColor: AppColors.white,
+                          minimumSize: const Size(64, 36),
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          visualDensity: VisualDensity.compact,
+                        ),
+                        icon: const Icon(Icons.swap_horiz_rounded, size: 14),
+                        label: const Text(
+                          'Nhận pass sân',
+                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                        ),
+                      ),
+                  ] else if (isWaiting)
                     OutlinedButton.icon(
                       onPressed: () => context.push(AppConfig.sessionDetailRoutePath(match.sessionId)),
                       style: OutlinedButton.styleFrom(
@@ -1203,25 +1239,7 @@ class _RecruitmentMatchCard extends StatelessWidget {
                         style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
                       ),
                     )
-                  else if (isPassCourt && isMyClub)
-                    OutlinedButton.icon(
-                      onPressed: () => context.push(AppConfig.sessionDetailRoutePath(match.sessionId)),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: colors.primary,
-                        side: BorderSide(color: colors.primary.withValues(alpha: 0.6)),
-                        backgroundColor: colors.primary.withValues(alpha: 0.08),
-                        minimumSize: const Size(64, 36),
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                        visualDensity: VisualDensity.compact,
-                      ),
-                      icon: const Icon(Icons.visibility_outlined, size: 14),
-                      label: const Text(
-                        'Xem chi tiết',
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-                      ),
-                    )
-                  else if (isMyClub && !isPassCourt)
+                  else if (isMyClub)
                     OutlinedButton.icon(
                       onPressed: () => context.push(AppConfig.sessionDetailRoutePath(match.sessionId)),
                       style: OutlinedButton.styleFrom(
@@ -1241,21 +1259,19 @@ class _RecruitmentMatchCard extends StatelessWidget {
                     )
                   else
                     ElevatedButton.icon(
-                      onPressed: isPassCourt
-                          ? () => context.push(AppConfig.sessionDetailRoutePath(match.sessionId))
-                          : (isJoining ? null : onJoin),
+                      onPressed: isJoining ? null : onJoin,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: isPassCourt ? colors.warning : colors.primary,
+                        backgroundColor: colors.primary,
                         foregroundColor: AppColors.white,
                         minimumSize: const Size(64, 36),
                         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                         visualDensity: VisualDensity.compact,
                       ),
-                      icon: Icon(isPassCourt ? Icons.swap_horiz_rounded : Icons.sports_tennis_rounded, size: 14),
-                      label: Text(
-                        isPassCourt ? 'Nhận pass sân' : 'Tham gia ngay',
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                      icon: const Icon(Icons.sports_tennis_rounded, size: 14),
+                      label: const Text(
+                        'Tham gia ngay',
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
                       ),
                     ),
                 ],
