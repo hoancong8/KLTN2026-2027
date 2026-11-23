@@ -837,6 +837,25 @@
   "settlement_amount": "{amount} đ",
   "settlement_paid_badge": "Đã đóng tiền",
   "settlement_unpaid_badge": "Chưa đóng",
+  "settlement_pay_button": "Thanh toán",
+  "settlement_request_cash": "Báo trả tiền mặt",
+  "settlement_pending_cash_confirmation": "Chờ Host xác nhận tiền mặt",
+  "settlement_cash_requested_badge": "Đã báo trả tiền mặt",
+  "settlement_request_cash_confirm_title": "Xác nhận báo trả tiền mặt",
+  "settlement_request_cash_confirm_message": "Bạn xác nhận sẽ gửi {amount} đ tiền mặt cho Host tại sân?",
+  "settlement_request_cash_success": "Đã gửi thông báo trả tiền mặt cho Host.",
+  "settlement_copy_account_number": "Sao chép số tài khoản",
+  "settlement_account_number_copied": "Đã sao chép số tài khoản: {account}",
+  "@settlement_request_cash_confirm_message": {
+    "placeholders": {
+      "amount": { "type": "String" }
+    }
+  },
+  "@settlement_account_number_copied": {
+    "placeholders": {
+      "account": { "type": "String" }
+    }
+  },
   "settlement_vietqr_label": "Mã QR chuyển khoản",
   "settlement_confirm_cash": "Xác nhận tiền mặt",
   "settlement_confirm_cash_title": "Xác nhận thu tiền mặt",
@@ -854,6 +873,16 @@
   "settlement_extra_expense_hint": "Ví dụ: 40000",
   "settlement_update_summary": "Cập nhật tổng kết chi phí",
   "settlement_publish_summary": "Tạo khoản thu",
+  "settlement_club_bank_info": "Tài khoản VietQR CLB: {bankName} • {accountNumber} ({accountHolder})",
+  "settlement_club_bank_missing": "CLB chưa thiết lập tài khoản ngân hàng để tạo mã VietQR.",
+  "settlement_club_bank_setup_button": "Cài đặt",
+  "@settlement_club_bank_info": {
+    "placeholders": {
+      "bankName": { "type": "String" },
+      "accountNumber": { "type": "String" },
+      "accountHolder": { "type": "String" }
+    }
+  },
   "@settlement_collected_amount": {
     "placeholders": { "amount": { "type": "String" } }
   },

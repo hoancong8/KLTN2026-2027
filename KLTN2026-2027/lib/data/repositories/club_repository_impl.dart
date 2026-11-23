@@ -321,9 +321,15 @@ class ClubRepositoryImpl implements ClubRepository {
   @override
   Future<void> updateClubSchedules(
     String clubId,
-    List<ClubScheduleInput> schedules,
-  ) async {
-    final request = ClubDetailMapper.toUpdateSchedulesDto(schedules);
+    List<ClubScheduleInput> schedules, {
+    int? courtCount,
+    double? courtRentalCost,
+  }) async {
+    final request = ClubDetailMapper.toUpdateSchedulesDto(
+      schedules,
+      courtCount: courtCount,
+      courtRentalCost: courtRentalCost,
+    );
     await remoteDatasource.updateClubSchedules(clubId, request);
   }
 

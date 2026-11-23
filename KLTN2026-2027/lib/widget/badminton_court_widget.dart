@@ -167,7 +167,7 @@ class BadmintonCourtWidget extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            'Hệ thống tự động đề xuất 4 tay vợt khi đủ hàng đợi',
+            'Hệ thống tự động ghép cặp khi có từ 2 tay vợt sẵn sàng (1vs1, 2vs1 hoặc 2vs2)',
             style: AppTypography.bodySmall.copyWith(
               color: AppColors.white.withValues(alpha: 0.8),
             ),

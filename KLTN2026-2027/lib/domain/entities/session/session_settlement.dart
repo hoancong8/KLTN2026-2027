@@ -1,5 +1,7 @@
 // lib/domain/entities/session/session_settlement.dart
 
+import '../payment/personal_fee.dart';
+
 class MemberSettlementFee {
   final String feeId;
   final String userId;
@@ -10,10 +12,12 @@ class MemberSettlementFee {
   final int baseFee;
   final int discount;
   final int finalFee;
-  final String paymentStatus; // 'PENDING' | 'PAID'
+  final String paymentStatus; // 'PENDING' | 'PAID' | 'UNPAID' | 'EXEMPT'
   final String? paymentMethod;
+  final String? paymentProgress;
   final String vietQrUrl;
   final String paymentCode;
+  final int paidAmount;
 
   const MemberSettlementFee({
     required this.feeId,
@@ -27,12 +31,20 @@ class MemberSettlementFee {
     required this.finalFee,
     required this.paymentStatus,
     this.paymentMethod,
+    this.paymentProgress,
     required this.vietQrUrl,
     required this.paymentCode,
+    this.paidAmount = 0,
   });
 
   bool get isPaid => paymentStatus == 'PAID';
   bool get isExempt => paymentStatus == 'EXEMPT';
+  bool get isCashRequested =>
+      paymentProgress == 'CASH_CONFIRMATION_REQUESTED' ||
+      (paymentMethod == 'CASH' && !isPaid);
+  bool get isPendingCashConfirmation => !isPaid && isCashRequested;
+  int get remainingFee => isPaid ? 0 : (finalFee - paidAmount).clamp(0, finalFee);
+  bool get isPartiallyPaid => !isPaid && paidAmount > 0 && remainingFee > 0;
   bool get isCashEligible =>
       !isPaid &&
       !isExempt &&
@@ -50,8 +62,10 @@ class MemberSettlementFee {
     int? finalFee,
     String? paymentStatus,
     String? paymentMethod,
+    String? paymentProgress,
     String? vietQrUrl,
     String? paymentCode,
+    int? paidAmount,
   }) {
     return MemberSettlementFee(
       feeId: feeId ?? this.feeId,
@@ -65,8 +79,10 @@ class MemberSettlementFee {
       finalFee: finalFee ?? this.finalFee,
       paymentStatus: paymentStatus ?? this.paymentStatus,
       paymentMethod: paymentMethod ?? this.paymentMethod,
+      paymentProgress: paymentProgress ?? this.paymentProgress,
       vietQrUrl: vietQrUrl ?? this.vietQrUrl,
       paymentCode: paymentCode ?? this.paymentCode,
+      paidAmount: paidAmount ?? this.paidAmount,
     );
   }
 }
@@ -81,6 +97,7 @@ class SessionSettlement {
   final int totalCollected;
   final List<MemberSettlementFee> memberFees;
   final bool isSettled;
+  final PaymentBankAccount? bankAccount;
 
   const SessionSettlement({
     required this.sessionId,
@@ -92,5 +109,6 @@ class SessionSettlement {
     required this.totalCollected,
     required this.memberFees,
     required this.isSettled,
+    this.bankAccount,
   });
 }

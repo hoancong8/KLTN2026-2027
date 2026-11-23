@@ -117,6 +117,12 @@ class FakeSessionOperationsRepository implements SessionOperationsRepository {
   }) async => getRotation(sessionId);
 
   @override
+  Future<SessionRotationSnapshot> setThreePlayerMode({
+    required String sessionId,
+    required ThreePlayerMatchMode mode,
+  }) async => getRotation(sessionId);
+
+  @override
   Future<SessionSettlement> getSettlement(String sessionId) async {
     return const SessionSettlement(
       sessionId: 's1',
@@ -150,10 +156,14 @@ class FakeSessionOperationsRepository implements SessionOperationsRepository {
     required String sessionId,
     required int shuttlecockUsed,
     required int extraFee,
+    int? courtRentalCost,
   }) async => getSettlement(sessionId);
 
   @override
   Future<SessionSettlement> markMemberPaid({required String sessionId, required String userId}) async => getSettlement(sessionId);
+
+  @override
+  Future<SessionSettlement> requestCashPayment({required String sessionId, required String userId, String? feeId}) async => getSettlement(sessionId);
 
   @override
   Future<List<SessionReview>> getSessionReviews(String sessionId) async {
@@ -198,7 +208,7 @@ void main() {
     await tester.pumpWidget(buildTestableWidget(const SessionAttendanceScreen(sessionId: 'session-1')));
     await tester.pumpAndSettle();
 
-    expect(find.text('Check-in & Điểm Diện Ra Sân'), findsOneWidget);
+    expect(find.text('Check-in & Điểm Danh Ra Sân'), findsOneWidget);
     expect(find.text('Đã Ra Sân'), findsWidgets);
     expect(find.text('Chưa Đến'), findsWidgets);
     expect(find.text('Báo Vắng'), findsWidgets);
@@ -218,10 +228,10 @@ void main() {
     await tester.pumpWidget(buildTestableWidget(const SessionSettlementScreen(sessionId: 'session-1')));
     await tester.pumpAndSettle();
 
-    expect(find.text('Tổng Kết Chi Phí Trận Đấu'), findsOneWidget);
-    expect(find.text('Tổng Chi Phí Buổi Chơi'), findsOneWidget);
+    expect(find.text('Tổng kết chi phí buổi chơi'), findsOneWidget);
+    expect(find.text('Tổng chi phí buổi chơi'), findsOneWidget);
     expect(find.text('440,000 đ'), findsOneWidget);
-    expect(find.text('ĐÃ ĐÓNG TIỀN'), findsOneWidget);
+    expect(find.text('Đã đóng tiền'), findsOneWidget);
   });
 
   testWidgets('SessionReviewsScreen renders FR23 reviews and rating score', (tester) async {

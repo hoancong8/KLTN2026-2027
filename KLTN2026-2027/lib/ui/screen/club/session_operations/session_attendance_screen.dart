@@ -50,6 +50,7 @@ class SessionAttendanceNotifier extends StateNotifier<AsyncValue<SessionAttendan
       state = AsyncValue.data(updated);
       ref.invalidate(sessionRotationNotifierProvider(sessionId));
       ref.invalidate(sessionDetailViewModelProvider(sessionId));
+      ref.invalidate(sessionAttendanceProvider(sessionId));
     } catch (e, st) {
       state = AsyncValue.error(e, st);
     }
@@ -65,6 +66,7 @@ class SessionAttendanceNotifier extends StateNotifier<AsyncValue<SessionAttendan
       state = AsyncValue.data(updated);
       ref.invalidate(sessionRotationNotifierProvider(sessionId));
       ref.invalidate(sessionDetailViewModelProvider(sessionId));
+      ref.invalidate(sessionAttendanceProvider(sessionId));
     } catch (e, st) {
       state = AsyncValue.error(e, st);
     }
@@ -76,6 +78,7 @@ class SessionAttendanceNotifier extends StateNotifier<AsyncValue<SessionAttendan
       state = AsyncValue.data(updated);
       ref.invalidate(sessionRotationNotifierProvider(sessionId));
       ref.invalidate(sessionDetailViewModelProvider(sessionId));
+      ref.invalidate(sessionAttendanceProvider(sessionId));
     } catch (e, st) {
       state = AsyncValue.error(e, st);
     }
@@ -99,7 +102,7 @@ class SessionAttendanceScreen extends ConsumerWidget {
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Check-in & Điểm Diện Ra Sân', style: AppTypography.titleMedium.bold.colored(colors.textPrimary)),
+            Text('Check-in & Điểm Danh Ra Sân', style: AppTypography.titleMedium.bold.colored(colors.textPrimary)),
             Text('Xác nhận tay vợt có mặt để nạp hàng đợi xoay tua',
                 style: AppTypography.labelSmall.colored(colors.textMuted)),
           ],
@@ -308,14 +311,32 @@ class SessionAttendanceScreen extends ConsumerWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('Danh sách tay vợt tham gia (${snapshot.players.length})',
-                            style: AppTypography.titleSmall.bold.colored(colors.textPrimary)),
-                        if (!snapshot.isCompleted && isOngoing)
-                          TextButton.icon(
-                            icon: const Icon(Icons.check_circle_outline_rounded, size: 16),
-                            label: const Text('Chốt danh sách ra sân'),
-                            onPressed: () => _confirmCompleteAttendance(context, vm),
+                        Expanded(
+                          child: Text(
+                            'Danh sách tay vợt tham gia (${snapshot.players.length})',
+                            style: AppTypography.titleSmall.bold.colored(colors.textPrimary),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
+                        ),
+                        if (!snapshot.isCompleted && isOngoing) ...[
+                          AppSpacing.gapW4,
+                          Flexible(
+                            child: TextButton.icon(
+                              style: TextButton.styleFrom(
+                                visualDensity: VisualDensity.compact,
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                              ),
+                              icon: const Icon(Icons.check_circle_outline_rounded, size: 16),
+                              label: const Text(
+                                'Chốt danh sách',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              onPressed: () => _confirmCompleteAttendance(context, vm),
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                     AppSpacing.gapH8,

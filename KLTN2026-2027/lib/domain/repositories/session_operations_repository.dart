@@ -47,6 +47,10 @@ abstract class SessionOperationsRepository {
     required List<String> teamAUserIds,
     required List<String> teamBUserIds,
   });
+  Future<SessionRotationSnapshot> setThreePlayerMode({
+    required String sessionId,
+    required ThreePlayerMatchMode mode,
+  });
 
   // --- FR18 - FR21: Hạch toán vật tư, đa hệ số & VietQR ---
   Future<SessionSettlement> getSettlement(String sessionId);
@@ -54,10 +58,16 @@ abstract class SessionOperationsRepository {
     required String sessionId,
     required int shuttlecockUsed,
     required int extraFee,
+    int? courtRentalCost,
   });
   Future<SessionSettlement> markMemberPaid({
     required String sessionId,
     required String userId,
+  });
+  Future<SessionSettlement> requestCashPayment({
+    required String sessionId,
+    required String userId,
+    String? feeId,
   });
 
   // --- FR23: Đánh giá uy tín & Tín nhiệm ---

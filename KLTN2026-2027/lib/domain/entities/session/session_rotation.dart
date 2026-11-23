@@ -1,5 +1,10 @@
 // lib/domain/entities/session/session_rotation.dart
 
+enum ThreePlayerMatchMode {
+  twoVsOne, // Ä Ã¡nh 2 vs 1 (cáº£ 3 cÃ¹ng vÃ o sÃ¢n)
+  singlesRotation, // Ä Ã¡nh Ä‘Æ¡n 1 vs 1 (1 ngÆ°á» i nghá»‰ xoay vÃ²ng)
+}
+
 class RotationPlayer {
   final String userId;
   final String fullName;
@@ -64,6 +69,7 @@ class SessionRotationSnapshot {
   final int coolingDownCount;
   final List<CourtMatch> courts;
   final List<RotationPlayer> queuePlayers;
+  final ThreePlayerMatchMode threePlayerMode;
 
   const SessionRotationSnapshot({
     required this.sessionId,
@@ -79,6 +85,7 @@ class SessionRotationSnapshot {
     required this.coolingDownCount,
     required this.courts,
     this.queuePlayers = const [],
+    this.threePlayerMode = ThreePlayerMatchMode.twoVsOne,
   });
 
   bool get isInitialized => rotationStartedAt != null;

@@ -161,10 +161,19 @@ class ClubDetailViewModel extends StateNotifier<ClubDetailState> {
     }
   }
 
-  Future<bool> updateSchedules(List<ClubScheduleInput> schedules) async {
+  Future<bool> updateSchedules(
+    List<ClubScheduleInput> schedules, {
+    int? courtCount,
+    double? courtRentalCost,
+  }) async {
     state = state.copyWith(isSubmitting: true, error: null, successMessage: null);
     try {
-      await updateClubSchedulesUseCase.execute(clubId, schedules);
+      await updateClubSchedulesUseCase.execute(
+        clubId,
+        schedules,
+        courtCount: courtCount,
+        courtRentalCost: courtRentalCost,
+      );
       await loadDetail();
       ref.invalidate(clubSessionsViewModelProvider(clubId));
       state = state.copyWith(

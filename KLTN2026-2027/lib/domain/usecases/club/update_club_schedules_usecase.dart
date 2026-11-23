@@ -5,7 +5,17 @@ class UpdateClubSchedulesUseCase {
   final ClubRepository repository;
   UpdateClubSchedulesUseCase(this.repository);
 
-  Future<void> execute(String clubId, List<ClubScheduleInput> schedules) {
-    return repository.updateClubSchedules(clubId, schedules);
+  Future<void> execute(
+    String clubId,
+    List<ClubScheduleInput> schedules, {
+    int? courtCount,
+    double? courtRentalCost,
+  }) {
+    return repository.updateClubSchedules(
+      clubId,
+      schedules,
+      courtCount: courtCount,
+      courtRentalCost: courtRentalCost,
+    );
   }
 }

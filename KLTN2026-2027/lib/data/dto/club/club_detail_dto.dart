@@ -118,6 +118,8 @@ class ClubDetailDto {
   final List<ClubScheduleItemDto> schedules;
   final String? schedulesSummary;
   final ClubCurrentUserStatusDto currentUserStatus;
+  final int courtCount;
+  final double courtRentalCost;
 
   ClubDetailDto({
     required this.id,
@@ -138,6 +140,8 @@ class ClubDetailDto {
     required this.schedules,
     this.schedulesSummary,
     required this.currentUserStatus,
+    this.courtCount = 1,
+    this.courtRentalCost = 0.0,
   });
 
   factory ClubDetailDto.fromJson(Map<String, dynamic> json) {
@@ -167,6 +171,8 @@ class ClubDetailDto {
       currentUserStatus: json['currentUserStatus'] is Map<String, dynamic>
           ? ClubCurrentUserStatusDto.fromJson(json['currentUserStatus'] as Map<String, dynamic>)
           : ClubCurrentUserStatusDto(isMember: false, hasPendingJoinRequest: false),
+      courtCount: _parseInt(json['courtCount'], defaultValue: 1),
+      courtRentalCost: _parseDouble(json['courtRentalCost'], defaultValue: 0.0),
     );
   }
 

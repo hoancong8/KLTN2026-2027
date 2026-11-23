@@ -18,10 +18,18 @@ class ClubScheduleItemRequestDto {
 
 class UpdateClubSchedulesRequestDto {
   final List<ClubScheduleItemRequestDto> schedules;
+  final int? courtCount;
+  final double? courtRentalCost;
 
-  UpdateClubSchedulesRequestDto({required this.schedules});
+  UpdateClubSchedulesRequestDto({
+    required this.schedules,
+    this.courtCount,
+    this.courtRentalCost,
+  });
 
   Map<String, dynamic> toJson() => {
     'schedules': schedules.map((e) => e.toJson()).toList(),
+    if (courtCount != null) 'courtCount': courtCount,
+    if (courtRentalCost != null) 'courtRentalCost': courtRentalCost,
   };
 }

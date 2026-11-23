@@ -104,6 +104,15 @@ class SessionRotationNotifier extends StateNotifier<AsyncValue<SessionRotationSn
       state = AsyncValue.error(e, st);
     }
   }
+
+  Future<void> setThreePlayerMode(ThreePlayerMatchMode mode) async {
+    try {
+      final updated = await _repo.setThreePlayerMode(sessionId: sessionId, mode: mode);
+      state = AsyncValue.data(updated);
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+    }
+  }
 }
 
 class SessionRotationScreen extends ConsumerWidget {
@@ -337,8 +346,107 @@ class SessionRotationScreen extends ConsumerWidget {
           ),
           AppSpacing.gapH12,
           Text(
-            'Thuật toán ưu tiên 4 tay vợt có thời gian hồi sức lâu nhất vào sân tiếp theo và cân bằng chênh lệch trình độ nhỏ nhất.',
+            'Thuật toán ưu tiên tay vợt có thời gian hồi sức lâu nhất vào sân tiếp theo. Hỗ trợ linh hoạt: Đánh đôi 2vs2 (>= 4 người), Đánh 2vs1 hoặc Đánh đơn 1vs1 xoay vòng (2-3 người).',
             style: AppTypography.bodySmall.colored(colors.textMuted),
+          ),
+          AppSpacing.gapH12,
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            decoration: BoxDecoration(
+              color: colors.surfaceSubtle,
+              borderRadius: AppRadius.borderSm,
+              border: Border.all(color: colors.cardBorder),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Hình thức ca 3 người:',
+                      style: AppTypography.labelSmall.bold.colored(colors.textPrimary),
+                    ),
+                    Text(
+                      snapshot.threePlayerMode == ThreePlayerMatchMode.twoVsOne
+                          ? '2 vs 1 (Cả 3 cùng đánh)'
+                          : '1 vs 1 (1 người nghỉ xoay vòng)',
+                      style: AppTypography.labelSmall.bold.colored(colors.primary),
+                    ),
+                  ],
+                ),
+                AppSpacing.gapH8,
+                Row(
+                  children: [
+                    Expanded(
+                      child: InkWell(
+                        onTap: () {
+                          HapticFeedback.lightImpact();
+                          vm.setThreePlayerMode(ThreePlayerMatchMode.twoVsOne);
+                        },
+                        borderRadius: AppRadius.borderSm,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 6),
+                          decoration: BoxDecoration(
+                            color: snapshot.threePlayerMode == ThreePlayerMatchMode.twoVsOne
+                                ? colors.primary
+                                : colors.cardBackground,
+                            borderRadius: AppRadius.borderSm,
+                            border: Border.all(
+                              color: snapshot.threePlayerMode == ThreePlayerMatchMode.twoVsOne
+                                  ? colors.primary
+                                  : colors.cardBorder,
+                            ),
+                          ),
+                          alignment: Alignment.center,
+                          child: Text(
+                            '2 vs 1 (Cả 3 cùng đánh)',
+                            style: AppTypography.labelSmall.bold.colored(
+                              snapshot.threePlayerMode == ThreePlayerMatchMode.twoVsOne
+                                  ? AppColors.white
+                                  : colors.textPrimary,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    AppSpacing.gapW8,
+                    Expanded(
+                      child: InkWell(
+                        onTap: () {
+                          HapticFeedback.lightImpact();
+                          vm.setThreePlayerMode(ThreePlayerMatchMode.singlesRotation);
+                        },
+                        borderRadius: AppRadius.borderSm,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 6),
+                          decoration: BoxDecoration(
+                            color: snapshot.threePlayerMode == ThreePlayerMatchMode.singlesRotation
+                                ? colors.primary
+                                : colors.cardBackground,
+                            borderRadius: AppRadius.borderSm,
+                            border: Border.all(
+                              color: snapshot.threePlayerMode == ThreePlayerMatchMode.singlesRotation
+                                  ? colors.primary
+                                  : colors.cardBorder,
+                            ),
+                          ),
+                          alignment: Alignment.center,
+                          child: Text(
+                            '1 vs 1 (1 người nghỉ)',
+                            style: AppTypography.labelSmall.bold.colored(
+                              snapshot.threePlayerMode == ThreePlayerMatchMode.singlesRotation
+                                  ? AppColors.white
+                                  : colors.textPrimary,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
           AppSpacing.gapH12,
           Row(
@@ -431,7 +539,7 @@ class SessionRotationScreen extends ConsumerWidget {
       builder: (ctx) => AlertDialog(
         title: Text('Kết thúc trận sân ${court.courtNumber}?'),
         content: const Text(
-          'Hệ thống sẽ giải phóng sân và tự động kích hoạt thời gian hồi sức 5 phút cho 4 tay vợt.',
+          'Hệ thống sẽ giải phóng sân và tự động kích hoạt thời gian hồi sức 5 phút cho các tay vợt.',
         ),
         actions: [
           TextButton(
@@ -472,7 +580,7 @@ class SessionRotationScreen extends ConsumerWidget {
           child: Text(
             hasActiveMatch
                 ? 'Tất cả hội viên đều đang thi đấu trên sân'
-                : 'Chưa có hội viên check-in ra sân. Cần tối thiểu 4 người để hệ thống tự động ghép cặp thi đấu.',
+                : 'Chưa có hội viên check-in ra sân. Cần tối thiểu 2 người để hệ thống tự động ghép cặp thi đấu (1vs1, 2vs1 hoặc 2vs2).',
             style: AppTypography.bodySmall.colored(colors.textMuted),
             textAlign: TextAlign.center,
           ),
@@ -591,7 +699,7 @@ class SessionRotationScreen extends ConsumerWidget {
     SessionRotationNotifier vm,
   ) {
     final courtPlayers = [...court.teamA, ...court.teamB];
-    if (courtPlayers.length < 4) return;
+    if (courtPlayers.length < 2) return;
 
     final candidatePool = [
       ...courtPlayers,
@@ -604,10 +712,11 @@ class SessionRotationScreen extends ConsumerWidget {
     }
     final candidateList = uniqueCandidates.values.toList();
 
-    String a1 = court.teamA[0].userId;
-    String a2 = court.teamA[1].userId;
-    String b1 = court.teamB[0].userId;
-    String b2 = court.teamB[1].userId;
+    String a1 = court.teamA.isNotEmpty ? court.teamA[0].userId : '';
+    String? a2 = court.teamA.length > 1 ? court.teamA[1].userId : null;
+    String b1 = court.teamB.isNotEmpty ? court.teamB[0].userId : '';
+    String? b2 = court.teamB.length > 1 ? court.teamB[1].userId : null;
+    final int requiredCount = courtPlayers.length;
 
     showDialog(
       context: context,
@@ -630,7 +739,7 @@ class SessionRotationScreen extends ConsumerWidget {
                     ),
                     child: DropdownButtonHideUnderline(
                       child: DropdownButton<String>(
-                        value: currentVal,
+                        value: currentVal.isNotEmpty ? currentVal : null,
                         isExpanded: true,
                         items: candidateList.map((p) {
                           return DropdownMenuItem(
@@ -665,7 +774,7 @@ class SessionRotationScreen extends ConsumerWidget {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Chọn 4 tay vợt cho 2 đội (có thể đổi từ hàng đợi):',
+                      Text('Chọn $requiredCount tay vợt cho 2 đội (có thể đổi từ hàng đợi):',
                           style: AppTypography.bodySmall.colored(colors.textMuted)),
                       const SizedBox(height: 12),
                       Text('ĐỘI 1', style: AppTypography.labelMedium.bold.colored(colors.primary)),
@@ -673,18 +782,20 @@ class SessionRotationScreen extends ConsumerWidget {
                       buildDropdown('Tay vợt 1A', a1, (v) {
                         if (v != null) setStateDialog(() => a1 = v);
                       }),
-                      buildDropdown('Tay vợt 2A', a2, (v) {
-                        if (v != null) setStateDialog(() => a2 = v);
-                      }),
+                      if (a2 != null)
+                        buildDropdown('Tay vợt 2A', a2!, (v) {
+                          if (v != null) setStateDialog(() => a2 = v);
+                        }),
                       const Divider(),
                       Text('ĐỘI 2', style: AppTypography.labelMedium.bold.colored(colors.warning)),
                       const SizedBox(height: 6),
                       buildDropdown('Tay vợt 1B', b1, (v) {
                         if (v != null) setStateDialog(() => b1 = v);
                       }),
-                      buildDropdown('Tay vợt 2B', b2, (v) {
-                        if (v != null) setStateDialog(() => b2 = v);
-                      }),
+                      if (b2 != null)
+                        buildDropdown('Tay vợt 2B', b2!, (v) {
+                          if (v != null) setStateDialog(() => b2 = v);
+                        }),
                     ],
                   ),
                 ),
@@ -700,15 +811,18 @@ class SessionRotationScreen extends ConsumerWidget {
                     foregroundColor: AppColors.white,
                   ),
                   onPressed: () {
-                    final selectedSet = {a1, a2, b1, b2};
-                    if (selectedSet.length < 4) {
+                    final selectedList = [a1, if (a2 != null) a2!, b1, if (b2 != null) b2!];
+                    final selectedSet = selectedList.toSet();
+                    if (selectedSet.length < requiredCount) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Vui lòng chọn 4 tay vợt khác nhau')),
+                        SnackBar(content: Text('Vui lòng chọn $requiredCount tay vợt khác nhau')),
                       );
                       return;
                     }
                     HapticFeedback.mediumImpact();
-                    vm.swapPlayers(court.matchId, [a1, a2], [b1, b2]);
+                    final teamAIds = [a1, if (a2 != null) a2!];
+                    final teamBIds = [b1, if (b2 != null) b2!];
+                    vm.swapPlayers(court.matchId, teamAIds, teamBIds);
                     Navigator.of(ctx).pop();
                   },
                   child: const Text('Lưu thay đổi'),

@@ -104,8 +104,9 @@ class PaymentRemoteDatasourceImpl extends BaseRemoteDatasource
       );
       return await _parse(response, PaymentBankAccountDto.fromJson);
     } on DioException catch (e) {
-      if (e.response?.statusCode == 409 &&
-          _errorCode(e.response?.data) == 'Payments.BankUnavailable') {
+      if ((e.response?.statusCode == 409 &&
+          _errorCode(e.response?.data) == 'Payments.BankUnavailable') ||
+          e.response?.statusCode == 404) {
         return null;
       }
       throw handleError(e);

@@ -21,6 +21,7 @@ import '../../../domain/utils/session_fee_calculator.dart';
 import '../../../domain/enums/session_enums.dart';
 import '../../../domain/usecases/session/session_usecases.dart';
 import 'club_vm/club_context_vm.dart';
+import '../club_detail/club_detail_vm/club_detail_vm.dart';
 import 'session_vm/session_detail_vm.dart';
 import 'session_vm/explore_recruitments_vm.dart';
 
@@ -271,6 +272,61 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
             ),
           );
         }
+      }
+    }
+  }
+
+  Future<void> _confirmStartSessionEarly(BuildContext context) async {
+    final colors = context.colors;
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: colors.cardBackground,
+        shape: const RoundedRectangleBorder(borderRadius: AppRadius.dialog),
+        title: Row(
+          children: [
+            Icon(Icons.sports_tennis_rounded, color: colors.success),
+            AppSpacing.gapW8,
+            Text(
+              'Bắt Đầu Buổi Chơi Ngay',
+              style: AppTypography.titleMedium.copyWith(color: colors.textPrimary),
+            ),
+          ],
+        ),
+        content: Text(
+          'Chuyển trạng thái ca chơi sang Đang thi đấu (PLAYING) ngay bây giờ để mở Bàn điều phối, điểm danh và xoay tua sân mà không cần chờ đến giờ thi đấu?',
+          style: AppTypography.bodyMedium.copyWith(color: colors.textSecondary),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(context.l10n.com_cancel, style: TextStyle(color: colors.textMuted)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: colors.success,
+              foregroundColor: AppColors.white,
+              shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+            ),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Bắt đầu luôn'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true && mounted) {
+      final vm = ref.read(sessionDetailViewModelProvider(widget.sessionId).notifier);
+      final ok = await vm.updateStatus('PLAYING');
+      if (ok && mounted) {
+        scaffoldMessenger.showSnackBar(
+          SnackBar(
+            content: const Text('Đã bắt đầu ca thi đấu! Các chức năng Check-in và Xoay tua sân đã sẵn sàng.'),
+            backgroundColor: colors.success,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
       }
     }
   }
@@ -675,7 +731,10 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
     final playersPerCourt = session.targetPlayerPerCourt > 0
         ? session.targetPlayerPerCourt
         : (totalCourts > 0 ? (session.maxPlayers / totalCourts).round() : 6);
-    final courtRentalCost = session.courtRentalCost > 0 ? session.courtRentalCost.toInt() : 300000;
+    final club = ref.read(clubDetailViewModelProvider(session.groupId)).club;
+    final courtRentalCost = session.courtRentalCost > 0
+        ? session.courtRentalCost.toInt()
+        : ((club != null && club.courtRentalCost > 0) ? club.courtRentalCost.toInt() : 0);
 
     int calculateBasePrice(int count) {
       if (totalCourts <= 0) return courtRentalCost;
@@ -1291,7 +1350,30 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
 
     final detail = state.detail!;
     final session = detail.session;
-    final confirmedCount = detail.confirmedPlayers.length;
+
+    final attendanceAsync = ref.watch(sessionAttendanceProvider(session.id));
+    final attendance = attendanceAsync.asData?.value;
+    final existingUserIds = detail.confirmedPlayers.map((p) => p.userId).toSet();
+    final walkIns = (attendance?.players ?? [])
+        .where((p) => (p.isWalkIn || p.userId.startsWith('walkin')) && !existingUserIds.contains(p.userId))
+        .map((p) => SessionBooking(
+              bookingId: p.bookingId,
+              sessionId: session.id,
+              userId: p.userId,
+              fullName: p.fullName,
+              avatarUrl: p.avatarUrl,
+              phoneNumber: null,
+              skillLevel: 'L${p.skillLevel}',
+              status: BookingStatus.confirmed,
+              queueOrder: 0,
+              bookedAt: p.bookedAt,
+              checkinAt: p.checkinAt,
+              gender: p.gender == 'FEMALE' ? 2 : 1,
+            ))
+        .toList();
+
+    final allConfirmedPlayers = [...detail.confirmedPlayers, ...walkIns];
+    final confirmedCount = allConfirmedPlayers.length;
     final waitingCount = detail.waitingQueue.length;
 
     final activeContext = ref.watch(activeClubContextProvider);
@@ -1319,6 +1401,11 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
         (session.startTime.isBefore(now) && session.endTime.isAfter(now)));
     final isExpired = session.isExpired || session.deadlineBooking.isBefore(now);
     final canPassCourt = isHost && session.status == SessionStatus.open && !isEnded && !isPlaying && !isExpired;
+    final canViewSettlement = isEnded ||
+        session.status == SessionStatus.playing ||
+        session.status == SessionStatus.locked ||
+        session.status == SessionStatus.calculated ||
+        session.status == SessionStatus.completed;
 
     final isMyClubSession = isSameClub || myClubs.any((c) => c.clubId == session.groupId);
     final canDeleteCourtPass = canDeleteSession ||
@@ -1369,6 +1456,12 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
             onPressed: vm.loadDetail,
             tooltip: context.l10n.com_refresh,
           ),
+          if (canViewSettlement)
+            IconButton(
+              icon: const Icon(Icons.receipt_long_rounded),
+              tooltip: 'Bảng quyết toán chi phí & QR',
+              onPressed: () => context.push('/session/${session.id}/settlement'),
+            ),
           if (hasAnySessionManagePerm && session.status != SessionStatus.completed)
             IconButton(
               icon: const Icon(Icons.tune_rounded),
@@ -1468,318 +1561,12 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
             body: TabBarView(
               controller: _tabController,
               children: [
-                _buildPlayersList(detail.confirmedPlayers, isWaiting: false),
+                _buildPlayersList(allConfirmedPlayers, isWaiting: false),
                 _buildPlayersList(detail.waitingQueue, isWaiting: true),
               ],
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  void _showSettlementModal(BuildContext context, Session session) {
-    final colors = context.colors;
-    final courtCost = session.courtRentalCost;
-    final shuttleCostCtl = TextEditingController(text: '4');
-    final shuttleUnitPriceCtl = TextEditingController(text: '25,000');
-    final extraExpenseCtl = TextEditingController(text: '0');
-    final femaleDiscountCtl = TextEditingController(text: '10,000');
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: colors.cardBackground,
-      shape: const RoundedRectangleBorder(borderRadius: AppRadius.bottomSheet),
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setModalState) {
-          final shuttleCount = int.tryParse(shuttleCostCtl.text) ?? 0;
-          final shuttleUnitPrice = double.tryParse(shuttleUnitPriceCtl.text.replaceAll(',', '')) ?? 25000;
-          final extraExpense = double.tryParse(extraExpenseCtl.text.replaceAll(',', '')) ?? 0;
-          final totalShuttle = shuttleCount * shuttleUnitPrice;
-          final totalSessionCost = courtCost + totalShuttle + extraExpense;
-
-          final femaleDiscount = double.tryParse(femaleDiscountCtl.text.replaceAll(',', ''))?.round() ?? 10000;
-          final detail = ref.watch(sessionDetailViewModelProvider(widget.sessionId)).detail;
-          final confirmedPlayers = detail?.confirmedPlayers ?? [];
-          final totalPlayers = confirmedPlayers.isNotEmpty
-              ? confirmedPlayers.length
-              : (session.confirmedCount > 0 ? session.confirmedCount : (session.maxPlayers > 0 ? session.maxPlayers : 1));
-          final femaleCount = confirmedPlayers.where((p) => PlayerGenderHelper.isFemale(explicitGender: p.gender)).length;
-
-          final feeResult = SessionFeeCalculator.calculate(
-            totalCost: totalSessionCost.toInt(),
-            totalPlayers: totalPlayers,
-            femaleCount: femaleCount,
-            femaleDiscount: femaleDiscount,
-            roundRule: 1000,
-          );
-
-          return SafeArea(
-            child: Padding(
-              padding: EdgeInsets.only(
-                left: AppSpacing.lg,
-                right: AppSpacing.lg,
-                top: AppSpacing.base,
-                bottom: MediaQuery.of(ctx).viewInsets.bottom + AppSpacing.base,
-              ),
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Center(
-                      child: Container(
-                        width: 40,
-                        height: 4,
-                        decoration: BoxDecoration(color: colors.borderStrong, borderRadius: BorderRadius.circular(2)),
-                      ),
-                    ),
-                    AppSpacing.gapH16,
-                    Row(
-                      children: [
-                        Icon(Icons.calculate_rounded, color: colors.primary, size: 24),
-                        AppSpacing.gapW8,
-                        Text(
-                          'Chốt Sổ & Quyết Toán Chi Phí',
-                          style: AppTypography.titleMedium.copyWith(color: colors.textPrimary),
-                        ),
-                      ],
-                    ),
-                    AppSpacing.gapH8,
-                    Text(
-                      'Tự động tính: Tổng chi phí = Tiền sân + Tiền cầu bóc mới + Phụ phí.',
-                      style: AppTypography.bodySmall.copyWith(color: colors.textMuted),
-                    ),
-                    AppSpacing.gapH16,
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Số quả cầu bóc mới', style: AppTypography.labelMedium.copyWith(color: colors.textPrimary)),
-                              AppSpacing.gapH4,
-                              TextFormField(
-                                controller: shuttleCostCtl,
-                                keyboardType: TextInputType.number,
-                                style: AppTypography.bodyMedium.copyWith(color: colors.textPrimary),
-                                decoration: InputDecoration(
-                                  filled: true,
-                                  fillColor: colors.inputFill,
-                                  suffixText: 'quả',
-                                  border: OutlineInputBorder(borderRadius: AppRadius.input, borderSide: BorderSide(color: colors.inputBorder)),
-                                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                                ),
-                                onChanged: (_) => setModalState(() {}),
-                              ),
-                            ],
-                          ),
-                        ),
-                        AppSpacing.gapW12,
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Đơn giá cầu (đ/quả)', style: AppTypography.labelMedium.copyWith(color: colors.textPrimary)),
-                              AppSpacing.gapH4,
-                              TextFormField(
-                                controller: shuttleUnitPriceCtl,
-                                keyboardType: TextInputType.number,
-                                style: AppTypography.bodyMedium.copyWith(color: colors.textPrimary),
-                                decoration: InputDecoration(
-                                  filled: true,
-                                  fillColor: colors.inputFill,
-                                  border: OutlineInputBorder(borderRadius: AppRadius.input, borderSide: BorderSide(color: colors.inputBorder)),
-                                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                                ),
-                                onChanged: (_) => setModalState(() {}),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    AppSpacing.gapH12,
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Phụ phí phát sinh (VNĐ)', style: AppTypography.labelMedium.copyWith(color: colors.textPrimary)),
-                              AppSpacing.gapH4,
-                              TextFormField(
-                                controller: extraExpenseCtl,
-                                keyboardType: TextInputType.number,
-                                style: AppTypography.bodyMedium.copyWith(color: colors.textPrimary),
-                                decoration: InputDecoration(
-                                  hintText: '0',
-                                  filled: true,
-                                  fillColor: colors.inputFill,
-                                  border: OutlineInputBorder(borderRadius: AppRadius.input, borderSide: BorderSide(color: colors.inputBorder)),
-                                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                                ),
-                                onChanged: (_) => setModalState(() {}),
-                              ),
-                            ],
-                          ),
-                        ),
-                        AppSpacing.gapW12,
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Ưu đãi giảm Nữ (VNĐ)', style: AppTypography.labelMedium.copyWith(color: colors.textPrimary)),
-                              AppSpacing.gapH4,
-                              TextFormField(
-                                controller: femaleDiscountCtl,
-                                keyboardType: TextInputType.number,
-                                style: AppTypography.bodyMedium.copyWith(color: colors.textPrimary),
-                                decoration: InputDecoration(
-                                  hintText: '10,000',
-                                  filled: true,
-                                  fillColor: colors.inputFill,
-                                  border: OutlineInputBorder(borderRadius: AppRadius.input, borderSide: BorderSide(color: colors.inputBorder)),
-                                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                                ),
-                                onChanged: (_) => setModalState(() {}),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    AppSpacing.gapH16,
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: colors.surfaceSubtle,
-                        borderRadius: AppRadius.borderSm,
-                        border: Border.all(color: colors.primary.withValues(alpha: 0.25)),
-                      ),
-                      child: Column(
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text('Tiền thuê sân:', style: AppTypography.bodySmall.copyWith(color: colors.textMuted)),
-                              Text('${NumberFormat('#,###').format(courtCost)} đ', style: AppTypography.bodySmall.bold.colored(colors.textPrimary)),
-                            ],
-                          ),
-                          AppSpacing.gapH4,
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text('Tiền cầu bóc ($shuttleCount quả):', style: AppTypography.bodySmall.copyWith(color: colors.textMuted)),
-                              Text('${NumberFormat('#,###').format(totalShuttle)} đ', style: AppTypography.bodySmall.bold.colored(colors.textPrimary)),
-                            ],
-                          ),
-                          if (extraExpense > 0) ...[
-                            AppSpacing.gapH4,
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text('Phụ phí phát sinh:', style: AppTypography.bodySmall.copyWith(color: colors.textMuted)),
-                                Text('${NumberFormat('#,###').format(extraExpense)} đ', style: AppTypography.bodySmall.bold.colored(colors.textPrimary)),
-                              ],
-                            ),
-                          ],
-                          const Divider(height: 16),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text('Tổng tiền buổi chơi:', style: AppTypography.bodyMedium.bold.colored(colors.textPrimary)),
-                              Text(
-                                '${NumberFormat('#,###').format(totalSessionCost)} đ',
-                                style: AppTypography.titleMedium.copyWith(fontWeight: FontWeight.bold, color: colors.primary),
-                              ),
-                            ],
-                          ),
-                          AppSpacing.gapH4,
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text('Tổng thu dự kiến (${feeResult.maleCount} Nam, ${feeResult.femaleCount} Nữ):', style: AppTypography.labelSmall.copyWith(color: colors.textMuted)),
-                              Text(
-                                '${NumberFormat('#,###').format(feeResult.totalExpectedCollection)} đ (Bảo toàn đủ)',
-                                style: AppTypography.labelSmall.copyWith(fontWeight: FontWeight.bold, color: colors.success),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                    AppSpacing.gapH16,
-                    Text('Bảng phân bổ chi phí:', style: AppTypography.labelMedium.copyWith(color: colors.textPrimary)),
-                    AppSpacing.gapH8,
-                    Container(
-                      decoration: BoxDecoration(
-                        color: colors.cardBackground,
-                        borderRadius: AppRadius.borderSm,
-                        border: Border.all(color: colors.cardBorder),
-                      ),
-                      child: Column(
-                        children: [
-                          ListTile(
-                            dense: true,
-                            leading: Icon(Icons.verified_user_rounded, color: colors.success, size: 20),
-                            title: Text('Hội viên tháng (Cố định)', style: AppTypography.bodySmall.bold.colored(colors.textPrimary)),
-                            subtitle: Text('Đã đóng trong quỹ tháng', style: AppTypography.labelSmall.copyWith(color: colors.textMuted)),
-                            trailing: Text('0 đ (Miễn phí)', style: AppTypography.bodySmall.bold.colored(colors.success)),
-                          ),
-                          const Divider(height: 1),
-                          ListTile(
-                            dense: true,
-                            leading: Icon(Icons.group_rounded, color: colors.primary, size: 20),
-                            title: Text('Người chơi (Nam & chung)', style: AppTypography.bodySmall.bold.colored(colors.textPrimary)),
-                            subtitle: Text('Đã gánh bù ưu đãi Nữ để bảo toàn quỹ ($totalPlayers người)', style: AppTypography.labelSmall.copyWith(color: colors.textMuted)),
-                            trailing: Text('${NumberFormat('#,###').format(feeResult.maleFee)} đ', style: AppTypography.bodySmall.bold.colored(colors.primary)),
-                          ),
-                          const Divider(height: 1),
-                          ListTile(
-                            dense: true,
-                            leading: const Icon(Icons.female_rounded, color: AppColors.pink, size: 20),
-                            title: Text('Người chơi (Nữ)', style: AppTypography.bodySmall.bold.colored(colors.textPrimary)),
-                            subtitle: Text('Được ưu đãi giảm ${NumberFormat('#,###').format(femaleDiscount)} đ', style: AppTypography.labelSmall.copyWith(color: colors.textMuted)),
-                            trailing: Text('${NumberFormat('#,###').format(feeResult.femaleFee)} đ', style: AppTypography.bodySmall.bold.colored(AppColors.pink)),
-                          ),
-                        ],
-                      ),
-                    ),
-                    AppSpacing.gapH20,
-                    ElevatedButton(
-                      onPressed: () async {
-                        Navigator.of(ctx).pop();
-                        final vm = ref.read(sessionDetailViewModelProvider(widget.sessionId).notifier);
-                        await vm.updateStatus('COMPLETED');
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Đã chốt sổ và chốt tiền buổi chơi thành công (${NumberFormat('#,###').format(totalSessionCost)} đ)!'),
-                              backgroundColor: colors.primary,
-                              behavior: SnackBarBehavior.floating,
-                            ),
-                          );
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: colors.primary,
-                        foregroundColor: AppColors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
-                      ),
-                      child: Text(
-                        'Xác Nhận Chốt Sổ & Ban Hành Quyết Toán',
-                        style: AppTypography.titleSmall.copyWith(color: AppColors.white, fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          );
-        },
       ),
     );
   }
@@ -3074,6 +2861,11 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
         (session.startTime.isBefore(now) && session.endTime.isAfter(now)));
     final isExpired = session.endTime.isBefore(now) || (session.status != SessionStatus.open && session.status != SessionStatus.locked);
     final canPassCourt = isHost && session.status == SessionStatus.open && !isEnded && !isPlaying && !isExpired;
+    final canViewSettlement = isEnded ||
+        session.status == SessionStatus.playing ||
+        session.status == SessionStatus.locked ||
+        session.status == SessionStatus.calculated ||
+        session.status == SessionStatus.completed;
 
     final dateFormat = DateFormat('HH:mm, dd/MM/yyyy');
     final timeStr = '${DateFormat('HH:mm').format(session.startTime)} - ${dateFormat.format(session.endTime)}';
@@ -3295,9 +3087,19 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
           // Quy mô sân, Tiền sân gốc & Chi phí phát sinh
           Builder(
             builder: (context) {
-              final isSettled = session.status == SessionStatus.calculated || session.status == SessionStatus.completed;
-              final settlementAsync = (isFeeDynamic && isSettled) ? ref.watch(sessionSettlementProvider(session.id)) : null;
+              final defaultSettings = ref.watch(clubScheduleDefaultsProvider(session.groupId));
+              final effectiveCourtCount = session.courtCount > 1
+                  ? session.courtCount
+                  : (defaultSettings.courtCount > 0 ? defaultSettings.courtCount : session.courtCount);
+              final effectiveTarget = session.targetPlayerPerCourt > 0 ? session.targetPlayerPerCourt : 6;
+
+              final settlementAsync = isFeeDynamic ? ref.watch(sessionSettlementProvider(session.id)) : null;
               final settlement = settlementAsync?.asData?.value;
+              final effectiveCourtCost = session.courtRentalCost > 0
+                  ? session.courtRentalCost
+                  : (settlement != null && settlement.courtFee > 0
+                      ? settlement.courtFee.toDouble()
+                      : (defaultSettings.courtRentalCost > 0 ? defaultSettings.courtRentalCost : 0.0));
               final shuttleCost = (settlement != null && settlement.shuttlecockUsed > 0)
                   ? settlement.shuttlecockUsed * settlement.shuttlecockPrice
                   : 0;
@@ -3323,7 +3125,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                               Text('Quy mô sân đấu', style: AppTypography.labelSmall.copyWith(color: colors.textMuted)),
                               AppSpacing.gapH4,
                               Text(
-                                '${session.courtCount} sân (${session.targetPlayerPerCourt} ng/sân)',
+                                '$effectiveCourtCount sân ($effectiveTarget ng/sân)',
                                 style: AppTypography.bodySmall.copyWith(fontWeight: FontWeight.bold, color: colors.textPrimary),
                               ),
                             ],
@@ -3346,7 +3148,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                                 Text('Tiền thuê sân', style: AppTypography.labelSmall.copyWith(color: colors.textMuted)),
                                 AppSpacing.gapH4,
                                 Text(
-                                  session.courtRentalCost > 0 ? '${NumberFormat('#,###').format(session.courtRentalCost)} đ' : '0 đ (Chờ chốt)',
+                                  effectiveCourtCost > 0 ? '${NumberFormat('#,###').format(effectiveCourtCost)} đ' : '0 đ (Chờ chốt)',
                                   style: AppTypography.bodySmall.copyWith(fontWeight: FontWeight.bold, color: colors.primary),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
@@ -3483,6 +3285,20 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                     spacing: 8,
                     runSpacing: 8,
                     children: [
+                      // Bắt đầu luôn (phục vụ test trước giờ thi đấu)
+                      if (canOperateSession &&
+                          (session.status == SessionStatus.open || session.status == SessionStatus.locked) &&
+                          !isPlaying)
+                        ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: colors.success,
+                            foregroundColor: AppColors.white,
+                            shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                          ),
+                          icon: const Icon(Icons.play_circle_outline_rounded, size: 16),
+                          label: const Text('Bắt Đầu Luôn'),
+                          onPressed: () => _confirmStartSessionEarly(context),
+                        ),
                       // Check-in ra sân
                       if (canOperateAttendance &&
                           session.status != SessionStatus.completed &&
@@ -3720,28 +3536,65 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                   Builder(
                     builder: (context) {
                       final detail = ref.watch(sessionDetailViewModelProvider(widget.sessionId)).detail;
-                      final confirmedPlayers = detail?.confirmedPlayers ?? [];
+                      final baseConfirmed = detail?.confirmedPlayers ?? [];
+                      final attendance = ref.watch(sessionAttendanceProvider(session.id)).asData?.value;
+                      final existingIds = baseConfirmed.map((p) => p.userId).toSet();
+                      final walkIns = (attendance?.players ?? [])
+                          .where((p) => (p.isWalkIn || p.userId.startsWith('walkin')) && !existingIds.contains(p.userId))
+                          .map((p) => SessionBooking(
+                                bookingId: p.bookingId,
+                                sessionId: session.id,
+                                userId: p.userId,
+                                fullName: p.fullName,
+                                avatarUrl: p.avatarUrl,
+                                phoneNumber: null,
+                                skillLevel: 'L${p.skillLevel}',
+                                status: BookingStatus.confirmed,
+                                queueOrder: 0,
+                                bookedAt: p.bookedAt,
+                                checkinAt: p.checkinAt,
+                                gender: p.gender == 'FEMALE' ? 2 : 1,
+                              ))
+                          .toList();
+                      final confirmedPlayers = [...baseConfirmed, ...walkIns];
                       final confirmedCount = confirmedPlayers.isNotEmpty
                           ? confirmedPlayers.length
                           : (session.confirmedCount > 0 ? session.confirmedCount : (session.maxPlayers > 0 ? session.maxPlayers : 1));
-                      final femaleCount = confirmedPlayers.where((p) => PlayerGenderHelper.isFemale(explicitGender: p.gender)).length;
+                      final femaleCount = confirmedPlayers.where((p) => PlayerGenderHelper.isFemale(explicitGender: p.gender, fullName: p.fullName)).length;
                       final disc = feeRule?.femaleDiscountDaily.toInt() ?? 10000;
 
-                      final isSettled = session.status == SessionStatus.calculated || session.status == SessionStatus.completed;
-                      final settlementAsync = isSettled ? ref.watch(sessionSettlementProvider(session.id)) : null;
-                      final settlement = settlementAsync?.asData?.value;
-                      final totalCost = settlement?.totalCost ?? session.courtRentalCost.round();
+                      final defaultSettings = ref.watch(clubScheduleDefaultsProvider(session.groupId));
+                      final club = ref.watch(clubDetailViewModelProvider(session.groupId)).club;
+                      final settlementAsync = ref.watch(sessionSettlementProvider(session.id));
+                      final settlement = settlementAsync.asData?.value;
+                      final effectiveCourt = session.courtRentalCost > 0
+                          ? session.courtRentalCost
+                          : (settlement != null && settlement.courtFee > 0
+                              ? settlement.courtFee.toDouble()
+                              : (club != null && club.courtRentalCost > 0
+                                  ? club.courtRentalCost
+                                  : (defaultSettings.courtRentalCost > 0 ? defaultSettings.courtRentalCost : 0.0)));
+                      final totalCost = (settlement != null && settlement.totalCost > 0)
+                          ? settlement.totalCost
+                          : effectiveCourt.round();
 
-                      final feeResult = SessionFeeCalculator.calculate(
-                        totalCost: totalCost,
-                        totalPlayers: confirmedCount,
-                        femaleCount: femaleCount,
-                        femaleDiscount: disc,
-                        roundRule: 1000,
-                      );
+                      final feeResult = totalCost > 0
+                          ? SessionFeeCalculator.calculate(
+                              totalCost: totalCost,
+                              totalPlayers: confirmedCount,
+                              femaleCount: femaleCount,
+                              femaleDiscount: disc,
+                              roundRule: 1000,
+                            )
+                          : null;
 
-                      final actualFinalFee = feeResult.maleFee;
-                      final displayFee = isEnded && actualFinalFee > 0 ? actualFinalFee : (feePerPlayer > 0 ? feePerPlayer : 40000);
+                      final actualFinalFee = feeResult?.maleFee ?? 0;
+                      final calculatedFeePerPlayer = (confirmedCount > 0 && totalCost > 0)
+                          ? (totalCost / confirmedCount).round()
+                          : (feePerPlayer > 0 ? feePerPlayer : 0);
+                      final displayFee = actualFinalFee > 0
+                          ? actualFinalFee
+                          : calculatedFeePerPlayer;
                       final feeTitle = isEnded ? 'Chia thực tế (Chốt)' : 'Chia đều tay vợt';
                       final feePrefix = isEnded ? '' : '~';
 
@@ -3774,8 +3627,13 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                                   ),
                                   AppSpacing.gapH4,
                                   Text(
-                                    '$feePrefix${NumberFormat('#,###').format(displayFee)} đ/người',
-                                    style: AppTypography.labelSmall.copyWith(color: colors.primary, fontWeight: FontWeight.bold),
+                                    totalCost > 0
+                                        ? '$feePrefix${NumberFormat('#,###').format(displayFee)} đ/người'
+                                        : '0 đ (Chờ chốt)',
+                                    style: AppTypography.labelSmall.copyWith(
+                                      color: totalCost > 0 ? colors.primary : colors.textMuted,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                 ],
                               ),
@@ -3809,10 +3667,15 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                                   ),
                                   AppSpacing.gapH4,
                                   Text(
-                                    isEnded && feeResult.femaleFee > 0
-                                        ? '${NumberFormat('#,###').format(feeResult.femaleFee)} đ/người'
-                                        : '-${NumberFormat('#,###').format(disc)} đ/người',
-                                    style: AppTypography.labelSmall.copyWith(color: AppColors.pink, fontWeight: FontWeight.bold),
+                                    totalCost > 0
+                                        ? (isEnded && (feeResult?.femaleFee ?? 0) > 0
+                                            ? '${NumberFormat('#,###').format(feeResult!.femaleFee)} đ/người'
+                                            : '-${NumberFormat('#,###').format(disc)} đ/người')
+                                        : '-0 đ/người',
+                                    style: AppTypography.labelSmall.copyWith(
+                                      color: totalCost > 0 ? AppColors.pink : colors.textMuted,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                 ],
                               ),
@@ -3970,6 +3833,26 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                       ),
                     ],
                   ),
+                if (canViewSettlement) ...[
+                  AppSpacing.gapH12,
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: colors.primary,
+                        foregroundColor: AppColors.white,
+                        shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                      ),
+                      icon: const Icon(Icons.receipt_long_rounded, size: 18),
+                      label: const Text(
+                        'Xem Bảng Quyết Toán & Quét Mã QR',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      onPressed: () => context.push('/session/${session.id}/settlement'),
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
@@ -4121,7 +4004,18 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                           onPressed: () => _showRecruitmentModal(context, session, activeRecruitment: activeRecruitment),
                         ),
                       if (canManageSession) ...[
-                        if (session.status == SessionStatus.open)
+                        if (session.status == SessionStatus.open) ...[
+                          ActionChip(
+                            avatar: Icon(Icons.play_circle_outline_rounded, size: 16, color: colors.success),
+                            label: Text(
+                              'Bắt đầu luôn',
+                              style: AppTypography.labelSmall.semiBold.colored(colors.success),
+                            ),
+                            backgroundColor: colors.success.withValues(alpha: 0.1),
+                            side: BorderSide(color: colors.success.withValues(alpha: 0.3)),
+                            shape: const RoundedRectangleBorder(borderRadius: AppRadius.tag),
+                            onPressed: () => _confirmStartSessionEarly(context),
+                          ),
                           ActionChip(
                             avatar: Icon(Icons.lock_outline_rounded, size: 16, color: colors.warning),
                             label: Text(
@@ -4133,6 +4027,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                             shape: const RoundedRectangleBorder(borderRadius: AppRadius.tag),
                             onPressed: () => ref.read(sessionDetailViewModelProvider(widget.sessionId).notifier).updateStatus('LOCKED'),
                           ),
+                        ],
                         if (session.status == SessionStatus.locked) ...[
                           ActionChip(
                             avatar: Icon(Icons.lock_open_rounded, size: 16, color: colors.primary),
@@ -4330,7 +4225,9 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                                   Icon(Icons.pie_chart_rounded, size: 14, color: colors.primary),
                                   AppSpacing.gapW4,
                                   Text(
-                                    'Chia đều thực tế (~${NumberFormat('#,###').format(feePerPlayer > 0 ? feePerPlayer : 40000)} đ/người)',
+                                    feePerPlayer > 0
+                                        ? 'Chia đều thực tế (~${NumberFormat('#,###').format(feePerPlayer)} đ/người)'
+                                        : 'Chia đều thực tế (Chờ chốt)',
                                     style: AppTypography.bodySmall.copyWith(fontWeight: FontWeight.bold, color: colors.textPrimary),
                                   ),
                                 ],
@@ -4879,10 +4776,16 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                                   );
                                 }
                                 if (myFeeItem == null || myFeeItem.feeId.isEmpty) {
-                                  return OutlinedButton.icon(
-                                    onPressed: null,
-                                    icon: const Icon(Icons.receipt_long_outlined, size: 18),
-                                    label: const Text('Kho\u1ea3n thu ch\u01b0a \u0111\u01b0\u1ee3c ph\u00e1t h\u00e0nh'),
+                                  return ElevatedButton.icon(
+                                    onPressed: () => context.push('/session/${session.id}/settlement'),
+                                    icon: const Icon(Icons.receipt_long_rounded, size: 18),
+                                    label: const Text('Xem Quyết Toán & Đóng Tiền'),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: colors.primary,
+                                      foregroundColor: AppColors.white,
+                                      padding: const EdgeInsets.symmetric(vertical: 12),
+                                      shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                                    ),
                                   );
                                 }
 
