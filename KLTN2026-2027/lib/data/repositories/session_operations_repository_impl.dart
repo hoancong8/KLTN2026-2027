@@ -1,15 +1,21 @@
 // lib/data/repositories/session_operations_repository_impl.dart
 
 import 'package:dio/dio.dart';
+import '../../domain/entities/payment/personal_fee.dart';
 import '../../domain/entities/session/session_attendance.dart';
 import '../../domain/entities/session/session_review.dart';
 import '../../domain/entities/session/session_rotation.dart';
 import '../../domain/entities/session/session_settlement.dart';
 import '../../domain/enums/session_enums.dart';
 import '../../domain/repositories/session_operations_repository.dart';
+import '../../domain/utils/gender_helper.dart';
 import '../../domain/utils/session_fee_calculator.dart';
+import '../datasource/local/club_schedule_local_datasource.dart';
+import '../dto/club/club_detail_dto.dart';
+import '../dto/payment/payment_dto.dart';
 import '../dto/session/session_detail_dto.dart';
 import '../dto/session/session_settlement_dto.dart';
+import '../mapper/payment_mapper.dart';
 import '../mapper/session_settlement_mapper.dart';
 
 class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
@@ -19,6 +25,9 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
   final Map<String, SessionRotationSnapshot> _rotationCache = {};
   final Map<String, SessionSettlement> _settlementCache = {};
   final Map<String, List<SessionReview>> _reviewsCache = {};
+  final Map<String, int> _sessionCourtCountCache = {};
+  final Map<String, String> _sessionGroupIdCache = {};
+  final Map<String, ThreePlayerMatchMode> _threePlayerModeCache = {};
 
   SessionOperationsRepositoryImpl({required this.dio});
 
@@ -120,11 +129,17 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
         if (userId.isEmpty) continue;
         seenUserIds.add(userId);
         final skill = SkillLevel.fromString(map['skillLevel']);
+        final fullName = map['fullName']?.toString() ?? '';
+        final rawGender = map['gender']?.toString();
+        final isFemale = GenderHelper.isFemale(genderString: rawGender, fullName: fullName);
+        final gender = isFemale ? 'FEMALE' : 'MALE';
+        final rawRole = map['roleName']?.toString() ?? map['role']?.toString() ?? map['priceType']?.toString() ?? '';
+        final role = rawRole.isNotEmpty ? rawRole : 'MEMBER_DAILY';
         parsedPlayers.add(
           AttendancePlayer(
             userId: userId,
             bookingId: map['bookingId']?.toString() ?? '',
-            fullName: map['fullName']?.toString() ?? '',
+            fullName: fullName,
             avatarUrl: map['avatarUrl']?.toString(),
             status: status,
             checkinAt: status == 'CHECKED_IN' ? checkinAt : null,
@@ -133,6 +148,8 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
                 DateTime.now(),
             skillLevel: skill.level,
             isReady: _parseBool(map['isReady'], defaultValue: status == 'CHECKED_IN'),
+            gender: gender,
+            roleName: role,
           ),
         );
       }
@@ -161,8 +178,8 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
         ? _parseBool(payload['canEdit'], defaultValue: defaultCanEdit)
         : defaultCanEdit;
     final canStartRotation = payload.containsKey('canStartRotation')
-        ? (_parseBool(payload['canStartRotation']) || presentCount >= 4)
-        : presentCount >= 4;
+        ? (_parseBool(payload['canStartRotation']) || presentCount >= 2)
+        : presentCount >= 2;
 
     return SessionAttendanceSnapshot(
       sessionId: payload['sessionId']?.toString() ?? fallbackSessionId,
@@ -220,6 +237,8 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
             ? (checkinAt ?? cached?.checkinAt)
             : null;
         final skill = SkillLevel.fromString(booking.skillLevel);
+        final isFemale = GenderHelper.isFemale(explicitGender: booking.gender, fullName: booking.fullName);
+        final gender = isFemale ? 'FEMALE' : 'MALE';
 
         players.add(
           AttendancePlayer(
@@ -232,6 +251,8 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
             bookedAt: _parseDateTime(booking.bookedAt) ?? DateTime.now(),
             skillLevel: skill.level,
             isReady: effectiveStatus == 'CHECKED_IN',
+            gender: gender,
+            roleName: 'MEMBER_DAILY',
           ),
         );
       }
@@ -243,6 +264,15 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
           }
         }
       }
+
+      final groupId = detailDto.session.groupId;
+      _sessionGroupIdCache[sessionId] = groupId;
+      final rawCourtCount = detailDto.session.courtCount;
+      final defaults = ClubScheduleLocalDatasource.getDefaultsSync(groupId);
+      final effectiveCourtCount = rawCourtCount > 0
+          ? rawCourtCount
+          : (defaults.courtCount > 0 ? defaults.courtCount : 1);
+      _sessionCourtCountCache[sessionId] = effectiveCourtCount;
 
       final startTime = _parseDateTime(detailDto.session.startTime) ??
           DateTime.now().subtract(const Duration(minutes: 15));
@@ -275,7 +305,7 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
             : detailDto.session.waitingCount,
         readyCount: presentCount,
         canEdit: canEdit,
-        canStartRotation: presentCount >= 4,
+        canStartRotation: presentCount >= 2,
         attendanceCompletedAt: existingCache?.attendanceCompletedAt,
         attendanceCompletedBy: existingCache?.attendanceCompletedBy,
         players: players,
@@ -380,7 +410,7 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
       waitlistCount: current.waitlistCount,
       readyCount: present,
       canEdit: current.canEdit,
-      canStartRotation: present >= 4,
+      canStartRotation: present >= 2,
       attendanceCompletedAt: current.attendanceCompletedAt,
       attendanceCompletedBy: current.attendanceCompletedBy,
       players: updatedPlayers,
@@ -442,7 +472,7 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
       waitlistCount: current.waitlistCount,
       readyCount: present,
       canEdit: current.canEdit,
-      canStartRotation: present >= 4,
+      canStartRotation: present >= 2,
       attendanceCompletedAt: current.attendanceCompletedAt,
       attendanceCompletedBy: current.attendanceCompletedBy,
       players: updatedPlayers,
@@ -479,7 +509,7 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
       waitlistCount: current.waitlistCount,
       readyCount: current.readyCount,
       canEdit: current.canEdit,
-      canStartRotation: current.presentCount >= 4,
+      canStartRotation: current.presentCount >= 2,
       attendanceCompletedAt: DateTime.now(),
       attendanceCompletedBy: 'Host',
       players: current.players,
@@ -503,6 +533,25 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
   }
 
   (List<RotationPlayer>, List<RotationPlayer>) _balanceTeams(List<RotationPlayer> four) {
+    if (four.length == 2) {
+      return ([four[0]], [four[1]]);
+    }
+    if (four.length == 3) {
+      final p0 = four[0];
+      final p1 = four[1];
+      final p2 = four[2];
+      final d0 = ((p1.skillLevel + p2.skillLevel) - p0.skillLevel).abs();
+      final d1 = ((p0.skillLevel + p2.skillLevel) - p1.skillLevel).abs();
+      final d2 = ((p0.skillLevel + p1.skillLevel) - p2.skillLevel).abs();
+
+      if (d0 <= d1 && d0 <= d2) {
+        return ([p1, p2], [p0]);
+      } else if (d1 <= d0 && d1 <= d2) {
+        return ([p0, p2], [p1]);
+      } else {
+        return ([p0, p1], [p2]);
+      }
+    }
     if (four.length < 4) {
       final mid = four.length ~/ 2;
       return (four.sublist(0, mid), four.sublist(mid));
@@ -525,54 +574,122 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
     }
   }
 
-  SessionRotationSnapshot _buildRotationFromCheckedIn(String sessionId, List<AttendancePlayer> checkedIn) {
+  int _getCourtCountSync(String sessionId) {
+    if (_sessionCourtCountCache.containsKey(sessionId) && _sessionCourtCountCache[sessionId]! > 0) {
+      return _sessionCourtCountCache[sessionId]!;
+    }
+    final attendance = _attendanceCache[sessionId];
+    final groupId = attendance?.groupId ?? _sessionGroupIdCache[sessionId] ?? '';
+    if (groupId.isNotEmpty) {
+      final defaults = ClubScheduleLocalDatasource.getDefaultsSync(groupId);
+      if (defaults.courtCount > 0) {
+        _sessionCourtCountCache[sessionId] = defaults.courtCount;
+        return defaults.courtCount;
+      }
+    }
+    return 1;
+  }
+
+  Future<int> _resolveCourtCount(String sessionId) async {
+    final cached = _getCourtCountSync(sessionId);
+    if (_sessionCourtCountCache.containsKey(sessionId) && _sessionCourtCountCache[sessionId]! > 0) {
+      return _sessionCourtCountCache[sessionId]!;
+    }
+    final attendance = _attendanceCache[sessionId];
+    final groupId = attendance?.groupId ?? _sessionGroupIdCache[sessionId] ?? '';
+    if (groupId.isNotEmpty) {
+      final defaults = ClubScheduleLocalDatasource.getDefaultsSync(groupId);
+      if (defaults.courtCount > 0) {
+        _sessionCourtCountCache[sessionId] = defaults.courtCount;
+        return defaults.courtCount;
+      }
+    }
+    try {
+      final res = await dio.get('/api/v1/sessions/$sessionId');
+      if (res.statusCode == 200 && res.data != null) {
+        final payload = _extractMapPayload(res.data);
+        if (payload != null) {
+          final detailDto = SessionDetailDto.fromJson(payload);
+          final rawCount = detailDto.session.courtCount;
+          final clubId = detailDto.session.groupId;
+          _sessionGroupIdCache[sessionId] = clubId;
+          int resolvedCount = rawCount;
+          if (resolvedCount <= 0 && clubId.isNotEmpty) {
+            try {
+              final clubRes = await dio.get('/api/v1/clubs/$clubId');
+              final cData = _extractMapPayload(clubRes.data);
+              if (cData != null) {
+                final clubDetail = ClubDetailDto.fromJson(cData);
+                if (clubDetail.courtCount > 0) {
+                  resolvedCount = clubDetail.courtCount;
+                }
+              }
+            } catch (_) {}
+          }
+          final defaults = ClubScheduleLocalDatasource.getDefaultsSync(clubId);
+          final effective = resolvedCount > 0 ? resolvedCount : (defaults.courtCount > 0 ? defaults.courtCount : 1);
+          _sessionCourtCountCache[sessionId] = effective;
+          return effective;
+        }
+      }
+    } catch (_) {}
+    return cached;
+  }
+
+  SessionRotationSnapshot _buildRotationFromCheckedIn(
+    String sessionId,
+    List<AttendancePlayer> checkedIn, {
+    int? courtCount,
+    ThreePlayerMatchMode? threePlayerMode,
+  }) {
+    final mode = threePlayerMode ?? _threePlayerModeCache[sessionId] ?? ThreePlayerMatchMode.twoVsOne;
     final courts = <CourtMatch>[];
     final queue = <RotationPlayer>[];
+    final totalCourts = (courtCount != null && courtCount > 0) ? courtCount : _getCourtCountSync(sessionId);
 
-    if (checkedIn.length >= 4) {
-      final four = checkedIn.take(4).map((p) => _toRotationPlayer(p)).toList();
-      final balanced = _balanceTeams(four);
-      courts.add(CourtMatch(
-        matchId: 'match-01-$sessionId',
-        courtNumber: 1,
-        state: 'Playing',
-        startedAt: DateTime.now().subtract(const Duration(minutes: 8)),
-        teamA: balanced.$1,
-        teamB: balanced.$2,
-      ));
-    } else {
-      courts.add(CourtMatch(
-        matchId: 'match-01-$sessionId',
-        courtNumber: 1,
-        state: 'Empty',
-        teamA: const [],
-        teamB: const [],
-      ));
+    int assignedPlayerIndex = 0;
+    for (int courtIndex = 1; courtIndex <= totalCourts; courtIndex++) {
+      final remaining = checkedIn.skip(assignedPlayerIndex).toList();
+      List<RotationPlayer>? selected;
+      if (remaining.length >= 4) {
+        selected = remaining.take(4).map((p) => _toRotationPlayer(p)).toList();
+        assignedPlayerIndex += 4;
+      } else if (remaining.length == 3) {
+        if (mode == ThreePlayerMatchMode.twoVsOne) {
+          selected = remaining.take(3).map((p) => _toRotationPlayer(p)).toList();
+          assignedPlayerIndex += 3;
+        } else {
+          selected = remaining.take(2).map((p) => _toRotationPlayer(p)).toList();
+          assignedPlayerIndex += 2;
+        }
+      } else if (remaining.length == 2) {
+        selected = remaining.take(2).map((p) => _toRotationPlayer(p)).toList();
+        assignedPlayerIndex += 2;
+      }
+
+      if (selected != null && selected.isNotEmpty) {
+        final balanced = _balanceTeams(selected);
+        courts.add(CourtMatch(
+          matchId: 'match-0$courtIndex-$sessionId',
+          courtNumber: courtIndex,
+          state: courtIndex == 1 ? 'Playing' : 'Proposed',
+          startedAt: courtIndex == 1 ? DateTime.now().subtract(const Duration(minutes: 8)) : null,
+          teamA: balanced.$1,
+          teamB: balanced.$2,
+        ));
+      } else {
+        courts.add(CourtMatch(
+          matchId: 'match-0$courtIndex-$sessionId',
+          courtNumber: courtIndex,
+          state: 'Empty',
+          teamA: const [],
+          teamB: const [],
+        ));
+      }
     }
 
-    final hasCourt1 = courts.isNotEmpty && courts.first.state == 'Playing';
-    final remaining = checkedIn.skip(hasCourt1 ? 4 : 0).map((p) => _toRotationPlayer(p)).toList();
-
-    if (remaining.length >= 4) {
-      final four = remaining.take(4).toList();
-      final balanced = _balanceTeams(four);
-      courts.add(CourtMatch(
-        matchId: 'match-02-$sessionId',
-        courtNumber: 2,
-        state: 'Proposed',
-        teamA: balanced.$1,
-        teamB: balanced.$2,
-      ));
-      queue.addAll(remaining.skip(4));
-    } else {
-      courts.add(CourtMatch(
-        matchId: 'match-02-$sessionId',
-        courtNumber: 2,
-        state: 'Empty',
-        teamA: const [],
-        teamB: const [],
-      ));
-      queue.addAll(remaining);
+    if (assignedPlayerIndex < checkedIn.length) {
+      queue.addAll(checkedIn.skip(assignedPlayerIndex).map((p) => _toRotationPlayer(p)));
     }
 
     final readyCount = queue.where((p) => !p.isResting).length;
@@ -590,16 +707,23 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
       coolingDownCount: coolingCount,
       courts: courts,
       queuePlayers: queue,
+      threePlayerMode: mode,
     );
 
     _rotationCache[sessionId] = snapshot;
     return snapshot;
   }
 
-  SessionRotationSnapshot _syncRotationWithAttendance(String sessionId) {
+  SessionRotationSnapshot _syncRotationWithAttendance(
+    String sessionId, {
+    int? courtCount,
+    ThreePlayerMatchMode? threePlayerMode,
+  }) {
+    final mode = threePlayerMode ?? _threePlayerModeCache[sessionId] ?? ThreePlayerMatchMode.twoVsOne;
+    final totalCourts = (courtCount != null && courtCount > 0) ? courtCount : _getCourtCountSync(sessionId);
     final attendance = _attendanceCache[sessionId];
     if (attendance == null) {
-      return _buildRotationFromCheckedIn(sessionId, const []);
+      return _buildRotationFromCheckedIn(sessionId, const [], courtCount: totalCourts, threePlayerMode: mode);
     }
 
     final checkedInPlayers = attendance.players.where((p) => p.isCheckedIn).toList();
@@ -607,13 +731,21 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
 
     final currentRotation = _rotationCache[sessionId];
     if (currentRotation == null) {
-      return _buildRotationFromCheckedIn(sessionId, checkedInPlayers);
+      return _buildRotationFromCheckedIn(sessionId, checkedInPlayers, courtCount: totalCourts, threePlayerMode: mode);
     }
 
     final updatedCourts = <CourtMatch>[];
     final freedPlayers = <RotationPlayer>[];
 
     for (final court in currentRotation.courts) {
+      if (court.courtNumber > totalCourts) {
+        for (final p in [...court.teamA, ...court.teamB]) {
+          if (checkedInMap.containsKey(p.userId)) {
+            freedPlayers.add(p);
+          }
+        }
+        continue;
+      }
       if (court.isPlaying) {
         updatedCourts.add(court);
       } else if (court.isProposed) {
@@ -639,6 +771,20 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
         updatedCourts.add(court);
       }
     }
+
+    final existingCourtNumbers = updatedCourts.map((c) => c.courtNumber).toSet();
+    for (int i = 1; i <= totalCourts; i++) {
+      if (!existingCourtNumbers.contains(i)) {
+        updatedCourts.add(CourtMatch(
+          matchId: 'match-0$i-$sessionId',
+          courtNumber: i,
+          state: 'Empty',
+          teamA: const [],
+          teamB: const [],
+        ));
+      }
+    }
+    updatedCourts.sort((a, b) => a.courtNumber.compareTo(b.courtNumber));
 
     final userIdsOnCourt = <String>{};
     for (final c in updatedCourts) {
@@ -671,20 +817,41 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
 
     final finalCourts = <CourtMatch>[];
     for (final court in updatedCourts) {
-      final readyInQueue = newQueue.where((p) => !p.isResting).toList();
-      if (court.state == 'Empty' && readyInQueue.length >= 4) {
-        final four = readyInQueue.take(4).toList();
-        for (final p in four) {
-          newQueue.removeWhere((q) => q.userId == p.userId);
+      var candidateQueue = newQueue.where((p) => !p.isResting && !p.isPaused).toList();
+      if (candidateQueue.length < 2 && newQueue.where((p) => !p.isPaused).length >= 2) {
+        candidateQueue = newQueue.where((p) => !p.isPaused).toList()
+          ..sort((a, b) => a.restSecondsLeft.compareTo(b.restSecondsLeft));
+      }
+
+      if (court.state == 'Empty') {
+        List<RotationPlayer>? selected;
+        if (candidateQueue.length >= 4) {
+          selected = candidateQueue.take(4).toList();
+        } else if (candidateQueue.length == 3) {
+          if (mode == ThreePlayerMatchMode.twoVsOne) {
+            selected = candidateQueue.take(3).toList();
+          } else {
+            selected = candidateQueue.take(2).toList();
+          }
+        } else if (candidateQueue.length == 2) {
+          selected = candidateQueue.take(2).toList();
         }
-        final balanced = _balanceTeams(four);
-        finalCourts.add(CourtMatch(
-          matchId: 'match-${court.courtNumber}-${DateTime.now().millisecondsSinceEpoch}',
-          courtNumber: court.courtNumber,
-          state: 'Proposed',
-          teamA: balanced.$1,
-          teamB: balanced.$2,
-        ));
+
+        if (selected != null && selected.isNotEmpty) {
+          for (final p in selected) {
+            newQueue.removeWhere((q) => q.userId == p.userId);
+          }
+          final balanced = _balanceTeams(selected);
+          finalCourts.add(CourtMatch(
+            matchId: 'match-${court.courtNumber}-${DateTime.now().millisecondsSinceEpoch}',
+            courtNumber: court.courtNumber,
+            state: 'Proposed',
+            teamA: balanced.$1,
+            teamB: balanced.$2,
+          ));
+        } else {
+          finalCourts.add(court);
+        }
       } else {
         finalCourts.add(court);
       }
@@ -705,6 +872,7 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
       coolingDownCount: coolingCount,
       courts: finalCourts,
       queuePlayers: newQueue,
+      threePlayerMode: mode,
     );
 
     _rotationCache[sessionId] = snapshot;
@@ -719,7 +887,8 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
     } catch (_) {}
 
     await getAttendance(sessionId);
-    return _syncRotationWithAttendance(sessionId);
+    final courtCount = await _resolveCourtCount(sessionId);
+    return _syncRotationWithAttendance(sessionId, courtCount: courtCount);
   }
 
   @override
@@ -727,6 +896,7 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
     try {
       await dio.post('/api/v1/sessions/$sessionId/rotation/initialize');
     } catch (_) {}
+    _rotationCache.remove(sessionId);
     return getRotation(sessionId);
   }
 
@@ -735,7 +905,47 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
     try {
       await dio.post('/api/v1/sessions/$sessionId/rotation/proposals');
     } catch (_) {}
-    return _syncRotationWithAttendance(sessionId);
+    final courtCount = await _resolveCourtCount(sessionId);
+    return _syncRotationWithAttendance(sessionId, courtCount: courtCount);
+  }
+
+  @override
+  Future<SessionRotationSnapshot> setThreePlayerMode({
+    required String sessionId,
+    required ThreePlayerMatchMode mode,
+  }) async {
+    _threePlayerModeCache[sessionId] = mode;
+    final courtCount = await _resolveCourtCount(sessionId);
+    final current = _rotationCache[sessionId];
+    if (current != null) {
+      final resetCourts = current.courts.map((c) {
+        if (c.isProposed) {
+          return CourtMatch(
+            matchId: c.matchId,
+            courtNumber: c.courtNumber,
+            state: 'Empty',
+            teamA: const [],
+            teamB: const [],
+          );
+        }
+        return c;
+      }).toList();
+      _rotationCache[sessionId] = SessionRotationSnapshot(
+        sessionId: current.sessionId,
+        sessionStatus: current.sessionStatus,
+        rotationVersion: current.rotationVersion + 1,
+        serverTime: DateTime.now(),
+        rotationStartedAt: current.rotationStartedAt,
+        canInitialize: current.canInitialize,
+        canGenerateProposals: current.canGenerateProposals,
+        readyCandidateCount: current.readyCandidateCount,
+        coolingDownCount: current.coolingDownCount,
+        courts: resetCourts,
+        queuePlayers: current.queuePlayers,
+        threePlayerMode: mode,
+      );
+    }
+    return _syncRotationWithAttendance(sessionId, courtCount: courtCount, threePlayerMode: mode);
   }
 
   @override
@@ -897,17 +1107,20 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
     required List<String> teamAUserIds,
     required List<String> teamBUserIds,
   }) async {
+    final current = await getRotation(sessionId);
     try {
-      await dio.put(
-        '/api/v1/sessions/$sessionId/matches/$matchId/manual-lineup',
-        data: {
-          'teamA': teamAUserIds,
-          'teamB': teamBUserIds,
-        },
-      );
+      if (teamAUserIds.length == 2 && teamBUserIds.length == 2) {
+        await dio.put(
+          '/api/v1/sessions/$sessionId/matches/$matchId/manual-lineup',
+          data: {
+            'teamA': teamAUserIds,
+            'teamB': teamBUserIds,
+            'expectedRotationVersion': current.rotationVersion,
+          },
+        );
+      }
     } catch (_) {}
 
-    final current = await getRotation(sessionId);
     final allPlayersMap = {
       for (final c in current.courts) ...{
         for (final p in [...c.teamA, ...c.teamB]) p.userId: p
@@ -920,10 +1133,13 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
 
     final updatedCourts = current.courts.map((c) {
       if (c.matchId == matchId) {
+        final newState = (newTeamA.isNotEmpty || newTeamB.isNotEmpty)
+            ? (c.isPlaying ? 'Playing' : 'Proposed')
+            : 'Empty';
         return CourtMatch(
           matchId: c.matchId,
           courtNumber: c.courtNumber,
-          state: c.state,
+          state: newState,
           startedAt: c.startedAt,
           teamA: newTeamA,
           teamB: newTeamB,
@@ -939,7 +1155,8 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
       }
     };
 
-    final updatedQueue = current.queuePlayers.where((p) => !usedUserIds.contains(p.userId)).toList();
+    final allKnownPlayers = allPlayersMap.values.toList();
+    final updatedQueue = allKnownPlayers.where((p) => !usedUserIds.contains(p.userId)).toList();
 
     final updated = SessionRotationSnapshot(
       sessionId: current.sessionId,
@@ -953,7 +1170,186 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
       coolingDownCount: updatedQueue.where((p) => p.isResting || p.isPaused).length,
       courts: updatedCourts,
       queuePlayers: updatedQueue,
+      threePlayerMode: current.threePlayerMode,
     );
+    _rotationCache[sessionId] = updated;
+    return updated;
+  }
+
+  @override
+  Future<SessionRotationSnapshot> movePlayer({
+    required String sessionId,
+    required DraggingPlayerPayload payload,
+    String? targetCourtMatchId,
+    String? targetTeam,
+    int? targetSpotIndex,
+  }) async {
+    final current = await getRotation(sessionId);
+    final movedPlayer = payload.player;
+
+    final allPlayersMap = {
+      for (final c in current.courts) ...{
+        for (final p in [...c.teamA, ...c.teamB]) p.userId: p
+      },
+      for (final p in current.queuePlayers) p.userId: p,
+      movedPlayer.userId: movedPlayer,
+    };
+
+    final courtList = current.courts.map((c) {
+      return CourtMatch(
+        matchId: c.matchId,
+        courtNumber: c.courtNumber,
+        state: c.state,
+        startedAt: c.startedAt,
+        teamA: List<RotationPlayer>.from(c.teamA),
+        teamB: List<RotationPlayer>.from(c.teamB),
+        isManualSwapped: c.isManualSwapped,
+      );
+    }).toList();
+
+    for (int i = 0; i < courtList.length; i++) {
+      final c = courtList[i];
+      final newTeamA = c.teamA.where((p) => p.userId != movedPlayer.userId).toList();
+      final newTeamB = c.teamB.where((p) => p.userId != movedPlayer.userId).toList();
+      if (newTeamA.length != c.teamA.length || newTeamB.length != c.teamB.length) {
+        final newState = (newTeamA.isNotEmpty || newTeamB.isNotEmpty)
+            ? (c.isPlaying ? 'Playing' : 'Proposed')
+            : 'Empty';
+        courtList[i] = CourtMatch(
+          matchId: c.matchId,
+          courtNumber: c.courtNumber,
+          state: newState,
+          startedAt: c.startedAt,
+          teamA: newTeamA,
+          teamB: newTeamB,
+          isManualSwapped: true,
+        );
+      }
+    }
+
+    if (targetCourtMatchId != null && targetTeam != null) {
+      final targetIdx = courtList.indexWhere((c) => c.matchId == targetCourtMatchId);
+      if (targetIdx != -1) {
+        final target = courtList[targetIdx];
+        final isTeamA = targetTeam == 'A';
+        final targetTeamPlayers = List<RotationPlayer>.from(isTeamA ? target.teamA : target.teamB);
+        final otherTeamPlayers = List<RotationPlayer>.from(isTeamA ? target.teamB : target.teamA);
+
+        if (targetSpotIndex != null && targetSpotIndex < targetTeamPlayers.length) {
+          targetTeamPlayers[targetSpotIndex] = movedPlayer;
+        } else if (targetTeamPlayers.length < 2) {
+          targetTeamPlayers.add(movedPlayer);
+        } else {
+          targetTeamPlayers[1] = movedPlayer;
+        }
+
+        final finalTeamA = isTeamA ? targetTeamPlayers : otherTeamPlayers;
+        final finalTeamB = isTeamA ? otherTeamPlayers : targetTeamPlayers;
+        final newState = target.isPlaying ? 'Playing' : 'Proposed';
+
+        courtList[targetIdx] = CourtMatch(
+          matchId: target.matchId,
+          courtNumber: target.courtNumber,
+          state: newState,
+          startedAt: target.startedAt,
+          teamA: finalTeamA,
+          teamB: finalTeamB,
+          isManualSwapped: true,
+        );
+
+        if (finalTeamA.length == 2 && finalTeamB.length == 2) {
+          try {
+            await dio.put(
+              '/api/v1/sessions/$sessionId/matches/${target.matchId}/manual-lineup',
+              data: {
+                'teamA': finalTeamA.map((p) => p.userId).toList(),
+                'teamB': finalTeamB.map((p) => p.userId).toList(),
+                'expectedRotationVersion': current.rotationVersion,
+              },
+            );
+          } catch (_) {}
+        }
+      }
+    }
+
+    final userIdsOnCourts = <String>{
+      for (final c in courtList) ...{
+        for (final p in [...c.teamA, ...c.teamB]) p.userId
+      }
+    };
+
+    final newQueue = allPlayersMap.values.where((p) => !userIdsOnCourts.contains(p.userId)).toList();
+
+    final updated = SessionRotationSnapshot(
+      sessionId: current.sessionId,
+      sessionStatus: current.sessionStatus,
+      rotationVersion: current.rotationVersion + 1,
+      serverTime: DateTime.now(),
+      rotationStartedAt: current.rotationStartedAt,
+      canInitialize: current.canInitialize,
+      canGenerateProposals: current.canGenerateProposals,
+      readyCandidateCount: newQueue.where((p) => !p.isResting && !p.isPaused).length,
+      coolingDownCount: newQueue.where((p) => p.isResting || p.isPaused).length,
+      courts: courtList,
+      queuePlayers: newQueue,
+      threePlayerMode: current.threePlayerMode,
+    );
+
+    _rotationCache[sessionId] = updated;
+    return updated;
+  }
+
+  @override
+  Future<SessionRotationSnapshot> clearCourt({
+    required String sessionId,
+    required String matchId,
+  }) async {
+    final current = await getRotation(sessionId);
+    final allPlayersMap = {
+      for (final c in current.courts) ...{
+        for (final p in [...c.teamA, ...c.teamB]) p.userId: p
+      },
+      for (final p in current.queuePlayers) p.userId: p,
+    };
+
+    final courtList = current.courts.map((c) {
+      if (c.matchId == matchId) {
+        return CourtMatch(
+          matchId: c.matchId,
+          courtNumber: c.courtNumber,
+          state: 'Empty',
+          startedAt: null,
+          teamA: const [],
+          teamB: const [],
+          isManualSwapped: false,
+        );
+      }
+      return c;
+    }).toList();
+
+    final userIdsOnCourts = <String>{
+      for (final c in courtList) ...{
+        for (final p in [...c.teamA, ...c.teamB]) p.userId
+      }
+    };
+
+    final newQueue = allPlayersMap.values.where((p) => !userIdsOnCourts.contains(p.userId)).toList();
+
+    final updated = SessionRotationSnapshot(
+      sessionId: current.sessionId,
+      sessionStatus: current.sessionStatus,
+      rotationVersion: current.rotationVersion + 1,
+      serverTime: DateTime.now(),
+      rotationStartedAt: current.rotationStartedAt,
+      canInitialize: current.canInitialize,
+      canGenerateProposals: current.canGenerateProposals,
+      readyCandidateCount: newQueue.where((p) => !p.isResting && !p.isPaused).length,
+      coolingDownCount: newQueue.where((p) => p.isResting || p.isPaused).length,
+      courts: courtList,
+      queuePlayers: newQueue,
+      threePlayerMode: current.threePlayerMode,
+    );
+
     _rotationCache[sessionId] = updated;
     return updated;
   }
@@ -964,12 +1360,16 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
 
   @override
   Future<SessionSettlement> getSettlement(String sessionId) async {
+    PaymentBankAccount? fetchedBank;
     try {
       final res = await dio.get('/api/v1/sessions/$sessionId/settlement');
       if (res.statusCode == 200 && res.data != null) {
         final payload = res.data is Map<String, dynamic> && res.data.containsKey('result') ? res.data['result'] : res.data;
         if (payload is Map<String, dynamic>) {
           final entity = SessionSettlementDto.fromJson(payload).toEntity();
+          if (entity.bankAccount != null) {
+            fetchedBank = entity.bankAccount;
+          }
           if (entity.memberFees.isNotEmpty || entity.isSettled) {
             _settlementCache[sessionId] = entity;
             return entity;
@@ -983,10 +1383,72 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
     if (!_settlementCache.containsKey(sessionId) || _settlementCache[sessionId]!.memberFees.isEmpty) {
       final attendance = await getAttendance(sessionId);
       final activePlayers = attendance.players.where((p) => !p.isNoShow).toList();
-      final totalCost = 300000;
-      final feePerPlayer = activePlayers.isNotEmpty
-          ? ((totalCost / activePlayers.length) / 1000).ceil() * 1000
-          : 0;
+
+      int totalCost = 0;
+      String groupId = '';
+      try {
+        final sessionRes = await dio.get('/api/v1/sessions/$sessionId');
+        if (sessionRes.statusCode == 200 && sessionRes.data != null) {
+          final payload = sessionRes.data is Map<String, dynamic> && sessionRes.data.containsKey('result')
+              ? sessionRes.data['result']
+              : sessionRes.data;
+          if (payload is Map<String, dynamic>) {
+            final detailDto = SessionDetailDto.fromJson(payload);
+            totalCost = detailDto.session.courtRentalCost.round();
+            groupId = detailDto.session.groupId;
+          }
+        }
+      } catch (_) {}
+
+      if (fetchedBank == null && groupId.isNotEmpty) {
+        try {
+          final bankRes = await dio.get('/api/v1/clubs/$groupId/payment-bank-account');
+          if (bankRes.statusCode == 200 && bankRes.data != null) {
+            final bData = bankRes.data is Map<String, dynamic> && bankRes.data.containsKey('result')
+                ? bankRes.data['result']
+                : bankRes.data;
+            if (bData is Map<String, dynamic>) {
+              final bankDto = PaymentBankAccountDto.fromJson(bData);
+              fetchedBank = PaymentMapper.toBankAccount(bankDto);
+            }
+          }
+        } catch (_) {}
+      }
+
+      if (totalCost == 0 && groupId.isNotEmpty) {
+        try {
+          final clubRes = await dio.get('/api/v1/clubs/$groupId');
+          if (clubRes.statusCode == 200 && clubRes.data != null) {
+            final cData = clubRes.data is Map<String, dynamic> && clubRes.data.containsKey('result')
+                ? clubRes.data['result']
+                : clubRes.data;
+            if (cData is Map<String, dynamic>) {
+              final clubDetail = ClubDetailDto.fromJson(cData);
+              if (clubDetail.courtRentalCost > 0) {
+                totalCost = clubDetail.courtRentalCost.round();
+              }
+            }
+          }
+        } catch (_) {}
+        if (totalCost == 0) {
+          final defaults = ClubScheduleLocalDatasource.getDefaultsSync(groupId);
+          if (defaults.courtRentalCost > 0) {
+            totalCost = defaults.courtRentalCost.round();
+          }
+        }
+      }
+
+      final femaleCount = activePlayers.where((p) => GenderHelper.isFemale(genderString: p.gender, fullName: p.fullName)).length;
+      final feeResult = totalCost > 0
+          ? SessionFeeCalculator.calculate(
+              totalCost: totalCost,
+              totalPlayers: activePlayers.isNotEmpty ? activePlayers.length : 1,
+              femaleCount: femaleCount,
+              femaleDiscount: 10000,
+              roundRule: 1000,
+            )
+          : null;
+
       _settlementCache[sessionId] = SessionSettlement(
         sessionId: sessionId,
         shuttlecockUsed: 0,
@@ -996,22 +1458,31 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
         totalCost: totalCost,
         totalCollected: 0,
         isSettled: false,
+        bankAccount: fetchedBank ?? _settlementCache[sessionId]?.bankAccount,
         memberFees: activePlayers
             .map(
-              (p) => MemberSettlementFee(
-                feeId: '',
-                userId: p.userId,
-                fullName: p.fullName,
-                avatarUrl: p.avatarUrl,
-                roleName: p.isWalkIn ? 'Khách vãng lai' : 'Hội viên',
-                gender: 'MALE',
-                baseFee: feePerPlayer,
-                discount: 0,
-                finalFee: feePerPlayer,
-                paymentStatus: 'PENDING',
-                vietQrUrl: '',
-                paymentCode: 'PAY_${p.userId}',
-              ),
+              (p) {
+                final isFemale = GenderHelper.isFemale(genderString: p.gender, fullName: p.fullName);
+                final role = p.isWalkIn ? 'GUEST' : (p.roleName.isNotEmpty ? p.roleName : 'MEMBER_DAILY');
+                final base = feeResult?.maleFee ?? 0;
+                final discount = (feeResult != null && isFemale) ? (feeResult.maleFee - feeResult.femaleFee) : 0;
+                final finalFee = isFemale ? (feeResult?.femaleFee ?? 0) : (feeResult?.maleFee ?? 0);
+                return MemberSettlementFee(
+                  feeId: '',
+                  userId: p.userId,
+                  fullName: p.fullName,
+                  avatarUrl: p.avatarUrl,
+                  roleName: role,
+                  gender: isFemale ? 'FEMALE' : 'MALE',
+                  baseFee: base,
+                  discount: discount,
+                  finalFee: finalFee,
+                  paymentStatus: 'PENDING',
+                  vietQrUrl: '',
+                  paymentCode: 'PAY_${p.userId}',
+                  paidAmount: 0,
+                );
+              },
             )
             .toList(),
       );
@@ -1024,9 +1495,10 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
     required String sessionId,
     required int shuttlecockUsed,
     required int extraFee,
+    int? courtRentalCost,
   }) async {
     final current = await getSettlement(sessionId);
-    final courtCost = current.courtFee > 0 ? current.courtFee : 300000;
+    final courtCost = courtRentalCost ?? current.courtFee;
     final shuttlePrice = current.shuttlecockPrice > 0 ? current.shuttlecockPrice : 25000;
 
     try {
@@ -1080,38 +1552,63 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
     }
 
     final totalShuttle = shuttlecockUsed * current.shuttlecockPrice;
-    final total = current.courtFee + totalShuttle + extraFee;
+    final total = courtCost + totalShuttle + extraFee;
 
-    final femaleCount = current.memberFees.where((m) => m.gender.toUpperCase() == 'FEMALE' || m.gender == '2').length;
-    final feeResult = SessionFeeCalculator.calculate(
-      totalCost: total,
-      totalPlayers: current.memberFees.isNotEmpty ? current.memberFees.length : 1,
-      femaleCount: femaleCount,
-      femaleDiscount: 10000,
-      roundRule: 1000,
-    );
+    final femaleCount = current.memberFees.where((m) => GenderHelper.isFemale(genderString: m.gender, fullName: m.fullName)).length;
+    final feeResult = total > 0
+        ? SessionFeeCalculator.calculate(
+            totalCost: total,
+            totalPlayers: current.memberFees.isNotEmpty ? current.memberFees.length : 1,
+            femaleCount: femaleCount,
+            femaleDiscount: 10000,
+            roundRule: 1000,
+          )
+        : null;
 
     final recalculatedFees = current.memberFees.map((m) {
       final isMonthly = m.roleName.contains('tháng') || m.roleName.contains('Monthly');
       if (isMonthly) {
-        return m.copyWith(finalFee: 0, discount: m.baseFee);
+        return m.copyWith(finalFee: 0, discount: m.baseFee, paidAmount: 0, paymentStatus: 'PAID');
       }
-      final isFemale = m.gender.toUpperCase() == 'FEMALE' || m.gender == '2';
+      final isFemale = GenderHelper.isFemale(genderString: m.gender, fullName: m.fullName);
+      final maleFee = feeResult?.maleFee ?? 0;
+      final femaleFee = feeResult?.femaleFee ?? 0;
+      final newFinalFee = isFemale ? femaleFee : maleFee;
+      final previouslyPaid = m.paidAmount > 0 ? m.paidAmount : (m.isPaid ? m.finalFee : 0);
+
+      String newPaymentStatus;
+      int newPaidAmount;
+      if (newFinalFee > 0 && previouslyPaid >= newFinalFee) {
+        newPaymentStatus = 'PAID';
+        newPaidAmount = newFinalFee;
+      } else if (previouslyPaid > 0) {
+        newPaymentStatus = 'PARTIAL';
+        newPaidAmount = previouslyPaid;
+      } else {
+        newPaymentStatus = 'PENDING';
+        newPaidAmount = 0;
+      }
+
       return m.copyWith(
-        baseFee: feeResult.maleFee,
-        discount: isFemale ? (feeResult.maleFee - feeResult.femaleFee) : 0,
-        finalFee: isFemale ? feeResult.femaleFee : feeResult.maleFee,
+        baseFee: maleFee,
+        discount: isFemale ? (maleFee - femaleFee) : 0,
+        finalFee: newFinalFee,
+        paidAmount: newPaidAmount,
+        paymentStatus: newPaymentStatus,
+        gender: isFemale ? 'FEMALE' : 'MALE',
       );
     }).toList();
+
+    final totalCollected = recalculatedFees.fold(0, (sum, m) => sum + m.paidAmount);
 
     final updated = SessionSettlement(
       sessionId: sessionId,
       shuttlecockUsed: shuttlecockUsed,
       shuttlecockPrice: current.shuttlecockPrice,
-      courtFee: current.courtFee,
+      courtFee: courtCost,
       extraFee: extraFee,
       totalCost: total,
-      totalCollected: recalculatedFees.where((m) => m.isPaid).fold(0, (sum, m) => sum + m.finalFee),
+      totalCollected: totalCollected,
       memberFees: recalculatedFees,
       isSettled: true,
     );
@@ -1124,6 +1621,18 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
     required String sessionId,
     required String userId,
   }) async {
+    var current = await getSettlement(sessionId);
+    if (!current.isSettled) {
+      try {
+        current = await calculateSettlement(
+          sessionId: sessionId,
+          shuttlecockUsed: current.shuttlecockUsed,
+          extraFee: current.extraFee,
+          courtRentalCost: current.courtFee,
+        );
+      } catch (_) {}
+    }
+
     try {
       final res = await dio.post('/api/v1/sessions/$sessionId/settlement/members/$userId/pay');
       if (res.statusCode == 200 && res.data != null) {
@@ -1138,29 +1647,19 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
       // Fallback local update
     }
 
-    final current = await getSettlement(sessionId);
+    current = await getSettlement(sessionId);
     final updatedFees = current.memberFees.map((m) {
       if (m.userId == userId) {
-        return MemberSettlementFee(
-          feeId: m.feeId,
-          userId: m.userId,
-          fullName: m.fullName,
-          avatarUrl: m.avatarUrl,
-          roleName: m.roleName,
-          gender: m.gender,
-          baseFee: m.baseFee,
-          discount: m.discount,
-          finalFee: m.finalFee,
+        return m.copyWith(
+          paidAmount: m.finalFee,
           paymentStatus: 'PAID',
           paymentMethod: 'CASH',
-          vietQrUrl: m.vietQrUrl,
-          paymentCode: m.paymentCode,
         );
       }
       return m;
     }).toList();
 
-    final collected = updatedFees.where((m) => m.isPaid).fold(0, (sum, m) => sum + m.finalFee);
+    final collected = updatedFees.fold(0, (sum, m) => sum + m.paidAmount);
 
     final updated = SessionSettlement(
       sessionId: sessionId,
@@ -1172,6 +1671,58 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
       totalCollected: collected,
       memberFees: updatedFees,
       isSettled: current.isSettled,
+      bankAccount: current.bankAccount,
+    );
+    _settlementCache[sessionId] = updated;
+    return updated;
+  }
+
+  @override
+  Future<SessionSettlement> requestCashPayment({
+    required String sessionId,
+    required String userId,
+    String? feeId,
+  }) async {
+    try {
+      final res = await dio.post('/api/v1/sessions/$sessionId/settlement/members/$userId/cash-request');
+      if (res.statusCode == 200 && res.data != null) {
+        final payload = res.data is Map<String, dynamic> && res.data.containsKey('result') ? res.data['result'] : res.data;
+        if (payload is Map<String, dynamic>) {
+          final entity = SessionSettlementDto.fromJson(payload).toEntity();
+          _settlementCache[sessionId] = entity;
+          return entity;
+        }
+      }
+    } catch (_) {
+      if (feeId != null && feeId.isNotEmpty) {
+        try {
+          await dio.post('/api/v1/user/me/fees/$feeId/cash-request');
+        } catch (_) {}
+      }
+    }
+
+    final current = await getSettlement(sessionId);
+    final updatedFees = current.memberFees.map((m) {
+      if (m.userId == userId) {
+        return m.copyWith(
+          paymentProgress: 'CASH_CONFIRMATION_REQUESTED',
+          paymentMethod: 'CASH',
+        );
+      }
+      return m;
+    }).toList();
+
+    final updated = SessionSettlement(
+      sessionId: sessionId,
+      shuttlecockUsed: current.shuttlecockUsed,
+      shuttlecockPrice: current.shuttlecockPrice,
+      courtFee: current.courtFee,
+      extraFee: current.extraFee,
+      totalCost: current.totalCost,
+      totalCollected: current.totalCollected,
+      memberFees: updatedFees,
+      isSettled: current.isSettled,
+      bankAccount: current.bankAccount,
     );
     _settlementCache[sessionId] = updated;
     return updated;

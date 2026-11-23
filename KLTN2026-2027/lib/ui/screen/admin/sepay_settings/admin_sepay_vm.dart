@@ -1,4 +1,3 @@
-import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import '../../../../app/provider.dart';
@@ -94,28 +93,9 @@ class AdminSepayViewModel extends StateNotifier<AdminSepayState> {
         successMessageKey: 'sepay_save_configuration_succeeded',
       );
       return true;
-    } on DioException catch (e) {
-      final isConflict = e.response?.statusCode == 409;
-      if (isConflict) {
-        await _reloadAfterRevisionConflict();
-        return false;
-      }
-      state = state.copyWith(
-        isSaving: false,
-        isRevisionConflict: false,
-        errorMessage:
-            e.response?.data is Map && e.response?.data['detail'] != null
-            ? e.response?.data['detail'].toString()
-            : null,
-        errorMessageKey:
-            e.response?.data is Map && e.response?.data['detail'] != null
-            ? null
-            : 'sepay_save_configuration_failed',
-      );
-      return false;
     } on AppException catch (e) {
       final original = e.originalError;
-      if (original is DioException && original.response?.statusCode == 409) {
+      if (original != null && original.toString().contains('409')) {
         await _reloadAfterRevisionConflict();
         return false;
       }

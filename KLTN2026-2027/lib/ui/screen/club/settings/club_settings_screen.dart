@@ -73,6 +73,9 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
   bool _initialized = false;
   bool _isSaving = false;
 
+  late final TextEditingController _courtCountController;
+  late final TextEditingController _courtCostController;
+
   @override
   void initState() {
     super.initState();
@@ -81,6 +84,9 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
     _descController = TextEditingController();
     _venueController = TextEditingController();
     _addressController = TextEditingController();
+    _courtCountController = TextEditingController(text: '1');
+    _courtCostController = TextEditingController(text: '0');
+    _loadScheduleDefaults();
 
     _monthlyFeeController = TextEditingController(text: '500.000');
     _monthlyFemaleFeeController = TextEditingController(text: '450.000');
@@ -128,7 +134,18 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
     _dynamicFemaleDiscountController.dispose();
     _bankAccountController.dispose();
     _bankHolderController.dispose();
+    _courtCountController.dispose();
+    _courtCostController.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadScheduleDefaults() async {
+    final defaults = await ref.read(clubScheduleDefaultsProvider(widget.clubId).notifier).loadDefaults();
+    if (mounted) {
+      _courtCountController.text = '${defaults.courtCount}';
+      _courtCostController.text = _formatCurrency(defaults.courtRentalCost.toInt());
+      setState(() {});
+    }
   }
 
   void _populateData(ClubDetail club, [ClubFeeRule? feeRule]) {
@@ -140,6 +157,8 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
     _descController.text = club.description ?? '';
     _venueController.text = club.fixedVenueName ?? '';
     _addressController.text = club.fixedAddress ?? '';
+    _courtCountController.text = '${club.courtCount > 0 ? club.courtCount : 1}';
+    _courtCostController.text = _formatCurrency(club.courtRentalCost.toInt());
     _lat = club.lat;
     _lng = club.lng;
     _minLevel = club.minSkillLevel ?? SkillLevel.nb;
@@ -411,6 +430,13 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
       }
 
       if (canManageSchedule) {
+        final count = int.tryParse(_courtCountController.text.trim()) ?? 1;
+        final cost = (int.tryParse(_courtCostController.text.replaceAll('.', '').replaceAll(',', '').trim()) ?? 0).toDouble();
+        await ref.read(clubScheduleDefaultsProvider(widget.clubId).notifier).save(
+          courtCount: count > 0 ? count : 1,
+          courtRentalCost: cost,
+        );
+
         final scheduleInputs = _schedules
             .map(
               (e) => ClubScheduleInput(
@@ -420,7 +446,11 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
               ),
             )
             .toList();
-        await vm.updateSchedules(scheduleInputs);
+        await vm.updateSchedules(
+          scheduleInputs,
+          courtCount: count > 0 ? count : 1,
+          courtRentalCost: cost,
+        );
       }
 
       if (canManageFee) {
@@ -674,6 +704,7 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
         _bankError = null;
         _isBankSaving = false;
       });
+      ref.invalidate(clubPaymentBankProvider(widget.clubId));
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(context.l10n.payment_bank_saved)));
@@ -1319,8 +1350,9 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                                       ),
                                     ),
                                     validator: (v) {
-                                      if (v == null || v.trim().isEmpty)
+                                      if (v == null || v.trim().isEmpty) {
                                         return 'Tên câu lạc bộ không được để trống';
+                                      }
                                       return null;
                                     },
                                   ),
@@ -1646,6 +1678,116 @@ class _ClubSettingsScreenState extends ConsumerState<ClubSettingsScreen> {
                                         ),
                                       ],
                                     ),
+                                  ),
+                                  AppSpacing.gapH16,
+                                  Divider(color: colors.cardBorder),
+                                  AppSpacing.gapH16,
+                                  Text(
+                                    'Quy Mô Số Sân & Tiền Thuê Sân Cố Định',
+                                    style: AppTypography.labelLarge.bold
+                                        .colored(colors.textPrimary),
+                                  ),
+                                  AppSpacing.gapH4,
+                                  Text(
+                                    'Thiết lập số sân và tiền thuê sân cho các buổi sinh hoạt định kỳ của câu lạc bộ.',
+                                    style: AppTypography.bodySmall
+                                        .colored(colors.textMuted),
+                                  ),
+                                  AppSpacing.gapH12,
+                                  Row(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              'Số Sân Cố Định *',
+                                              style: AppTypography.labelMedium.bold
+                                                  .colored(colors.textPrimary),
+                                            ),
+                                            AppSpacing.gapH8,
+                                            TextFormField(
+                                              controller: _courtCountController,
+                                              keyboardType: TextInputType.number,
+                                              enabled: canManageSchedule,
+                                              decoration: InputDecoration(
+                                                hintText: 'VD: 1 hoặc 2',
+                                                filled: true,
+                                                fillColor: colors.inputFill,
+                                                prefixIcon: Icon(
+                                                  Icons.stadium_rounded,
+                                                  color: colors.primary,
+                                                ),
+                                                border: OutlineInputBorder(
+                                                  borderRadius: AppRadius.borderMd,
+                                                  borderSide: BorderSide(
+                                                    color: colors.inputBorder,
+                                                  ),
+                                                ),
+                                              ),
+                                              validator: (v) {
+                                                if (v == null || v.trim().isEmpty) {
+                                                  return 'Không để trống';
+                                                }
+                                                final n = int.tryParse(v.trim());
+                                                if (n == null || n < 1) {
+                                                  return 'Tối thiểu 1 sân';
+                                                }
+                                                return null;
+                                              },
+                                            ),
+                                            AppSpacing.gapH4,
+                                            Text(
+                                              'Mỗi sân tương ứng 6 slot',
+                                              style: AppTypography.labelSmall
+                                                  .colored(colors.textMuted),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      AppSpacing.gapW12,
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              'Tiền Thuê Sân / Buổi',
+                                              style: AppTypography.labelMedium.bold
+                                                  .colored(colors.textPrimary),
+                                            ),
+                                            AppSpacing.gapH8,
+                                            TextFormField(
+                                              controller: _courtCostController,
+                                              keyboardType: TextInputType.number,
+                                              enabled: canManageSchedule,
+                                              decoration: InputDecoration(
+                                                hintText: 'VD: 300.000',
+                                                filled: true,
+                                                fillColor: colors.inputFill,
+                                                prefixIcon: Icon(
+                                                  Icons.payments_outlined,
+                                                  color: colors.primary,
+                                                ),
+                                                suffixText: 'đ',
+                                                border: OutlineInputBorder(
+                                                  borderRadius: AppRadius.borderMd,
+                                                  borderSide: BorderSide(
+                                                    color: colors.inputBorder,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                            AppSpacing.gapH4,
+                                            Text(
+                                              'Dùng để chia tiền thực tế',
+                                              style: AppTypography.labelSmall
+                                                  .colored(colors.textMuted),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ],
                               ),

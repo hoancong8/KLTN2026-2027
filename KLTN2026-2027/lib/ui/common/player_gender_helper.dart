@@ -1,16 +1,14 @@
 import 'package:flutter/material.dart';
 import '../../app/theme/theme.dart';
+import '../../domain/utils/gender_helper.dart';
 
 class PlayerGenderHelper {
-  static bool isFemale({int? explicitGender, String? genderString}) {
-    if (explicitGender != null) {
-      return explicitGender == 2;
-    }
-    if (genderString != null && genderString.isNotEmpty) {
-      final g = genderString.toUpperCase();
-      return g == 'FEMALE' || g == 'NU' || g == 'NỮ' || g == '2';
-    }
-    return false;
+  static bool isFemale({int? explicitGender, String? genderString, String? fullName}) {
+    return GenderHelper.isFemale(
+      explicitGender: explicitGender,
+      genderString: genderString,
+      fullName: fullName,
+    );
   }
 
   static Widget buildGenderBadge({

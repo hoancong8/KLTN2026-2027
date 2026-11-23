@@ -1,6 +1,9 @@
 import '../domain/repositories/session_operations_repository.dart';
+import '../domain/entities/session/session_attendance.dart';
 import '../domain/entities/session/session_settlement.dart';
 import '../domain/entities/payment/personal_fee.dart';
+import '../domain/entities/club/club_schedule_defaults.dart';
+import '../data/datasource/local/club_schedule_local_datasource.dart';
 import '../data/repositories/session_operations_repository_impl.dart';
 import 'package:dio/dio.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
@@ -804,6 +807,10 @@ final getClubPaymentBankUseCaseProvider = Provider<GetClubPaymentBankUseCase>((r
     GetClubPaymentBankUseCase(ref.watch(paymentRepositoryProvider)));
 final updateClubPaymentBankUseCaseProvider = Provider<UpdateClubPaymentBankUseCase>((ref) =>
     UpdateClubPaymentBankUseCase(ref.watch(paymentRepositoryProvider)));
+final clubPaymentBankProvider = FutureProvider.autoDispose.family<PaymentBankAccount?, String>((ref, clubId) async {
+  if (clubId.isEmpty) return null;
+  return ref.watch(getClubPaymentBankUseCaseProvider).execute(clubId);
+});
 
 // ============================================================================
 // FR14 - FR23: SESSION ON-COURT OPERATIONS & SETTLEMENT PROVIDERS
@@ -811,6 +818,10 @@ final updateClubPaymentBankUseCaseProvider = Provider<UpdateClubPaymentBankUseCa
 
 final sessionOperationsRepositoryProvider = Provider<SessionOperationsRepository>((ref) {
   return SessionOperationsRepositoryImpl(dio: ref.watch(dioProvider));
+});
+
+final sessionAttendanceProvider = FutureProvider.autoDispose.family<SessionAttendanceSnapshot, String>((ref, sessionId) async {
+  return ref.watch(sessionOperationsRepositoryProvider).getAttendance(sessionId);
 });
 
 final sessionSettlementProvider = FutureProvider.autoDispose.family<SessionSettlement, String>((ref, sessionId) async {
@@ -891,4 +902,31 @@ final getReconciliationDetailUseCaseProvider = Provider<GetReconciliationDetailU
 
 final confirmManualReconciliationUseCaseProvider = Provider<ConfirmManualReconciliationUseCase>((ref) =>
     ConfirmManualReconciliationUseCase(ref.watch(reconciliationRepositoryProvider)));
+
+// ============================================================================
+// CLUB SCHEDULE DEFAULT COURT & COST PROVIDERS
+// ============================================================================
+
+final clubScheduleDefaultsProvider = StateNotifierProvider.family<ClubScheduleDefaultsNotifier, ClubScheduleDefaults, String>((ref, clubId) {
+  return ClubScheduleDefaultsNotifier(clubId);
+});
+
+class ClubScheduleDefaultsNotifier extends StateNotifier<ClubScheduleDefaults> {
+  final String clubId;
+
+  ClubScheduleDefaultsNotifier(this.clubId) : super(ClubScheduleLocalDatasource.getDefaultsSync(clubId)) {
+    loadDefaults();
+  }
+
+  Future<ClubScheduleDefaults> loadDefaults() async {
+    final defaults = await ClubScheduleLocalDatasource.getDefaults(clubId);
+    state = defaults;
+    return defaults;
+  }
+
+  Future<void> save({required int courtCount, required double courtRentalCost}) async {
+    await ClubScheduleLocalDatasource.saveDefaults(clubId, courtCount: courtCount, courtRentalCost: courtRentalCost);
+    state = ClubScheduleDefaults(courtCount: courtCount, courtRentalCost: courtRentalCost);
+  }
+}
 

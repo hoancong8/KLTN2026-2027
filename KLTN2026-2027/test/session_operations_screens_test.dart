@@ -118,6 +118,27 @@ class FakeSessionOperationsRepository implements SessionOperationsRepository {
   }) async => getRotation(sessionId);
 
   @override
+  Future<SessionRotationSnapshot> setThreePlayerMode({
+    required String sessionId,
+    required ThreePlayerMatchMode mode,
+  }) async => getRotation(sessionId);
+
+  @override
+  Future<SessionRotationSnapshot> movePlayer({
+    required String sessionId,
+    required DraggingPlayerPayload payload,
+    String? targetCourtMatchId,
+    String? targetTeam,
+    int? targetSpotIndex,
+  }) async => getRotation(sessionId);
+
+  @override
+  Future<SessionRotationSnapshot> clearCourt({
+    required String sessionId,
+    required String matchId,
+  }) async => getRotation(sessionId);
+
+  @override
   Future<SessionSettlement> getSettlement(String sessionId) async {
     return const SessionSettlement(
       sessionId: 's1',
@@ -164,10 +185,14 @@ class FakeSessionOperationsRepository implements SessionOperationsRepository {
     required String sessionId,
     required int shuttlecockUsed,
     required int extraFee,
+    int? courtRentalCost,
   }) async => getSettlement(sessionId);
 
   @override
   Future<SessionSettlement> markMemberPaid({required String sessionId, required String userId}) async => getSettlement(sessionId);
+
+  @override
+  Future<SessionSettlement> requestCashPayment({required String sessionId, required String userId, String? feeId}) async => getSettlement(sessionId);
 
   @override
   Future<List<SessionReview>> getSessionReviews(String sessionId) async {
@@ -212,7 +237,7 @@ void main() {
     await tester.pumpWidget(buildTestableWidget(const SessionAttendanceScreen(sessionId: 'session-1')));
     await tester.pumpAndSettle();
 
-    expect(find.text('Check-in & Điểm Diện Ra Sân'), findsOneWidget);
+    expect(find.text('Check-in & Điểm Danh Ra Sân'), findsOneWidget);
     expect(find.text('Đã Ra Sân'), findsWidgets);
     expect(find.text('Chưa Đến'), findsWidgets);
     expect(find.text('Báo Vắng'), findsWidgets);
@@ -226,6 +251,14 @@ void main() {
     expect(find.text('Điều Phối Trận Đấu & Xoay Tua Sân'), findsOneWidget);
     expect(find.text('Điều Phối Trận Đấu Tự Động'), findsOneWidget);
     expect(find.text('SÂN SỐ 1'), findsOneWidget);
+    expect(find.text('Xoay tua tự động'), findsOneWidget);
+    expect(find.text('Xếp thủ công (Kéo thả)'), findsOneWidget);
+
+    // Switch to manual drag and drop mode
+    await tester.tap(find.text('Xếp thủ công (Kéo thả)'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Chế Độ Xếp Thủ Công Bằng Kéo Thả'), findsOneWidget);
   });
 
   testWidgets('SessionSettlementScreen renders FR18-FR21 fee calculations and breakdown', (tester) async {

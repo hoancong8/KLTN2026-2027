@@ -11,6 +11,8 @@ class AttendancePlayer {
   final int skillLevel; // 1..6
   final bool isReady;
   final bool isWalkIn;
+  final String gender; // 'MALE' | 'FEMALE'
+  final String roleName; // 'MEMBER_MONTHLY' | 'MEMBER_DAILY' | 'GUEST'
 
   const AttendancePlayer({
     required this.userId,
@@ -23,6 +25,8 @@ class AttendancePlayer {
     this.skillLevel = 3,
     this.isReady = false,
     this.isWalkIn = false,
+    this.gender = 'MALE',
+    this.roleName = 'MEMBER_DAILY',
   });
 
   bool get isCheckedIn => status == 'CHECKED_IN';
@@ -35,6 +39,8 @@ class AttendancePlayer {
     DateTime? checkinAt,
     bool clearCheckinAt = false,
     bool? isReady,
+    String? gender,
+    String? roleName,
   }) {
     return AttendancePlayer(
       userId: userId,
@@ -47,6 +53,8 @@ class AttendancePlayer {
       skillLevel: skillLevel,
       isReady: isReady ?? this.isReady,
       isWalkIn: isWalkIn,
+      gender: gender ?? this.gender,
+      roleName: roleName ?? this.roleName,
     );
   }
 }

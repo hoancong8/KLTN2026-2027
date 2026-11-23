@@ -103,7 +103,15 @@ class SessionDto {
       targetPlayerPerCourt: _parseInt(json['targetPlayerPerCourt']),
       maxPlayers: _parseInt(json['maxPlayers']),
       deadlineBooking: json['deadlineBooking']?.toString() ?? '',
-      courtRentalCost: _parseDouble(json['courtRentalCost']),
+      courtRentalCost: _parseDouble(
+        json['courtRentalCost'] ??
+            json['CourtRentalCost'] ??
+            json['court_rental_cost'] ??
+            json['courtCost'] ??
+            json['CourtCost'] ??
+            json['courtFee'] ??
+            json['CourtFee'],
+      ),
       status: json['status']?.toString() ?? '1',
       confirmedCount: _parseInt(json['confirmedCount']),
       waitingCount: _parseInt(json['waitingCount']),

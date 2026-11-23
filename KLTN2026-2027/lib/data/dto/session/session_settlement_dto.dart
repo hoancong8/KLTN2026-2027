@@ -1,5 +1,7 @@
 // lib/data/dto/session/session_settlement_dto.dart
 
+import '../payment/payment_dto.dart';
+
 class MemberSettlementFeeDto {
   final String feeId;
   final String userId;
@@ -12,8 +14,10 @@ class MemberSettlementFeeDto {
   final int finalFee;
   final String paymentStatus;
   final String? paymentMethod;
+  final String? paymentProgress;
   final String vietQrUrl;
   final String paymentCode;
+  final int paidAmount;
 
   const MemberSettlementFeeDto({
     required this.feeId,
@@ -27,11 +31,20 @@ class MemberSettlementFeeDto {
     required this.finalFee,
     required this.paymentStatus,
     this.paymentMethod,
+    this.paymentProgress,
     required this.vietQrUrl,
     required this.paymentCode,
+    this.paidAmount = 0,
   });
 
   factory MemberSettlementFeeDto.fromJson(Map<String, dynamic> json) {
+    final status = _parseString(json['paymentStatus'] ?? json['PaymentStatus']);
+    final finalFee = _parseInt(json['finalFee'] ?? json['FinalFee']);
+    final paid = _parseInt(
+      json['paidAmount'] ??
+          json['PaidAmount'] ??
+          (status == 'PAID' ? finalFee : 0),
+    );
     return MemberSettlementFeeDto(
       feeId: _parseString(json['feeId'] ?? json['FeeId']),
       userId: _parseString(json['userId'] ?? json['UserId']),
@@ -41,11 +54,13 @@ class MemberSettlementFeeDto {
       gender: _parseString(json['gender'] ?? json['Gender']),
       baseFee: _parseInt(json['baseFee'] ?? json['BaseFee'] ?? json['finalFee'] ?? json['FinalFee']),
       discount: _parseInt(json['discount'] ?? json['Discount']),
-      finalFee: _parseInt(json['finalFee'] ?? json['FinalFee']),
-      paymentStatus: _parseString(json['paymentStatus'] ?? json['PaymentStatus']),
+      finalFee: finalFee,
+      paymentStatus: status,
       paymentMethod: _parseNullableString(json['paymentMethod'] ?? json['PaymentMethod']),
+      paymentProgress: _parseNullableString(json['paymentProgress'] ?? json['PaymentProgress']),
       vietQrUrl: _parseString(json['vietQrUrl'] ?? json['VietQrUrl'] ?? json['qrCodePayload'] ?? json['QrCodePayload']),
       paymentCode: _parseString(json['paymentCode'] ?? json['PaymentCode']),
+      paidAmount: paid,
     );
   }
 
@@ -73,6 +88,7 @@ class SessionSettlementDto {
   final int totalCollected;
   final List<MemberSettlementFeeDto> memberFees;
   final bool isSettled;
+  final PaymentBankAccountDto? bankAccount;
 
   const SessionSettlementDto({
     required this.sessionId,
@@ -84,6 +100,7 @@ class SessionSettlementDto {
     required this.totalCollected,
     required this.memberFees,
     required this.isSettled,
+    this.bankAccount,
   });
 
   factory SessionSettlementDto.fromJson(Map<String, dynamic> json) {
@@ -95,6 +112,14 @@ class SessionSettlementDto {
           fees.add(MemberSettlementFeeDto.fromJson(item));
         }
       }
+    }
+
+    final bankRaw = json['bankAccount'] ?? json['BankAccount'];
+    PaymentBankAccountDto? bankAccount;
+    if (bankRaw is Map<String, dynamic>) {
+      try {
+        bankAccount = PaymentBankAccountDto.fromJson(bankRaw);
+      } catch (_) {}
     }
 
     return SessionSettlementDto(
@@ -110,6 +135,7 @@ class SessionSettlementDto {
           (json['state'] ?? json['State'])?.toString().toUpperCase() == 'PUBLISHED' ||
           json['publishedAt'] != null ||
           json['PublishedAt'] != null,
+      bankAccount: bankAccount,
     );
   }
 

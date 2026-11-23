@@ -1,24 +1,29 @@
 // lib/data/mapper/session_settlement_mapper.dart
 
 import '../../domain/entities/session/session_settlement.dart';
+import '../../domain/utils/gender_helper.dart';
 import '../dto/session/session_settlement_dto.dart';
+import 'payment_mapper.dart';
 
 extension MemberSettlementFeeDtoMapper on MemberSettlementFeeDto {
   MemberSettlementFee toEntity() {
+    final isFem = GenderHelper.isFemale(genderString: gender, fullName: fullName);
     return MemberSettlementFee(
       feeId: feeId,
       userId: userId,
       fullName: fullName,
       avatarUrl: avatarUrl,
       roleName: roleName,
-      gender: gender,
+      gender: isFem ? 'FEMALE' : (gender.isNotEmpty ? gender : 'MALE'),
       baseFee: baseFee,
       discount: discount,
       finalFee: finalFee,
       paymentStatus: paymentStatus,
       paymentMethod: paymentMethod,
+      paymentProgress: paymentProgress,
       vietQrUrl: vietQrUrl,
       paymentCode: paymentCode,
+      paidAmount: paidAmount,
     );
   }
 }
@@ -35,6 +40,7 @@ extension SessionSettlementDtoMapper on SessionSettlementDto {
       totalCollected: totalCollected,
       memberFees: memberFees.map((f) => f.toEntity()).toList(),
       isSettled: isSettled,
+      bankAccount: bankAccount != null ? PaymentMapper.toBankAccount(bankAccount!) : null,
     );
   }
 }

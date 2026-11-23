@@ -138,8 +138,10 @@ abstract class ClubRepository {
 
   Future<void> updateClubSchedules(
     String clubId,
-    List<ClubScheduleInput> schedules,
-  );
+    List<ClubScheduleInput> schedules, {
+    int? courtCount,
+    double? courtRentalCost,
+  });
 
   // --- FR19: Hạch toán biểu phí và Quỹ nhóm ---
   Future<ClubFeeRule> getClubFeeRule(String clubId);

@@ -1,4 +1,8 @@
 {
+  "ledger_invoice_help": "Receipt image or PDF for this expense, up to 5 MiB.",
+  "ledger_invoice_selected": "Selected · Available to download from transaction history after saving",
+  "sepay_retry_connection": "Retry connection",
+  "sepay_confirm_and_connect": "Confirm and connect",
   "ledger_title": "Open ledger",
   "ledger_switch_context": "Switch to this club to view its ledger.",
   "ledger_switch_failed": "Could not switch to this club.",
@@ -840,6 +844,25 @@
   "settlement_amount": "{amount} VND",
   "settlement_paid_badge": "Paid",
   "settlement_unpaid_badge": "Unpaid",
+  "settlement_pay_button": "Pay",
+  "settlement_request_cash": "Pay with cash",
+  "settlement_pending_cash_confirmation": "Pending Host cash confirmation",
+  "settlement_cash_requested_badge": "Cash payment requested",
+  "settlement_request_cash_confirm_title": "Confirm cash payment request",
+  "settlement_request_cash_confirm_message": "Confirm that you will pay {amount} VND cash to the Host?",
+  "settlement_request_cash_success": "Cash payment request sent to the Host.",
+  "settlement_copy_account_number": "Copy account number",
+  "settlement_account_number_copied": "Copied account number: {account}",
+  "@settlement_request_cash_confirm_message": {
+    "placeholders": {
+      "amount": { "type": "String" }
+    }
+  },
+  "@settlement_account_number_copied": {
+    "placeholders": {
+      "account": { "type": "String" }
+    }
+  },
   "settlement_vietqr_label": "Transfer QR code",
   "settlement_confirm_cash": "Confirm cash payment",
   "settlement_confirm_cash_title": "Confirm cash received",
@@ -857,6 +880,16 @@
   "settlement_extra_expense_hint": "Example: 40000",
   "settlement_update_summary": "Update cost summary",
   "settlement_publish_summary": "Create fees",
+  "settlement_club_bank_info": "Club VietQR account: {bankName} • {accountNumber} ({accountHolder})",
+  "settlement_club_bank_missing": "Club bank account has not been configured for VietQR generation.",
+  "settlement_club_bank_setup_button": "Settings",
+  "@settlement_club_bank_info": {
+    "placeholders": {
+      "bankName": { "type": "String" },
+      "accountNumber": { "type": "String" },
+      "accountHolder": { "type": "String" }
+    }
+  },
   "@settlement_collected_amount": {
     "placeholders": { "amount": { "type": "String" } }
   },

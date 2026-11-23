@@ -45,6 +45,8 @@ class ClubDetailMapper {
         hasPendingJoinRequest: dto.currentUserStatus.hasPendingJoinRequest,
         pendingRequestId: dto.currentUserStatus.pendingRequestId,
       ),
+      courtCount: dto.courtCount > 0 ? dto.courtCount : 1,
+      courtRentalCost: dto.courtRentalCost,
     );
   }
 
@@ -74,7 +76,11 @@ class ClubDetailMapper {
     );
   }
 
-  static UpdateClubSchedulesRequestDto toUpdateSchedulesDto(List<ClubScheduleInput> schedules) {
+  static UpdateClubSchedulesRequestDto toUpdateSchedulesDto(
+    List<ClubScheduleInput> schedules, {
+    int? courtCount,
+    double? courtRentalCost,
+  }) {
     return UpdateClubSchedulesRequestDto(
       schedules: schedules
           .map((s) => ClubScheduleItemRequestDto(
@@ -83,6 +89,8 @@ class ClubDetailMapper {
                 endTime: s.endTime,
               ))
           .toList(),
+      courtCount: courtCount,
+      courtRentalCost: courtRentalCost,
     );
   }
 }

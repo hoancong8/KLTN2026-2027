@@ -69,6 +69,8 @@ class ClubDetail {
   final List<ClubScheduleEntity> schedules;
   final String? schedulesSummary;
   final ClubUserStatusEntity currentUserStatus;
+  final int courtCount;
+  final double courtRentalCost;
 
   const ClubDetail({
     required this.id,
@@ -89,6 +91,8 @@ class ClubDetail {
     required this.schedules,
     this.schedulesSummary,
     required this.currentUserStatus,
+    this.courtCount = 1,
+    this.courtRentalCost = 0.0,
   });
 }
 

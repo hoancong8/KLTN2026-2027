@@ -7,6 +7,7 @@ import 'package:kltn2026_2027/app/theme/theme.dart';
 import '../../../widget/responsive_layout.dart';
 import '../../../app/provider.dart';
 import '../../../domain/usecases/session/session_usecases.dart';
+import '../club_detail/club_detail_vm/club_detail_vm.dart';
 import 'session_vm/club_sessions_vm.dart';
 import 'widgets/map_location_picker_sheet.dart';
 
@@ -48,13 +49,32 @@ class _CreateSessionScreenState extends ConsumerState<CreateSessionScreen> {
   @override
   void initState() {
     super.initState();
+    final club = ref.read(clubDetailViewModelProvider(widget.clubId)).club;
+    final defaults = ref.read(clubScheduleDefaultsProvider(widget.clubId));
+    final effectiveCourtCount = (club != null && club.courtCount > 0)
+        ? club.courtCount
+        : (defaults.courtCount > 0 ? defaults.courtCount : 2);
+    _courtCount = effectiveCourtCount;
+
+    final effectiveCost = (club != null && club.courtRentalCost > 0)
+        ? club.courtRentalCost
+        : (defaults.courtRentalCost > 0 ? defaults.courtRentalCost : 300000.0);
+    final costStr = NumberFormat('#,###', 'vi_VN').format(effectiveCost.toInt()).replaceAll(',', '.');
+
+    final venueName = (club?.fixedVenueName != null && club!.fixedVenueName!.isNotEmpty)
+        ? club.fixedVenueName!
+        : 'Sân Cầu Lông Kỳ Hòa';
+    final address = (club?.fixedAddress != null && club!.fixedAddress!.isNotEmpty)
+        ? club.fixedAddress!
+        : '238 Đường 3/2, Phường 12, Quận 10, TP. Hồ Chí Minh';
+
     _titleCtl = TextEditingController(text: 'Buổi sinh hoạt ${widget.clubName}');
-    _courtNameCtl = TextEditingController(text: 'Sân Cầu Lông Kỳ Hòa');
-    _addressCtl = TextEditingController(text: '238 Đường 3/2, Phường 12, Quận 10, TP. Hồ Chí Minh');
-    _rentalCostCtl = TextEditingController(text: '300.000');
+    _courtNameCtl = TextEditingController(text: venueName);
+    _addressCtl = TextEditingController(text: address);
+    _rentalCostCtl = TextEditingController(text: costStr);
     _deadlineBooking = _startTime.subtract(const Duration(hours: 2));
-    _latitude = 10.7725;
-    _longitude = 106.6698;
+    _latitude = club?.lat ?? 10.7725;
+    _longitude = club?.lng ?? 106.6698;
   }
 
   @override
