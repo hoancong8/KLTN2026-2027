@@ -41,9 +41,12 @@ class ClubSepayViewModel extends StateNotifier<ClubSepayState> {
       var oldConnections = const <SepayConnection>[];
       var connectionsLoadFailed = false;
       try {
-        oldConnections = await ref
+        final connections = await ref
             .read(listClubSepayConnectionsUseCaseProvider)
             .execute(clubId);
+        oldConnections = connections
+            .where((connection) => connection.connectionId != conn.connectionId)
+            .toList();
       } catch (_) {
         connectionsLoadFailed = true;
       }
@@ -148,9 +151,13 @@ class ClubSepayViewModel extends StateNotifier<ClubSepayState> {
     state = state.copyWith(selectedProviderBankId: providerBankId);
   }
 
-  Future<bool> selectAccount([int? providerBankId]) async {
-    final targetId = providerBankId ?? state.selectedProviderBankId;
-    if (targetId == null) {
+  Future<bool> connectSelectedAccount() async {
+    if (state.isLoading || state.isActionInProgress) return false;
+    final needsSelection = state.connection?.isAuthorized == true;
+    if (!needsSelection && state.connection?.isProvisioning != true) return false;
+
+    final targetId = state.selectedProviderBankId;
+    if (needsSelection && targetId == null) {
       state = state.copyWith(
         errorMessageKey: 'sepay_select_matching_bank_required',
       );
@@ -159,67 +166,44 @@ class ClubSepayViewModel extends StateNotifier<ClubSepayState> {
 
     state = state.copyWith(
       isActionInProgress: true,
-      actionType: 'select',
+      actionType: 'connect',
       clearMessages: true,
     );
+    var failureKey = 'sepay_select_bank_failed';
     try {
-      final conn = await ref
-          .read(selectClubSepayBankAccountUseCaseProvider)
-          .execute(clubId, targetId);
-
-      state = state.copyWith(
-        isActionInProgress: false,
-        connection: conn,
-        successMessageKey: 'sepay_bank_linked_activate_next',
-      );
-      return true;
-    } on AppException catch (e) {
-      state = state.copyWith(
-        isActionInProgress: false,
-        errorMessage: e.message,
-        errorMessageKey: e.message == null ? 'sepay_select_bank_failed' : null,
-      );
-      return false;
-    } catch (e) {
-      state = state.copyWith(
-        isActionInProgress: false,
-        errorMessageKey: 'error_system_retry',
-      );
-      return false;
-    }
-  }
-
-  Future<bool> activateConnection() async {
-    state = state.copyWith(
-      isActionInProgress: true,
-      actionType: 'activate',
-      clearMessages: true,
-    );
-    try {
-      final conn = await ref
+      if (needsSelection) {
+        final selected = await ref
+            .read(selectClubSepayBankAccountUseCaseProvider)
+            .execute(clubId, targetId!);
+        if (!mounted) return false;
+        state = state.copyWith(connection: selected);
+      }
+      failureKey = 'sepay_activate_connection_failed';
+      final connected = await ref
           .read(activateClubSepayConnectionUseCaseProvider)
           .execute(clubId);
 
+      if (!mounted) return false;
       state = state.copyWith(
         isActionInProgress: false,
-        connection: conn,
+        connection: connected,
         successMessageKey: 'sepay_activate_connection_succeeded',
       );
       await loadStatus();
       return true;
     } on AppException catch (e) {
+      if (!mounted) return false;
       state = state.copyWith(
         isActionInProgress: false,
         errorMessage: e.message,
-        errorMessageKey: e.message == null
-            ? 'sepay_activate_connection_failed'
-            : null,
+        errorMessageKey: e.message == null ? failureKey : null,
       );
       return false;
     } catch (e) {
+      if (!mounted) return false;
       state = state.copyWith(
         isActionInProgress: false,
-        errorMessageKey: 'error_system_retry',
+        errorMessageKey: failureKey,
       );
       return false;
     }

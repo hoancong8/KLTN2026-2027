@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import '../../../../app/provider.dart';
 import '../../../../app/provider/localization_provider.dart';
 import '../../../../app/theme/theme.dart';
@@ -650,6 +651,10 @@ class SessionSettlementScreen extends ConsumerWidget {
   void _showVietQrModal(BuildContext context, MemberSettlementFee fee) {
     final colors = context.colors;
     final currencyFormat = NumberFormat('#,###');
+    final qrUri = Uri.tryParse(fee.vietQrUrl);
+    final isImageUrl = qrUri != null &&
+        (qrUri.scheme == 'https' || qrUri.scheme == 'http') &&
+        qrUri.host.isNotEmpty;
 
     showDialog(
       context: context,
@@ -668,13 +673,13 @@ class SessionSettlementScreen extends ConsumerWidget {
               width: 200,
               height: 200,
               decoration: BoxDecoration(
+                color: AppColors.white,
                 borderRadius: AppRadius.card,
                 border: Border.all(color: colors.cardBorder),
-                image: DecorationImage(
-                  image: NetworkImage(fee.vietQrUrl),
-                  fit: BoxFit.cover,
-                ),
               ),
+              child: isImageUrl
+                  ? Image.network(fee.vietQrUrl, fit: BoxFit.contain)
+                  : QrImageView(data: fee.vietQrUrl, size: 200),
             ),
             AppSpacing.gapH12,
             Text(

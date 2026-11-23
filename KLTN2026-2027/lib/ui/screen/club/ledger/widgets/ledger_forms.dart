@@ -259,6 +259,9 @@ class _LedgerExpenseState extends ConsumerState<_LedgerExpense> {
   LedgerMoney? get _enteredAmount =>
       LedgerMoney.tryParse(_amount.text.trim().replaceAll(',', '.'));
 
+  String _sessionTime(BuildContext context, Session session) =>
+      '${ledgerDate(context, session.startTime, time: true)} – ${ledgerDate(context, session.endTime, time: true)}';
+
   @override
   void dispose() {
     _amount.dispose();
@@ -337,6 +340,11 @@ class _LedgerExpenseState extends ConsumerState<_LedgerExpense> {
                 itemCount: sessions.length,
                 itemBuilder: (context, index) => ListTile(
                   title: Text(sessions[index].title),
+                  subtitle: Text(_sessionTime(context, sessions[index])),
+                  selected: sessions[index].id == _session?.id,
+                  trailing: sessions[index].id == _session?.id
+                      ? const Icon(Icons.check_circle_outline)
+                      : null,
                   onTap: () => Navigator.pop(context, sessions[index]),
                 ),
               );
@@ -459,12 +467,16 @@ class _LedgerExpenseState extends ConsumerState<_LedgerExpense> {
                     style: optionalButtonStyle,
                     onPressed: locked ? null : _pickSession,
                     icon: const Icon(Icons.event_outlined),
-                    label: Text(
-                      _session?.title ?? l10n.ledger_pick_session,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                    label: Text(l10n.ledger_pick_session),
                   ),
+                  if (_session != null) ...[
+                    AppSpacing.gapH8,
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(_session!.title),
+                      subtitle: Text(_sessionTime(context, _session!)),
+                    ),
+                  ],
                   if (_session != null)
                     TextButton(
                       onPressed: locked
@@ -479,11 +491,27 @@ class _LedgerExpenseState extends ConsumerState<_LedgerExpense> {
                   onPressed: locked ? null : _pickInvoice,
                   icon: const Icon(Icons.attach_file),
                   label: Text(
-                    _invoice?.name ?? l10n.ledger_attach_invoice,
+                    l10n.ledger_attach_invoice,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
+                AppSpacing.gapH8,
+                Text(
+                  l10n.ledger_invoice_help,
+                  style: AppTypography.bodySmall.colored(
+                    context.colors.textSecondary,
+                  ),
+                ),
+                if (_invoice != null) ...[
+                  AppSpacing.gapH8,
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: const Icon(Icons.insert_drive_file_outlined),
+                    title: Text(_invoice!.name),
+                    subtitle: Text(l10n.ledger_invoice_selected),
+                  ),
+                ],
                 if (_invoice != null)
                   TextButton(
                     onPressed: locked

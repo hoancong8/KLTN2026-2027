@@ -147,15 +147,35 @@ class DashboardPage extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      children: [
-                        Text(
-                          'Xin chào, ',
-                          style: AppTypography.bodySmall.copyWith(
-                            color: colors.textSecondary,
-                            fontWeight: FontWeight.w600,
+                    Text.rich(
+                      TextSpan(
+                        children: [
+                          TextSpan(
+                            text: 'Xin chào, ',
+                            style: AppTypography.bodySmall.copyWith(
+                              color: colors.textSecondary,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
-                        ),
+                          TextSpan(
+                            text: displayName,
+                            style: AppTypography.titleMedium.copyWith(
+                              color: colors.textPrimary,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: -0.3,
+                            ),
+                          ),
+                        ],
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 3),
+                    Wrap(
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      spacing: 6,
+                      runSpacing: 4,
+                      children: [
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
                           decoration: BoxDecoration(
@@ -172,8 +192,7 @@ class DashboardPage extends ConsumerWidget {
                             ),
                           ),
                         ),
-                        if (isOpenForGuest) ...[
-                          AppSpacing.gapW4,
+                        if (isOpenForGuest)
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
                             decoration: BoxDecoration(
@@ -190,19 +209,7 @@ class DashboardPage extends ConsumerWidget {
                               ),
                             ),
                           ),
-                        ],
                       ],
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      displayName,
-                      style: AppTypography.titleLarge.copyWith(
-                        color: colors.textPrimary,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: -0.3,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ),

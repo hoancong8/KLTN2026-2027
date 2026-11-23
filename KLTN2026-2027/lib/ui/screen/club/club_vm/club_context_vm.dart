@@ -52,7 +52,6 @@ class ClubContextViewModel extends StateNotifier<ClubContextState> {
       final clubs = await getMyClubsUseCase.execute();
       state = state.copyWith(
         myClubs: clubs,
-        isLoading: false,
       );
 
       // Nếu có ít nhất 1 CLB: ưu tiên khôi phục activeClubId đã lưu hoặc chọn CLB đầu tiên
@@ -68,6 +67,7 @@ class ClubContextViewModel extends StateNotifier<ClubContextState> {
         ref.read(activeClubContextProvider.notifier).state = null;
         state = state.copyWith(clearActiveContext: true);
       }
+      state = state.copyWith(isLoading: false);
     } on AppException catch (e) {
       state = state.copyWith(isLoading: false, error: e);
     } catch (e) {

@@ -124,7 +124,10 @@ GoRouter generateAppRouter(String initialRoute) {
         path: '/club/:clubId/ledger',
         builder: (_, state) {
           final clubId = state.pathParameters['clubId'] ?? '';
-          return ClubLedgerScreen(clubId: clubId);
+          return ClubLedgerScreen(
+            clubId: clubId,
+            autoSwitchClub: state.uri.queryParameters['switchClub'] == '1',
+          );
         },
       ),
       GoRoute(

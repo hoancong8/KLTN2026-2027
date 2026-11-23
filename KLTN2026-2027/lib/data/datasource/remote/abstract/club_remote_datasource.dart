@@ -28,6 +28,8 @@ abstract class ClubRemoteDatasource {
 
   Future<bool> updateMemberRole(String clubId, String userId, UpdateMemberRoleRequestDto request);
 
+  Future<bool> updateMemberFeePlan(String clubId, String userId, String memberType);
+
   Future<bool> removeMember(String clubId, String userId);
 
   // --- Club Roles ---

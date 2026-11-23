@@ -45,8 +45,6 @@ class _ClubSepayScreenState extends ConsumerState<ClubSepayScreen> {
       context.l10n.sepay_complete_authorization_failed,
     'sepay_select_matching_bank_required' =>
       context.l10n.sepay_select_matching_bank_required,
-    'sepay_bank_linked_activate_next' =>
-      context.l10n.sepay_bank_linked_activate_next,
     'sepay_select_bank_failed' => context.l10n.sepay_select_bank_failed,
     'sepay_activate_connection_succeeded' =>
       context.l10n.sepay_activate_connection_succeeded,
@@ -252,6 +250,14 @@ class _ClubSepayScreenState extends ConsumerState<ClubSepayScreen> {
     );
   }
 
+  void _handleBack(BuildContext context) {
+    if (context.canPop()) {
+      context.pop();
+    } else {
+      context.go('/club/${widget.clubId}/settings');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final canManageBank = ref.hasClubPermission(ClubPermissions.bankManage);
@@ -295,6 +301,14 @@ class _ClubSepayScreenState extends ConsumerState<ClubSepayScreen> {
       return Scaffold(
         backgroundColor: colors.background,
         appBar: AppBar(
+          leading: IconButton(
+            icon: Icon(
+              Icons.arrow_back_ios_new_rounded,
+              size: 20,
+              color: colors.textPrimary,
+            ),
+            onPressed: () => _handleBack(context),
+          ),
           title: Text(
             context.l10n.sepay_club_connection_title,
             style: AppTypography.titleLarge.bold.colored(colors.textPrimary),
@@ -324,7 +338,7 @@ class _ClubSepayScreenState extends ConsumerState<ClubSepayScreen> {
                 ),
                 AppSpacing.gapH24,
                 ElevatedButton.icon(
-                  onPressed: () => context.pop(),
+                  onPressed: () => _handleBack(context),
                   icon: const Icon(Icons.arrow_back_rounded, size: 18),
                   label: Text(context.l10n.com_back),
                   style: ElevatedButton.styleFrom(
@@ -347,6 +361,14 @@ class _ClubSepayScreenState extends ConsumerState<ClubSepayScreen> {
     return Scaffold(
       backgroundColor: colors.background,
       appBar: AppBar(
+        leading: IconButton(
+          icon: Icon(
+            Icons.arrow_back_ios_new_rounded,
+            size: 20,
+            color: colors.textPrimary,
+          ),
+          onPressed: () => _handleBack(context),
+        ),
         title: Text(
           context.l10n.sepay_club_connection_page_title,
           style: AppTypography.titleLarge.bold.colored(colors.textPrimary),
@@ -364,7 +386,7 @@ class _ClubSepayScreenState extends ConsumerState<ClubSepayScreen> {
           IconButton(
             tooltip: context.l10n.sepay_refresh_status,
             icon: const Icon(Icons.refresh_rounded),
-            onPressed: state.isLoading
+            onPressed: state.isLoading || state.isActionInProgress
                 ? null
                 : () => ref
                       .read(clubSepayViewModelProvider(widget.clubId).notifier)
@@ -388,14 +410,14 @@ class _ClubSepayScreenState extends ConsumerState<ClubSepayScreen> {
                       if (state.accountsLoadFailed) ...[
                         _buildLoadWarning(
                           context.l10n.sepay_accounts_load_failed,
-                          state.isLoading,
+                          state.isLoading || state.isActionInProgress,
                         ),
                         AppSpacing.gapH16,
                       ],
                       if (state.connectionsLoadFailed) ...[
                         _buildLoadWarning(
                           context.l10n.sepay_connections_load_failed,
-                          state.isLoading,
+                          state.isLoading || state.isActionInProgress,
                         ),
                         AppSpacing.gapH16,
                       ],
@@ -608,28 +630,18 @@ class _ClubSepayScreenState extends ConsumerState<ClubSepayScreen> {
                   color: colors.warning.withValues(alpha: 0.3),
                 ),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    context.l10n.sepay_bank_selected_webhook_pending,
-                    style: AppTypography.labelMedium.bold.colored(
-                      colors.textPrimary,
-                    ),
-                  ),
-                  AppSpacing.gapH4,
-                  Text(
-                    context.l10n.sepay_webhook_activation_hint,
-                    style: AppTypography.bodySmall.colored(colors.textMuted),
-                  ),
-                ],
+              child: Text(
+                context.l10n.sepay_bank_selected_webhook_pending,
+                style: AppTypography.labelMedium.bold.colored(
+                  colors.textPrimary,
+                ),
               ),
             ),
             AppSpacing.gapH16,
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
-                icon: isActionInProgress && state.actionType == 'activate'
+                icon: isActionInProgress && state.actionType == 'connect'
                     ? const SizedBox(
                         width: 18,
                         height: 18,
@@ -639,7 +651,11 @@ class _ClubSepayScreenState extends ConsumerState<ClubSepayScreen> {
                         ),
                       )
                     : const Icon(Icons.bolt_rounded, size: 18),
-                label: Text(context.l10n.sepay_activate_connection_webhook),
+                label: Text(
+                  isActionInProgress
+                      ? context.l10n.sepay_status_provisioning
+                      : context.l10n.sepay_retry_connection,
+                ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: colors.success,
                   foregroundColor: AppColors.white,
@@ -648,13 +664,13 @@ class _ClubSepayScreenState extends ConsumerState<ClubSepayScreen> {
                     borderRadius: AppRadius.button,
                   ),
                 ),
-                onPressed: isActionInProgress
+                onPressed: isActionInProgress || state.isLoading
                     ? null
                     : () => ref
                           .read(
                             clubSepayViewModelProvider(widget.clubId).notifier,
                           )
-                          .activateConnection(),
+                          .connectSelectedAccount(),
               ),
             ),
           ] else if (status == 'CONNECTED') ...[
@@ -893,10 +909,13 @@ class _ClubSepayScreenState extends ConsumerState<ClubSepayScreen> {
           else
             ...accounts.map((acc) {
               final isSelected = selectedId == acc.id;
-              final isEligible = acc.isEligibleToSelect;
+              final canSelect =
+                  acc.isEligibleToSelect &&
+                  !isActionInProgress &&
+                  !state.isLoading;
 
               return InkWell(
-                onTap: isEligible
+                onTap: canSelect
                     ? () => ref
                           .read(
                             clubSepayViewModelProvider(widget.clubId).notifier,
@@ -923,7 +942,7 @@ class _ClubSepayScreenState extends ConsumerState<ClubSepayScreen> {
                         value: acc.id,
                         groupValue: selectedId,
                         activeColor: colors.primary,
-                        onChanged: isEligible
+                        onChanged: canSelect
                             ? (v) {
                                 if (v != null) {
                                   ref
@@ -942,7 +961,10 @@ class _ClubSepayScreenState extends ConsumerState<ClubSepayScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Row(
+                            Wrap(
+                              crossAxisAlignment: WrapCrossAlignment.center,
+                              spacing: 8,
+                              runSpacing: 4,
                               children: [
                                 Text(
                                   '${acc.gateway} - ${acc.accountNumber}',
@@ -950,7 +972,6 @@ class _ClubSepayScreenState extends ConsumerState<ClubSepayScreen> {
                                     colors.textPrimary,
                                   ),
                                 ),
-                                AppSpacing.gapW8,
                                 if (acc.matchesClubBank)
                                   AppStatusBadge.success(
                                     label: context.l10n.sepay_bank_matches_club,
@@ -964,10 +985,14 @@ class _ClubSepayScreenState extends ConsumerState<ClubSepayScreen> {
                             ),
                             AppSpacing.gapH4,
                             Text(
-                              context.l10n.sepay_account_holder_bin(
-                                acc.accountHolder,
-                                acc.bankBin,
+                              'Chủ tài khoản: ${acc.accountHolder}',
+                              style: AppTypography.bodySmall.colored(
+                                colors.textSecondary,
                               ),
+                            ),
+                            AppSpacing.gapH4,
+                            Text(
+                              'Mã ngân hàng: ${acc.bankBin}',
                               style: AppTypography.bodySmall.colored(
                                 colors.textSecondary,
                               ),
@@ -984,7 +1009,7 @@ class _ClubSepayScreenState extends ConsumerState<ClubSepayScreen> {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(
-              icon: isActionInProgress && state.actionType == 'select'
+              icon: isActionInProgress && state.actionType == 'connect'
                   ? const SizedBox(
                       width: 18,
                       height: 18,
@@ -994,7 +1019,7 @@ class _ClubSepayScreenState extends ConsumerState<ClubSepayScreen> {
                       ),
                     )
                   : const Icon(Icons.check_rounded, size: 18),
-              label: Text(context.l10n.sepay_confirm_bank_selection),
+              label: Text(context.l10n.sepay_confirm_and_connect),
               style: ElevatedButton.styleFrom(
                 backgroundColor: colors.primary,
                 foregroundColor: AppColors.white,
@@ -1003,13 +1028,13 @@ class _ClubSepayScreenState extends ConsumerState<ClubSepayScreen> {
                   borderRadius: AppRadius.button,
                 ),
               ),
-              onPressed: isActionInProgress || selectedId == null
+              onPressed: isActionInProgress || state.isLoading || selectedId == null
                   ? null
                   : () => ref
                         .read(
                           clubSepayViewModelProvider(widget.clubId).notifier,
                         )
-                        .selectAccount(),
+                        .connectSelectedAccount(),
             ),
           ),
         ],
@@ -1057,28 +1082,31 @@ class _ClubSepayScreenState extends ConsumerState<ClubSepayScreen> {
                 border: Border.all(color: colors.cardBorder),
               ),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        c.gateway ?? context.l10n.sepay_other_bank,
-                        style: AppTypography.labelMedium.bold.colored(
-                          colors.textPrimary,
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          c.gateway ?? context.l10n.sepay_other_bank,
+                          style: AppTypography.labelMedium.bold.colored(
+                            colors.textPrimary,
+                          ),
+                          overflow: TextOverflow.ellipsis,
                         ),
-                      ),
-                      AppSpacing.gapH4,
-                      Text(
-                        context.l10n.sepay_connection_status_value(
-                          _connectionStatusLabel(c.status),
+                        AppSpacing.gapH4,
+                        Text(
+                          context.l10n.sepay_connection_status_value(
+                            _connectionStatusLabel(c.status),
+                          ),
+                          style: AppTypography.bodySmall.colored(
+                            colors.textSecondary,
+                          ),
                         ),
-                        style: AppTypography.bodySmall.colored(
-                          colors.textSecondary,
-                        ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
+                  AppSpacing.gapW8,
                   if (c.connectionId != null)
                     TextButton.icon(
                       icon: const Icon(Icons.delete_outline_rounded, size: 16),

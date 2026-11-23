@@ -11,12 +11,14 @@ final myFeesViewModelProvider =
 
 class MyFeesViewModel extends StateNotifier<MyFeesState> {
   final GetMyFeesUseCase _getMyFees;
+  int _loadVersion = 0;
 
   MyFeesViewModel(this._getMyFees) : super(const MyFeesState()) {
     load();
   }
 
   Future<void> load({String? filter, bool refresh = false}) async {
+    final version = ++_loadVersion;
     final selectedFilter = filter ?? state.statusFilter;
     state = state.copyWith(
       isLoading: true,
@@ -32,6 +34,7 @@ class MyFeesViewModel extends StateNotifier<MyFeesState> {
         pageSize: state.pageSize,
         paymentStatus: selectedFilter,
       );
+      if (!mounted || version != _loadVersion) return;
       state = state.copyWith(
         fees: result.items,
         total: result.total,
@@ -40,8 +43,10 @@ class MyFeesViewModel extends StateNotifier<MyFeesState> {
         isLoading: false,
       );
     } on AppException catch (e) {
+      if (!mounted || version != _loadVersion) return;
       state = state.copyWith(isLoading: false, error: e);
     } catch (e) {
+      if (!mounted || version != _loadVersion) return;
       state = state.copyWith(
         isLoading: false,
         error: AppException(message: e.toString()),
@@ -51,6 +56,7 @@ class MyFeesViewModel extends StateNotifier<MyFeesState> {
 
   Future<void> loadMore() async {
     if (state.isLoading || state.isLoadingMore || !state.hasMore) return;
+    final version = _loadVersion;
     state = state.copyWith(isLoadingMore: true, clearError: true);
     try {
       final nextPage = state.page + 1;
@@ -59,6 +65,7 @@ class MyFeesViewModel extends StateNotifier<MyFeesState> {
         pageSize: state.pageSize,
         paymentStatus: state.statusFilter,
       );
+      if (!mounted || version != _loadVersion) return;
       state = state.copyWith(
         fees: [...state.fees, ...result.items],
         total: result.total,
@@ -67,8 +74,10 @@ class MyFeesViewModel extends StateNotifier<MyFeesState> {
         isLoadingMore: false,
       );
     } on AppException catch (e) {
+      if (!mounted || version != _loadVersion) return;
       state = state.copyWith(isLoadingMore: false, error: e);
     } catch (e) {
+      if (!mounted || version != _loadVersion) return;
       state = state.copyWith(
         isLoadingMore: false,
         error: AppException(message: e.toString()),

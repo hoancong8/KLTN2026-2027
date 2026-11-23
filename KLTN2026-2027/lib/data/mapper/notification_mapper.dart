@@ -10,6 +10,7 @@ class NotificationMapper {
       type: dto.type,
       referenceType: dto.referenceType,
       referenceId: dto.referenceId,
+      groupId: dto.groupId,
       isRead: dto.isRead,
       createdAt: dto.createdAt,
     );

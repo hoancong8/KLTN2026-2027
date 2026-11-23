@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../app/consts/app_config.dart';
 import '../../../../app/provider/localization_provider.dart';
@@ -6,15 +7,16 @@ import '../../../../app/theme/theme.dart';
 import '../notification_vm/notification_state.dart';
 import '../notification_vm/notification_vm.dart';
 import 'notification_item_card.dart';
+import 'ledger_notification_navigation.dart';
 
-class NotificationTablet extends StatelessWidget {
+class NotificationTablet extends ConsumerWidget {
   final NotificationState state;
   final NotificationViewModel vm;
 
   const NotificationTablet({super.key, required this.state, required this.vm});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final colors = context.colors;
     final l10n = context.l10n;
     final notifications = state.filteredNotifications;
@@ -78,7 +80,7 @@ class NotificationTablet extends StatelessWidget {
                             final item = notifications[index];
                             return NotificationItemCard(
                               notification: item,
-                              onTap: () {
+                              onTap: () async {
                                 if (!item.isRead) {
                                   vm.markAsRead(item.id);
                                 }
@@ -87,7 +89,10 @@ class NotificationTablet extends StatelessWidget {
                                 final referenceId = item.referenceId;
                                 if (referenceId != null &&
                                     referenceId.isNotEmpty) {
-                                  if (referenceType == 'SESSIONSETTLEMENT') {
+                                  if (referenceType == 'GROUPLEDGER' &&
+                                      item.groupId != null && item.groupId!.isNotEmpty) {
+                                    await openLedgerFromNotification(context, ref, item.groupId!);
+                                  } else if (referenceType == 'SESSIONSETTLEMENT') {
                                     context.push(
                                       AppConfig.sessionSettlementScreenPath(
                                         referenceId,

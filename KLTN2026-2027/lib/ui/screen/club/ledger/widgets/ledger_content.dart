@@ -92,7 +92,12 @@ class _LedgerContentState extends ConsumerState<LedgerContent> {
       child: ListView(
         key: PageStorageKey(widget.scope),
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: AppSpacing.allBase,
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.base,
+          AppSpacing.base,
+          AppSpacing.base,
+          120,
+        ),
         children: [content],
       ),
     );
@@ -281,19 +286,28 @@ class _LedgerContentState extends ConsumerState<LedgerContent> {
         filter.direction != null ||
         filter.debtType != null;
 
+    final String currentSegment;
+    if (filter.onlyMine) {
+      currentSegment = 'mine';
+    } else if (_showDebts) {
+      currentSegment = 'debts';
+    } else {
+      currentSegment = 'history';
+    }
+
     return Row(
       children: [
         Expanded(
-          child: SegmentedButton<bool>(
+          child: SegmentedButton<String>(
             showSelectedIcon: false,
             expandedInsets: EdgeInsets.zero,
             style: ButtonStyle(
-              padding: const WidgetStatePropertyAll(AppSpacing.horizontalXs),
+              padding: const WidgetStatePropertyAll(EdgeInsets.symmetric(horizontal: 4)),
               textStyle: WidgetStatePropertyAll(AppTypography.labelMedium),
             ),
             segments: [
-              ButtonSegment(
-                value: false,
+              ButtonSegment<String>(
+                value: 'history',
                 label: Text(
                   l10n.ledger_history_short,
                   maxLines: 1,
@@ -301,8 +315,8 @@ class _LedgerContentState extends ConsumerState<LedgerContent> {
                 ),
                 tooltip: l10n.ledger_history,
               ),
-              ButtonSegment(
-                value: true,
+              ButtonSegment<String>(
+                value: 'debts',
                 label: Text(
                   l10n.ledger_debts_short,
                   maxLines: 1,
@@ -310,29 +324,66 @@ class _LedgerContentState extends ConsumerState<LedgerContent> {
                 ),
                 tooltip: l10n.ledger_debts,
               ),
+              ButtonSegment<String>(
+                value: 'mine',
+                label: Text(
+                  'Của tôi',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                tooltip: l10n.ledger_only_mine,
+              ),
             ],
-            selected: {_showDebts},
-            onSelectionChanged: (value) =>
-                setState(() => _showDebts = value.single),
+            selected: {currentSegment},
+            onSelectionChanged: (values) {
+              final val = values.single;
+              if (val == 'mine') {
+                setState(() => _showDebts = false);
+                if (!filter.onlyMine) {
+                  _vm.setFilter(
+                    LedgerFilter(
+                      dates: filter.dates,
+                      direction: filter.direction,
+                      debtType: filter.debtType,
+                      category: filter.category,
+                      month: filter.month,
+                      onlyMine: true,
+                    ),
+                  );
+                }
+              } else if (val == 'debts') {
+                setState(() => _showDebts = true);
+                if (filter.onlyMine) {
+                  _vm.setFilter(
+                    LedgerFilter(
+                      dates: filter.dates,
+                      direction: filter.direction,
+                      debtType: filter.debtType,
+                      category: filter.category,
+                      month: filter.month,
+                      onlyMine: false,
+                    ),
+                  );
+                }
+              } else {
+                setState(() => _showDebts = false);
+                if (filter.onlyMine) {
+                  _vm.setFilter(
+                    LedgerFilter(
+                      dates: filter.dates,
+                      direction: filter.direction,
+                      debtType: filter.debtType,
+                      category: filter.category,
+                      month: filter.month,
+                      onlyMine: false,
+                    ),
+                  );
+                }
+              }
+            },
           ),
         ),
         AppSpacing.gapW8,
-        IconButton.filledTonal(
-          tooltip: l10n.ledger_only_mine,
-          isSelected: filter.onlyMine,
-          icon: const Icon(Icons.person_outline),
-          selectedIcon: const Icon(Icons.person),
-          onPressed: () => _vm.setFilter(
-            LedgerFilter(
-              dates: filter.dates,
-              direction: filter.direction,
-              debtType: filter.debtType,
-              category: filter.category,
-              month: filter.month,
-              onlyMine: !filter.onlyMine,
-            ),
-          ),
-        ),
         IconButton(
           tooltip: l10n.ledger_filters,
           icon: Badge(

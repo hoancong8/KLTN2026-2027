@@ -107,13 +107,14 @@ class ClubLedgerViewModel extends StateNotifier<ClubLedgerState> {
   String _search = '';
   Future<void> Function()? _pendingWrite;
   void Function()? _releaseWriteLifetime;
+  bool _contextSuspended = false;
 
   ClubLedgerViewModel(this._ref, this._scope) : super(const ClubLedgerState()) {
     unawaited(refresh());
   }
 
-  bool _allowed(String permission) {
-    if (!mounted || state.accessRevoked) return false;
+  bool _hasContextPermission(String permission) {
+    if (!mounted) return false;
     final context = _ref.read(activeClubContextProvider);
     final token = _ref.read(authTokenProvider);
     final actor = token?.userId ?? _ref.read(currentUserProfileProvider)?.id;
@@ -122,6 +123,9 @@ class ClubLedgerViewModel extends StateNotifier<ClubLedgerState> {
         context?.clubId == _scope.clubId &&
         context!.hasPermission(permission);
   }
+
+  bool _allowed(String permission) =>
+      !state.accessRevoked && _hasContextPermission(permission);
 
   bool get _canRead => _allowed(ClubPermissions.ledgerView);
   bool get _canManage =>
@@ -138,8 +142,22 @@ class ClubLedgerViewModel extends StateNotifier<ClubLedgerState> {
   }
 
   void checkContext() {
-    if (!mounted || state.accessRevoked) return;
+    if (!mounted) return;
+    if (state.accessRevoked) {
+      if (_contextSuspended &&
+          _hasContextPermission(ClubPermissions.ledgerView)) {
+        _contextSuspended = false;
+        state = const ClubLedgerState();
+        unawaited(refresh());
+      }
+      return;
+    }
     if (!_canRead) {
+      final context = _ref.read(activeClubContextProvider);
+      final token = _ref.read(authTokenProvider);
+      final actor = token?.userId ?? _ref.read(currentUserProfileProvider)?.id;
+      _contextSuspended =
+          token != null && actor == _scope.userId && context?.clubId != _scope.clubId;
       _revoke();
     } else if (!_allowed(ClubPermissions.ledgerManage)) {
       _pendingWrite = null;

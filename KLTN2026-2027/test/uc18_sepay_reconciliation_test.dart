@@ -1,4 +1,8 @@
+import 'dart:async';
+
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kltn2026_2027/app/provider.dart';
 import 'package:kltn2026_2027/data/dto/reconciliation/reconciliation_dto.dart';
 import 'package:kltn2026_2027/data/dto/sepay/sepay_dto.dart';
 import 'package:kltn2026_2027/data/mapper/reconciliation_mapper.dart';
@@ -7,8 +11,138 @@ import 'package:kltn2026_2027/domain/entities/reconciliation/reconciliation_tran
 import 'package:kltn2026_2027/domain/entities/sepay/sepay_connection.dart';
 import 'package:kltn2026_2027/domain/entities/sepay/sepay_provider_account.dart';
 import 'package:kltn2026_2027/domain/entities/session/session_settlement.dart';
+import 'package:kltn2026_2027/domain/repositories/sepay_repository.dart';
+import 'package:kltn2026_2027/ui/screen/club/sepay_connection/club_sepay_state.dart';
+import 'package:kltn2026_2027/ui/screen/club/sepay_connection/club_sepay_vm.dart';
+
+class _SepayConnectionRepository implements SepayRepository {
+  _SepayConnectionRepository({this.failActivationOnce = false});
+
+  final bool failActivationOnce;
+  final calls = <String>[];
+  SepayConnection _connection = current;
+
+  static const current = SepayConnection(
+    connectionId: 'current',
+    status: 'AUTHORIZED',
+    applicationReady: true,
+    webhookEnabled: true,
+  );
+  static const previous = SepayConnection(
+    connectionId: 'previous',
+    status: 'CONNECTED',
+    applicationReady: true,
+    webhookEnabled: true,
+  );
+
+  @override
+  Future<SepayConnection> getClubSepayConnection(String clubId) async =>
+      _connection;
+
+  @override
+  Future<List<SepayProviderAccount>> getClubSepayBankAccounts(
+    String clubId,
+  ) async => const [
+    SepayProviderAccount(
+      id: 101,
+      accountNumber: '00123',
+      accountHolder: 'CLB',
+      bankBin: '970422',
+      gateway: 'MB',
+      active: true,
+      matchesClubBank: true,
+    ),
+  ];
+
+  @override
+  Future<List<SepayConnection>> listClubSepayConnections(String clubId) async =>
+      [_connection, previous];
+
+  @override
+  Future<SepayConnection> selectClubSepayBankAccount(
+    String clubId,
+    int providerBankId,
+  ) async {
+    calls.add('select:$providerBankId');
+    return _connection = _connection.copyWith(status: 'PROVISIONING');
+  }
+
+  @override
+  Future<SepayConnection> activateClubSepayConnection(String clubId) async {
+    calls.add('activate');
+    if (failActivationOnce && calls.length == 2) throw StateError('Unavailable');
+    return _connection = _connection.copyWith(status: 'CONNECTED');
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
 
 void main() {
+  test('current authorization is excluded from other connections', () async {
+    final container = ProviderContainer(
+      overrides: [
+        sepayRepositoryProvider.overrideWithValue(_SepayConnectionRepository()),
+      ],
+    );
+    addTearDown(container.dispose);
+    final loaded = Completer<ClubSepayState>();
+    container.listen(clubSepayViewModelProvider('club'), (_, state) {
+      if (!state.isLoading && !loaded.isCompleted) loaded.complete(state);
+    });
+
+    final state = await loaded.future;
+    expect(state.connection, _SepayConnectionRepository.current);
+    expect(state.oldConnections, [_SepayConnectionRepository.previous]);
+  });
+
+  test('one confirmation selects the bank and activates SePay', () async {
+    final repository = _SepayConnectionRepository();
+    final container = ProviderContainer(
+      overrides: [sepayRepositoryProvider.overrideWithValue(repository)],
+    );
+    addTearDown(container.dispose);
+    final provider = clubSepayViewModelProvider('club');
+    final loaded = Completer<void>();
+    container.listen(provider, (_, state) {
+      if (!state.isLoading && !loaded.isCompleted) loaded.complete();
+    });
+    await loaded.future;
+
+    final viewModel = container.read(provider.notifier);
+    final connecting = viewModel.connectSelectedAccount();
+    expect(await viewModel.connectSelectedAccount(), isFalse);
+    expect(await connecting, isTrue);
+    expect(repository.calls, ['select:101', 'activate']);
+    expect(container.read(provider).connection?.isConnected, isTrue);
+  });
+
+  test('an activation retry uses the already selected account', () async {
+    final repository = _SepayConnectionRepository(failActivationOnce: true);
+    final container = ProviderContainer(
+      overrides: [sepayRepositoryProvider.overrideWithValue(repository)],
+    );
+    addTearDown(container.dispose);
+    final provider = clubSepayViewModelProvider('club');
+    final loaded = Completer<void>();
+    container.listen(provider, (_, state) {
+      if (!state.isLoading && !loaded.isCompleted) loaded.complete();
+    });
+    await loaded.future;
+
+    final viewModel = container.read(provider.notifier);
+    expect(await viewModel.connectSelectedAccount(), isFalse);
+    expect(container.read(provider).connection?.isProvisioning, isTrue);
+    expect(
+      container.read(provider).errorMessageKey,
+      'sepay_activate_connection_failed',
+    );
+
+    expect(await viewModel.connectSelectedAccount(), isTrue);
+    expect(repository.calls, ['select:101', 'activate', 'activate']);
+    expect(container.read(provider).connection?.isConnected, isTrue);
+  });
+
   group('UC18 - SePay Application DTO & Entity Mapping', () {
     test('parses SepayApplicationDto and maps to entity correctly', () {
       final json = {
