@@ -86,6 +86,8 @@ class SessionSettlementDto {
   final int extraFee;
   final int totalCost;
   final int totalCollected;
+  final int totalReceivable;
+  final int monthlyFundCovered;
   final List<MemberSettlementFeeDto> memberFees;
   final bool isSettled;
   final PaymentBankAccountDto? bankAccount;
@@ -98,6 +100,8 @@ class SessionSettlementDto {
     required this.extraFee,
     required this.totalCost,
     required this.totalCollected,
+    this.totalReceivable = 0,
+    this.monthlyFundCovered = 0,
     required this.memberFees,
     required this.isSettled,
     this.bankAccount,
@@ -130,6 +134,8 @@ class SessionSettlementDto {
       extraFee: _parseInt(json['extraFee'] ?? json['ExtraFee'] ?? json['extraExpense'] ?? json['ExtraExpense']),
       totalCost: _parseInt(json['totalCost'] ?? json['TotalCost']),
       totalCollected: _parseInt(json['totalCollected'] ?? json['TotalCollected']),
+      totalReceivable: _parseInt(json['totalReceivable'] ?? json['TotalReceivable']),
+      monthlyFundCovered: _parseInt(json['monthlyFundCovered'] ?? json['MonthlyFundCovered']),
       memberFees: fees,
       isSettled: _parseBool(json['isSettled'] ?? json['IsSettled']) ||
           (json['state'] ?? json['State'])?.toString().toUpperCase() == 'PUBLISHED' ||

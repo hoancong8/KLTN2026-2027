@@ -38,6 +38,8 @@ extension SessionSettlementDtoMapper on SessionSettlementDto {
       extraFee: extraFee,
       totalCost: totalCost,
       totalCollected: totalCollected,
+      totalReceivable: totalReceivable,
+      monthlyFundCovered: monthlyFundCovered,
       memberFees: memberFees.map((f) => f.toEntity()).toList(),
       isSettled: isSettled,
       bankAccount: bankAccount != null ? PaymentMapper.toBankAccount(bankAccount!) : null,

@@ -70,6 +70,7 @@ abstract class SessionOperationsRepository {
     required int shuttlecockUsed,
     required int extraFee,
     int? courtRentalCost,
+    bool monthlyExemptCourtOnly = false,
   });
   Future<SessionSettlement> markMemberPaid({
     required String sessionId,

@@ -172,6 +172,7 @@ class FakeSessionOperationsRepository implements SessionOperationsRepository {
     required int shuttlecockUsed,
     required int extraFee,
     int? courtRentalCost,
+    bool monthlyExemptCourtOnly = false,
   }) async => getSettlement(sessionId);
 
   @override

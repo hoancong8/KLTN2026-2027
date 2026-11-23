@@ -7,11 +7,12 @@ import '../../domain/entities/session/session_review.dart';
 import '../../domain/entities/session/session_rotation.dart';
 import '../../domain/entities/session/session_settlement.dart';
 import '../../domain/enums/session_enums.dart';
+import '../../domain/exceptions/app_exception.dart';
 import '../../domain/repositories/session_operations_repository.dart';
 import '../../domain/utils/gender_helper.dart';
-import '../../domain/utils/session_fee_calculator.dart';
 import '../datasource/local/club_schedule_local_datasource.dart';
 import '../dto/club/club_detail_dto.dart';
+import '../../app/consts/app_config.dart';
 import '../dto/payment/payment_dto.dart';
 import '../dto/session/session_detail_dto.dart';
 import '../dto/session/session_settlement_dto.dart';
@@ -1381,9 +1382,6 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
     }
 
     if (!_settlementCache.containsKey(sessionId) || _settlementCache[sessionId]!.memberFees.isEmpty) {
-      final attendance = await getAttendance(sessionId);
-      final activePlayers = attendance.players.where((p) => !p.isNoShow).toList();
-
       int totalCost = 0;
       String groupId = '';
       try {
@@ -1438,16 +1436,55 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
         }
       }
 
-      final femaleCount = activePlayers.where((p) => GenderHelper.isFemale(genderString: p.gender, fullName: p.fullName)).length;
-      final feeResult = totalCost > 0
-          ? SessionFeeCalculator.calculate(
-              totalCost: totalCost,
-              totalPlayers: activePlayers.isNotEmpty ? activePlayers.length : 1,
-              femaleCount: femaleCount,
-              femaleDiscount: 10000,
-              roundRule: 1000,
-            )
-          : null;
+      bool isSettled = false;
+      MemberSettlementFee? myPersonalFee;
+      try {
+        final myFeesRes = await dio.get(
+          AppConfig.myFeesEndpoint,
+          queryParameters: {
+            'sessionId': sessionId,
+            'pageSize': 1,
+            'page': 1,
+          },
+        );
+        if (myFeesRes.statusCode == 200 && myFeesRes.data != null) {
+          final p = myFeesRes.data is Map<String, dynamic> && myFeesRes.data.containsKey('result')
+              ? myFeesRes.data['result']
+              : myFeesRes.data;
+          if (p is Map<String, dynamic> && p['items'] is List && (p['items'] as List).isNotEmpty) {
+            final firstItem = (p['items'] as List).first;
+            if (firstItem is Map<String, dynamic>) {
+              final pubState = firstItem['publicationState']?.toString().toUpperCase();
+              if (pubState == 'PUBLISHED') {
+                isSettled = true;
+              }
+              final payStatus = firstItem['paymentStatus']?.toString().toUpperCase() ?? 'PENDING';
+              final rawAmount = firstItem['amount'];
+              final amount = rawAmount is num ? rawAmount.toInt() : int.tryParse(rawAmount?.toString() ?? '0') ?? 0;
+              final isExempt = payStatus == 'EXEMPT' || amount == 0;
+              final isPaid = payStatus == 'PAID';
+              final instructions = firstItem['paymentInstructions'] is Map ? firstItem['paymentInstructions'] as Map : null;
+              final qrUrl = instructions?['qrCodePayload']?.toString() ?? '';
+              final pCode = firstItem['paymentCode']?.toString() ?? '';
+
+              myPersonalFee = MemberSettlementFee(
+                feeId: firstItem['feeId']?.toString() ?? '',
+                userId: firstItem['userId']?.toString() ?? '',
+                fullName: firstItem['groupName']?.toString() ?? '',
+                roleName: isExempt ? 'Hội viên tháng' : 'Hội viên ngày',
+                gender: 'MALE',
+                baseFee: amount,
+                discount: isExempt ? amount : 0,
+                finalFee: isExempt ? 0 : amount,
+                paymentStatus: payStatus,
+                vietQrUrl: qrUrl,
+                paymentCode: pCode,
+                paidAmount: isPaid ? amount : 0,
+              );
+            }
+          }
+        }
+      } catch (_) {}
 
       _settlementCache[sessionId] = SessionSettlement(
         sessionId: sessionId,
@@ -1457,34 +1494,9 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
         extraFee: 0,
         totalCost: totalCost,
         totalCollected: 0,
-        isSettled: false,
+        isSettled: isSettled,
         bankAccount: fetchedBank ?? _settlementCache[sessionId]?.bankAccount,
-        memberFees: activePlayers
-            .map(
-              (p) {
-                final isFemale = GenderHelper.isFemale(genderString: p.gender, fullName: p.fullName);
-                final role = p.isWalkIn ? 'GUEST' : (p.roleName.isNotEmpty ? p.roleName : 'MEMBER_DAILY');
-                final base = feeResult?.maleFee ?? 0;
-                final discount = (feeResult != null && isFemale) ? (feeResult.maleFee - feeResult.femaleFee) : 0;
-                final finalFee = isFemale ? (feeResult?.femaleFee ?? 0) : (feeResult?.maleFee ?? 0);
-                return MemberSettlementFee(
-                  feeId: '',
-                  userId: p.userId,
-                  fullName: p.fullName,
-                  avatarUrl: p.avatarUrl,
-                  roleName: role,
-                  gender: isFemale ? 'FEMALE' : 'MALE',
-                  baseFee: base,
-                  discount: discount,
-                  finalFee: finalFee,
-                  paymentStatus: 'PENDING',
-                  vietQrUrl: '',
-                  paymentCode: 'PAY_${p.userId}',
-                  paidAmount: 0,
-                );
-              },
-            )
-            .toList(),
+        memberFees: myPersonalFee != null ? [myPersonalFee] : const [],
       );
     }
     return _settlementCache[sessionId]!;
@@ -1496,6 +1508,7 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
     required int shuttlecockUsed,
     required int extraFee,
     int? courtRentalCost,
+    bool monthlyExemptCourtOnly = false,
   }) async {
     final current = await getSettlement(sessionId);
     final courtCost = courtRentalCost ?? current.courtFee;
@@ -1511,6 +1524,7 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
           'extraExpense': extraFee,
           'overrides': [],
           'confirmRemainingNoShows': true,
+          'monthlyExemptCourtOnly': monthlyExemptCourtOnly,
         },
       );
       if (previewRes.statusCode == 200 && previewRes.data != null) {
@@ -1531,6 +1545,7 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
                 'extraExpense': extraFee,
                 'overrides': [],
                 'confirmRemainingNoShows': true,
+                'monthlyExemptCourtOnly': monthlyExemptCourtOnly,
               },
               'previewToken': previewToken,
             },
@@ -1547,73 +1562,45 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
           }
         }
       }
-    } catch (_) {
-      // Fallback local engine calculation
+    } on DioException catch (e) {
+      final data = e.response?.data;
+      if (data is Map) {
+        final err = data['error'] ?? data;
+        if (err is Map) {
+          final code = err['code']?.toString() ?? '';
+          final msg = err['message']?.toString() ?? '';
+          if (code == 'Settlement.InvalidParticipants') {
+            throw AppException(
+              message: 'Buổi chơi chưa có hội viên nào điểm danh (Check-in ra sân). Vui lòng điểm danh trước khi ghi nhận chi phí.',
+              originalError: e,
+            );
+          }
+          if (msg.isNotEmpty) {
+            throw AppException(message: msg, originalError: e);
+          }
+        }
+      }
+      if (e.response != null) {
+        throw AppException(
+          message: 'Lỗi máy chủ (${e.response?.statusCode}). Không thể ghi nhận chi phí.',
+          originalError: e,
+        );
+      }
+      throw AppException(
+        message: 'Không thể kết nối đến máy chủ để ghi nhận chi phí.',
+        originalError: e,
+      );
+    } catch (e) {
+      if (e is AppException) rethrow;
+      throw AppException(
+        message: e.toString(),
+        originalError: e,
+      );
     }
 
-    final totalShuttle = shuttlecockUsed * current.shuttlecockPrice;
-    final total = courtCost + totalShuttle + extraFee;
-
-    final femaleCount = current.memberFees.where((m) => GenderHelper.isFemale(genderString: m.gender, fullName: m.fullName)).length;
-    final feeResult = total > 0
-        ? SessionFeeCalculator.calculate(
-            totalCost: total,
-            totalPlayers: current.memberFees.isNotEmpty ? current.memberFees.length : 1,
-            femaleCount: femaleCount,
-            femaleDiscount: 10000,
-            roundRule: 1000,
-          )
-        : null;
-
-    final recalculatedFees = current.memberFees.map((m) {
-      final isMonthly = m.roleName.contains('tháng') || m.roleName.contains('Monthly');
-      if (isMonthly) {
-        return m.copyWith(finalFee: 0, discount: m.baseFee, paidAmount: 0, paymentStatus: 'PAID');
-      }
-      final isFemale = GenderHelper.isFemale(genderString: m.gender, fullName: m.fullName);
-      final maleFee = feeResult?.maleFee ?? 0;
-      final femaleFee = feeResult?.femaleFee ?? 0;
-      final newFinalFee = isFemale ? femaleFee : maleFee;
-      final previouslyPaid = m.paidAmount > 0 ? m.paidAmount : (m.isPaid ? m.finalFee : 0);
-
-      String newPaymentStatus;
-      int newPaidAmount;
-      if (newFinalFee > 0 && previouslyPaid >= newFinalFee) {
-        newPaymentStatus = 'PAID';
-        newPaidAmount = newFinalFee;
-      } else if (previouslyPaid > 0) {
-        newPaymentStatus = 'PARTIAL';
-        newPaidAmount = previouslyPaid;
-      } else {
-        newPaymentStatus = 'PENDING';
-        newPaidAmount = 0;
-      }
-
-      return m.copyWith(
-        baseFee: maleFee,
-        discount: isFemale ? (maleFee - femaleFee) : 0,
-        finalFee: newFinalFee,
-        paidAmount: newPaidAmount,
-        paymentStatus: newPaymentStatus,
-        gender: isFemale ? 'FEMALE' : 'MALE',
-      );
-    }).toList();
-
-    final totalCollected = recalculatedFees.fold(0, (sum, m) => sum + m.paidAmount);
-
-    final updated = SessionSettlement(
-      sessionId: sessionId,
-      shuttlecockUsed: shuttlecockUsed,
-      shuttlecockPrice: current.shuttlecockPrice,
-      courtFee: courtCost,
-      extraFee: extraFee,
-      totalCost: total,
-      totalCollected: totalCollected,
-      memberFees: recalculatedFees,
-      isSettled: true,
+    throw AppException(
+      message: 'Không thể nhận dữ liệu quyết toán từ máy chủ.',
     );
-    _settlementCache[sessionId] = updated;
-    return updated;
   }
 
   @override
@@ -1621,18 +1608,6 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
     required String sessionId,
     required String userId,
   }) async {
-    var current = await getSettlement(sessionId);
-    if (!current.isSettled) {
-      try {
-        current = await calculateSettlement(
-          sessionId: sessionId,
-          shuttlecockUsed: current.shuttlecockUsed,
-          extraFee: current.extraFee,
-          courtRentalCost: current.courtFee,
-        );
-      } catch (_) {}
-    }
-
     try {
       final res = await dio.post('/api/v1/sessions/$sessionId/settlement/members/$userId/pay');
       if (res.statusCode == 200 && res.data != null) {
@@ -1643,38 +1618,16 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
           return entity;
         }
       }
-    } catch (_) {
-      // Fallback local update
+    } on DioException catch (e) {
+      final data = e.response?.data;
+      final msg = (data is Map && data['error'] is Map) ? data['error']['message']?.toString() : null;
+      throw AppException(message: msg ?? 'Lỗi xác nhận thanh toán (${e.response?.statusCode})', originalError: e);
+    } catch (e) {
+      if (e is AppException) rethrow;
+      throw AppException(message: e.toString(), originalError: e);
     }
 
-    current = await getSettlement(sessionId);
-    final updatedFees = current.memberFees.map((m) {
-      if (m.userId == userId) {
-        return m.copyWith(
-          paidAmount: m.finalFee,
-          paymentStatus: 'PAID',
-          paymentMethod: 'CASH',
-        );
-      }
-      return m;
-    }).toList();
-
-    final collected = updatedFees.fold(0, (sum, m) => sum + m.paidAmount);
-
-    final updated = SessionSettlement(
-      sessionId: sessionId,
-      shuttlecockUsed: current.shuttlecockUsed,
-      shuttlecockPrice: current.shuttlecockPrice,
-      courtFee: current.courtFee,
-      extraFee: current.extraFee,
-      totalCost: current.totalCost,
-      totalCollected: collected,
-      memberFees: updatedFees,
-      isSettled: current.isSettled,
-      bankAccount: current.bankAccount,
-    );
-    _settlementCache[sessionId] = updated;
-    return updated;
+    throw AppException(message: 'Không thể xác nhận thanh toán từ máy chủ.');
   }
 
   @override

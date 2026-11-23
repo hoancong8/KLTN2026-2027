@@ -17,7 +17,6 @@ import '../../../domain/entities/session/session.dart';
 import '../../../domain/entities/session/session_detail.dart';
 import '../../../domain/entities/session/session_booking.dart';
 import '../../common/player_gender_helper.dart';
-import '../../../domain/utils/session_fee_calculator.dart';
 import '../../../domain/enums/session_enums.dart';
 import '../../../domain/usecases/session/session_usecases.dart';
 import 'club_vm/club_context_vm.dart';
@@ -2582,7 +2581,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
     final scaffoldMessenger = ScaffoldMessenger.of(context);
     final vm = ref.read(sessionDetailViewModelProvider(widget.sessionId).notifier);
 
-    final action = await showDialog<String>(
+    final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: colors.cardBackground,
@@ -2603,18 +2602,8 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(ctx).pop('CANCEL'),
+            onPressed: () => Navigator.of(ctx).pop(false),
             child: Text(context.l10n.com_cancel, style: TextStyle(color: colors.textMuted)),
-          ),
-          OutlinedButton.icon(
-            style: OutlinedButton.styleFrom(
-              foregroundColor: colors.primary,
-              side: BorderSide(color: colors.primary.withValues(alpha: 0.4)),
-              shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
-            ),
-            icon: const Icon(Icons.calculate_outlined, size: 18),
-            label: const Text('Xem quyết toán'),
-            onPressed: () => Navigator.of(ctx).pop('SETTLEMENT'),
           ),
           ElevatedButton.icon(
             style: ElevatedButton.styleFrom(
@@ -2623,41 +2612,48 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
               shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
             ),
             icon: const Icon(Icons.check_circle_outline_rounded, size: 18),
-            label: const Text('Kết thúc ngay'),
-            onPressed: () => Navigator.of(ctx).pop('COMPLETE'),
+            label: const Text('Xác nhận kết thúc'),
+            onPressed: () => Navigator.of(ctx).pop(true),
           ),
         ],
       ),
     );
 
-    if (!mounted || action == null || action == 'CANCEL') return;
+    if (!mounted || confirmed != true) return;
 
-    if (action == 'SETTLEMENT') {
-      _openSettlement(session);
-      return;
-    }
-
-    if (action == 'COMPLETE') {
-      final ok = await vm.updateStatus('COMPLETED', confirmRemainingNoShows: true);
-      if (!mounted) return;
-      if (ok) {
-        scaffoldMessenger.showSnackBar(
-          SnackBar(
-            content: const Text('Buổi chơi đã kết thúc thành công và được lưu lịch sử.'),
-            backgroundColor: colors.success,
-            behavior: SnackBarBehavior.floating,
+    final ok = await vm.updateStatus('COMPLETED', confirmRemainingNoShows: true);
+    if (!mounted) return;
+    if (ok) {
+      scaffoldMessenger.showSnackBar(
+        SnackBar(
+          content: const Text('Buổi chơi đã kết thúc thành công và được lưu lịch sử.'),
+          backgroundColor: colors.success,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } else {
+      final err = ref.read(sessionDetailViewModelProvider(widget.sessionId)).errorMessage;
+      final isApprovalRequired = err?.contains('Settlement.ApprovalRequired') == true ||
+          err?.contains('quyết toán') == true ||
+          err?.contains('chốt') == true;
+      scaffoldMessenger.showSnackBar(
+        SnackBar(
+          content: Text(
+            isApprovalRequired
+                ? 'Buổi chơi có người tham gia cần được chốt quyết toán chi phí trước khi kết thúc.'
+                : (err ?? 'Không thể kết thúc buổi chơi. Vui lòng kiểm tra lại trận đấu hoặc quyết toán chi phí.'),
           ),
-        );
-      } else {
-        final err = ref.read(sessionDetailViewModelProvider(widget.sessionId)).errorMessage;
-        scaffoldMessenger.showSnackBar(
-          SnackBar(
-            content: Text(err ?? 'Không thể kết thúc buổi chơi. Vui lòng kiểm tra lại trận đấu hoặc quyết toán chi phí.'),
-            backgroundColor: colors.error,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
+          backgroundColor: colors.error,
+          behavior: SnackBarBehavior.floating,
+          action: isApprovalRequired
+              ? SnackBarAction(
+                  label: 'Quyết toán',
+                  textColor: AppColors.white,
+                  onPressed: () => _openSettlement(session),
+                )
+              : null,
+        ),
+      );
     }
   }
 
@@ -3609,7 +3605,6 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                       final confirmedCount = confirmedPlayers.isNotEmpty
                           ? confirmedPlayers.length
                           : (session.confirmedCount > 0 ? session.confirmedCount : (session.maxPlayers > 0 ? session.maxPlayers : 1));
-                      final femaleCount = confirmedPlayers.where((p) => PlayerGenderHelper.isFemale(explicitGender: p.gender, fullName: p.fullName)).length;
                       final disc = feeRule?.femaleDiscountDaily.toInt() ?? 10000;
 
                       final defaultSettings = ref.watch(clubScheduleDefaultsProvider(session.groupId));
@@ -3627,25 +3622,63 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                           ? settlement.totalCost
                           : effectiveCourt.round();
 
-                      final feeResult = totalCost > 0
-                          ? SessionFeeCalculator.calculate(
-                              totalCost: totalCost,
-                              totalPlayers: confirmedCount,
-                              femaleCount: femaleCount,
-                              femaleDiscount: disc,
-                              roundRule: 1000,
-                            )
-                          : null;
+                      final myFeeItem = ref.watch(mySessionFeeProvider(session.id)).asData?.value;
+                      final isUserExempt = myFeeItem != null && (myFeeItem.paymentStatus.toUpperCase() == 'EXEMPT' || myFeeItem.amount == 0);
+                      
+                      int? settledDailyFee;
+                      int? settledFemaleFee;
+                      bool isAllExempt = false;
+                      if (settlement != null && settlement.isSettled) {
+                        if (settlement.memberFees.isNotEmpty &&
+                            settlement.memberFees.every((m) => m.isExempt || m.finalFee == 0)) {
+                          isAllExempt = true;
+                        } else {
+                          for (final m in settlement.memberFees) {
+                            if (!m.isExempt && m.finalFee > 0) {
+                              if (m.gender == 'FEMALE' && settledFemaleFee == null) {
+                                settledFemaleFee = m.finalFee;
+                              } else if (m.gender != 'FEMALE' && settledDailyFee == null) {
+                                settledDailyFee = m.finalFee;
+                              }
+                            }
+                          }
+                        }
+                      }
 
-                      final actualFinalFee = feeResult?.maleFee ?? 0;
                       final calculatedFeePerPlayer = (confirmedCount > 0 && totalCost > 0)
                           ? (totalCost / confirmedCount).round()
                           : (feePerPlayer > 0 ? feePerPlayer : 0);
-                      final displayFee = actualFinalFee > 0
-                          ? actualFinalFee
-                          : calculatedFeePerPlayer;
-                      final feeTitle = isEnded ? 'Chia thực tế (Chốt)' : 'Chia đều tay vợt';
-                      final feePrefix = isEnded ? '' : '~';
+
+                      final String feeTitle;
+                      final String displayFeeText;
+                      final String femaleFeeText;
+
+                      if (settlement != null && settlement.isSettled) {
+                        if (isAllExempt || (settlement.totalReceivable == 0 && settlement.memberFees.isNotEmpty)) {
+                          feeTitle = 'Quỹ CLB / Hội viên';
+                          displayFeeText = 'Được miễn phí';
+                          femaleFeeText = 'Được miễn phí';
+                        } else {
+                          feeTitle = 'Chia thực tế (Chốt)';
+                          final effectiveFee = settledDailyFee ?? calculatedFeePerPlayer;
+                          displayFeeText = '${NumberFormat('#,###').format(effectiveFee)} đ/người';
+                          femaleFeeText = settledFemaleFee != null
+                              ? '${NumberFormat('#,###').format(settledFemaleFee)} đ/người'
+                              : '-${NumberFormat('#,###').format(disc)} đ';
+                        }
+                      } else {
+                        feeTitle = 'Chia đều tay vợt';
+                        if (isUserExempt) {
+                          displayFeeText = 'Miễn phí (Hội viên tháng)';
+                        } else {
+                          displayFeeText = totalCost > 0
+                              ? '~${NumberFormat('#,###').format(calculatedFeePerPlayer)} đ/người'
+                              : '0 đ (Chờ chốt)';
+                        }
+                        femaleFeeText = totalCost > 0
+                            ? '-${NumberFormat('#,###').format(disc)} đ/người'
+                            : '-0 đ/người';
+                      }
 
                       return Row(
                         children: [
@@ -3676,11 +3709,9 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                                   ),
                                   AppSpacing.gapH4,
                                   Text(
-                                    totalCost > 0
-                                        ? '$feePrefix${NumberFormat('#,###').format(displayFee)} đ/người'
-                                        : '0 đ (Chờ chốt)',
+                                    displayFeeText,
                                     style: AppTypography.labelSmall.copyWith(
-                                      color: totalCost > 0 ? colors.primary : colors.textMuted,
+                                      color: (displayFeeText.contains('Miễn phí') || displayFeeText.contains('miễn phí')) ? colors.success : colors.primary,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
@@ -3716,13 +3747,9 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                                   ),
                                   AppSpacing.gapH4,
                                   Text(
-                                    totalCost > 0
-                                        ? (isEnded && (feeResult?.femaleFee ?? 0) > 0
-                                            ? '${NumberFormat('#,###').format(feeResult!.femaleFee)} đ/người'
-                                            : '-${NumberFormat('#,###').format(disc)} đ/người')
-                                        : '-0 đ/người',
+                                    femaleFeeText,
                                     style: AppTypography.labelSmall.copyWith(
-                                      color: totalCost > 0 ? AppColors.pink : colors.textMuted,
+                                      color: (femaleFeeText.contains('Miễn phí') || femaleFeeText.contains('miễn phí')) ? colors.success : AppColors.pink,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
@@ -4121,7 +4148,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                           ActionChip(
                             avatar: Icon(Icons.calculate_rounded, size: 16, color: colors.primary),
                             label: Text(
-                              'Quyáº¿t toÃ¡n',
+                              'Quyết toán',
                               style: AppTypography.labelSmall.semiBold.colored(colors.primary),
                             ),
                             backgroundColor: colors.primary.withValues(alpha: 0.1),
@@ -4822,7 +4849,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                                   return ElevatedButton.icon(
                                     onPressed: () => _openSettlement(session),
                                     icon: const Icon(Icons.receipt_long_rounded, size: 18),
-                                    label: const Text('Xem Quyết Toán & Đóng Tiền'),
+                                    label: const Text('Xem Quyết Toán'),
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: colors.primary,
                                       foregroundColor: AppColors.white,
@@ -4841,11 +4868,20 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                                     label: Text(context.l10n.sessionFeeAmountUnavailable),
                                   );
                                 }
-                                final feeLabel = switch (paymentStatus) {
-                                  'PAID' => '\u0110\u00e3 thanh to\u00e1n',
-                                  'EXEMPT' => '\u0110\u01b0\u1ee3c mi\u1ec5n ph\u00ed',
-                                  _ => 'Thanh to\u00e1n: ${NumberFormat('#,###').format(amount)} \u0111',
-                                };
+                                final String feeLabel;
+                                if (amount > 0) {
+                                  if (paymentStatus == 'PAID') {
+                                    feeLabel = 'Đã thanh toán';
+                                  } else {
+                                    feeLabel = 'Thanh toán: ${NumberFormat('#,###').format(amount)} đ';
+                                  }
+                                } else {
+                                  if (paymentStatus == 'PAID') {
+                                    feeLabel = 'Đã thanh toán';
+                                  } else {
+                                    feeLabel = 'Được miễn phí';
+                                  }
+                                }
                                 return ElevatedButton.icon(
                                   icon: Icon(
                                     paymentStatus == 'UNPAID'

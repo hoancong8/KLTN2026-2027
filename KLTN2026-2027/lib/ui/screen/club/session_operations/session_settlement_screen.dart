@@ -80,6 +80,7 @@ class SessionSettlementNotifier
     required int shuttlecockUsed,
     required int extraFee,
     int? courtRentalCost,
+    bool monthlyExemptCourtOnly = false,
   }) async {
     try {
       final updated = await _repo.calculateSettlement(
@@ -87,10 +88,12 @@ class SessionSettlementNotifier
         shuttlecockUsed: shuttlecockUsed,
         extraFee: extraFee,
         courtRentalCost: courtRentalCost,
+        monthlyExemptCourtOnly: monthlyExemptCourtOnly,
       );
       state = AsyncValue.data(updated);
     } catch (e, st) {
       state = AsyncValue.error(e, st);
+      rethrow;
     }
   }
 
@@ -362,12 +365,65 @@ class SessionSettlementScreen extends ConsumerWidget {
                                 label: Text(
                                   context.l10n.settlement_publish_fees,
                                 ),
-                                onPressed: () => _showUpdateConsumablesDialog(
-                                  context,
-                                  settlement,
-                                  vm,
-                                  ref,
-                                ),
+                                onPressed: () {
+                                  if (settlement.memberFees.isEmpty) {
+                                    showDialog(
+                                      context: context,
+                                      builder: (ctx) => AlertDialog(
+                                        backgroundColor: colors.cardBackground,
+                                        shape: const RoundedRectangleBorder(
+                                          borderRadius: AppRadius.dialog,
+                                        ),
+                                        title: Row(
+                                          children: [
+                                            Icon(
+                                              Icons.warning_amber_rounded,
+                                              color: colors.warning,
+                                            ),
+                                            AppSpacing.gapW8,
+                                            Text(
+                                              'Chưa có người có mặt',
+                                              style: AppTypography.titleMedium
+                                                  .copyWith(
+                                                    color: colors.textPrimary,
+                                                  ),
+                                            ),
+                                          ],
+                                        ),
+                                        content: Text(
+                                          'Buổi chơi chưa có hội viên nào được điểm danh (Check-in ra sân).\n\nVui lòng quay lại màn hình buổi chơi và chọn "Check-in Ra Sân" để điểm danh cho các thành viên có mặt trước khi ghi nhận chi phí!',
+                                          style: AppTypography.bodyMedium
+                                              .copyWith(
+                                                color: colors.textSecondary,
+                                              ),
+                                        ),
+                                        actions: [
+                                          ElevatedButton(
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: colors.primary,
+                                              foregroundColor: AppColors.white,
+                                              shape:
+                                                  const RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        AppRadius.button,
+                                                  ),
+                                            ),
+                                            onPressed: () =>
+                                                Navigator.of(ctx).pop(),
+                                            child: const Text('Đã hiểu'),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                    return;
+                                  }
+                                  _showUpdateConsumablesDialog(
+                                    context,
+                                    settlement,
+                                    vm,
+                                    ref,
+                                  );
+                                },
                               )
                             else
                               OutlinedButton.icon(
@@ -601,6 +657,7 @@ class SessionSettlementScreen extends ConsumerWidget {
                         ),
                       )
                     else ...() {
+                      final myPersonalFee = ref.watch(mySessionFeeProvider(sessionId)).asData?.value;
                       final memberFees = List<MemberSettlementFee>.from(settlement.memberFees);
                       if (currentUserId != null && currentUserId.isNotEmpty) {
                         memberFees.sort((a, b) {
@@ -612,15 +669,43 @@ class SessionSettlementScreen extends ConsumerWidget {
                         });
                       }
                       return memberFees.map(
-                        (fee) => _buildMemberFeeCard(
-                          context,
-                          fee,
-                          vm,
-                          effectiveBank,
-                          canOperateSettlement: canOperateSettlement,
-                          isCurrentUser: currentUserId != null &&
-                              fee.userId.toLowerCase() == currentUserId.toLowerCase(),
-                        ),
+                        (fee) {
+                          final isCurrentUser = currentUserId != null &&
+                              fee.userId.toLowerCase() == currentUserId.toLowerCase();
+                          var effectiveFee = fee;
+                          if (isCurrentUser && myPersonalFee != null) {
+                            final isExempt = myPersonalFee.isExempt ||
+                                (myPersonalFee.amount != null && myPersonalFee.amount! <= 0);
+                            final feeAmount = isExempt
+                                ? 0
+                                : (myPersonalFee.amount?.toInt() ?? effectiveFee.finalFee);
+                            effectiveFee = effectiveFee.copyWith(
+                              feeId: myPersonalFee.feeId.isNotEmpty
+                                  ? myPersonalFee.feeId
+                                  : effectiveFee.feeId,
+                              finalFee: feeAmount,
+                              paymentStatus: isExempt
+                                  ? 'EXEMPT'
+                                  : myPersonalFee.paymentStatus.toUpperCase(),
+                              roleName: isExempt ? 'MEMBER_MONTHLY' : effectiveFee.roleName,
+                              paymentCode: myPersonalFee.paymentCode.isNotEmpty
+                                  ? myPersonalFee.paymentCode
+                                  : effectiveFee.paymentCode,
+                              paidAmount: myPersonalFee.isPaid
+                                  ? feeAmount
+                                  : effectiveFee.paidAmount,
+                            );
+                          }
+                          return _buildMemberFeeCard(
+                            context,
+                            effectiveFee,
+                            vm,
+                            effectiveBank,
+                            canOperateSettlement: canOperateSettlement,
+                            isCurrentUser: isCurrentUser,
+                            isSettled: settlement.isSettled,
+                          );
+                        },
                       );
                     }(),
 
@@ -716,6 +801,7 @@ class SessionSettlementScreen extends ConsumerWidget {
     PaymentBankAccount? clubBank, {
     required bool canOperateSettlement,
     required bool isCurrentUser,
+    required bool isSettled,
   }) {
     final colors = context.colors;
     final currencyFormat = NumberFormat('#,###');
@@ -803,17 +889,27 @@ class SessionSettlementScreen extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                    context.l10n.settlement_amount(
-                      currencyFormat.format(fee.finalFee),
-                    ),
+                    fee.isExempt
+                        ? '0 đ'
+                        : context.l10n.settlement_amount(
+                            currencyFormat.format(fee.finalFee),
+                          ),
                     style: AppTypography.titleSmall.bold.colored(
-                      isPaid ? colors.success : colors.textPrimary,
+                      (isPaid || fee.isExempt) ? colors.success : colors.textPrimary,
                     ),
                   ),
                   const SizedBox(height: 2),
-                  if (isPaid)
+                  if (fee.isExempt)
+                    AppStatusBadge.success(
+                      label: context.l10n.payment_exempt,
+                    )
+                  else if (isPaid)
                     AppStatusBadge.success(
                       label: context.l10n.settlement_paid_badge,
+                    )
+                  else if (!isSettled)
+                    AppStatusBadge.neutral(
+                      label: 'Tạm tính',
                     )
                   else if (fee.isPendingCashConfirmation)
                     Container(
@@ -921,7 +1017,7 @@ class SessionSettlementScreen extends ConsumerWidget {
                     ),
                 ],
               ),
-            ] else if (isCurrentUser) ...[
+            ] else if (isCurrentUser && isSettled && !fee.isExempt && !isPaid) ...[
               Row(
                 children: [
                   Expanded(
@@ -1298,6 +1394,7 @@ class SessionSettlementScreen extends ConsumerWidget {
     SessionSettlementNotifier vm,
     WidgetRef ref,
   ) {
+    final colors = context.colors;
     final courtCtrl = TextEditingController(
       text: settlement.courtFee > 0 ? '${settlement.courtFee}' : '',
     );
@@ -1305,59 +1402,94 @@ class SessionSettlementScreen extends ConsumerWidget {
       text: '${settlement.shuttlecockUsed}',
     );
     final extraCtrl = TextEditingController(text: '${settlement.extraFee}');
+    bool monthlyExemptCourtOnly = false;
 
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(context.l10n.settlement_consumables_dialog_title),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: courtCtrl,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  labelText: 'Tiền thuê sân (đ)',
-                  hintText: 'Nhập tiền sân, VD: 300000',
+      builder: (ctx) => StatefulBuilder(
+        builder: (dialogCtx, setDialogState) => AlertDialog(
+          title: Text(context.l10n.settlement_consumables_dialog_title),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: courtCtrl,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: 'Tiền thuê sân (đ)',
+                    hintText: 'Nhập tiền sân, VD: 300000',
+                  ),
                 ),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: shuttleCtrl,
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(
-                  labelText: context.l10n.settlement_shuttlecock_quantity,
-                  hintText: context.l10n.settlement_shuttlecock_quantity_hint,
+                const SizedBox(height: 12),
+                TextField(
+                  controller: shuttleCtrl,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    labelText: context.l10n.settlement_shuttlecock_quantity,
+                    hintText: context.l10n.settlement_shuttlecock_quantity_hint,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: extraCtrl,
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(
-                  labelText: context.l10n.settlement_extra_expense_label,
-                  hintText: context.l10n.settlement_extra_expense_hint,
+                const SizedBox(height: 12),
+                TextField(
+                  controller: extraCtrl,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    labelText: context.l10n.settlement_extra_expense_label,
+                    hintText: context.l10n.settlement_extra_expense_hint,
+                  ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 8),
+                CheckboxListTile(
+                  value: monthlyExemptCourtOnly,
+                  onChanged: (v) => setDialogState(() => monthlyExemptCourtOnly = v ?? false),
+                  title: Text(
+                    'Hội viên tháng chỉ miễn tiền sân',
+                    style: AppTypography.labelMedium.copyWith(color: colors.textPrimary),
+                  ),
+                  subtitle: Text(
+                    'Tiền cầu & phụ phí vẫn chia đều cho mọi người',
+                    style: AppTypography.labelSmall.copyWith(color: colors.textMuted),
+                  ),
+                  contentPadding: EdgeInsets.zero,
+                  dense: true,
+                  controlAffinity: ListTileControlAffinity.leading,
+                ),
+              ],
+            ),
           ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: Text(context.l10n.com_cancel),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              final courtText = courtCtrl.text.replaceAll('.', '').replaceAll(',', '').trim();
-              final court = int.tryParse(courtText) ?? (courtText.isEmpty ? settlement.courtFee : 0);
-              final used = int.tryParse(shuttleCtrl.text.trim()) ?? 0;
-              final extra = int.tryParse(extraCtrl.text.trim()) ?? 0;
-              HapticFeedback.lightImpact();
-              vm.calculate(courtRentalCost: court, shuttlecockUsed: used, extraFee: extra);
-              ref.read(sessionDetailViewModelProvider(sessionId).notifier).loadDetail();
-              Navigator.of(ctx).pop();
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: Text(context.l10n.com_cancel),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final courtText = courtCtrl.text.replaceAll('.', '').replaceAll(',', '').trim();
+                final court = int.tryParse(courtText) ?? (courtText.isEmpty ? settlement.courtFee : 0);
+                final used = int.tryParse(shuttleCtrl.text.trim()) ?? 0;
+                final extra = int.tryParse(extraCtrl.text.trim()) ?? 0;
+                HapticFeedback.lightImpact();
+                Navigator.of(ctx).pop();
+                try {
+                  await vm.calculate(
+                    courtRentalCost: court,
+                    shuttlecockUsed: used,
+                    extraFee: extra,
+                    monthlyExemptCourtOnly: monthlyExemptCourtOnly,
+                  );
+                ref.read(sessionDetailViewModelProvider(sessionId).notifier).loadDetail();
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(e.toString()),
+                      backgroundColor: colors.error,
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                }
+              }
             },
             child: Text(
               settlement.isSettled
@@ -1367,6 +1499,7 @@ class SessionSettlementScreen extends ConsumerWidget {
           ),
         ],
       ),
+    ),
     );
   }
 

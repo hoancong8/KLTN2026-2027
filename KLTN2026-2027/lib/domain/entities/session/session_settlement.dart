@@ -95,6 +95,8 @@ class SessionSettlement {
   final int extraFee; // Phụ phí nước uống, phát sinh
   final int totalCost;
   final int totalCollected;
+  final int totalReceivable;
+  final int monthlyFundCovered;
   final List<MemberSettlementFee> memberFees;
   final bool isSettled;
   final PaymentBankAccount? bankAccount;
@@ -107,6 +109,8 @@ class SessionSettlement {
     required this.extraFee,
     required this.totalCost,
     required this.totalCollected,
+    this.totalReceivable = 0,
+    this.monthlyFundCovered = 0,
     required this.memberFees,
     required this.isSettled,
     this.bankAccount,
