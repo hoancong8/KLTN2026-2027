@@ -7,6 +7,7 @@ class AppNotification extends Equatable {
   final String type;
   final String? referenceType;
   final String? referenceId;
+  final String? groupId;
   final bool isRead;
   final DateTime createdAt;
 
@@ -17,6 +18,7 @@ class AppNotification extends Equatable {
     required this.type,
     this.referenceType,
     this.referenceId,
+    this.groupId,
     this.isRead = false,
     required this.createdAt,
   });
@@ -28,6 +30,7 @@ class AppNotification extends Equatable {
     String? type,
     String? referenceType,
     String? referenceId,
+    String? groupId,
     bool? isRead,
     DateTime? createdAt,
   }) {
@@ -38,6 +41,7 @@ class AppNotification extends Equatable {
       type: type ?? this.type,
       referenceType: referenceType ?? this.referenceType,
       referenceId: referenceId ?? this.referenceId,
+      groupId: groupId ?? this.groupId,
       isRead: isRead ?? this.isRead,
       createdAt: createdAt ?? this.createdAt,
     );
@@ -51,6 +55,7 @@ class AppNotification extends Equatable {
     type,
     referenceType,
     referenceId,
+    groupId,
     isRead,
     createdAt,
   ];

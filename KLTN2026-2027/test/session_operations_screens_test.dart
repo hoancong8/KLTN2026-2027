@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import 'package:kltn2026_2027/app/l10n_gen/app_localizations.dart';
 import 'package:kltn2026_2027/app/provider.dart';
 import 'package:kltn2026_2027/domain/entities/session/session_attendance.dart';
@@ -162,6 +163,19 @@ class FakeSessionOperationsRepository implements SessionOperationsRepository {
           vietQrUrl: '',
           paymentCode: 'PAY_AN_55K',
         ),
+        MemberSettlementFee(
+          feeId: 'fee-qr',
+          userId: 'u2',
+          fullName: 'Nguyễn Thị Bình',
+          roleName: 'Hội viên ngày',
+          gender: 'FEMALE',
+          baseFee: 50000,
+          discount: 0,
+          finalFee: 50000,
+          paymentStatus: 'UNPAID',
+          vietQrUrl: '00020101021238570010A000000727',
+          paymentCode: 'CLB TEST',
+        ),
       ],
     );
   }
@@ -256,6 +270,19 @@ void main() {
     expect(find.text('Tổng chi phí buổi chơi'), findsOneWidget);
     expect(find.text('440,000 đ'), findsOneWidget);
     expect(find.text('Đã đóng tiền'), findsOneWidget);
+  });
+
+  testWidgets('Settlement renders a generated QR from the payment payload', (tester) async {
+    tester.view.physicalSize = const Size(2400, 2000);
+    addTearDown(tester.view.resetPhysicalSize);
+    await tester.pumpWidget(buildTestableWidget(const SessionSettlementScreen(sessionId: 'session-1')));
+    await tester.pumpAndSettle();
+    final button = find.text('Mã QR chuyển khoản');
+    await tester.ensureVisible(button);
+    await tester.tap(button);
+    await tester.pumpAndSettle();
+
+    expect(find.byType(QrImageView), findsOneWidget);
   });
 
   testWidgets('SessionReviewsScreen renders FR23 reviews and rating score', (tester) async {

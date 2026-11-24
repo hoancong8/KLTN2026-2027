@@ -5,6 +5,8 @@ class AppConfig {
   static const env = String.fromEnvironment('ENV', defaultValue: 'dev');
   static const ledgerClubRequestKey = 'ledgerClubId';
   static String clubLedgerEndpoint(String clubId) => '$clubsPath/$clubId/ledger';
+  static String clubLedgerScreenPath(String clubId) =>
+      '/club/$clubId/ledger?switchClub=1';
   static bool get isWeb => kIsWeb;
 
   // ===== Base URL =====
@@ -69,6 +71,8 @@ class AppConfig {
   static String clubMembersPath(String id) => '$clubsPath/$id/members';
   static String clubMemberRolePath(String id, String userId) =>
       '$clubsPath/$id/members/$userId/role';
+  static String clubMemberFeePlanPath(String id, String userId) =>
+      '$clubsPath/$id/members/$userId/fee-plan';
   static String clubMemberDetailPath(String id, String userId) =>
       '$clubsPath/$id/members/$userId';
   static const clubPermissionsPath = '$clubsPath/permissions';

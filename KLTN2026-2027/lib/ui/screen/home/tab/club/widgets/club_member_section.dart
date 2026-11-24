@@ -747,12 +747,17 @@ class _ClubMemberSectionState extends ConsumerState<ClubMemberSection> {
               ),
               onPressed: () async {
                 Navigator.of(ctx).pop();
-                await widget.vm.updateMemberFeePlan(
+                final updated = await widget.vm.updateMemberFeePlan(
                   m.userId,
                   memberType: selectedType,
-                  monthlyExpiryDate: selectedType == 'MONTHLY'
-                      ? DateTime.now().add(const Duration(days: 30))
-                      : null,
+                );
+                if (!mounted) return;
+                final memberState = ref.read(clubMembersViewModelProvider);
+                final message = updated
+                    ? memberState.successMessage
+                    : memberState.error?.message;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(message ?? 'Không thể cập nhật gói hội viên.')),
                 );
               },
               child: Text('Lưu gói', style: AppTypography.labelLarge.bold.colored(AppColors.white)),

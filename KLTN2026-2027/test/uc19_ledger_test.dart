@@ -18,6 +18,7 @@ import 'package:kltn2026_2027/domain/entities/club/active_club_context.dart';
 import 'package:kltn2026_2027/domain/enums/club_role.dart';
 import 'package:kltn2026_2027/domain/exceptions/ledger_exception.dart';
 import 'package:kltn2026_2027/ui/screen/club/ledger/club_ledger_screen.dart';
+import 'package:kltn2026_2027/ui/screen/club/ledger/club_ledger_vm.dart';
 import 'package:kltn2026_2027/ui/screen/home/tab/club/widgets/club_ledger_tab.dart';
 
 void main() {
@@ -29,6 +30,56 @@ void main() {
     repository = LedgerRepositoryImpl(LedgerRemoteDatasourceImpl(dio));
   });
   tearDown(() => dio.close());
+
+  testWidgets('ledger reloads when the user returns to the previous club', (tester) async {
+    var overviewCalls = 0;
+    dio.interceptors.add(InterceptorsWrapper(onRequest: (options, handler) {
+      final overview = options.path.endsWith('/ledger');
+      if (overview) overviewCalls++;
+      handler.resolve(Response<String>(
+        requestOptions: options,
+        statusCode: 200,
+        data: overview
+            ? '{"availableBalance":100,"totalInflow":100,"totalOutflow":0,"sessionDebtTotal":0,"monthlyDebtTotal":0,"debtTotal":0,"asOfUtc":"2026-11-23T00:00:00Z","capabilities":{"canView":true,"canManage":false,"canWrite":false}}'
+            : '{"items":[],"total":0,"page":1,"pageSize":20}',
+      ));
+    }));
+    const clubA = ActiveClubContext(
+      clubId: 'club-a', clubName: 'A', role: ClubRole.host,
+      permissions: [ClubPermissions.ledgerView],
+    );
+    const clubB = ActiveClubContext(
+      clubId: 'club-b', clubName: 'B', role: ClubRole.member,
+      permissions: [],
+    );
+    final container = ProviderContainer(overrides: [
+      ledgerRepositoryProvider.overrideWithValue(repository),
+      ledgerUpdateProvider.overrideWith((ref) => const Stream.empty()),
+      authTokenProvider.overrideWith((ref) => AuthToken(
+        accessToken: 'token', refreshToken: 'refresh', userId: 'member-a',
+      )),
+      activeClubContextProvider.overrideWith((ref) => clubA),
+    ]);
+    addTearDown(container.dispose);
+    const scope = (clubId: 'club-a', userId: 'member-a');
+    final provider = clubLedgerViewModelProvider(scope);
+    final subscription = container.listen(provider, (_, _) {}, fireImmediately: true);
+    addTearDown(subscription.close);
+    await tester.pumpAndSettle();
+    expect(container.read(provider).overview, isNotNull);
+    expect(overviewCalls, 1);
+
+    container.read(activeClubContextProvider.notifier).state = clubB;
+    await tester.pump();
+    expect(container.read(provider).accessRevoked, isTrue);
+    expect(container.read(provider).overview, isNull);
+
+    container.read(activeClubContextProvider.notifier).state = clubA;
+    await tester.pumpAndSettle();
+    expect(container.read(provider).accessRevoked, isFalse);
+    expect(container.read(provider).overview, isNotNull);
+    expect(overviewCalls, 2);
+  });
 
   for (final tablet in [false, true]) {
     testWidgets(

@@ -7,6 +7,7 @@ import '../../../../domain/usecases/club/get_club_by_id_usecase.dart';
 import '../../../../domain/usecases/club/get_club_members_usecase.dart';
 import '../../../../domain/usecases/club/remove_club_member_usecase.dart';
 import '../../../../domain/usecases/club/update_member_role_usecase.dart';
+import '../../../../domain/usecases/club/update_member_fee_plan_usecase.dart';
 import '../club_vm/club_context_vm.dart';
 import 'club_members_state.dart';
 
@@ -18,6 +19,7 @@ final clubMembersViewModelProvider =
     getClubByIdUseCase: ref.watch(getClubByIdUseCaseProvider),
     getClubMembersUseCase: ref.watch(getClubMembersUseCaseProvider),
     updateMemberRoleUseCase: ref.watch(updateMemberRoleUseCaseProvider),
+    updateMemberFeePlanUseCase: ref.watch(updateMemberFeePlanUseCaseProvider),
     removeClubMemberUseCase: ref.watch(removeClubMemberUseCaseProvider),
     getClubRolesUseCase: ref.watch(getClubRolesUseCaseProvider),
     getClubPermissionsUseCase: ref.watch(getClubPermissionsUseCaseProvider),
@@ -32,6 +34,7 @@ class ClubMembersViewModel extends StateNotifier<ClubMembersState> {
   final GetClubByIdUseCase getClubByIdUseCase;
   final GetClubMembersUseCase getClubMembersUseCase;
   final UpdateMemberRoleUseCase updateMemberRoleUseCase;
+  final UpdateMemberFeePlanUseCase updateMemberFeePlanUseCase;
   final RemoveClubMemberUseCase removeClubMemberUseCase;
   final GetClubRolesUseCase getClubRolesUseCase;
   final GetClubPermissionsUseCase getClubPermissionsUseCase;
@@ -44,6 +47,7 @@ class ClubMembersViewModel extends StateNotifier<ClubMembersState> {
     required this.getClubByIdUseCase,
     required this.getClubMembersUseCase,
     required this.updateMemberRoleUseCase,
+    required this.updateMemberFeePlanUseCase,
     required this.removeClubMemberUseCase,
     required this.getClubRolesUseCase,
     required this.getClubPermissionsUseCase,
@@ -225,29 +229,28 @@ class ClubMembersViewModel extends StateNotifier<ClubMembersState> {
   Future<bool> updateMemberFeePlan(
     String memberUserId, {
     required String memberType,
-    DateTime? monthlyExpiryDate,
   }) async {
     state = state.copyWith(isActionLoading: true, clearError: true, clearSuccess: true);
     try {
-      final updatedMembers = state.members.map((m) {
-        if (m.userId == memberUserId || m.id == memberUserId) {
-          return m.copyWith(
-            memberType: memberType,
-            monthlyExpiryDate: monthlyExpiryDate,
-          );
-        }
-        return m;
-      }).toList();
-
+      final updated = await updateMemberFeePlanUseCase.execute(clubId, memberUserId, memberType);
       if (!mounted) return false;
+      if (!updated) {
+        state = state.copyWith(isActionLoading: false, error: AppException(message: 'Không thể cập nhật gói hội viên.'));
+        return false;
+      }
+      await loadData();
+      if (!mounted) return true;
       state = state.copyWith(
         isActionLoading: false,
-        members: updatedMembers,
         successMessage: memberType == 'MONTHLY'
             ? 'Đã chuyển sang gói Hội viên Tháng!'
             : 'Đã chuyển sang gói Đóng theo buổi!',
       );
       return true;
+    } on AppException catch (e) {
+      if (!mounted) return false;
+      state = state.copyWith(isActionLoading: false, error: e);
+      return false;
     } catch (e) {
       if (!mounted) return false;
       state = state.copyWith(

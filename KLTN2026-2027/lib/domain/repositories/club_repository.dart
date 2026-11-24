@@ -50,6 +50,12 @@ abstract class ClubRepository {
     required ClubRole role,
   });
 
+  Future<bool> updateMemberFeePlan({
+    required String clubId,
+    required String userId,
+    required String memberType,
+  });
+
   /// Rời khỏi câu lạc bộ hoặc xóa thành viên khỏi nhóm
   Future<bool> removeMember({
     required String clubId,

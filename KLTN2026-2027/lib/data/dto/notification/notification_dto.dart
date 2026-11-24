@@ -5,6 +5,7 @@ class NotificationDto {
   final String type;
   final String? referenceType;
   final String? referenceId;
+  final String? groupId;
   final bool isRead;
   final DateTime createdAt;
 
@@ -15,6 +16,7 @@ class NotificationDto {
     required this.type,
     this.referenceType,
     this.referenceId,
+    this.groupId,
     required this.isRead,
     required this.createdAt,
   });
@@ -27,6 +29,7 @@ class NotificationDto {
       type: _parseString(json['type']),
       referenceType: json['referenceType'] != null ? _parseString(json['referenceType']) : null,
       referenceId: json['referenceId'] != null ? _parseString(json['referenceId']) : null,
+      groupId: json['groupId'] != null ? _parseString(json['groupId']) : null,
       isRead: _parseBool(json['isRead']),
       createdAt: _parseDateTime(json['createdAt']),
     );

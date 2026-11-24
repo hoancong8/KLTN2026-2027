@@ -150,6 +150,13 @@ class ClubRepositoryImpl implements ClubRepository {
   }
 
   @override
+  Future<bool> updateMemberFeePlan({
+    required String clubId,
+    required String userId,
+    required String memberType,
+  }) => remoteDatasource.updateMemberFeePlan(clubId, userId, memberType);
+
+  @override
   Future<bool> removeMember({
     required String clubId,
     required String userId,

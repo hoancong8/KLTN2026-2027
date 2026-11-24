@@ -121,6 +121,20 @@ class ClubRemoteDatasourceImpl extends BaseRemoteDatasource implements ClubRemot
   }
 
   @override
+  Future<bool> updateMemberFeePlan(String clubId, String userId, String memberType) async {
+    try {
+      final response = await dio.put(
+        AppConfig.clubMemberFeePlanPath(clubId, userId),
+        data: {'memberType': memberType},
+        options: Options(headers: {'X-Group-Id': clubId}),
+      );
+      return await handleResponse(response, (data) => data is Map && data['success'] == true);
+    } catch (e) {
+      throw handleError(e);
+    }
+  }
+
+  @override
   Future<bool> removeMember(String clubId, String userId) async {
     try {
       final response = await dio.delete(

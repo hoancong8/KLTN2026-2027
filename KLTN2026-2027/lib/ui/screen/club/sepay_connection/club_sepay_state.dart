@@ -6,7 +6,7 @@ class ClubSepayState extends Equatable {
   final bool isLoading;
   final bool isActionInProgress;
   final String?
-  actionType; // 'authorize' | 'complete' | 'select' | 'activate' | 'disconnect'
+  actionType; // 'authorize' | 'complete' | 'connect' | 'disconnect'
   final SepayConnection? connection;
   final List<SepayProviderAccount> accounts;
   final List<SepayConnection> oldConnections;

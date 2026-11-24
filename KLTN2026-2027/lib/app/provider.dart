@@ -122,6 +122,7 @@ import '../domain/usecases/club/create_club_usecase.dart';
 import '../domain/usecases/club/join_club_usecase.dart';
 import '../domain/usecases/club/get_club_members_usecase.dart';
 import '../domain/usecases/club/update_member_role_usecase.dart';
+import '../domain/usecases/club/update_member_fee_plan_usecase.dart';
 import '../domain/usecases/club/remove_club_member_usecase.dart';
 import '../domain/usecases/club/switch_club_context_usecase.dart';
 import '../domain/usecases/club/club_role_usecases.dart';
@@ -570,6 +571,9 @@ final getClubMembersUseCaseProvider = Provider<GetClubMembersUseCase>((ref) {
 final updateMemberRoleUseCaseProvider = Provider<UpdateMemberRoleUseCase>((ref) {
   return UpdateMemberRoleUseCase(ref.watch(clubRepositoryProvider));
 });
+
+final updateMemberFeePlanUseCaseProvider = Provider<UpdateMemberFeePlanUseCase>((ref) =>
+    UpdateMemberFeePlanUseCase(ref.watch(clubRepositoryProvider)));
 
 final removeClubMemberUseCaseProvider = Provider<RemoveClubMemberUseCase>((ref) {
   return RemoveClubMemberUseCase(ref.watch(clubRepositoryProvider));

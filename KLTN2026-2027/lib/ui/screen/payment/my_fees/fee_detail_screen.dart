@@ -14,12 +14,42 @@ import '../../../../widget/responsive_layout.dart';
 import 'fee_detail_state.dart';
 import 'fee_detail_vm.dart';
 
-class FeeDetailScreen extends ConsumerWidget {
+class FeeDetailScreen extends ConsumerStatefulWidget {
   final String feeId;
   const FeeDetailScreen({super.key, required this.feeId});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<FeeDetailScreen> createState() => _FeeDetailScreenState();
+}
+
+class _FeeDetailScreenState extends ConsumerState<FeeDetailScreen>
+    with WidgetsBindingObserver {
+  String get feeId => widget.feeId;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      final current = ref.read(feeDetailViewModelProvider(feeId));
+      if (!current.isLoading && !current.isOperating) {
+        ref.read(feeDetailViewModelProvider(feeId).notifier).refresh();
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final state = ref.watch(feeDetailViewModelProvider(feeId));
     final vm = ref.read(feeDetailViewModelProvider(feeId).notifier);
     final l10n = context.l10n;
@@ -158,13 +188,17 @@ class FeeDetailScreen extends ConsumerWidget {
                         _FeeStatusChip(status: fee.paymentStatus),
                       ],
                     ),
-                    if (fee.paymentProgress?.toUpperCase() == 'QR_READY') ...[
+                    if (!fee.isPaid &&
+                        !fee.isExempt &&
+                        fee.paymentProgress?.toUpperCase() == 'QR_READY') ...[
                       AppSpacing.gapH8,
                       Text(
                         l10n.payment_qr_ready,
                         style: AppTypography.bodySmall.colored(colors.warning),
                       ),
-                    ] else if (fee.paymentProgress != null &&
+                    ] else if (!fee.isPaid &&
+                        !fee.isExempt &&
+                        fee.paymentProgress != null &&
                         !const {
                           'AWAITING_RECONCILIATION',
                           'CASH_CONFIRMATION_REQUESTED',
@@ -177,14 +211,18 @@ class FeeDetailScreen extends ConsumerWidget {
                         ),
                       ),
                     ],
-                    if (fee.paymentProgress?.toUpperCase() ==
+                    if (!fee.isPaid &&
+                        !fee.isExempt &&
+                        fee.paymentProgress?.toUpperCase() ==
                         'AWAITING_RECONCILIATION') ...[
                       AppSpacing.gapH12,
                       _Notice(
                         text: l10n.payment_waiting_reconciliation,
                         color: colors.warning,
                       ),
-                    ] else if (fee.paymentProgress?.toUpperCase() ==
+                    ] else if (!fee.isPaid &&
+                        !fee.isExempt &&
+                        fee.paymentProgress?.toUpperCase() ==
                         'CASH_CONFIRMATION_REQUESTED') ...[
                       AppSpacing.gapH12,
                       _Notice(
@@ -611,16 +649,14 @@ class _InfoLine extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
-            child: Text(
-              label,
-              style: AppTypography.bodySmall.colored(
-                context.colors.textSecondary,
-              ),
+          Text(
+            label,
+            style: AppTypography.bodySmall.colored(
+              context.colors.textSecondary,
             ),
           ),
-          const SizedBox(width: AppSpacing.base),
-          Flexible(
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
             child: Text(
               value,
               textAlign: TextAlign.end,

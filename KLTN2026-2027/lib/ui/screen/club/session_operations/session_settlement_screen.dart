@@ -773,7 +773,7 @@ class SessionSettlementScreen extends ConsumerWidget {
   }
 
   String _resolveVietQrUrl(MemberSettlementFee fee, PaymentBankAccount? bank) {
-    if (fee.vietQrUrl.isNotEmpty && fee.vietQrUrl.startsWith('http')) {
+    if (fee.vietQrUrl.isNotEmpty) {
       return fee.vietQrUrl;
     }
     if (bank == null || bank.accountNumber.trim().isEmpty) return '';
@@ -1250,9 +1250,9 @@ class SessionSettlementScreen extends ConsumerWidget {
                 ),
                 padding: const EdgeInsets.all(10),
                 alignment: Alignment.center,
-                child: qrPayload.isNotEmpty
+                child: qrPayload.isNotEmpty || (qrUrl.isNotEmpty && !qrUrl.startsWith('https://') && !qrUrl.startsWith('http://'))
                     ? QrImageView(
-                        data: qrPayload,
+                        data: !qrUrl.startsWith('http') && qrUrl.isNotEmpty ? qrUrl : qrPayload,
                         version: QrVersions.auto,
                         size: 200,
                         backgroundColor: AppColors.white,

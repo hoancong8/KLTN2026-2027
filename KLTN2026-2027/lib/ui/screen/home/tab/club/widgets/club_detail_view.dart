@@ -5,11 +5,13 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../../../app/provider.dart';
+import '../../../../../../app/provider/localization_provider.dart';
 import '../../../../../../app/theme/theme.dart';
 import '../../../../../../domain/entities/club/my_club.dart';
 import '../../../../../../domain/enums/club_role.dart';
 import '../../../../club/club_management_vm/club_members_vm.dart';
 import '../../../../club/club_vm/club_context_vm.dart';
+import '../../../../club/ledger/widgets/ledger_ui.dart';
 import 'club_join_requests_tab.dart';
 import 'club_ledger_tab.dart';
 import 'club_member_section.dart';
@@ -32,6 +34,9 @@ class ClubDetailView extends ConsumerStatefulWidget {
 }
 
 class _ClubDetailViewState extends ConsumerState<ClubDetailView> {
+  bool _attemptedSwitch = false;
+  bool _switchFailed = false;
+
   @override
   void initState() {
     super.initState();
@@ -44,7 +49,26 @@ class _ClubDetailViewState extends ConsumerState<ClubDetailView> {
   void didUpdateWidget(covariant ClubDetailView oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.club.clubId != widget.club.clubId) {
+      _attemptedSwitch = false;
+      _switchFailed = false;
       ref.read(clubMembersViewModelProvider.notifier).loadForClub(widget.club.clubId);
+    }
+  }
+
+  Future<void> _autoSwitchContext() async {
+    if (ref.read(activeClubContextProvider)?.clubId == widget.club.clubId) {
+      return;
+    }
+    if (ref.read(clubContextViewModelProvider).isSwitching) {
+      setState(() => _attemptedSwitch = false);
+      return;
+    }
+    final ok = await ref
+        .read(clubContextViewModelProvider.notifier)
+        .switchClub(widget.club.clubId);
+    if (!mounted) return;
+    if (!ok) {
+      setState(() => _switchFailed = true);
     }
   }
 
@@ -68,10 +92,42 @@ class _ClubDetailViewState extends ConsumerState<ClubDetailView> {
     final membersVm = ref.read(clubMembersViewModelProvider.notifier);
     final contextVm = ref.read(clubContextViewModelProvider.notifier);
     final activeContext = ref.watch(activeClubContextProvider);
+    final clubState = ref.watch(clubContextViewModelProvider);
+
+    if (activeContext?.clubId != widget.club.clubId) {
+      final isVisible = ModalRoute.of(context)?.isCurrent ?? true;
+      if (isVisible && !_switchFailed && !_attemptedSwitch && !clubState.isLoading && !clubState.isSwitching) {
+        _attemptedSwitch = true;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          if (ModalRoute.of(context)?.isCurrent ?? true) {
+            _autoSwitchContext();
+          } else {
+            _attemptedSwitch = false;
+          }
+        });
+      }
+      if (_switchFailed && isVisible) {
+        return LedgerNotice(
+          message: context.l10n.ledger_switch_failed,
+          actionLabel: context.l10n.com_retry,
+          action: () {
+            setState(() {
+              _attemptedSwitch = false;
+              _switchFailed = false;
+            });
+          },
+        );
+      }
+      return const Center(child: CircularProgressIndicator());
+    } else {
+      _attemptedSwitch = false;
+      _switchFailed = false;
+    }
 
     // Dynamic RBAC with strict Context Isolation
     final isSameClub = activeContext?.clubId == widget.club.clubId;
-    final isHost = (isSameClub && activeContext?.role == ClubRole.host) || widget.club.role == ClubRole.host;
+    final isHost = isSameClub && activeContext?.role == ClubRole.host;
     final canManageJoinRequests = isHost || (isSameClub && ref.hasClubPermission('MEMBER.JOIN_REQUEST.MANAGE'));
     final canManageClub = isHost ||
         (isSameClub &&
@@ -98,7 +154,8 @@ class _ClubDetailViewState extends ConsumerState<ClubDetailView> {
             ),
             child: TabBar(
               onTap: (index) {
-                if (canManageJoinRequests && index == 3) {
+                if ((index == 2 || canManageJoinRequests && index == 3) &&
+                    ref.read(activeClubContextProvider)?.clubId != widget.club.clubId) {
                   ref.read(clubContextViewModelProvider.notifier).switchClub(widget.club.clubId);
                 }
               },

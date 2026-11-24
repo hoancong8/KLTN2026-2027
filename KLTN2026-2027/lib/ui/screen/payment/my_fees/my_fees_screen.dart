@@ -11,11 +11,36 @@ import '../../../../widget/responsive_layout.dart';
 import 'my_fees_state.dart';
 import 'my_fees_vm.dart';
 
-class MyFeesScreen extends ConsumerWidget {
+class MyFeesScreen extends ConsumerStatefulWidget {
   const MyFeesScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<MyFeesScreen> createState() => _MyFeesScreenState();
+}
+
+class _MyFeesScreenState extends ConsumerState<MyFeesScreen>
+    with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      ref.read(myFeesViewModelProvider.notifier).load();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final state = ref.watch(myFeesViewModelProvider);
     final vm = ref.read(myFeesViewModelProvider.notifier);
     final l10n = context.l10n;
@@ -145,7 +170,15 @@ class MyFeesScreen extends ConsumerWidget {
                             );
                           }
                           final fee = state.fees[index];
-                          return _FeeCard(fee: fee);
+                          return _FeeCard(
+                            fee: fee,
+                            onOpen: () async {
+                              await context.push(
+                                AppConfig.myFeeDetailPath(fee.feeId),
+                              );
+                              if (mounted) await vm.load();
+                            },
+                          );
                         },
                       ),
               ),
@@ -159,7 +192,8 @@ class MyFeesScreen extends ConsumerWidget {
 
 class _FeeCard extends StatelessWidget {
   final PersonalFee fee;
-  const _FeeCard({required this.fee});
+  final VoidCallback onOpen;
+  const _FeeCard({required this.fee, required this.onOpen});
 
   @override
   Widget build(BuildContext context) {
@@ -179,7 +213,7 @@ class _FeeCard extends StatelessWidget {
       ),
       child: InkWell(
         borderRadius: AppRadius.card,
-        onTap: () => context.push(AppConfig.myFeeDetailPath(fee.feeId)),
+        onTap: onOpen,
         child: Padding(
           padding: const EdgeInsets.all(AppSpacing.base),
           child: Column(
@@ -228,14 +262,18 @@ class _FeeCard extends StatelessWidget {
                   Icon(Icons.chevron_right_rounded, color: colors.textMuted),
                 ],
               ),
-              if (fee.paymentProgress?.toUpperCase() ==
+              if (!fee.isPaid &&
+                  !fee.isExempt &&
+                  fee.paymentProgress?.toUpperCase() ==
                   'AWAITING_RECONCILIATION') ...[
                 AppSpacing.gapH8,
                 Text(
                   l10n.payment_waiting_reconciliation,
                   style: AppTypography.bodySmall.colored(colors.warning),
                 ),
-              ] else if (fee.paymentProgress?.toUpperCase() ==
+              ] else if (!fee.isPaid &&
+                  !fee.isExempt &&
+                  fee.paymentProgress?.toUpperCase() ==
                   'CASH_CONFIRMATION_REQUESTED') ...[
                 AppSpacing.gapH8,
                 Text(
