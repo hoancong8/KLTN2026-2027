@@ -23,12 +23,9 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build-and-deploy:
-    name: Build & Deploy to GitHub Pages
+  build:
+    name: Build Flutter Web
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
 
     defaults:
       run:
@@ -84,7 +81,7 @@ jobs:
           retention-days: 14
 
       # =========================================================================
-      # DEPLOY LÊN GITHUB PAGES
+      # ĐÓNG GÓI CHO GITHUB PAGES
       # =========================================================================
       - name: ⚙️ Cấu hình GitHub Pages
         if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'
@@ -96,7 +93,18 @@ jobs:
         with:
           path: KLTN2026-2027/build/web/
 
+  deploy:
+    name: Deploy to GitHub Pages
+    if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
       - name: 🚀 Deploy lên GitHub Pages
-        if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'
         id: deployment
         uses: actions/deploy-pages@v4
