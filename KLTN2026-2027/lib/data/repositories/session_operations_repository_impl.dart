@@ -1,6 +1,7 @@
 // lib/data/repositories/session_operations_repository_impl.dart
 
 import 'package:dio/dio.dart';
+import '../../app/utils/app_exception_handler.dart';
 import '../../domain/entities/payment/personal_fee.dart';
 import '../../domain/entities/session/session_attendance.dart';
 import '../../domain/entities/session/session_review.dart';
@@ -48,6 +49,48 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
       if (lower == 'false' || lower == '0') return false;
     }
     return defaultValue;
+  }
+
+  static AppException _extractDioException(DioException e, {String? defaultMessage}) {
+    final handled = AppExceptionHandler.handle(e);
+    final data = e.response?.data;
+    if (data is Map) {
+      final err = data['error'] ?? data;
+      if (err is Map) {
+        final code = err['code']?.toString() ?? '';
+        final detail = err['detail']?.toString() ?? err['message']?.toString();
+        if (code == 'Settlement.InvalidParticipants') {
+          return AppException(
+            message: detail?.isNotEmpty == true
+                ? detail!
+                : 'Buổi chơi chưa có hội viên nào điểm danh (Check-in ra sân). Vui lòng điểm danh trước khi ghi nhận chi phí.',
+            originalError: e,
+          );
+        }
+        if (code == 'Settlement.PolicyRequired') {
+          return AppException(
+            message: 'Câu lạc bộ chưa thiết lập biểu phí. Vui lòng vào Cài đặt CLB -> Biểu phí để cấu hình trước khi ghi nhận chi phí.',
+            originalError: e,
+          );
+        }
+        if (code == 'Settlement.MonthlyExpiryRequired') {
+          return AppException(
+            message: detail?.isNotEmpty == true
+                ? detail!
+                : 'Hội viên tháng chưa có ngày hết hạn được xác nhận. Vui lòng kiểm tra lại thông tin hội viên.',
+            originalError: e,
+          );
+        }
+      }
+    }
+    if (handled.message?.isNotEmpty == true &&
+        handled.message != 'Đã xảy ra lỗi không xác định') {
+      return handled;
+    }
+    return AppException(
+      message: defaultMessage ?? 'Lỗi máy chủ (${e.response?.statusCode}).',
+      originalError: e,
+    );
   }
 
   static DateTime? _parseDateTime(dynamic value) {
@@ -380,24 +423,10 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
         }
       }
     } on DioException catch (e) {
-      final data = e.response?.data;
-      if (data is Map) {
-        final err = data['error'] ?? data;
-        if (err is Map) {
-          final msg = err['message']?.toString() ?? '';
-          if (msg.isNotEmpty) {
-            throw AppException(message: msg, originalError: e);
-          }
-        }
-      }
-      if (e.response != null) {
-        throw AppException(
-          message: 'Lỗi điểm danh từ máy chủ (${e.response?.statusCode}).',
-          originalError: e,
-        );
-      }
+      throw _extractDioException(e, defaultMessage: 'Lỗi điểm danh từ máy chủ (${e.response?.statusCode}).');
     } catch (e) {
       if (e is AppException) rethrow;
+      throw AppException(message: e.toString(), originalError: e);
     }
 
     final current = _attendanceCache[sessionId] ?? await getAttendance(sessionId);
@@ -461,24 +490,10 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
         }
       }
     } on DioException catch (e) {
-      final data = e.response?.data;
-      if (data is Map) {
-        final err = data['error'] ?? data;
-        if (err is Map) {
-          final msg = err['message']?.toString() ?? '';
-          if (msg.isNotEmpty) {
-            throw AppException(message: msg, originalError: e);
-          }
-        }
-      }
-      if (e.response != null) {
-        throw AppException(
-          message: 'Lỗi điểm danh từ máy chủ (${e.response?.statusCode}).',
-          originalError: e,
-        );
-      }
+      throw _extractDioException(e, defaultMessage: 'Lỗi điểm danh từ máy chủ (${e.response?.statusCode}).');
     } catch (e) {
       if (e is AppException) rethrow;
+      throw AppException(message: e.toString(), originalError: e);
     }
 
     final current = _attendanceCache[sessionId] ?? await getAttendance(sessionId);
@@ -1681,33 +1696,7 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
         }
       }
     } on DioException catch (e) {
-      final data = e.response?.data;
-      if (data is Map) {
-        final err = data['error'] ?? data;
-        if (err is Map) {
-          final code = err['code']?.toString() ?? '';
-          final msg = err['message']?.toString() ?? '';
-          if (code == 'Settlement.InvalidParticipants') {
-            throw AppException(
-              message: 'Buổi chơi chưa có hội viên nào điểm danh (Check-in ra sân). Vui lòng điểm danh trước khi ghi nhận chi phí.',
-              originalError: e,
-            );
-          }
-          if (msg.isNotEmpty) {
-            throw AppException(message: msg, originalError: e);
-          }
-        }
-      }
-      if (e.response != null) {
-        throw AppException(
-          message: 'Lỗi máy chủ (${e.response?.statusCode}). Không thể ghi nhận chi phí.',
-          originalError: e,
-        );
-      }
-      throw AppException(
-        message: 'Không thể kết nối đến máy chủ để ghi nhận chi phí.',
-        originalError: e,
-      );
+      throw _extractDioException(e, defaultMessage: 'Lỗi tính toán quyết toán từ máy chủ (${e.response?.statusCode}).');
     } catch (e) {
       if (e is AppException) rethrow;
       throw AppException(
@@ -1737,9 +1726,7 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
         }
       }
     } on DioException catch (e) {
-      final data = e.response?.data;
-      final msg = (data is Map && data['error'] is Map) ? data['error']['message']?.toString() : null;
-      throw AppException(message: msg ?? 'Lỗi xác nhận thanh toán (${e.response?.statusCode})', originalError: e);
+      throw _extractDioException(e, defaultMessage: 'Lỗi xác nhận thanh toán (${e.response?.statusCode}).');
     } catch (e) {
       if (e is AppException) rethrow;
       throw AppException(message: e.toString(), originalError: e);

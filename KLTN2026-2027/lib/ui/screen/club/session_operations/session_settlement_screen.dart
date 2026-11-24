@@ -1427,11 +1427,13 @@ class SessionSettlementScreen extends ConsumerWidget {
                 ref.read(sessionDetailViewModelProvider(sessionId).notifier).loadDetail();
               } catch (e) {
                 if (context.mounted) {
+                  final msg = e is AppException ? (e.message ?? e.toString()) : e.toString();
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text(e.toString()),
+                      content: Text(msg),
                       backgroundColor: colors.error,
                       behavior: SnackBarBehavior.floating,
+                      duration: const Duration(seconds: 4),
                     ),
                   );
                 }
