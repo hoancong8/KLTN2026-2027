@@ -379,7 +379,26 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
           return snapshot;
         }
       }
-    } catch (_) {}
+    } on DioException catch (e) {
+      final data = e.response?.data;
+      if (data is Map) {
+        final err = data['error'] ?? data;
+        if (err is Map) {
+          final msg = err['message']?.toString() ?? '';
+          if (msg.isNotEmpty) {
+            throw AppException(message: msg, originalError: e);
+          }
+        }
+      }
+      if (e.response != null) {
+        throw AppException(
+          message: 'Lỗi điểm danh từ máy chủ (${e.response?.statusCode}).',
+          originalError: e,
+        );
+      }
+    } catch (e) {
+      if (e is AppException) rethrow;
+    }
 
     final current = _attendanceCache[sessionId] ?? await getAttendance(sessionId);
     final updatedPlayers = current.players.map((p) {
@@ -441,7 +460,26 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
           return snapshot;
         }
       }
-    } catch (_) {}
+    } on DioException catch (e) {
+      final data = e.response?.data;
+      if (data is Map) {
+        final err = data['error'] ?? data;
+        if (err is Map) {
+          final msg = err['message']?.toString() ?? '';
+          if (msg.isNotEmpty) {
+            throw AppException(message: msg, originalError: e);
+          }
+        }
+      }
+      if (e.response != null) {
+        throw AppException(
+          message: 'Lỗi điểm danh từ máy chủ (${e.response?.statusCode}).',
+          originalError: e,
+        );
+      }
+    } catch (e) {
+      if (e is AppException) rethrow;
+    }
 
     final current = _attendanceCache[sessionId] ?? await getAttendance(sessionId);
     final newPlayer = AttendancePlayer(
@@ -1438,6 +1476,84 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
 
       bool isSettled = false;
       MemberSettlementFee? myPersonalFee;
+      int formCourtCost = 0;
+      int formShuttlePrice = 25000;
+      int formShuttleUsed = 0;
+      int formExtraExpense = 0;
+      final draftParticipants = <MemberSettlementFee>[];
+
+      try {
+        final formRes = await dio.get('/api/v1/sessions/$sessionId/settlement/form');
+        if (formRes.statusCode == 200 && formRes.data != null) {
+          final fPayload = formRes.data is Map<String, dynamic> && formRes.data.containsKey('result')
+              ? formRes.data['result']
+              : formRes.data;
+          if (fPayload is Map<String, dynamic>) {
+            final cCost = fPayload['courtRentalCost'] ?? fPayload['CourtRentalCost'];
+            if (cCost is num) formCourtCost = cCost.toInt();
+            final sPrice = fPayload['shuttlecockPrice'] ?? fPayload['ShuttlecockPrice'];
+            if (sPrice is num && sPrice > 0) formShuttlePrice = sPrice.toInt();
+            final sUsed = fPayload['shuttlecockUsed'] ?? fPayload['ShuttlecockUsed'];
+            if (sUsed is num) formShuttleUsed = sUsed.toInt();
+            final extra = fPayload['extraExpense'] ?? fPayload['ExtraExpense'];
+            if (extra is num) formExtraExpense = extra.toInt();
+
+            final rawParts = fPayload['participants'] ?? fPayload['Participants'];
+            if (rawParts is List) {
+              for (final p in rawParts) {
+                if (p is Map<String, dynamic>) {
+                  final uId = (p['userId'] ?? p['UserId'])?.toString() ?? '';
+                  final name = (p['fullName'] ?? p['FullName'])?.toString() ?? '';
+                  final mType = (p['memberType'] ?? p['MemberType'])?.toString().toUpperCase() ?? 'GUEST';
+                  final roleName = mType == 'MONTHLY'
+                      ? 'Hội viên tháng'
+                      : (mType == 'DAILY' ? 'Hội viên ngày' : 'Khách vãng lai');
+                  final rawGender = p['gender'] ?? p['Gender'];
+                  final gender = (rawGender == 1 || rawGender?.toString().toUpperCase() == 'FEMALE') ? 'FEMALE' : 'MALE';
+                  draftParticipants.add(MemberSettlementFee(
+                    feeId: 'draft_$uId',
+                    userId: uId,
+                    fullName: name.isNotEmpty ? name : 'Hội viên',
+                    roleName: roleName,
+                    gender: gender,
+                    baseFee: 0,
+                    discount: 0,
+                    finalFee: 0,
+                    paymentStatus: 'DRAFT',
+                    vietQrUrl: '',
+                    paymentCode: '',
+                    paidAmount: 0,
+                  ));
+                }
+              }
+            }
+          }
+        }
+      } catch (_) {}
+
+      if (draftParticipants.isEmpty && _attendanceCache.containsKey(sessionId)) {
+        for (final p in _attendanceCache[sessionId]!.players.where((x) => x.isCheckedIn)) {
+          draftParticipants.add(MemberSettlementFee(
+            feeId: 'draft_${p.userId}',
+            userId: p.userId,
+            fullName: p.fullName,
+            roleName: 'Hội viên ra sân',
+            gender: 'MALE',
+            baseFee: 0,
+            discount: 0,
+            finalFee: 0,
+            paymentStatus: 'DRAFT',
+            vietQrUrl: '',
+            paymentCode: '',
+            paidAmount: 0,
+          ));
+        }
+      }
+
+      if (totalCost == 0 && formCourtCost > 0) {
+        totalCost = formCourtCost;
+      }
+
       try {
         final myFeesRes = await dio.get(
           AppConfig.myFeesEndpoint,
@@ -1488,15 +1604,17 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
 
       _settlementCache[sessionId] = SessionSettlement(
         sessionId: sessionId,
-        shuttlecockUsed: 0,
-        shuttlecockPrice: 25000,
+        shuttlecockUsed: formShuttleUsed,
+        shuttlecockPrice: formShuttlePrice,
         courtFee: totalCost,
-        extraFee: 0,
-        totalCost: totalCost,
+        extraFee: formExtraExpense,
+        totalCost: totalCost + (formShuttleUsed * formShuttlePrice) + formExtraExpense,
         totalCollected: 0,
         isSettled: isSettled,
         bankAccount: fetchedBank ?? _settlementCache[sessionId]?.bankAccount,
-        memberFees: myPersonalFee != null ? [myPersonalFee] : const [],
+        memberFees: draftParticipants.isNotEmpty
+            ? draftParticipants
+            : (myPersonalFee != null ? [myPersonalFee] : const []),
       );
     }
     return _settlementCache[sessionId]!;

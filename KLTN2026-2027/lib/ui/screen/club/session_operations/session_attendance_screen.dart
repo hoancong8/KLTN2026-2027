@@ -51,8 +51,8 @@ class SessionAttendanceNotifier extends StateNotifier<AsyncValue<SessionAttendan
       ref.invalidate(sessionRotationNotifierProvider(sessionId));
       ref.invalidate(sessionDetailViewModelProvider(sessionId));
       ref.invalidate(sessionAttendanceProvider(sessionId));
-    } catch (e, st) {
-      state = AsyncValue.error(e, st);
+    } catch (e) {
+      rethrow;
     }
   }
 
@@ -67,8 +67,8 @@ class SessionAttendanceNotifier extends StateNotifier<AsyncValue<SessionAttendan
       ref.invalidate(sessionRotationNotifierProvider(sessionId));
       ref.invalidate(sessionDetailViewModelProvider(sessionId));
       ref.invalidate(sessionAttendanceProvider(sessionId));
-    } catch (e, st) {
-      state = AsyncValue.error(e, st);
+    } catch (e) {
+      rethrow;
     }
   }
 
@@ -79,8 +79,8 @@ class SessionAttendanceNotifier extends StateNotifier<AsyncValue<SessionAttendan
       ref.invalidate(sessionRotationNotifierProvider(sessionId));
       ref.invalidate(sessionDetailViewModelProvider(sessionId));
       ref.invalidate(sessionAttendanceProvider(sessionId));
-    } catch (e, st) {
-      state = AsyncValue.error(e, st);
+    } catch (e) {
+      rethrow;
     }
   }
 }
@@ -462,9 +462,21 @@ class SessionAttendanceScreen extends ConsumerWidget {
             children: [
               InkWell(
                 onTap: canCheckIn
-                    ? () {
+                    ? () async {
                         HapticFeedback.lightImpact();
-                        vm.markStatus(player.userId, 'CHECKED_IN');
+                        try {
+                          await vm.markStatus(player.userId, 'CHECKED_IN');
+                        } catch (e) {
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(e.toString()),
+                                backgroundColor: colors.error,
+                                behavior: SnackBarBehavior.floating,
+                              ),
+                            );
+                          }
+                        }
                       }
                     : null,
                 borderRadius: AppRadius.tag,
@@ -545,10 +557,22 @@ class SessionAttendanceScreen extends ConsumerWidget {
               backgroundColor: context.colors.error,
               foregroundColor: AppColors.white,
             ),
-            onPressed: () {
+            onPressed: () async {
               HapticFeedback.mediumImpact();
-              vm.markStatus(player.userId, 'NO_SHOW');
               Navigator.of(ctx).pop();
+              try {
+                await vm.markStatus(player.userId, 'NO_SHOW');
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(e.toString()),
+                      backgroundColor: context.colors.error,
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                }
+              }
             },
             child: const Text('Xác nhận vắng'),
           ),
@@ -578,11 +602,23 @@ class SessionAttendanceScreen extends ConsumerWidget {
             onPressed: () async {
               HapticFeedback.mediumImpact();
               Navigator.of(ctx).pop();
-              await vm.complete();
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Đã chốt danh sách ra sân ban đầu!')),
-                );
+              try {
+                await vm.complete();
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Đã chốt danh sách ra sân ban đầu!')),
+                  );
+                }
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(e.toString()),
+                      backgroundColor: context.colors.error,
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                }
               }
             },
             child: const Text('Chốt danh sách ra sân'),

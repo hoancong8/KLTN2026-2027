@@ -91,8 +91,7 @@ class SessionSettlementNotifier
         monthlyExemptCourtOnly: monthlyExemptCourtOnly,
       );
       state = AsyncValue.data(updated);
-    } catch (e, st) {
-      state = AsyncValue.error(e, st);
+    } catch (e) {
       rethrow;
     }
   }
@@ -365,65 +364,12 @@ class SessionSettlementScreen extends ConsumerWidget {
                                 label: Text(
                                   context.l10n.settlement_publish_fees,
                                 ),
-                                onPressed: () {
-                                  if (settlement.memberFees.isEmpty) {
-                                    showDialog(
-                                      context: context,
-                                      builder: (ctx) => AlertDialog(
-                                        backgroundColor: colors.cardBackground,
-                                        shape: const RoundedRectangleBorder(
-                                          borderRadius: AppRadius.dialog,
-                                        ),
-                                        title: Row(
-                                          children: [
-                                            Icon(
-                                              Icons.warning_amber_rounded,
-                                              color: colors.warning,
-                                            ),
-                                            AppSpacing.gapW8,
-                                            Text(
-                                              'Chưa có người có mặt',
-                                              style: AppTypography.titleMedium
-                                                  .copyWith(
-                                                    color: colors.textPrimary,
-                                                  ),
-                                            ),
-                                          ],
-                                        ),
-                                        content: Text(
-                                          'Buổi chơi chưa có hội viên nào được điểm danh (Check-in ra sân).\n\nVui lòng quay lại màn hình buổi chơi và chọn "Check-in Ra Sân" để điểm danh cho các thành viên có mặt trước khi ghi nhận chi phí!',
-                                          style: AppTypography.bodyMedium
-                                              .copyWith(
-                                                color: colors.textSecondary,
-                                              ),
-                                        ),
-                                        actions: [
-                                          ElevatedButton(
-                                            style: ElevatedButton.styleFrom(
-                                              backgroundColor: colors.primary,
-                                              foregroundColor: AppColors.white,
-                                              shape:
-                                                  const RoundedRectangleBorder(
-                                                    borderRadius:
-                                                        AppRadius.button,
-                                                  ),
-                                            ),
-                                            onPressed: () =>
-                                                Navigator.of(ctx).pop(),
-                                            child: const Text('Đã hiểu'),
-                                          ),
-                                        ],
-                                      ),
-                                    );
-                                    return;
-                                  }
-                                  _showUpdateConsumablesDialog(
-                                    context,
-                                    settlement,
-                                    vm,
-                                    ref,
-                                  );
-                                },
+                                onPressed: () => _showUpdateConsumablesDialog(
+                                  context,
+                                  settlement,
+                                  vm,
+                                  ref,
+                                ),
                               )
                             else
                               OutlinedButton.icon(

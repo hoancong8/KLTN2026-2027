@@ -39,7 +39,7 @@ class MemberSettlementFeeDto {
 
   factory MemberSettlementFeeDto.fromJson(Map<String, dynamic> json) {
     final status = _parseString(json['paymentStatus'] ?? json['PaymentStatus']);
-    final finalFee = _parseInt(json['finalFee'] ?? json['FinalFee']);
+    final finalFee = _parseInt(json['finalFee'] ?? json['FinalFee'] ?? json['amount'] ?? json['Amount']);
     final paid = _parseInt(
       json['paidAmount'] ??
           json['PaidAmount'] ??
@@ -108,7 +108,7 @@ class SessionSettlementDto {
   });
 
   factory SessionSettlementDto.fromJson(Map<String, dynamic> json) {
-    final rawFees = json['memberFees'] ?? json['MemberFees'];
+    final rawFees = json['memberFees'] ?? json['MemberFees'] ?? json['fees'] ?? json['Fees'];
     final fees = <MemberSettlementFeeDto>[];
     if (rawFees is List) {
       for (final item in rawFees) {
