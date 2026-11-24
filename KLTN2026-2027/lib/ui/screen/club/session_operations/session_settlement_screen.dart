@@ -12,6 +12,7 @@ import '../../../../app/consts/vietqr_bank_directory.dart';
 import '../../../../app/provider.dart';
 import '../../../../app/provider/localization_provider.dart';
 import '../../../../app/theme/theme.dart';
+import '../../../../domain/exceptions/app_exception.dart';
 import '../../../../domain/entities/payment/personal_fee.dart';
 import '../../../../domain/entities/session/session_settlement.dart';
 import '../../../../domain/enums/club_role.dart';
