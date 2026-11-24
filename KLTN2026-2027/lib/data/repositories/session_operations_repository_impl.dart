@@ -81,6 +81,30 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
             originalError: e,
           );
         }
+        if (code == 'Settlement.FeeNotFound') {
+          return AppException(
+            message: 'Khoản thu của hội viên chưa được tạo. Vui lòng bấm "Ghi nhận chi phí và tạo khoản thu" trước.',
+            originalError: e,
+          );
+        }
+        if (code == 'Settlement.Exempt') {
+          return AppException(
+            message: 'Khoản thu 0 đ hoặc được miễn thu, không cần xác nhận thanh toán.',
+            originalError: e,
+          );
+        }
+        if (code == 'Settlement.ApprovalRequired') {
+          return AppException(
+            message: 'Hãy ghi nhận chi phí và phát hành khoản thu trước khi kết thúc buổi chơi.',
+            originalError: e,
+          );
+        }
+        if (detail != null && detail.trim().isNotEmpty) {
+          return AppException(
+            message: detail.trim(),
+            originalError: e,
+          );
+        }
       }
     }
     if (handled.message?.isNotEmpty == true &&
@@ -1524,7 +1548,7 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
                       ? 'Hội viên tháng'
                       : (mType == 'DAILY' ? 'Hội viên ngày' : 'Khách vãng lai');
                   final rawGender = p['gender'] ?? p['Gender'];
-                  final gender = (rawGender == 1 || rawGender?.toString().toUpperCase() == 'FEMALE') ? 'FEMALE' : 'MALE';
+                  final gender = (rawGender == 2 || rawGender?.toString().toUpperCase() == 'FEMALE') ? 'FEMALE' : 'MALE';
                   draftParticipants.add(MemberSettlementFee(
                     feeId: 'draft_$uId',
                     userId: uId,

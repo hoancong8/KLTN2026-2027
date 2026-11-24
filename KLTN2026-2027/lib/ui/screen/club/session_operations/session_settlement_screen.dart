@@ -410,6 +410,7 @@ class SessionSettlementScreen extends ConsumerWidget {
                                   context,
                                   ref,
                                   sessionId,
+                                  isSettled: settlement.isSettled,
                                 ),
                               ),
                             ],
@@ -913,57 +914,81 @@ class SessionSettlementScreen extends ConsumerWidget {
             Divider(height: 1, color: colors.cardBorder),
             const SizedBox(height: 10),
             if (canOperateSettlement) ...[
-              Row(
-                children: [
-                  if (hasQr)
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: colors.primary,
-                          side: BorderSide(
-                            color: colors.primary.withValues(alpha: 0.4),
+              if (!isSettled) ...[
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: colors.primary.withValues(alpha: 0.08),
+                    borderRadius: AppRadius.borderSm,
+                    border: Border.all(color: colors.primary.withValues(alpha: 0.2)),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.info_outline_rounded, size: 16, color: colors.primary),
+                      AppSpacing.gapW8,
+                      Expanded(
+                        child: Text(
+                          'Chi phí đang ở mức tạm tính. Vui lòng bấm "Ghi nhận chi phí và tạo khoản thu" ở trên trước khi thực hiện thu tiền.',
+                          style: AppTypography.labelSmall.copyWith(color: colors.primary),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ] else ...[
+                Row(
+                  children: [
+                    if (hasQr)
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: colors.primary,
+                            side: BorderSide(
+                              color: colors.primary.withValues(alpha: 0.4),
+                            ),
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+                            minimumSize: const Size(0, 42),
                           ),
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
-                          minimumSize: const Size(0, 42),
+                          icon: const Icon(Icons.qr_code_rounded, size: 16),
+                          label: Text(
+                            context.l10n.settlement_vietqr_label,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: AppTypography.labelSmall.bold,
+                          ),
+                          onPressed: () => _showVietQrModal(context, fee.copyWith(finalFee: remainingFee), qrUrl, clubBank),
                         ),
-                        icon: const Icon(Icons.qr_code_rounded, size: 16),
-                        label: Text(
-                          context.l10n.settlement_vietqr_label,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: AppTypography.labelSmall.bold,
-                        ),
-                        onPressed: () => _showVietQrModal(context, fee.copyWith(finalFee: remainingFee), qrUrl, clubBank),
                       ),
-                    ),
-                  if (hasQr && fee.isCashEligible) AppSpacing.gapW8,
-                  if (fee.isCashEligible)
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: fee.isPendingCashConfirmation
-                              ? colors.warning
-                              : colors.success,
-                          foregroundColor: AppColors.white,
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
-                          minimumSize: const Size(0, 42),
+                    if (hasQr && fee.isCashEligible) AppSpacing.gapW8,
+                    if (fee.isCashEligible)
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: fee.isPendingCashConfirmation
+                                ? colors.warning
+                                : colors.success,
+                            foregroundColor: AppColors.white,
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+                            minimumSize: const Size(0, 42),
+                          ),
+                          icon: const Icon(Icons.check_rounded, size: 16),
+                          label: Text(
+                            fee.isPendingCashConfirmation
+                                ? 'Xác nhận tiền mặt (Đã báo)'
+                                : isPartiallyPaid
+                                    ? 'Thu tiếp ${currencyFormat.format(fee.remainingFee)} đ'
+                                    : context.l10n.settlement_confirm_cash,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: AppTypography.labelSmall.bold,
+                          ),
+                          onPressed: () => _confirmMarkPaid(context, fee, vm),
                         ),
-                        icon: const Icon(Icons.check_rounded, size: 16),
-                        label: Text(
-                          fee.isPendingCashConfirmation
-                              ? 'Xác nhận tiền mặt (Đã báo)'
-                              : isPartiallyPaid
-                                  ? 'Thu tiếp ${currencyFormat.format(fee.remainingFee)} đ'
-                                  : context.l10n.settlement_confirm_cash,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: AppTypography.labelSmall.bold,
-                        ),
-                        onPressed: () => _confirmMarkPaid(context, fee, vm),
                       ),
-                    ),
-                ],
-              ),
+                  ],
+                ),
+              ],
             ] else if (isCurrentUser && isSettled && !fee.isExempt && !isPaid) ...[
               Row(
                 children: [
@@ -1455,10 +1480,22 @@ class SessionSettlementScreen extends ConsumerWidget {
   Future<void> _confirmCompleteSessionFromSettlement(
     BuildContext context,
     WidgetRef ref,
-    String sessionId,
-  ) async {
+    String sessionId, {
+    required bool isSettled,
+  }) async {
     final colors = context.colors;
     final scaffoldMessenger = ScaffoldMessenger.of(context);
+
+    if (!isSettled) {
+      scaffoldMessenger.showSnackBar(
+        SnackBar(
+          content: const Text('Vui lòng bấm "Ghi nhận chi phí và tạo khoản thu" để chốt chi phí trước khi kết thúc buổi chơi.'),
+          backgroundColor: colors.warning,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
