@@ -1,6 +1,7 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../../app/consts/permissions.dart';
 import '../../../../../app/provider.dart';
@@ -26,6 +27,7 @@ class _LedgerContentState extends ConsumerState<LedgerContent> {
   late final AppLifecycleListener _lifecycle;
   bool _showDebts = false;
   String? _loadingInvoice;
+  String? _processingDebtId;
 
   ClubLedgerViewModel get _vm =>
       ref.read(clubLedgerViewModelProvider(widget.scope).notifier);
@@ -452,26 +454,105 @@ class _LedgerContentState extends ConsumerState<LedgerContent> {
     );
   }
 
-  Widget _debtRow(LedgerDebt item) => Card(
-    margin: AppSpacing.verticalXs,
-    child: ListTile(
-      leading: const Icon(Icons.receipt_long_outlined),
-      title: Text(item.name ?? context.l10n.ledger_member),
-      subtitle: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _debtRow(LedgerDebt item) {
+    final l10n = context.l10n;
+    final isProcessing = _processingDebtId == item.sourceId;
+
+    Widget? trailing;
+    if (item.type == LedgerDebtType.sessionFee && item.sessionId != null) {
+      trailing = Wrap(
+        spacing: AppSpacing.xs,
+        crossAxisAlignment: WrapCrossAlignment.center,
         children: [
-          Text(
-            item.type == LedgerDebtType.sessionFee
-                ? context.l10n.ledger_session_fee
-                : context.l10n.ledger_monthly_fee,
-          ),
-          if (item.month != null) Text(ledgerMonth(context, item.month!)),
-          Text(
-            '${context.l10n.ledger_unpaid} · ${ledgerAmount(context, item.amount)}',
-            style: AppTypography.bodyMedium.bold,
+          if (item.userId != null)
+            IconButton(
+              tooltip: l10n.settlement_confirm_cash,
+              icon: isProcessing
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.check_circle_outline),
+              onPressed: isProcessing
+                  ? null
+                  : () async {
+                      final confirmed = await showDialog<bool>(
+                        context: context,
+                        builder: (ctx) => AlertDialog(
+                          title: Text(l10n.settlement_confirm_cash_title),
+                          content: Text(
+                            l10n.settlement_confirm_cash_message(
+                              ledgerAmount(context, item.amount),
+                              item.name ?? l10n.ledger_member,
+                            ),
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(ctx, false),
+                              child: Text(l10n.com_cancel),
+                            ),
+                            FilledButton(
+                              onPressed: () => Navigator.pop(ctx, true),
+                              child: Text(l10n.com_confirm),
+                            ),
+                          ],
+                        ),
+                      );
+                      if (confirmed != true || !mounted) return;
+                      setState(() => _processingDebtId = item.sourceId);
+                      try {
+                        final repo = ref.read(sessionOperationsRepositoryProvider);
+                        await repo.markMemberPaid(
+                          sessionId: item.sessionId!,
+                          userId: item.userId!,
+                        );
+                        if (mounted) {
+                          showLedgerFeedback(context, l10n.ledger_saved);
+                          await _vm.loadDebts();
+                          await _vm.refresh();
+                        }
+                      } catch (e) {
+                        if (mounted) {
+                          final msg = e is AppException ? (e.message ?? e.toString()) : e.toString();
+                          showLedgerFeedback(context, msg);
+                        }
+                      } finally {
+                        if (mounted) setState(() => _processingDebtId = null);
+                      }
+                    },
+            ),
+          IconButton(
+            tooltip: l10n.ledger_view_settlement,
+            icon: const Icon(Icons.arrow_forward_ios, size: 16),
+            onPressed: () => context.push('/session/${item.sessionId}/settlement'),
           ),
         ],
+      );
+    }
+
+    return Card(
+      margin: AppSpacing.verticalXs,
+      child: ListTile(
+        leading: const Icon(Icons.receipt_long_outlined),
+        title: Text(item.name ?? l10n.ledger_member),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              item.type == LedgerDebtType.sessionFee
+                  ? l10n.ledger_session_fee
+                  : l10n.ledger_monthly_fee,
+            ),
+            if (item.month != null) Text(ledgerMonth(context, item.month!)),
+            Text(
+              '${l10n.ledger_unpaid} · ${ledgerAmount(context, item.amount)}',
+              style: AppTypography.bodyMedium.bold,
+            ),
+          ],
+        ),
+        trailing: trailing,
       ),
-    ),
-  );
+    );
+  }
 }

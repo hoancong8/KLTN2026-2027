@@ -4,7 +4,8 @@ class AppConfig {
   // ===== Environment =====
   static const env = String.fromEnvironment('ENV', defaultValue: 'dev');
   static const ledgerClubRequestKey = 'ledgerClubId';
-  static String clubLedgerEndpoint(String clubId) => '$clubsPath/$clubId/ledger';
+  static String clubLedgerEndpoint(String clubId) =>
+      '$clubsPath/$clubId/ledger';
   static String clubLedgerScreenPath(String clubId) =>
       '/club/$clubId/ledger?switchClub=1';
   static bool get isWeb => kIsWeb;
@@ -32,7 +33,7 @@ class AppConfig {
   // URL mặc định theo environment và platform
   static String get _defaultBaseUrl {
     if (env == 'prod') {
-      return 'http://192.168.1.10:54796'; // Production (IP máy tính hiện tại)
+      return 'http://192.168.1.52:54796'; // Production (IP máy tính hiện tại)
     }
 
     if (kIsWeb) {
@@ -40,7 +41,7 @@ class AppConfig {
     }
 
     // Development - Tự động detect platform
-    if (defaultTargetPlatform == TargetPlatform.iOS) {
+    if (defaultTargetPlatform == TargetPlatform.iOS) { 
       return 'http://localhost:54796'; // iOS Simulator
     } else if (defaultTargetPlatform == TargetPlatform.android) {
       return 'http://10.0.2.2:54796'; // Android Emulator
@@ -183,7 +184,8 @@ class AppConfig {
 
   // ===== [API & ROUTER] UC18 SePay & Payment Reconciliation APIs =====
   static const sepayApplicationEndpoint = '/api/v1/sepay/application';
-  static String clubSepayEndpoint(String groupId) => '$clubsPath/$groupId/sepay';
+  static String clubSepayEndpoint(String groupId) =>
+      '$clubsPath/$groupId/sepay';
   static String clubSepayAuthorizeEndpoint(String groupId) =>
       '${clubSepayEndpoint(groupId)}/authorize';
   static String clubSepayCompleteEndpoint(String groupId) =>
@@ -197,23 +199,27 @@ class AppConfig {
   static String clubSepayConnectionsEndpoint(String groupId) =>
       '${clubSepayEndpoint(groupId)}/connections';
   static String clubSepayDisconnectConnectionEndpoint(
-          String groupId, String connectionId) =>
-      '${clubSepayEndpoint(groupId)}/connections/$connectionId';
+    String groupId,
+    String connectionId,
+  ) => '${clubSepayEndpoint(groupId)}/connections/$connectionId';
 
   static String clubReconciliationsEndpoint(String groupId) =>
       '$clubsPath/$groupId/reconciliations';
   static String clubReconciliationDetailEndpoint(
-          String groupId, String transactionId) =>
-      '${clubReconciliationsEndpoint(groupId)}/$transactionId';
+    String groupId,
+    String transactionId,
+  ) => '${clubReconciliationsEndpoint(groupId)}/$transactionId';
   static String clubReconciliationConfirmEndpoint(
-          String groupId, String transactionId) =>
-      '${clubReconciliationDetailEndpoint(groupId, transactionId)}/confirm';
+    String groupId,
+    String transactionId,
+  ) => '${clubReconciliationDetailEndpoint(groupId, transactionId)}/confirm';
 
   static const adminSepayPath = '/admin/sepay';
   static String clubSepayScreenPath(String clubId) => '/club/$clubId/sepay';
   static String clubReconciliationsScreenPath(String clubId) =>
       '/club/$clubId/reconciliations';
   static String clubReconciliationDetailScreenPath(
-          String clubId, String transactionId) =>
-      '/club/$clubId/reconciliations/$transactionId';
+    String clubId,
+    String transactionId,
+  ) => '/club/$clubId/reconciliations/$transactionId';
 }

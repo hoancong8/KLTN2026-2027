@@ -960,8 +960,8 @@ class SessionSettlementScreen extends ConsumerWidget {
                           onPressed: () => _showVietQrModal(context, fee.copyWith(finalFee: remainingFee), qrUrl, clubBank),
                         ),
                       ),
-                    if (hasQr && fee.isCashEligible) AppSpacing.gapW8,
-                    if (fee.isCashEligible)
+                    if (hasQr && (!isPaid && !fee.isExempt)) AppSpacing.gapW8,
+                    if (!isPaid && !fee.isExempt)
                       Expanded(
                         child: ElevatedButton.icon(
                           style: ElevatedButton.styleFrom(

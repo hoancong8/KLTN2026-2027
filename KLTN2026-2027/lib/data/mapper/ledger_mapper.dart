@@ -69,6 +69,8 @@ extension LedgerMapper on LedgerDto {
       'MONTHLY_FUND' => LedgerDebtType.monthlyFund,
       _ => throw const FormatException('Unknown ledger debt type'),
     },
+    userId: optionalText('userId'),
+    sessionId: optionalText('sessionId'),
     name: optionalText('displayName'),
     month: optionalText('contributionMonth'),
     amount: _money('amountDue'),

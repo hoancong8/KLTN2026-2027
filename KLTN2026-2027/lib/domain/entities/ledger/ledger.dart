@@ -65,6 +65,8 @@ typedef LedgerTransaction = ({
 typedef LedgerDebt = ({
   String sourceId,
   LedgerDebtType type,
+  String? userId,
+  String? sessionId,
   String? name,
   String? month,
   LedgerMoney amount,

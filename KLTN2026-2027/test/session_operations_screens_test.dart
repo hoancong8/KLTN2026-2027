@@ -7,6 +7,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:kltn2026_2027/app/l10n_gen/app_localizations.dart';
 import 'package:kltn2026_2027/app/provider.dart';
+import 'package:kltn2026_2027/domain/entities/club/active_club_context.dart';
+import 'package:kltn2026_2027/domain/enums/club_role.dart';
 import 'package:kltn2026_2027/domain/entities/session/session_attendance.dart';
 import 'package:kltn2026_2027/domain/entities/session/session_review.dart';
 import 'package:kltn2026_2027/domain/entities/session/session_rotation.dart';
@@ -148,7 +150,7 @@ class FakeSessionOperationsRepository implements SessionOperationsRepository {
       extraFee: 40000,
       totalCost: 440000,
       totalCollected: 220000,
-      isSettled: false,
+      isSettled: true,
       memberFees: [
         MemberSettlementFee(
           feeId: 'fee-1',
@@ -219,6 +221,16 @@ void main() {
     return ProviderScope(
       overrides: [
         sessionOperationsRepositoryProvider.overrideWithValue(FakeSessionOperationsRepository()),
+        mySessionFeeProvider('session-1').overrideWith((ref) async => null),
+        activeClubContextProvider.overrideWith(
+          (ref) => const ActiveClubContext(
+            clubId: 'club-1',
+            clubName: 'CLB Test',
+            role: ClubRole.host,
+            roleName: 'Chủ sân',
+            permissions: ['FINANCE.FEE.MANAGE'],
+          ),
+        ),
       ],
       child: MaterialApp(
         localizationsDelegates: const [
@@ -277,9 +289,9 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     await tester.pumpWidget(buildTestableWidget(const SessionSettlementScreen(sessionId: 'session-1')));
     await tester.pumpAndSettle();
-    final button = find.text('Mã QR chuyển khoản');
-    await tester.ensureVisible(button);
-    await tester.tap(button);
+    final button = find.widgetWithText(OutlinedButton, 'Mã QR chuyển khoản');
+    expect(button, findsOneWidget);
+    tester.widget<OutlinedButton>(button).onPressed!();
     await tester.pumpAndSettle();
 
     expect(find.byType(QrImageView), findsOneWidget);

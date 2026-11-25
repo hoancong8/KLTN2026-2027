@@ -546,6 +546,21 @@ class _FeeDetailScreenState extends ConsumerState<FeeDetailScreen>
         ),
       );
     }
+    if (fee.canReportTransfer) {
+      buttons.add(
+        FilledButton.icon(
+          onPressed: state.isOperating
+              ? null
+              : () => _confirm(
+                  context,
+                  l10n.payment_confirm_report,
+                  vm.reportTransfer,
+                ),
+          icon: const Icon(Icons.check_circle_outline_rounded),
+          label: Text(l10n.payment_report_transfer),
+        ),
+      );
+    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [

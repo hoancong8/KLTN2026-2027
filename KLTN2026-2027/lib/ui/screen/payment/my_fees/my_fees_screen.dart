@@ -280,6 +280,16 @@ class _FeeCard extends StatelessWidget {
                   l10n.payment_waiting_cash,
                   style: AppTypography.bodySmall.colored(colors.warning),
                 ),
+              ] else if (!fee.isPaid && !fee.isExempt) ...[
+                AppSpacing.gapH12,
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton.icon(
+                    onPressed: onOpen,
+                    icon: const Icon(Icons.payment_rounded, size: 18),
+                    label: Text(l10n.payment_pay_now),
+                  ),
+                ),
               ],
             ],
           ),

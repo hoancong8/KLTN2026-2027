@@ -91,19 +91,20 @@ class _AdminSepayScreenState extends ConsumerState<AdminSepayScreen> {
   Future<void> _handleSave() async {
     if (!_formKey.currentState!.validate()) return;
     final vm = ref.read(adminSepayViewModelProvider.notifier);
-    final savedFrontendUrl = ref
-        .read(adminSepayViewModelProvider)
-        .application
-        ?.frontendBaseUrl;
+    final savedApp = ref.read(adminSepayViewModelProvider).application;
+    final publicApiBaseUrl = (savedApp?.publicApiBaseUrl.isNotEmpty == true)
+        ? savedApp!.publicApiBaseUrl
+        : AppConfig.baseUrl;
+    final savedFrontendUrl = savedApp?.frontendBaseUrl;
     final success = await vm.saveApplication(
       clientId: _clientIdController.text,
       clientSecret: _clientSecretController.text,
-      publicApiBaseUrl: AppConfig.baseUrl,
+      publicApiBaseUrl: publicApiBaseUrl,
       frontendBaseUrl: kIsWeb
           ? _frontendUrlController.text
           : (savedFrontendUrl != null && savedFrontendUrl.isNotEmpty
                 ? savedFrontendUrl
-                : AppConfig.baseUrl),
+                : publicApiBaseUrl),
       enabled: _enabled,
     );
     if (success && mounted) {
@@ -533,7 +534,7 @@ class _AdminSepayScreenState extends ConsumerState<AdminSepayScreen> {
             ],
           ),
           AppSpacing.gapH16,
-          _buildInstructions(),
+          _buildInstructions(app),
           AppSpacing.gapH16,
           Text(
             context.l10n.sepay_client_id_label,
@@ -750,22 +751,24 @@ class _AdminSepayScreenState extends ConsumerState<AdminSepayScreen> {
     );
   }
 
-  Widget _buildInstructions() {
-    final apiBaseUrl = AppConfig.baseUrl.trim().replaceFirst(
-      RegExp(r'/+$'),
-      '',
-    );
+  Widget _buildInstructions(SepayApplication? app) {
+    final serverCallbackUrl = app?.callbackUrl.trim();
+    final apiBaseUrl = (app != null && app.publicApiBaseUrl.isNotEmpty)
+        ? app.publicApiBaseUrl.trim().replaceFirst(RegExp(r'/+$'), '')
+        : AppConfig.baseUrl.trim().replaceFirst(RegExp(r'/+$'), '');
     final parsedApiBaseUrl = Uri.tryParse(apiBaseUrl);
-    final callbackUrl =
-        parsedApiBaseUrl != null &&
-            parsedApiBaseUrl.scheme == 'https' &&
-            parsedApiBaseUrl.host.isNotEmpty
-        ? '$apiBaseUrl/api/v1/sepay/oauth/callback'
-        : null;
+    final callbackUrl = (serverCallbackUrl != null && serverCallbackUrl.isNotEmpty)
+        ? serverCallbackUrl
+        : (parsedApiBaseUrl != null &&
+                (parsedApiBaseUrl.scheme == 'https' ||
+                    parsedApiBaseUrl.scheme == 'http') &&
+                parsedApiBaseUrl.host.isNotEmpty
+            ? '$apiBaseUrl/api/v1/sepay/oauth/callback'
+            : null);
 
     final scopesText = context.l10n.sepay_developer_setup_scopes;
     final scopePattern = RegExp(
-      r'bank-account:read|webhook:read|webhook:write|webhook:delete|company',
+      r'bank-account:read|webhook:read|webhook:write|webhook:delete',
     );
     final scopeSpans = <TextSpan>[];
     var cursor = 0;
