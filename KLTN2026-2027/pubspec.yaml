@@ -37,6 +37,7 @@ dependencies:
   qr_flutter: ^4.1.0
   super_clipboard: ^0.9.1
   url_launcher: ^6.3.2
+  signalr_netcore: ^1.4.4
 
 dev_dependencies:
   flutter_test:

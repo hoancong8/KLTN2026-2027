@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -6,6 +7,7 @@ import '../../data/datasource/remote/implement/ledger_remote_datasource_impl.dar
 import '../../data/repositories/ledger_repository_impl.dart';
 import '../../domain/repositories/ledger_repository.dart';
 import '../../domain/usecases/ledger/ledger_usecases.dart';
+import '../services/realtime_hub_service.dart';
 import '../provider.dart';
 
 final _ledgerRemoteProvider = Provider<LedgerRemoteDatasource>(
@@ -51,18 +53,40 @@ final createLedgerExpenseUseCaseProvider = Provider(
 
 final ledgerUpdateProvider =
     StreamProvider.autoDispose<({String clubId, String eventId})>(
-      (ref) => FirebaseMessaging.onMessage
-          .map((message) => message.data)
-          .where(
-            (data) =>
-                data['groupId'] is String &&
-                data['eventId'] is String &&
-                data['ledgerId'] is String,
-          )
-          .map(
-            (data) => (
-              clubId: data['groupId'] as String,
-              eventId: data['eventId'] as String,
-            ),
-          ),
+      (ref) {
+        final controller = StreamController<({String clubId, String eventId})>();
+
+        final fcmSub = FirebaseMessaging.onMessage
+            .map((message) => message.data)
+            .where(
+              (data) =>
+                  data['groupId'] is String &&
+                  data['eventId'] is String &&
+                  data['ledgerId'] is String,
+            )
+            .listen((data) {
+              controller.add((
+                clubId: data['groupId'] as String,
+                eventId: data['eventId'] as String,
+              ));
+            });
+
+        final hub = RealtimeHubService.instance;
+        hub.start();
+        final hubSub = hub.onLedgerUpdated.listen((data) {
+          final groupId = (data['groupId'] ?? data['GroupId'])?.toString();
+          final eventId = (data['eventId'] ?? data['EventId'])?.toString();
+          if (groupId != null && eventId != null) {
+            controller.add((clubId: groupId, eventId: eventId));
+          }
+        });
+
+        ref.onDispose(() {
+          fcmSub.cancel();
+          hubSub.cancel();
+          controller.close();
+        });
+
+        return controller.stream;
+      },
     );
