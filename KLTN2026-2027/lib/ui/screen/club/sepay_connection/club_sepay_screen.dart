@@ -10,6 +10,8 @@ import '../../../../app/provider/localization_provider.dart';
 import '../../../../app/services/sepay_authorization_browser.dart';
 import '../../../../app/theme/theme.dart';
 import '../../../../domain/entities/sepay/sepay_connection.dart';
+import '../../../../domain/enums/club_role.dart';
+import '../club_vm/club_context_vm.dart';
 import '../../../../widget/app_status_badge.dart';
 import 'club_sepay_state.dart';
 import 'club_sepay_vm.dart';
@@ -260,7 +262,18 @@ class _ClubSepayScreenState extends ConsumerState<ClubSepayScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final canManageBank = ref.hasClubPermission(ClubPermissions.bankManage);
+    final activeContext = ref.watch(activeClubContextProvider);
+    final isSameClub = activeContext?.clubId == widget.clubId;
+    final isHost = isSameClub && activeContext?.role == ClubRole.host;
+    final myClubs = ref.watch(clubContextViewModelProvider).myClubs;
+    final isHostInClub = myClubs.any(
+      (c) => c.clubId == widget.clubId && c.role == ClubRole.host,
+    );
+    final canManageBank =
+        isHost ||
+        isHostInClub ||
+        ref.watch(isAdminUserProvider) ||
+        (isSameClub && ref.hasClubPermission(ClubPermissions.bankManage));
     final state = ref.watch(clubSepayViewModelProvider(widget.clubId));
 
     ref.listen<ClubSepayState>(clubSepayViewModelProvider(widget.clubId), (
