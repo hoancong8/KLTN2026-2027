@@ -13,9 +13,11 @@ class RealtimeHubService {
   HubConnection? _connection;
   final _ledgerUpdatedController = StreamController<Map<String, dynamic>>.broadcast();
   final _rotationChangedController = StreamController<Map<String, dynamic>>.broadcast();
+  final _bookingUpdatedController = StreamController<Map<String, dynamic>>.broadcast();
 
   Stream<Map<String, dynamic>> get onLedgerUpdated => _ledgerUpdatedController.stream;
   Stream<Map<String, dynamic>> get onRotationChanged => _rotationChangedController.stream;
+  Stream<Map<String, dynamic>> get onBookingUpdated => _bookingUpdatedController.stream;
 
   bool get isConnected => _connection?.state == HubConnectionState.Connected;
 
@@ -44,6 +46,7 @@ class RealtimeHubService {
       _connection?.on('LedgerUpdated', _handleLedgerUpdated);
       _connection?.on('RotationChanged', _handleRotationChanged);
       _connection?.on('MyMatchesChanged', _handleRotationChanged);
+      _connection?.on('BookingUpdated', _handleBookingUpdated);
 
       _connection?.onclose(({error}) {
         if (kDebugMode) {
@@ -79,6 +82,13 @@ class RealtimeHubService {
     if (args != null && args.isNotEmpty && args[0] is Map) {
       final data = Map<String, dynamic>.from(args[0] as Map);
       _rotationChangedController.add(data);
+    }
+  }
+
+  void _handleBookingUpdated(List<Object?>? args) {
+    if (args != null && args.isNotEmpty && args[0] is Map) {
+      final data = Map<String, dynamic>.from(args[0] as Map);
+      _bookingUpdatedController.add(data);
     }
   }
 

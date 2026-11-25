@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:go_router/go_router.dart';
 // lib/ui/screen/club/session_detail_screen.dart
 
@@ -9,6 +10,7 @@ import 'package:kltn2026_2027/app/provider/localization_provider.dart';
 import 'package:kltn2026_2027/app/theme/theme.dart';
 import '../../../app/consts/app_config.dart';
 import '../../../app/provider.dart';
+import '../../../app/services/realtime_hub_service.dart';
 import '../../../domain/enums/club_role.dart';
 import '../../../domain/entities/session/create_court_pass_params.dart';
 import '../../../domain/entities/session/guest_recruitment.dart';
@@ -35,15 +37,25 @@ class SessionDetailScreen extends ConsumerStatefulWidget {
 
 class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  StreamSubscription? _bookingSubscription;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    RealtimeHubService.instance.joinSession(widget.sessionId);
+    _bookingSubscription = RealtimeHubService.instance.onBookingUpdated.listen((event) {
+      final sId = event['sessionId']?.toString();
+      if (sId != null && sId.toLowerCase() == widget.sessionId.toLowerCase()) {
+        ref.read(sessionDetailViewModelProvider(widget.sessionId).notifier).loadDetail();
+      }
+    });
   }
 
   @override
   void dispose() {
+    _bookingSubscription?.cancel();
+    RealtimeHubService.instance.leaveSession(widget.sessionId);
     _tabController.dispose();
     super.dispose();
   }
