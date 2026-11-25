@@ -168,6 +168,17 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
           ),
         );
       }
+    } else {
+      final error = ref.read(sessionDetailViewModelProvider(widget.sessionId)).errorMessage;
+      if (error != null && error.isNotEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(error),
+            backgroundColor: colors.error,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
     }
   }
 
@@ -253,6 +264,17 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
             behavior: SnackBarBehavior.floating,
           ),
         );
+      } else if (mounted) {
+        final error = ref.read(sessionDetailViewModelProvider(widget.sessionId)).errorMessage;
+        if (error != null && error.isNotEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(error),
+              backgroundColor: colors.error,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
       }
     }
   }
