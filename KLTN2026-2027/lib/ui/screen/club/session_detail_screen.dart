@@ -45,10 +45,10 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
     _tabController = TabController(length: 2, vsync: this);
     RealtimeHubService.instance.joinSession(widget.sessionId);
     _bookingSubscription = RealtimeHubService.instance.onBookingUpdated.listen((event) {
-      final sId = event['sessionId']?.toString();
+      final sId = (event['sessionId'] ?? event['SessionId'])?.toString();
       if (sId != null && sId.toLowerCase() == widget.sessionId.toLowerCase()) {
-        final targetUserId = event['userId']?.toString() ?? '';
-        final action = event['action']?.toString() ?? '';
+        final targetUserId = (event['userId'] ?? event['UserId'])?.toString() ?? '';
+        final action = (event['action'] ?? event['Action'])?.toString() ?? '';
         final currentUserId = ref.read(currentUserProfileProvider)?.id ?? ref.read(authTokenProvider)?.userId ?? '';
         final isMe = currentUserId.isNotEmpty && targetUserId.toLowerCase() == currentUserId.toLowerCase();
 
@@ -72,7 +72,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                     AppSpacing.gapW8,
                     Expanded(
                       child: Text(
-                        'Bạn đã được duyệt vào danh sách tham gia chính thức!',
+                        'Bạn đã được Host duyệt vào danh sách chính thức!',
                         style: TextStyle(color: AppColors.white, fontWeight: FontWeight.bold),
                       ),
                     ),
