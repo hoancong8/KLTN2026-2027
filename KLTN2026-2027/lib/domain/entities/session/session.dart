@@ -73,4 +73,52 @@ class Session {
     if (match != null) return match.group(1)?.trim();
     return null;
   }
+
+  Session copyWith({
+    String? id,
+    String? groupId,
+    String? clubName,
+    String? title,
+    DateTime? startTime,
+    DateTime? endTime,
+    String? courtLocation,
+    String? address,
+    double? lat,
+    double? lng,
+    int? courtCount,
+    int? targetPlayerPerCourt,
+    int? maxPlayers,
+    DateTime? deadlineBooking,
+    double? courtRentalCost,
+    SessionStatus? status,
+    int? confirmedCount,
+    int? waitingCount,
+    bool? isBookedByCurrentUser,
+    BookingStatus? currentUserBookingStatus,
+    int? currentUserQueueOrder,
+  }) {
+    return Session(
+      id: id ?? this.id,
+      groupId: groupId ?? this.groupId,
+      clubName: clubName ?? this.clubName,
+      title: title ?? this.title,
+      startTime: startTime ?? this.startTime,
+      endTime: endTime ?? this.endTime,
+      courtLocation: courtLocation ?? this.courtLocation,
+      address: address ?? this.address,
+      lat: lat ?? this.lat,
+      lng: lng ?? this.lng,
+      courtCount: courtCount ?? this.courtCount,
+      targetPlayerPerCourt: targetPlayerPerCourt ?? this.targetPlayerPerCourt,
+      maxPlayers: maxPlayers ?? this.maxPlayers,
+      deadlineBooking: deadlineBooking ?? this.deadlineBooking,
+      courtRentalCost: courtRentalCost ?? this.courtRentalCost,
+      status: status ?? this.status,
+      confirmedCount: confirmedCount ?? this.confirmedCount,
+      waitingCount: waitingCount ?? this.waitingCount,
+      isBookedByCurrentUser: isBookedByCurrentUser ?? this.isBookedByCurrentUser,
+      currentUserBookingStatus: currentUserBookingStatus ?? this.currentUserBookingStatus,
+      currentUserQueueOrder: currentUserQueueOrder ?? this.currentUserQueueOrder,
+    );
+  }
 }

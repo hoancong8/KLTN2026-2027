@@ -47,7 +47,44 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
     _bookingSubscription = RealtimeHubService.instance.onBookingUpdated.listen((event) {
       final sId = event['sessionId']?.toString();
       if (sId != null && sId.toLowerCase() == widget.sessionId.toLowerCase()) {
-        ref.read(sessionDetailViewModelProvider(widget.sessionId).notifier).loadDetail();
+        final targetUserId = event['userId']?.toString() ?? '';
+        final action = event['action']?.toString() ?? '';
+        final currentUserId = ref.read(currentUserProfileProvider)?.id ?? ref.read(authTokenProvider)?.userId ?? '';
+        final isMe = currentUserId.isNotEmpty && targetUserId.toLowerCase() == currentUserId.toLowerCase();
+
+        ref.read(sessionDetailViewModelProvider(widget.sessionId).notifier).applyRealtimeBookingUpdate(
+          targetUserId: targetUserId,
+          action: action,
+          currentUserId: currentUserId,
+        );
+
+        if (isMe && action.toUpperCase() == 'CONFIRMED') {
+          if (_tabController.index != 0) {
+            _tabController.animateTo(0);
+          }
+          if (mounted) {
+            final colors = context.colors;
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: const Row(
+                  children: [
+                    Icon(Icons.check_circle_rounded, color: AppColors.white, size: 20),
+                    AppSpacing.gapW8,
+                    Expanded(
+                      child: Text(
+                        'Bạn đã được duyệt vào danh sách tham gia chính thức!',
+                        style: TextStyle(color: AppColors.white, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
+                ),
+                backgroundColor: colors.success,
+                behavior: SnackBarBehavior.floating,
+                duration: const Duration(seconds: 4),
+              ),
+            );
+          }
+        }
       }
     });
   }

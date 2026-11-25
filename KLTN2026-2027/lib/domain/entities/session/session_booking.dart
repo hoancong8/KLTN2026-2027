@@ -35,4 +35,36 @@ class SessionBooking {
 
   bool get isConfirmed => status == BookingStatus.confirmed;
   bool get isWaiting => status == BookingStatus.waiting;
+
+  SessionBooking copyWith({
+    String? bookingId,
+    String? sessionId,
+    String? userId,
+    String? fullName,
+    String? avatarUrl,
+    String? phoneNumber,
+    String? skillLevel,
+    BookingStatus? status,
+    int? queueOrder,
+    DateTime? bookedAt,
+    DateTime? checkinAt,
+    String? recruitmentId,
+    int? gender,
+  }) {
+    return SessionBooking(
+      bookingId: bookingId ?? this.bookingId,
+      sessionId: sessionId ?? this.sessionId,
+      userId: userId ?? this.userId,
+      fullName: fullName ?? this.fullName,
+      avatarUrl: avatarUrl ?? this.avatarUrl,
+      phoneNumber: phoneNumber ?? this.phoneNumber,
+      skillLevel: skillLevel ?? this.skillLevel,
+      status: status ?? this.status,
+      queueOrder: queueOrder ?? this.queueOrder,
+      bookedAt: bookedAt ?? this.bookedAt,
+      checkinAt: checkinAt ?? this.checkinAt,
+      recruitmentId: recruitmentId ?? this.recruitmentId,
+      gender: gender ?? this.gender,
+    );
+  }
 }

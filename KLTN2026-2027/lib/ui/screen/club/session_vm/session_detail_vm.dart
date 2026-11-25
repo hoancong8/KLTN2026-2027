@@ -3,6 +3,7 @@
 import 'package:flutter_riverpod/legacy.dart';
 import '../../../../app/provider.dart';
 import '../../../../domain/entities/session/session_booking.dart';
+import '../../../../domain/enums/session_enums.dart';
 import '../../../../domain/exceptions/app_exception.dart';
 import '../../../../domain/usecases/session/session_usecases.dart';
 import 'session_detail_state.dart';
@@ -204,6 +205,111 @@ class SessionDetailViewModel extends StateNotifier<SessionDetailState> {
       state = state.copyWith(isSubmitting: false, errorMessage: _resolveErrorMessage(e));
       return false;
     }
+  }
+
+  void applyRealtimeBookingUpdate({
+    required String targetUserId,
+    required String action,
+    required String currentUserId,
+  }) {
+    final currentDetail = state.detail;
+    if (currentDetail == null) return;
+
+    final isMe = currentUserId.isNotEmpty && targetUserId.toLowerCase() == currentUserId.toLowerCase();
+    final actionUpper = action.toUpperCase();
+
+    if (actionUpper == 'CONFIRMED') {
+      final waitingList = List<SessionBooking>.from(currentDetail.waitingQueue);
+      final confirmedList = List<SessionBooking>.from(currentDetail.confirmedPlayers);
+
+      final indexInWaiting = waitingList.indexWhere((p) => p.userId.toLowerCase() == targetUserId.toLowerCase());
+      if (indexInWaiting != -1) {
+        final player = waitingList.removeAt(indexInWaiting);
+        final confirmedPlayer = player.copyWith(
+          status: BookingStatus.confirmed,
+          queueOrder: 0,
+        );
+        confirmedList.add(confirmedPlayer);
+
+        for (var i = 0; i < waitingList.length; i++) {
+          final w = waitingList[i];
+          if (w.queueOrder > player.queueOrder) {
+            waitingList[i] = w.copyWith(queueOrder: (w.queueOrder - 1).clamp(1, 999));
+          }
+        }
+
+        final updatedSession = currentDetail.session.copyWith(
+          confirmedCount: confirmedList.length,
+          waitingCount: waitingList.length,
+          isBookedByCurrentUser: isMe ? true : currentDetail.session.isBookedByCurrentUser,
+          currentUserBookingStatus: isMe ? BookingStatus.confirmed : currentDetail.session.currentUserBookingStatus,
+          currentUserQueueOrder: isMe ? 0 : currentDetail.session.currentUserQueueOrder,
+        );
+
+        state = state.copyWith(
+          detail: currentDetail.copyWith(
+            session: updatedSession,
+            confirmedPlayers: confirmedList,
+            waitingQueue: waitingList,
+          ),
+        );
+      }
+    } else if (actionUpper == 'CANCELLED') {
+      final waitingList = List<SessionBooking>.from(currentDetail.waitingQueue);
+      final confirmedList = List<SessionBooking>.from(currentDetail.confirmedPlayers);
+
+      final waitingIndex = waitingList.indexWhere((p) => p.userId.toLowerCase() == targetUserId.toLowerCase());
+      final confirmedIndex = confirmedList.indexWhere((p) => p.userId.toLowerCase() == targetUserId.toLowerCase());
+
+      if (waitingIndex != -1) {
+        final removed = waitingList.removeAt(waitingIndex);
+        for (var i = 0; i < waitingList.length; i++) {
+          final w = waitingList[i];
+          if (w.queueOrder > removed.queueOrder) {
+            waitingList[i] = w.copyWith(queueOrder: (w.queueOrder - 1).clamp(1, 999));
+          }
+        }
+      } else if (confirmedIndex != -1) {
+        confirmedList.removeAt(confirmedIndex);
+        if (waitingList.isNotEmpty) {
+          waitingList.sort((a, b) => a.queueOrder.compareTo(b.queueOrder));
+          final promoted = waitingList.removeAt(0).copyWith(
+            status: BookingStatus.confirmed,
+            queueOrder: 0,
+          );
+          confirmedList.add(promoted);
+          for (var i = 0; i < waitingList.length; i++) {
+            waitingList[i] = waitingList[i].copyWith(queueOrder: (waitingList[i].queueOrder - 1).clamp(1, 999));
+          }
+        }
+      }
+
+      final updatedSession = currentDetail.session.copyWith(
+        confirmedCount: confirmedList.length,
+        waitingCount: waitingList.length,
+        isBookedByCurrentUser: isMe ? false : currentDetail.session.isBookedByCurrentUser,
+        currentUserBookingStatus: isMe ? null : currentDetail.session.currentUserBookingStatus,
+        currentUserQueueOrder: isMe ? 0 : currentDetail.session.currentUserQueueOrder,
+      );
+
+      state = state.copyWith(
+        detail: currentDetail.copyWith(
+          session: updatedSession,
+          confirmedPlayers: confirmedList,
+          waitingQueue: waitingList,
+        ),
+      );
+    }
+
+    silentRefresh();
+  }
+
+  Future<void> silentRefresh() async {
+    try {
+      final detail = await getSessionDetailUseCase.execute(sessionId);
+      if (!mounted) return;
+      state = state.copyWith(detail: detail);
+    } catch (_) {}
   }
 
   String _resolveErrorMessage(dynamic error) {

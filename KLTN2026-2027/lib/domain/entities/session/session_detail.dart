@@ -16,4 +16,18 @@ class SessionDetail {
     required this.waitingQueue,
     this.activeRecruitment,
   });
+
+  SessionDetail copyWith({
+    Session? session,
+    List<SessionBooking>? confirmedPlayers,
+    List<SessionBooking>? waitingQueue,
+    GuestRecruitment? activeRecruitment,
+  }) {
+    return SessionDetail(
+      session: session ?? this.session,
+      confirmedPlayers: confirmedPlayers ?? this.confirmedPlayers,
+      waitingQueue: waitingQueue ?? this.waitingQueue,
+      activeRecruitment: activeRecruitment ?? this.activeRecruitment,
+    );
+  }
 }
