@@ -12,18 +12,23 @@ import '../../../../domain/entities/session/session_rotation.dart';
 import '../../../../widget/app_shimmer.dart';
 import '../../../../widget/badminton_court_widget.dart';
 
-final sessionRotationNotifierProvider =
-    StateNotifierProvider.autoDispose.family<SessionRotationNotifier, AsyncValue<SessionRotationSnapshot>, String>(
-        (ref, sessionId) {
-  final repo = ref.watch(sessionOperationsRepositoryProvider);
-  return SessionRotationNotifier(repo, sessionId);
-});
+final sessionRotationNotifierProvider = StateNotifierProvider.autoDispose
+    .family<
+      SessionRotationNotifier,
+      AsyncValue<SessionRotationSnapshot>,
+      String
+    >((ref, sessionId) {
+      final repo = ref.watch(sessionOperationsRepositoryProvider);
+      return SessionRotationNotifier(repo, sessionId);
+    });
 
-class SessionRotationNotifier extends StateNotifier<AsyncValue<SessionRotationSnapshot>> {
+class SessionRotationNotifier
+    extends StateNotifier<AsyncValue<SessionRotationSnapshot>> {
   final dynamic _repo;
   final String sessionId;
 
-  SessionRotationNotifier(this._repo, this.sessionId) : super(const AsyncValue.loading()) {
+  SessionRotationNotifier(this._repo, this.sessionId)
+    : super(const AsyncValue.loading()) {
     loadRotation();
   }
 
@@ -39,7 +44,10 @@ class SessionRotationNotifier extends StateNotifier<AsyncValue<SessionRotationSn
 
   Future<void> startMatch(String matchId) async {
     try {
-      final updated = await _repo.startMatch(sessionId: sessionId, matchId: matchId);
+      final updated = await _repo.startMatch(
+        sessionId: sessionId,
+        matchId: matchId,
+      );
       state = AsyncValue.data(updated);
     } catch (e, st) {
       state = AsyncValue.error(e, st);
@@ -48,7 +56,10 @@ class SessionRotationNotifier extends StateNotifier<AsyncValue<SessionRotationSn
 
   Future<void> finishMatch(String matchId) async {
     try {
-      final updated = await _repo.finishMatch(sessionId: sessionId, matchId: matchId);
+      final updated = await _repo.finishMatch(
+        sessionId: sessionId,
+        matchId: matchId,
+      );
       state = AsyncValue.data(updated);
     } catch (e, st) {
       state = AsyncValue.error(e, st);
@@ -75,7 +86,10 @@ class SessionRotationNotifier extends StateNotifier<AsyncValue<SessionRotationSn
 
   Future<void> restoreProposal(String matchId) async {
     try {
-      final updated = await _repo.restoreProposal(sessionId: sessionId, matchId: matchId);
+      final updated = await _repo.restoreProposal(
+        sessionId: sessionId,
+        matchId: matchId,
+      );
       state = AsyncValue.data(updated);
     } catch (e, st) {
       state = AsyncValue.error(e, st);
@@ -84,14 +98,22 @@ class SessionRotationNotifier extends StateNotifier<AsyncValue<SessionRotationSn
 
   Future<void> pausePlayer(String userId, bool isPaused) async {
     try {
-      final updated = await _repo.pausePlayer(sessionId: sessionId, userId: userId, isPaused: isPaused);
+      final updated = await _repo.pausePlayer(
+        sessionId: sessionId,
+        userId: userId,
+        isPaused: isPaused,
+      );
       state = AsyncValue.data(updated);
     } catch (e, st) {
       state = AsyncValue.error(e, st);
     }
   }
 
-  Future<void> swapPlayers(String matchId, List<String> teamAUserIds, List<String> teamBUserIds) async {
+  Future<void> swapPlayers(
+    String matchId,
+    List<String> teamAUserIds,
+    List<String> teamBUserIds,
+  ) async {
     try {
       final updated = await _repo.swapMatchPlayers(
         sessionId: sessionId,
@@ -107,7 +129,10 @@ class SessionRotationNotifier extends StateNotifier<AsyncValue<SessionRotationSn
 
   Future<void> setThreePlayerMode(ThreePlayerMatchMode mode) async {
     try {
-      final updated = await _repo.setThreePlayerMode(sessionId: sessionId, mode: mode);
+      final updated = await _repo.setThreePlayerMode(
+        sessionId: sessionId,
+        mode: mode,
+      );
       state = AsyncValue.data(updated);
     } catch (e, st) {
       state = AsyncValue.error(e, st);
@@ -136,7 +161,10 @@ class SessionRotationNotifier extends StateNotifier<AsyncValue<SessionRotationSn
 
   Future<void> clearCourt(String matchId) async {
     try {
-      final updated = await _repo.clearCourt(sessionId: sessionId, matchId: matchId);
+      final updated = await _repo.clearCourt(
+        sessionId: sessionId,
+        matchId: matchId,
+      );
       state = AsyncValue.data(updated);
     } catch (e, st) {
       state = AsyncValue.error(e, st);
@@ -156,7 +184,8 @@ class SessionRotationScreen extends ConsumerStatefulWidget {
   const SessionRotationScreen({super.key, required this.sessionId});
 
   @override
-  ConsumerState<SessionRotationScreen> createState() => _SessionRotationScreenState();
+  ConsumerState<SessionRotationScreen> createState() =>
+      _SessionRotationScreenState();
 }
 
 class _SessionRotationScreenState extends ConsumerState<SessionRotationScreen> {
@@ -165,8 +194,12 @@ class _SessionRotationScreenState extends ConsumerState<SessionRotationScreen> {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
-    final asyncState = ref.watch(sessionRotationNotifierProvider(widget.sessionId));
-    final vm = ref.read(sessionRotationNotifierProvider(widget.sessionId).notifier);
+    final asyncState = ref.watch(
+      sessionRotationNotifierProvider(widget.sessionId),
+    );
+    final vm = ref.read(
+      sessionRotationNotifierProvider(widget.sessionId).notifier,
+    );
 
     return Scaffold(
       backgroundColor: colors.background,
@@ -174,7 +207,10 @@ class _SessionRotationScreenState extends ConsumerState<SessionRotationScreen> {
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Điều Phối Trận Đấu & Xoay Tua Sân', style: AppTypography.titleMedium.bold.colored(colors.textPrimary)),
+            Text(
+              'Điều Phối Trận Đấu & Xoay Tua Sân',
+              style: AppTypography.titleMedium.bold.colored(colors.textPrimary),
+            ),
             Text(
               _mode == RotationMode.auto
                   ? 'Tự động ghép cặp theo thời gian hồi sức & trình độ'
@@ -186,8 +222,13 @@ class _SessionRotationScreenState extends ConsumerState<SessionRotationScreen> {
         backgroundColor: colors.surface,
         elevation: 0.5,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: colors.textPrimary),
-          onPressed: () => context.canPop() ? context.pop() : context.go('/home'),
+          icon: Icon(
+            Icons.arrow_back_ios_new_rounded,
+            size: 20,
+            color: colors.textPrimary,
+          ),
+          onPressed: () =>
+              context.canPop() ? context.pop() : context.go('/home'),
         ),
         actions: [
           IconButton(
@@ -212,11 +253,14 @@ class _SessionRotationScreenState extends ConsumerState<SessionRotationScreen> {
                   side: BorderSide(color: colors.primary),
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   minimumSize: const Size(0, 48),
-                  shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: AppRadius.button,
+                  ),
                 ),
                 icon: const Icon(Icons.how_to_reg_rounded),
                 label: const Text('Check-in Ra Sân'),
-                onPressed: () => context.push('/session/${widget.sessionId}/attendance'),
+                onPressed: () =>
+                    context.push('/session/${widget.sessionId}/attendance'),
               ),
             ),
             AppSpacing.gapW12,
@@ -227,11 +271,14 @@ class _SessionRotationScreenState extends ConsumerState<SessionRotationScreen> {
                   foregroundColor: AppColors.white,
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   minimumSize: const Size(0, 48),
-                  shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: AppRadius.button,
+                  ),
                 ),
                 icon: const Icon(Icons.receipt_long_rounded),
                 label: const Text('Tổng Kết Chi Phí'),
-                onPressed: () => context.push('/session/${widget.sessionId}/settlement'),
+                onPressed: () =>
+                    context.push('/session/${widget.sessionId}/settlement'),
               ),
             ),
           ],
@@ -262,12 +309,26 @@ class _SessionRotationScreenState extends ConsumerState<SessionRotationScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.error_outline_rounded, size: 48, color: colors.error),
+                      Icon(
+                        Icons.error_outline_rounded,
+                        size: 48,
+                        color: colors.error,
+                      ),
                       AppSpacing.gapH12,
-                      Text('Không thể tải bàn xoay tua',
-                          style: AppTypography.titleMedium.bold.colored(colors.textPrimary)),
+                      Text(
+                        'Không thể tải bàn xoay tua',
+                        style: AppTypography.titleMedium.bold.colored(
+                          colors.textPrimary,
+                        ),
+                      ),
                       AppSpacing.gapH4,
-                      Text('$err', style: AppTypography.bodySmall.colored(colors.textMuted), textAlign: TextAlign.center),
+                      Text(
+                        '$err',
+                        style: AppTypography.bodySmall.colored(
+                          colors.textMuted,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
                       AppSpacing.gapH16,
                       ElevatedButton.icon(
                         onPressed: vm.loadRotation,
@@ -301,8 +362,12 @@ class _SessionRotationScreenState extends ConsumerState<SessionRotationScreen> {
                         AppSpacing.gapH16,
 
                         // 3. Courts & Matches
-                        Text('Trạng thái các sân thi đấu (${snapshot.courts.length} sân)',
-                            style: AppTypography.titleSmall.bold.colored(colors.textPrimary)),
+                        Text(
+                          'Trạng thái các sân thi đấu (${snapshot.courts.length} sân)',
+                          style: AppTypography.titleSmall.bold.colored(
+                            colors.textPrimary,
+                          ),
+                        ),
                         AppSpacing.gapH8,
 
                         if (snapshot.courts.isEmpty)
@@ -311,11 +376,17 @@ class _SessionRotationScreenState extends ConsumerState<SessionRotationScreen> {
                             alignment: Alignment.center,
                             child: Column(
                               children: [
-                                Icon(Icons.sports_tennis_rounded, size: 48, color: colors.textMuted),
+                                Icon(
+                                  Icons.sports_tennis_rounded,
+                                  size: 48,
+                                  color: colors.textMuted,
+                                ),
                                 AppSpacing.gapH12,
                                 Text(
                                   'Chưa có sân thi đấu nào được thiết lập cho buổi chơi này',
-                                  style: AppTypography.bodyMedium.colored(colors.textMuted),
+                                  style: AppTypography.bodyMedium.colored(
+                                    colors.textMuted,
+                                  ),
                                 ),
                               ],
                             ),
@@ -328,12 +399,24 @@ class _SessionRotationScreenState extends ConsumerState<SessionRotationScreen> {
                               final cardWidth = (constraints.maxWidth - 48) / 2;
                               return SizedBox(
                                 width: cardWidth,
-                                child: _buildCourtCard(context, court, snapshot.queuePlayers, vm),
+                                child: _buildCourtCard(
+                                  context,
+                                  court,
+                                  snapshot.queuePlayers,
+                                  vm,
+                                ),
                               );
                             }).toList(),
                           )
                         else
-                          ...snapshot.courts.map((court) => _buildCourtCard(context, court, snapshot.queuePlayers, vm)),
+                          ...snapshot.courts.map(
+                            (court) => _buildCourtCard(
+                              context,
+                              court,
+                              snapshot.queuePlayers,
+                              vm,
+                            ),
+                          ),
                         AppSpacing.gapH16,
 
                         // 4. Resting / Waiting Queue Section
@@ -342,18 +425,25 @@ class _SessionRotationScreenState extends ConsumerState<SessionRotationScreen> {
                           children: [
                             Text(
                               'Hàng ghế dự bị sẵn sàng (${snapshot.queuePlayers.length} tay vợt)',
-                              style: AppTypography.titleSmall.bold.colored(colors.textPrimary),
+                              style: AppTypography.titleSmall.bold.colored(
+                                colors.textPrimary,
+                              ),
                             ),
                             if (_mode == RotationMode.manual)
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 3,
+                                ),
                                 decoration: BoxDecoration(
                                   color: colors.primary.withValues(alpha: 0.1),
                                   borderRadius: AppRadius.tag,
                                 ),
                                 child: Text(
                                   'Kéo thả để xếp sân',
-                                  style: AppTypography.labelSmall.bold.colored(colors.primary),
+                                  style: AppTypography.labelSmall.bold.colored(
+                                    colors.primary,
+                                  ),
                                 ),
                               ),
                           ],
@@ -396,7 +486,9 @@ class _SessionRotationScreenState extends ConsumerState<SessionRotationScreen> {
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: 9),
                 decoration: BoxDecoration(
-                  color: _mode == RotationMode.auto ? colors.primary : Colors.transparent,
+                  color: _mode == RotationMode.auto
+                      ? colors.primary
+                      : Colors.transparent,
                   borderRadius: AppRadius.button,
                   boxShadow: _mode == RotationMode.auto ? AppShadows.sm : null,
                 ),
@@ -406,13 +498,17 @@ class _SessionRotationScreenState extends ConsumerState<SessionRotationScreen> {
                     Icon(
                       Icons.auto_awesome_rounded,
                       size: 16,
-                      color: _mode == RotationMode.auto ? AppColors.white : colors.textSecondary,
+                      color: _mode == RotationMode.auto
+                          ? AppColors.white
+                          : colors.textSecondary,
                     ),
                     const SizedBox(width: 6),
                     Text(
                       'Xoay tua tự động',
                       style: AppTypography.labelMedium.bold.colored(
-                        _mode == RotationMode.auto ? AppColors.white : colors.textSecondary,
+                        _mode == RotationMode.auto
+                            ? AppColors.white
+                            : colors.textSecondary,
                       ),
                     ),
                   ],
@@ -431,9 +527,13 @@ class _SessionRotationScreenState extends ConsumerState<SessionRotationScreen> {
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: 9),
                 decoration: BoxDecoration(
-                  color: _mode == RotationMode.manual ? colors.primary : Colors.transparent,
+                  color: _mode == RotationMode.manual
+                      ? colors.primary
+                      : Colors.transparent,
                   borderRadius: AppRadius.button,
-                  boxShadow: _mode == RotationMode.manual ? AppShadows.sm : null,
+                  boxShadow: _mode == RotationMode.manual
+                      ? AppShadows.sm
+                      : null,
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -441,13 +541,17 @@ class _SessionRotationScreenState extends ConsumerState<SessionRotationScreen> {
                     Icon(
                       Icons.drag_indicator_rounded,
                       size: 16,
-                      color: _mode == RotationMode.manual ? AppColors.white : colors.textSecondary,
+                      color: _mode == RotationMode.manual
+                          ? AppColors.white
+                          : colors.textSecondary,
                     ),
                     const SizedBox(width: 6),
                     Text(
                       'Xếp thủ công (Kéo thả)',
                       style: AppTypography.labelMedium.bold.colored(
-                        _mode == RotationMode.manual ? AppColors.white : colors.textSecondary,
+                        _mode == RotationMode.manual
+                            ? AppColors.white
+                            : colors.textSecondary,
                       ),
                     ),
                   ],
@@ -460,7 +564,11 @@ class _SessionRotationScreenState extends ConsumerState<SessionRotationScreen> {
     );
   }
 
-  Widget _buildManualModeBanner(BuildContext context, SessionRotationSnapshot snapshot, SessionRotationNotifier vm) {
+  Widget _buildManualModeBanner(
+    BuildContext context,
+    SessionRotationSnapshot snapshot,
+    SessionRotationNotifier vm,
+  ) {
     final colors = context.colors;
 
     return Container(
@@ -479,10 +587,18 @@ class _SessionRotationScreenState extends ConsumerState<SessionRotationScreen> {
             children: [
               Row(
                 children: [
-                  Icon(Icons.touch_app_rounded, size: 18, color: colors.primary),
+                  Icon(
+                    Icons.touch_app_rounded,
+                    size: 18,
+                    color: colors.primary,
+                  ),
                   AppSpacing.gapW8,
-                  Text('Chế Độ Xếp Thủ Công Bằng Kéo Thả',
-                      style: AppTypography.labelLarge.bold.colored(colors.textPrimary)),
+                  Text(
+                    'Chế Độ Xếp Thủ Công Bằng Kéo Thả',
+                    style: AppTypography.labelLarge.bold.colored(
+                      colors.textPrimary,
+                    ),
+                  ),
                 ],
               ),
               Container(
@@ -491,7 +607,10 @@ class _SessionRotationScreenState extends ConsumerState<SessionRotationScreen> {
                   color: colors.primary.withValues(alpha: 0.12),
                   borderRadius: AppRadius.tag,
                 ),
-                child: Text('Tự do xếp sân', style: AppTypography.labelSmall.bold.colored(colors.primary)),
+                child: Text(
+                  'Tự do xếp sân',
+                  style: AppTypography.labelSmall.bold.colored(colors.primary),
+                ),
               ),
             ],
           ),
@@ -507,8 +626,12 @@ class _SessionRotationScreenState extends ConsumerState<SessionRotationScreen> {
                 child: OutlinedButton.icon(
                   style: OutlinedButton.styleFrom(
                     foregroundColor: colors.primary,
-                    side: BorderSide(color: colors.primary.withValues(alpha: 0.5)),
-                    shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                    side: BorderSide(
+                      color: colors.primary.withValues(alpha: 0.5),
+                    ),
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: AppRadius.button,
+                    ),
                   ),
                   icon: const Icon(Icons.bolt_rounded, size: 18),
                   label: const Text('Gợi Ý Lượt Đấu Mới'),
@@ -523,7 +646,9 @@ class _SessionRotationScreenState extends ConsumerState<SessionRotationScreen> {
                 style: OutlinedButton.styleFrom(
                   foregroundColor: colors.textSecondary,
                   side: BorderSide(color: colors.cardBorder),
-                  shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: AppRadius.button,
+                  ),
                 ),
                 icon: const Icon(Icons.restart_alt_rounded, size: 18),
                 label: const Text('Khởi Tạo Lại'),
@@ -536,7 +661,11 @@ class _SessionRotationScreenState extends ConsumerState<SessionRotationScreen> {
     );
   }
 
-  Widget _buildLiveStatusBanner(BuildContext context, SessionRotationSnapshot snapshot, SessionRotationNotifier vm) {
+  Widget _buildLiveStatusBanner(
+    BuildContext context,
+    SessionRotationSnapshot snapshot,
+    SessionRotationNotifier vm,
+  ) {
     final colors = context.colors;
 
     return Container(
@@ -564,8 +693,12 @@ class _SessionRotationScreenState extends ConsumerState<SessionRotationScreen> {
                     ),
                   ),
                   AppSpacing.gapW8,
-                  Text('Điều Phối Trận Đấu Tự Động',
-                      style: AppTypography.labelLarge.bold.colored(colors.textPrimary)),
+                  Text(
+                    'Điều Phối Trận Đấu Tự Động',
+                    style: AppTypography.labelLarge.bold.colored(
+                      colors.textPrimary,
+                    ),
+                  ),
                 ],
               ),
               Container(
@@ -574,7 +707,10 @@ class _SessionRotationScreenState extends ConsumerState<SessionRotationScreen> {
                   color: colors.primary.withValues(alpha: 0.12),
                   borderRadius: AppRadius.tag,
                 ),
-                child: Text('Hồi sức tối thiểu 5 phút', style: AppTypography.labelSmall.bold.colored(colors.primary)),
+                child: Text(
+                  'Hồi sức tối thiểu 5 phút',
+                  style: AppTypography.labelSmall.bold.colored(colors.primary),
+                ),
               ),
             ],
           ),
@@ -598,14 +734,18 @@ class _SessionRotationScreenState extends ConsumerState<SessionRotationScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Hình thức ca 3 người:',
-                      style: AppTypography.labelSmall.bold.colored(colors.textPrimary),
+                      'Hình thức chia đội:',
+                      style: AppTypography.labelSmall.bold.colored(
+                        colors.textPrimary,
+                      ),
                     ),
                     Text(
                       snapshot.threePlayerMode == ThreePlayerMatchMode.twoVsOne
-                          ? '2 vs 1 (Cả 3 cùng đánh)'
-                          : '1 vs 1 (1 người nghỉ xoay vòng)',
-                      style: AppTypography.labelSmall.bold.colored(colors.primary),
+                          ? '2 vs 2'
+                          : '1 vs 1',
+                      style: AppTypography.labelSmall.bold.colored(
+                        colors.primary,
+                      ),
                     ),
                   ],
                 ),
@@ -622,12 +762,16 @@ class _SessionRotationScreenState extends ConsumerState<SessionRotationScreen> {
                         child: Container(
                           padding: const EdgeInsets.symmetric(vertical: 6),
                           decoration: BoxDecoration(
-                            color: snapshot.threePlayerMode == ThreePlayerMatchMode.twoVsOne
+                            color:
+                                snapshot.threePlayerMode ==
+                                    ThreePlayerMatchMode.twoVsOne
                                 ? colors.primary
                                 : colors.cardBackground,
                             borderRadius: AppRadius.borderSm,
                             border: Border.all(
-                              color: snapshot.threePlayerMode == ThreePlayerMatchMode.twoVsOne
+                              color:
+                                  snapshot.threePlayerMode ==
+                                      ThreePlayerMatchMode.twoVsOne
                                   ? colors.primary
                                   : colors.cardBorder,
                             ),
@@ -636,7 +780,8 @@ class _SessionRotationScreenState extends ConsumerState<SessionRotationScreen> {
                           child: Text(
                             '2 vs 1 (Cả 3 cùng đánh)',
                             style: AppTypography.labelSmall.bold.colored(
-                              snapshot.threePlayerMode == ThreePlayerMatchMode.twoVsOne
+                              snapshot.threePlayerMode ==
+                                      ThreePlayerMatchMode.twoVsOne
                                   ? AppColors.white
                                   : colors.textPrimary,
                             ),
@@ -649,18 +794,24 @@ class _SessionRotationScreenState extends ConsumerState<SessionRotationScreen> {
                       child: InkWell(
                         onTap: () {
                           HapticFeedback.lightImpact();
-                          vm.setThreePlayerMode(ThreePlayerMatchMode.singlesRotation);
+                          vm.setThreePlayerMode(
+                            ThreePlayerMatchMode.singlesRotation,
+                          );
                         },
                         borderRadius: AppRadius.borderSm,
                         child: Container(
                           padding: const EdgeInsets.symmetric(vertical: 6),
                           decoration: BoxDecoration(
-                            color: snapshot.threePlayerMode == ThreePlayerMatchMode.singlesRotation
+                            color:
+                                snapshot.threePlayerMode ==
+                                    ThreePlayerMatchMode.singlesRotation
                                 ? colors.primary
                                 : colors.cardBackground,
                             borderRadius: AppRadius.borderSm,
                             border: Border.all(
-                              color: snapshot.threePlayerMode == ThreePlayerMatchMode.singlesRotation
+                              color:
+                                  snapshot.threePlayerMode ==
+                                      ThreePlayerMatchMode.singlesRotation
                                   ? colors.primary
                                   : colors.cardBorder,
                             ),
@@ -669,7 +820,8 @@ class _SessionRotationScreenState extends ConsumerState<SessionRotationScreen> {
                           child: Text(
                             '1 vs 1 (1 người nghỉ)',
                             style: AppTypography.labelSmall.bold.colored(
-                              snapshot.threePlayerMode == ThreePlayerMatchMode.singlesRotation
+                              snapshot.threePlayerMode ==
+                                      ThreePlayerMatchMode.singlesRotation
                                   ? AppColors.white
                                   : colors.textPrimary,
                             ),
@@ -689,8 +841,12 @@ class _SessionRotationScreenState extends ConsumerState<SessionRotationScreen> {
                 child: OutlinedButton.icon(
                   style: OutlinedButton.styleFrom(
                     foregroundColor: colors.primary,
-                    side: BorderSide(color: colors.primary.withValues(alpha: 0.5)),
-                    shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                    side: BorderSide(
+                      color: colors.primary.withValues(alpha: 0.5),
+                    ),
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: AppRadius.button,
+                    ),
                   ),
                   icon: const Icon(Icons.bolt_rounded, size: 18),
                   label: const Text('Tạo Lượt Đấu Mới'),
@@ -705,7 +861,9 @@ class _SessionRotationScreenState extends ConsumerState<SessionRotationScreen> {
                 style: OutlinedButton.styleFrom(
                   foregroundColor: colors.textSecondary,
                   side: BorderSide(color: colors.cardBorder),
-                  shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: AppRadius.button,
+                  ),
                 ),
                 icon: const Icon(Icons.restart_alt_rounded, size: 18),
                 label: const Text('Khởi Tạo Lại Lượt Đấu'),
@@ -718,7 +876,10 @@ class _SessionRotationScreenState extends ConsumerState<SessionRotationScreen> {
     );
   }
 
-  void _confirmInitializeRotation(BuildContext context, SessionRotationNotifier vm) {
+  void _confirmInitializeRotation(
+    BuildContext context,
+    SessionRotationNotifier vm,
+  ) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -749,7 +910,11 @@ class _SessionRotationScreenState extends ConsumerState<SessionRotationScreen> {
   }
 
   Widget _buildCourtCard(
-      BuildContext context, CourtMatch court, List<RotationPlayer> queuePlayers, SessionRotationNotifier vm) {
+    BuildContext context,
+    CourtMatch court,
+    List<RotationPlayer> queuePlayers,
+    SessionRotationNotifier vm,
+  ) {
     return BadmintonCourtWidget(
       court: court,
       isManualMode: _mode == RotationMode.manual,
@@ -758,7 +923,8 @@ class _SessionRotationScreenState extends ConsumerState<SessionRotationScreen> {
         vm.startMatch(court.matchId);
       },
       onFinishMatch: () => _confirmFinishMatch(context, court, vm),
-      onSwapLineup: () => _showSwapLineupDialog(context, court, queuePlayers, vm),
+      onSwapLineup: () =>
+          _showSwapLineupDialog(context, court, queuePlayers, vm),
       onRestoreProposal: court.isManualSwapped
           ? () {
               HapticFeedback.lightImpact();
@@ -785,7 +951,11 @@ class _SessionRotationScreenState extends ConsumerState<SessionRotationScreen> {
     );
   }
 
-  void _confirmFinishMatch(BuildContext context, CourtMatch court, SessionRotationNotifier vm) {
+  void _confirmFinishMatch(
+    BuildContext context,
+    CourtMatch court,
+    SessionRotationNotifier vm,
+  ) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -815,13 +985,20 @@ class _SessionRotationScreenState extends ConsumerState<SessionRotationScreen> {
     );
   }
 
-  Widget _buildQueueSection(BuildContext context, SessionRotationSnapshot snapshot, SessionRotationNotifier vm) {
+  Widget _buildQueueSection(
+    BuildContext context,
+    SessionRotationSnapshot snapshot,
+    SessionRotationNotifier vm,
+  ) {
     final colors = context.colors;
     final queue = snapshot.queuePlayers;
-    final hasActiveMatch = snapshot.courts.any((c) => c.isPlaying || c.isProposed);
+    final hasActiveMatch = snapshot.courts.any(
+      (c) => c.isPlaying || c.isProposed,
+    );
 
     return DragTarget<DraggingPlayerPayload>(
-      onWillAcceptWithDetails: (details) => details.data.sourceCourtMatchId != null,
+      onWillAcceptWithDetails: (details) =>
+          details.data.sourceCourtMatchId != null,
       onAcceptWithDetails: (details) {
         HapticFeedback.mediumImpact();
         vm.movePlayer(payload: details.data, targetCourtMatchId: null);
@@ -833,7 +1010,9 @@ class _SessionRotationScreenState extends ConsumerState<SessionRotationScreen> {
           return Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: isHovered ? colors.primary.withValues(alpha: 0.12) : colors.cardBackground,
+              color: isHovered
+                  ? colors.primary.withValues(alpha: 0.12)
+                  : colors.cardBackground,
               borderRadius: AppRadius.card,
               border: Border.all(
                 color: isHovered ? colors.primary : colors.cardBorder,
@@ -845,9 +1024,11 @@ class _SessionRotationScreenState extends ConsumerState<SessionRotationScreen> {
                 isHovered
                     ? 'Thả vào đây để đưa tay vợt về hàng ghế dự bị'
                     : (hasActiveMatch
-                        ? 'Tất cả hội viên đều đang thi đấu trên sân'
-                        : 'Chưa có hội viên check-in ra sân. Cần tối thiểu 2 người để hệ thống tự động ghép cặp thi đấu (1vs1, 2vs1 hoặc 2vs2).'),
-                style: AppTypography.bodySmall.colored(isHovered ? colors.primary : colors.textMuted),
+                          ? 'Tất cả hội viên đều đang thi đấu trên sân'
+                          : 'Chưa có hội viên check-in ra sân. Cần tối thiểu 2 người để hệ thống tự động ghép cặp thi đấu (1vs1, 2vs1 hoặc 2vs2).'),
+                style: AppTypography.bodySmall.colored(
+                  isHovered ? colors.primary : colors.textMuted,
+                ),
                 textAlign: TextAlign.center,
               ),
             ),
@@ -871,11 +1052,17 @@ class _SessionRotationScreenState extends ConsumerState<SessionRotationScreen> {
                   padding: const EdgeInsets.only(bottom: 8),
                   child: Row(
                     children: [
-                      Icon(Icons.arrow_downward_rounded, size: 14, color: colors.primary),
+                      Icon(
+                        Icons.arrow_downward_rounded,
+                        size: 14,
+                        color: colors.primary,
+                      ),
                       const SizedBox(width: 4),
                       Text(
                         'Thả vào đây để đưa tay vợt về hàng ghế dự bị',
-                        style: AppTypography.labelSmall.bold.colored(colors.primary),
+                        style: AppTypography.labelSmall.bold.colored(
+                          colors.primary,
+                        ),
                       ),
                     ],
                   ),
@@ -886,19 +1073,28 @@ class _SessionRotationScreenState extends ConsumerState<SessionRotationScreen> {
                 runSpacing: 8,
                 children: queue.map((p) {
                   final chipWidget = Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
-                      color: p.isPaused ? colors.cardBorder.withValues(alpha: 0.3) : colors.surfaceSubtle,
+                      color: p.isPaused
+                          ? colors.cardBorder.withValues(alpha: 0.3)
+                          : colors.surfaceSubtle,
                       borderRadius: AppRadius.tag,
                       border: Border.all(
-                        color: p.isPaused ? colors.warning.withValues(alpha: 0.6) : colors.cardBorder,
+                        color: p.isPaused
+                            ? colors.warning.withValues(alpha: 0.6)
+                            : colors.cardBorder,
                       ),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(
-                          p.isPaused ? Icons.pause_circle_outline_rounded : Icons.sports_tennis_rounded,
+                          p.isPaused
+                              ? Icons.pause_circle_outline_rounded
+                              : Icons.sports_tennis_rounded,
                           size: 14,
                           color: p.isPaused ? colors.warning : colors.primary,
                         ),
@@ -911,32 +1107,56 @@ class _SessionRotationScreenState extends ConsumerState<SessionRotationScreen> {
                         ),
                         const SizedBox(width: 6),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 4,
+                            vertical: 1,
+                          ),
                           decoration: BoxDecoration(
                             color: colors.primary.withValues(alpha: 0.15),
                             borderRadius: AppRadius.tag,
                           ),
-                          child: Text('L${p.skillLevel}', style: AppTypography.labelSmall.colored(colors.primary)),
+                          child: Text(
+                            'L${p.skillLevel}',
+                            style: AppTypography.labelSmall.colored(
+                              colors.primary,
+                            ),
+                          ),
                         ),
                         if (p.isPaused) ...[
                           const SizedBox(width: 4),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 4,
+                              vertical: 1,
+                            ),
                             decoration: BoxDecoration(
                               color: colors.warning.withValues(alpha: 0.15),
                               borderRadius: AppRadius.tag,
                             ),
-                            child: Text('Tạm nghỉ', style: AppTypography.labelSmall.bold.colored(colors.warning)),
+                            child: Text(
+                              'Tạm nghỉ',
+                              style: AppTypography.labelSmall.bold.colored(
+                                colors.warning,
+                              ),
+                            ),
                           ),
                         ] else if (p.isResting) ...[
                           const SizedBox(width: 4),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 4,
+                              vertical: 1,
+                            ),
                             decoration: BoxDecoration(
                               color: colors.warning.withValues(alpha: 0.15),
                               borderRadius: AppRadius.tag,
                             ),
-                            child: Text('Hồi sức 5p', style: AppTypography.labelSmall.colored(colors.warning)),
+                            child: Text(
+                              'Hồi sức 5p',
+                              style: AppTypography.labelSmall.colored(
+                                colors.warning,
+                              ),
+                            ),
                           ),
                         ],
                       ],
@@ -950,7 +1170,10 @@ class _SessionRotationScreenState extends ConsumerState<SessionRotationScreen> {
                     feedback: Material(
                       color: Colors.transparent,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 6,
+                        ),
                         decoration: BoxDecoration(
                           color: AppColors.white,
                           borderRadius: BorderRadius.circular(8),
@@ -961,7 +1184,10 @@ class _SessionRotationScreenState extends ConsumerState<SessionRotationScreen> {
                               offset: const Offset(0, 4),
                             ),
                           ],
-                          border: Border.all(color: AppColors.primary, width: 1.5),
+                          border: Border.all(
+                            color: AppColors.primary,
+                            width: 1.5,
+                          ),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
@@ -970,7 +1196,9 @@ class _SessionRotationScreenState extends ConsumerState<SessionRotationScreen> {
                               radius: 10,
                               backgroundColor: AppColors.courtGreen,
                               child: Text(
-                                p.fullName.isNotEmpty ? p.fullName[0].toUpperCase() : 'P',
+                                p.fullName.isNotEmpty
+                                    ? p.fullName[0].toUpperCase()
+                                    : 'P',
                                 style: const TextStyle(
                                   color: AppColors.white,
                                   fontSize: 10,
@@ -989,7 +1217,10 @@ class _SessionRotationScreenState extends ConsumerState<SessionRotationScreen> {
                             ),
                             const SizedBox(width: 4),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 4,
+                                vertical: 1,
+                              ),
                               decoration: BoxDecoration(
                                 color: AppColors.primaryContainer,
                                 borderRadius: BorderRadius.circular(4),
@@ -1026,7 +1257,11 @@ class _SessionRotationScreenState extends ConsumerState<SessionRotationScreen> {
     );
   }
 
-  void _showPlayerPauseDialog(BuildContext context, RotationPlayer player, SessionRotationNotifier vm) {
+  void _showPlayerPauseDialog(
+    BuildContext context,
+    RotationPlayer player,
+    SessionRotationNotifier vm,
+  ) {
     final colors = context.colors;
     final isPaused = player.isPaused;
 
@@ -1094,11 +1329,20 @@ class _SessionRotationScreenState extends ConsumerState<SessionRotationScreen> {
           builder: (dialogContext, setStateDialog) {
             final colors = dialogContext.colors;
 
-            Widget buildDropdown(String label, String currentVal, ValueChanged<String?> onChanged) {
+            Widget buildDropdown(
+              String label,
+              String currentVal,
+              ValueChanged<String?> onChanged,
+            ) {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(label, style: AppTypography.labelSmall.bold.colored(colors.textSecondary)),
+                  Text(
+                    label,
+                    style: AppTypography.labelSmall.bold.colored(
+                      colors.textSecondary,
+                    ),
+                  ),
                   const SizedBox(height: 4),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -1115,7 +1359,9 @@ class _SessionRotationScreenState extends ConsumerState<SessionRotationScreen> {
                             value: p.userId,
                             child: Text(
                               '${p.fullName} (L${p.skillLevel})',
-                              style: AppTypography.bodySmall.colored(colors.textPrimary),
+                              style: AppTypography.bodySmall.colored(
+                                colors.textPrimary,
+                              ),
                               overflow: TextOverflow.ellipsis,
                             ),
                           );
@@ -1143,10 +1389,19 @@ class _SessionRotationScreenState extends ConsumerState<SessionRotationScreen> {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Chọn $requiredCount tay vợt cho 2 đội (có thể đổi từ hàng đợi):',
-                          style: AppTypography.bodySmall.colored(colors.textMuted)),
+                      Text(
+                        'Chọn $requiredCount tay vợt cho 2 đội (có thể đổi từ hàng đợi):',
+                        style: AppTypography.bodySmall.colored(
+                          colors.textMuted,
+                        ),
+                      ),
                       const SizedBox(height: 12),
-                      Text('ĐỘI 1', style: AppTypography.labelMedium.bold.colored(colors.primary)),
+                      Text(
+                        'ĐỘI 1',
+                        style: AppTypography.labelMedium.bold.colored(
+                          colors.primary,
+                        ),
+                      ),
                       const SizedBox(height: 6),
                       buildDropdown('Tay vợt 1A', a1, (v) {
                         if (v != null) setStateDialog(() => a1 = v);
@@ -1156,7 +1411,12 @@ class _SessionRotationScreenState extends ConsumerState<SessionRotationScreen> {
                           if (v != null) setStateDialog(() => a2 = v);
                         }),
                       const Divider(),
-                      Text('ĐỘI 2', style: AppTypography.labelMedium.bold.colored(colors.warning)),
+                      Text(
+                        'ĐỘI 2',
+                        style: AppTypography.labelMedium.bold.colored(
+                          colors.warning,
+                        ),
+                      ),
                       const SizedBox(height: 6),
                       buildDropdown('Tay vợt 1B', b1, (v) {
                         if (v != null) setStateDialog(() => b1 = v);
@@ -1180,11 +1440,20 @@ class _SessionRotationScreenState extends ConsumerState<SessionRotationScreen> {
                     foregroundColor: AppColors.white,
                   ),
                   onPressed: () {
-                    final selectedList = [a1, if (a2 != null) a2!, b1, if (b2 != null) b2!];
+                    final selectedList = [
+                      a1,
+                      if (a2 != null) a2!,
+                      b1,
+                      if (b2 != null) b2!,
+                    ];
                     final selectedSet = selectedList.toSet();
                     if (selectedSet.length < requiredCount) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Vui lòng chọn $requiredCount tay vợt khác nhau')),
+                        SnackBar(
+                          content: Text(
+                            'Vui lòng chọn $requiredCount tay vợt khác nhau',
+                          ),
+                        ),
                       );
                       return;
                     }

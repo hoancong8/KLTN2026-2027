@@ -621,7 +621,9 @@ class SessionSettlementScreen extends ConsumerWidget {
                           final isCurrentUser = currentUserId != null &&
                               fee.userId.toLowerCase() == currentUserId.toLowerCase();
                           var effectiveFee = fee;
-                          if (isCurrentUser && myPersonalFee != null) {
+                          if (isCurrentUser &&
+                              myPersonalFee != null &&
+                              myPersonalFee.sessionId.toLowerCase() == sessionId.toLowerCase()) {
                             final isExempt = myPersonalFee.isExempt ||
                                 (myPersonalFee.amount != null && myPersonalFee.amount! <= 0);
                             final feeAmount = isExempt
