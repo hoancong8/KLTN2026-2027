@@ -424,6 +424,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
         ? activeRecruitment.femaleCost.toInt()
         : (suggestedCost - femDiscount).clamp(0, suggestedCost);
     final femaleCostCtl = TextEditingController(text: suggestedFemaleCost.toString());
+    bool isFreeGuest = activeRecruitment != null && activeRecruitment.maleCost == 0 && activeRecruitment.femaleCost == 0;
     SkillLevel selectedLevel = activeRecruitment?.minSkillLevel ?? SkillLevel.tb;
     double radiusKm = activeRecruitment?.scanRadiusKm.toDouble() ?? 5.0;
     bool hidePlayerList = activeRecruitment?.hidePlayerList ?? false;
@@ -501,7 +502,78 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                   ],
                 ),
                 AppSpacing.gapH12,
-                if (isDynamic)
+                // Switch: Tuyển khách miễn phí (CLB bao)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: isFreeGuest ? colors.primary.withValues(alpha: 0.1) : colors.surfaceSubtle,
+                    borderRadius: AppRadius.card,
+                    border: Border.all(
+                      color: isFreeGuest ? colors.primary.withValues(alpha: 0.4) : colors.cardBorder,
+                    ),
+                  ),
+                  child: SwitchListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: Row(
+                      children: [
+                        Icon(
+                          Icons.card_giftcard_rounded,
+                          size: 18,
+                          color: isFreeGuest ? colors.primary : colors.textPrimary,
+                        ),
+                        AppSpacing.gapW8,
+                        Text(
+                          'Tuyển khách miễn phí (CLB bao)',
+                          style: AppTypography.labelMedium.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: isFreeGuest ? colors.primary : colors.textPrimary,
+                          ),
+                        ),
+                      ],
+                    ),
+                    subtitle: Text(
+                      'Khách vãng lai tham gia với chi phí 0 đ. Toàn bộ tiền sân do CLB hoặc Host chi trả.',
+                      style: AppTypography.bodySmall.copyWith(color: colors.textMuted, fontSize: 11),
+                    ),
+                    value: isFreeGuest,
+                    activeTrackColor: colors.primary,
+                    onChanged: (val) {
+                      setModalState(() {
+                        isFreeGuest = val;
+                        if (val) {
+                          costCtl.text = '0';
+                          femaleCostCtl.text = '0';
+                        } else {
+                          costCtl.text = suggestedCost.toString();
+                          femaleCostCtl.text = suggestedFemaleCost.toString();
+                        }
+                      });
+                    },
+                  ),
+                ),
+                AppSpacing.gapH12,
+                if (isFreeGuest)
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: colors.success.withValues(alpha: 0.1),
+                      borderRadius: AppRadius.card,
+                      border: Border.all(color: colors.success.withValues(alpha: 0.3)),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.check_circle_outline_rounded, size: 20, color: colors.success),
+                        AppSpacing.gapW8,
+                        Expanded(
+                          child: Text(
+                            'Khách giao lưu (Nam & Nữ): 0 đ/buổi (Miễn phí hoàn toàn).',
+                            style: AppTypography.labelSmall.bold.colored(colors.success),
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                else if (isDynamic)
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
