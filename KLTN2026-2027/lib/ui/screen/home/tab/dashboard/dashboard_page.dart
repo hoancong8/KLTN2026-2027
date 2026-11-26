@@ -775,7 +775,11 @@ class DashboardPage extends ConsumerWidget {
     Color statusTextColor = colors.success;
     String statusText = l10n.booking_status_confirmed;
 
-    if (booking.isOngoing) {
+    if (booking.isEnded) {
+      statusBgColor = colors.surfaceSubtle;
+      statusTextColor = colors.textMuted;
+      statusText = 'Đã kết thúc';
+    } else if (booking.isOngoing) {
       statusBgColor = colors.info.withValues(alpha: 0.15);
       statusTextColor = colors.info;
       statusText = 'Đang diễn ra';

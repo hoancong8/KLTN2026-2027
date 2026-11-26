@@ -226,7 +226,7 @@ class DashboardViewModel extends StateNotifier<DashboardState> {
   Future<List<MyBookingItem>> _fetchUpcomingBookings() async {
     try {
       final list = await _getMyBookingsUseCase.execute();
-      final activeList = list.where((b) => b.isUpcomingOrOngoing).toList();
+      final activeList = list.where((b) => b.isUpcomingOrOngoing && !b.isEnded).toList();
       activeList.sort((a, b) => a.startTime.compareTo(b.startTime));
       return activeList;
     } catch (e) {
