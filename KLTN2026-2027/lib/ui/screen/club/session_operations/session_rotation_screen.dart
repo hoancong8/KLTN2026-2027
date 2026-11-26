@@ -778,7 +778,7 @@ class _SessionRotationScreenState extends ConsumerState<SessionRotationScreen> {
                           ),
                           alignment: Alignment.center,
                           child: Text(
-                            '2 vs 1 (Cả 3 cùng đánh)',
+                            '2 vs 2',
                             style: AppTypography.labelSmall.bold.colored(
                               snapshot.threePlayerMode ==
                                       ThreePlayerMatchMode.twoVsOne
@@ -818,7 +818,7 @@ class _SessionRotationScreenState extends ConsumerState<SessionRotationScreen> {
                           ),
                           alignment: Alignment.center,
                           child: Text(
-                            '1 vs 1 (1 người nghỉ)',
+                            '1 vs 1',
                             style: AppTypography.labelSmall.bold.colored(
                               snapshot.threePlayerMode ==
                                       ThreePlayerMatchMode.singlesRotation
