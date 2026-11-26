@@ -12,23 +12,33 @@ Widget buildLoginHeader({required AppLocalizations l10n}) {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            width: 80,
-            height: 80,
+            width: 88,
+            height: 88,
             decoration: BoxDecoration(
-              color: colors.primary,
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(22),
               boxShadow: [
                 BoxShadow(
-                  color: colors.primary.withValues(alpha: 0.3),
-                  blurRadius: 20,
+                  color: colors.primary.withValues(alpha: 0.25),
+                  blurRadius: 24,
                   offset: const Offset(0, 8),
                 ),
               ],
             ),
-            child: const Icon(
-              Icons.sports_tennis_rounded,
-              color: AppColors.white,
-              size: 40,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(22),
+              child: Image.asset(
+                'assets/icons/ic_app.png',
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) => Container(
+                  color: colors.primary,
+                  alignment: Alignment.center,
+                  child: const Icon(
+                    Icons.sports_tennis_rounded,
+                    color: AppColors.white,
+                    size: 44,
+                  ),
+                ),
+              ),
             ),
           ),
           const SizedBox(height: 12),
