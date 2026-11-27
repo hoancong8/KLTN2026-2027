@@ -683,6 +683,10 @@ final getSessionDetailUseCaseProvider = Provider<GetSessionDetailUseCase>((ref) 
   return GetSessionDetailUseCase(ref.watch(sessionRepositoryProvider));
 });
 
+final setShortageReminderUseCaseProvider = Provider<SetShortageReminderUseCase>((ref) {
+  return SetShortageReminderUseCase(ref.watch(sessionRepositoryProvider));
+});
+
 final updateSessionUseCaseProvider = Provider<UpdateSessionUseCase>((ref) {
   return UpdateSessionUseCase(ref.watch(sessionRepositoryProvider));
 });

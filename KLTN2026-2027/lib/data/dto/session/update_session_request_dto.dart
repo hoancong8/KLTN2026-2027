@@ -8,6 +8,8 @@ class UpdateSessionRequestDto {
   final int courtCount;
   final int maxPlayers;
   final String deadlineBooking;
+  final int? minimumPlayers;
+  final int? shortageCheckMinutes;
 
   UpdateSessionRequestDto({
     required this.title,
@@ -17,12 +19,16 @@ class UpdateSessionRequestDto {
     required this.courtCount,
     required this.maxPlayers,
     required this.deadlineBooking,
+    this.minimumPlayers,
+    this.shortageCheckMinutes,
   });
 
   Map<String, dynamic> toJson() => {
     'title': title,
     'startTime': startTime,
     'endTime': endTime,
+    if (minimumPlayers != null) 'minimumPlayers': minimumPlayers,
+    if (shortageCheckMinutes != null) 'shortageCheckMinutes': shortageCheckMinutes,
     'courtLocation': courtLocation,
     'courtCount': courtCount,
     'maxPlayers': maxPlayers,

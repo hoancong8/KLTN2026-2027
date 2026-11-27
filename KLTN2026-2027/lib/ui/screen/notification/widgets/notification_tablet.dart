@@ -108,6 +108,7 @@ class NotificationTablet extends ConsumerWidget {
                                     context.push(
                                       AppConfig.sessionDetailRoutePath(
                                         referenceId,
+                                        fromShortageNotice: referenceType == 'SESSIONSHORTAGE',
                                       ),
                                     );
                                   }

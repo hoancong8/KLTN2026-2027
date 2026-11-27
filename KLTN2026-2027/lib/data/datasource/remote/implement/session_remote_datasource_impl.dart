@@ -72,6 +72,18 @@ class SessionRemoteDataSourceImpl extends BaseRemoteDatasource implements Sessio
   }
 
   @override
+  Future<void> setShortageReminder(String sessionId, int? delayMinutes) async {
+    try {
+      await dio.put(
+        '${AppConfig.sessionDetailPath(sessionId)}/shortage-reminder',
+        data: {'delayMinutes': delayMinutes},
+      );
+    } catch (e) {
+      throw handleError(e);
+    }
+  }
+
+  @override
   Future<void> updateSessionStatus(
     String sessionId,
     String status, {

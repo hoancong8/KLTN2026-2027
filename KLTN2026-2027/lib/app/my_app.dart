@@ -37,7 +37,11 @@ class _MyAppState extends ConsumerState<MyApp> {
         ref.read(notificationViewModelProvider.notifier).refresh();
       },
     );
-    if (mounted) setState(() => _isInit = true);
+    if (!mounted) return;
+    setState(() => _isInit = true);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) PushNotificationService.instance.initSessionNotificationNavigation(_router);
+    });
   }
 
   @override

@@ -21,6 +21,10 @@ class Session {
   final SessionStatus status;
   final int confirmedCount;
   final int waitingCount;
+  final int? minimumPlayers;
+  final int? shortageCheckMinutes;
+  final DateTime? shortageReminderAt;
+  final bool shortageReminderSent;
   final bool isBookedByCurrentUser;
   final BookingStatus? currentUserBookingStatus;
   final int currentUserQueueOrder;
@@ -44,6 +48,10 @@ class Session {
     required this.status,
     required this.confirmedCount,
     required this.waitingCount,
+    this.minimumPlayers,
+    this.shortageCheckMinutes,
+    this.shortageReminderAt,
+    this.shortageReminderSent = false,
     this.isBookedByCurrentUser = false,
     this.currentUserBookingStatus,
     this.currentUserQueueOrder = 0,
@@ -116,6 +124,10 @@ class Session {
       status: status ?? this.status,
       confirmedCount: confirmedCount ?? this.confirmedCount,
       waitingCount: waitingCount ?? this.waitingCount,
+      minimumPlayers: minimumPlayers,
+      shortageCheckMinutes: shortageCheckMinutes,
+      shortageReminderAt: shortageReminderAt,
+      shortageReminderSent: shortageReminderSent,
       isBookedByCurrentUser: isBookedByCurrentUser ?? this.isBookedByCurrentUser,
       currentUserBookingStatus: currentUserBookingStatus ?? this.currentUserBookingStatus,
       currentUserQueueOrder: currentUserQueueOrder ?? this.currentUserQueueOrder,

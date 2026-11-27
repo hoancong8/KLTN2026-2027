@@ -1,4 +1,50 @@
 {
+  "session_shortage_settings": "Low attendance reminders",
+  "session_shortage_minimum": "Minimum players",
+  "session_shortage_lead": "Remind before start (minutes)",
+  "session_shortage_invalid_minimum": "Enter a number from 4 up to the session capacity.",
+  "session_shortage_invalid_lead": "Enter at least one minute before the start.",
+  "session_shortage_wait": "Wait for more players",
+  "session_shortage_final_only": "Final reminder only",
+  "session_shortage_reminder": "Remind in {minutes} minutes",
+  "@session_shortage_reminder": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "session_shortage_scheduled": "Extra reminder set for {time}",
+  "@session_shortage_scheduled": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "session_shortage_cancel_session": "Cancel session",
+  "session_shortage_not_held": "Not held",
+  "session_shortage_contact": "If you booked a court, contact the venue to handle the booking and any deposit.",
+  "session_shortage_empty": "No players have confirmed",
+  "session_shortage_count": "{confirmed}/{minimum} confirmed. {missing} more needed.",
+  "@session_shortage_count": {
+    "placeholders": {
+      "confirmed": {
+        "type": "int"
+      },
+      "minimum": {
+        "type": "int"
+      },
+      "missing": {
+        "type": "int"
+      }
+    }
+  },
+  "session_shortage_recruit": "Recruit guests",
+  "session_shortage_view_recruit": "View active recruitment",
+  "session_shortage_pass": "Transfer courts",
+  "session_shortage_pass_minimum": "The remaining capacity is below the reminder minimum. Update the minimum before transferring courts.",
+  "session_shortage_cancel_copy": "The session will be canceled in the app. If you booked a court, contact the venue to handle the booking and any deposit.",
   "ledger_invoice_help": "Receipt image or PDF for this expense, up to 5 MiB.",
   "ledger_invoice_selected": "Selected · Available to download from transaction history after saving",
   "sepay_retry_connection": "Retry connection",

@@ -99,7 +99,8 @@ class NotificationMobile extends ConsumerWidget {
                               } else if (item.type.toUpperCase() == 'SESSION' ||
                                   referenceType == 'SESSION') {
                                 context.push(
-                                  AppConfig.sessionDetailRoutePath(referenceId),
+                                  AppConfig.sessionDetailRoutePath(referenceId,
+                                    fromShortageNotice: referenceType == 'SESSIONSHORTAGE'),
                                 );
                               }
                             }

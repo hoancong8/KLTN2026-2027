@@ -5,7 +5,8 @@ enum SessionStatus {
   locked(2, 'LOCKED', 'Đã khóa sổ'),
   playing(3, 'PLAYING', 'Đang thi đấu'),
   calculated(4, 'CALCULATED', 'Đã tính tiền'),
-  completed(5, 'COMPLETED', 'Đã kết thúc');
+  completed(5, 'COMPLETED', 'Đã kết thúc'),
+  notHeld(6, 'NOT_HELD', 'Không diễn ra');
 
   final int id;
   final String value;

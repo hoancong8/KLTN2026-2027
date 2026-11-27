@@ -13,6 +13,8 @@ class CreateSessionRequestDto {
   final String? address;
   final double? lat;
   final double? lng;
+  final int? minimumPlayers;
+  final int? shortageCheckMinutes;
 
   CreateSessionRequestDto({
     required this.title,
@@ -27,12 +29,16 @@ class CreateSessionRequestDto {
     this.address,
     this.lat,
     this.lng,
+    this.minimumPlayers,
+    this.shortageCheckMinutes,
   });
 
   Map<String, dynamic> toJson() => {
     'title': title,
     'startTime': startTime,
     'endTime': endTime,
+    if (minimumPlayers != null) 'minimumPlayers': minimumPlayers,
+    if (shortageCheckMinutes != null) 'shortageCheckMinutes': shortageCheckMinutes,
     'courtLocation': courtLocation,
     'courtCount': courtCount,
     'targetPlayerPerCourt': targetPlayerPerCourt,

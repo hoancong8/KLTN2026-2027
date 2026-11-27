@@ -172,7 +172,10 @@ GoRouter generateAppRouter(String initialRoute) {
         path: '/session/:sessionId',
         builder: (_, state) {
           final sessionId = state.pathParameters['sessionId'] ?? '';
-          return SessionDetailScreen(sessionId: sessionId);
+          return SessionDetailScreen(
+            sessionId: sessionId,
+            fromShortageNotice: state.uri.queryParameters['shortageNotice'] == '1',
+          );
         },
       ),
       GoRoute(

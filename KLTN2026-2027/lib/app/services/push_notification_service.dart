@@ -13,6 +13,7 @@ class PushNotificationService {
   static final PushNotificationService instance = PushNotificationService._();
 
   StreamSubscription<RemoteMessage>? _foregroundSubscription;
+  StreamSubscription<RemoteMessage>? _openedSubscription;
 
   Future<void> requestPermission() async {
     try {
@@ -65,7 +66,27 @@ class PushNotificationService {
     });
   }
 
+  void initSessionNotificationNavigation(GoRouter router) {
+    if (kIsWeb) return;
+    _openedSubscription?.cancel();
+    void open(RemoteMessage? message) {
+      final sessionId = message?.data['sessionId'];
+      final type = message?.data['type'];
+      if (sessionId is String && sessionId.isNotEmpty &&
+          (type == 'SESSION_SHORTAGE' || type == 'SESSION_NOT_HELD') &&
+          router.state.uri.path != AppConfig.loginPath) {
+        router.push(AppConfig.sessionDetailRoutePath(sessionId, fromShortageNotice: true));
+      }
+    }
+    _openedSubscription = FirebaseMessaging.onMessageOpenedApp.listen(open);
+    unawaited(FirebaseMessaging.instance.getInitialMessage().then(open).catchError((Object error) {
+      AppLog.info('[FCM] getInitialMessage error: $error');
+    }));
+  }
+
   void dispose() {
+    _openedSubscription?.cancel();
+    _openedSubscription = null;
     _foregroundSubscription?.cancel();
     _foregroundSubscription = null;
   }
@@ -137,7 +158,9 @@ class PushNotificationService {
           onPressed: () {
             final sessionId = message.data['sessionId'];
             if (sessionId != null && sessionId.toString().isNotEmpty) {
-              context.push(AppConfig.sessionDetailRoutePath(sessionId.toString()));
+              final type = message.data['type'];
+              context.push(AppConfig.sessionDetailRoutePath(sessionId.toString(),
+                fromShortageNotice: type == 'SESSION_SHORTAGE' || type == 'SESSION_NOT_HELD'));
             } else {
               context.push(AppConfig.notificationsPath);
             }

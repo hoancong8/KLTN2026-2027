@@ -1,6 +1,7 @@
 // lib/ui/screen/club/widgets/create_session_dialog.dart
 
 import 'package:flutter/material.dart';
+import 'session_shortage_settings.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:kltn2026_2027/app/theme/theme.dart';
@@ -32,6 +33,8 @@ class CreateSessionDialog extends ConsumerStatefulWidget {
 
 class _CreateSessionDialogState extends ConsumerState<CreateSessionDialog> {
   AppThemeColors get colors => context.colors;
+  int _minimumPlayers = 4;
+  int _shortageCheckMinutes = 120;
   final _formKey = GlobalKey<FormState>();
   final _titleCtl = TextEditingController();
   final _courtLocationCtl = TextEditingController();
@@ -162,6 +165,8 @@ class _CreateSessionDialogState extends ConsumerState<CreateSessionDialog> {
         courtCount: _courtCount,
         targetPlayerPerCourt: _targetPlayerPerCourt,
         maxPlayers: _maxPlayers,
+        minimumPlayers: _minimumPlayers,
+        shortageCheckMinutes: _shortageCheckMinutes,
         deadlineBooking: _deadlineBooking,
         courtRentalCost: cost,
       ),
@@ -408,7 +413,14 @@ class _CreateSessionDialogState extends ConsumerState<CreateSessionDialog> {
                 ),
                 AppSpacing.gapH12,
 
-                // Court Rental Cost (An neu CLB dung phi co dinh)
+                SessionShortageSettings(
+              capacity: _maxPlayers,
+              minimumPlayers: _minimumPlayers,
+              checkMinutes: _shortageCheckMinutes,
+              onMinimumChanged: (value) => _minimumPlayers = value,
+              onCheckChanged: (value) => _shortageCheckMinutes = value,
+            ),
+            // Court Rental Cost (An neu CLB dung phi co dinh)
                 Builder(
                   builder: (context) {
                     final feeRuleAsync = ref.watch(clubFeeRuleProvider(widget.clubId));

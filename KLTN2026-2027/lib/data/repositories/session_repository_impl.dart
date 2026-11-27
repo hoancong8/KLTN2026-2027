@@ -35,6 +35,8 @@ class SessionRepositoryImpl implements SessionRepository {
     String? address,
     double? lat,
     double? lng,
+    int? minimumPlayers,
+    int? shortageCheckMinutes,
   }) async {
     final request = CreateSessionRequestDto(
       title: title,
@@ -49,6 +51,8 @@ class SessionRepositoryImpl implements SessionRepository {
       address: address,
       lat: lat,
       lng: lng,
+      minimumPlayers: minimumPlayers,
+      shortageCheckMinutes: shortageCheckMinutes,
     );
     return await remote.createSession(clubId, request);
   }
@@ -75,6 +79,8 @@ class SessionRepositoryImpl implements SessionRepository {
     required int courtCount,
     required int maxPlayers,
     required DateTime deadlineBooking,
+    int? minimumPlayers,
+    int? shortageCheckMinutes,
   }) async {
     final request = UpdateSessionRequestDto(
       title: title,
@@ -84,9 +90,15 @@ class SessionRepositoryImpl implements SessionRepository {
       courtCount: courtCount,
       maxPlayers: maxPlayers,
       deadlineBooking: deadlineBooking.toUtc().toIso8601String(),
+      minimumPlayers: minimumPlayers,
+      shortageCheckMinutes: shortageCheckMinutes,
     );
     await remote.updateSession(sessionId, request);
   }
+
+  @override
+  Future<void> setShortageReminder(String sessionId, int? delayMinutes) =>
+      remote.setShortageReminder(sessionId, delayMinutes);
 
   @override
   Future<void> updateSessionStatus(
