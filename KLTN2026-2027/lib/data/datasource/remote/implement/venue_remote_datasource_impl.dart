@@ -29,7 +29,7 @@ class VenueRemoteDatasourceImpl extends BaseRemoteDatasource implements VenueRem
           'isActive': ?isActive,
         },
       );
-      return handleResponse(
+      return await handleResponse(
         response,
         (data) => PagedResultDto.fromJson(data, (item) => VenueResponseDto.fromJson(item)),
       );
@@ -42,7 +42,7 @@ class VenueRemoteDatasourceImpl extends BaseRemoteDatasource implements VenueRem
   Future<VenueResponseDto> getVenueById(String id) async {
     try {
       final response = await dio.get('${AppConfig.venuesPath}/$id');
-      return handleResponse(response, (data) => VenueResponseDto.fromJson(data));
+      return await handleResponse(response, (data) => VenueResponseDto.fromJson(data));
     } catch (e) {
       throw handleError(e);
     }
@@ -55,7 +55,7 @@ class VenueRemoteDatasourceImpl extends BaseRemoteDatasource implements VenueRem
         AppConfig.venuesPath,
         data: request.toJson(),
       );
-      return handleResponse(response, (data) => data.toString());
+      return await handleResponse(response, (data) => data.toString());
     } catch (e) {
       throw handleError(e);
     }
@@ -68,7 +68,7 @@ class VenueRemoteDatasourceImpl extends BaseRemoteDatasource implements VenueRem
         '${AppConfig.venuesPath}/$id',
         data: request.toJson(),
       );
-      return handleResponse(response, (_) => null);
+      return await handleResponse(response, (_) => null);
     } catch (e) {
       throw handleError(e);
     }
@@ -78,7 +78,7 @@ class VenueRemoteDatasourceImpl extends BaseRemoteDatasource implements VenueRem
   Future<void> deleteVenue(String id) async {
     try {
       final response = await dio.delete('${AppConfig.venuesPath}/$id');
-      return handleResponse(response, (_) => null);
+      return await handleResponse(response, (_) => null);
     } catch (e) {
       throw handleError(e);
     }
@@ -129,7 +129,7 @@ class VenueRemoteDatasourceImpl extends BaseRemoteDatasource implements VenueRem
         queryParameters: queryParams,
       );
 
-      return handleResponse(
+      return await handleResponse(
         response,
         (data) => PagedResultDto.fromJson(
           data,

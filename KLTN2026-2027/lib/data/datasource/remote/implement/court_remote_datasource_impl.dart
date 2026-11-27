@@ -28,7 +28,7 @@ class CourtRemoteDatasourceImpl extends BaseRemoteDatasource implements CourtRem
           'isAvailable': ?isAvailable,
         },
       );
-      return handleResponse(
+      return await handleResponse(
         response,
         (data) => PagedResultDto.fromJson(data, (item) => CourtResponseDto.fromJson(item)),
       );
@@ -44,7 +44,7 @@ class CourtRemoteDatasourceImpl extends BaseRemoteDatasource implements CourtRem
         AppConfig.courtsPath,
         data: request.toJson(),
       );
-      return handleResponse(response, (_) => null);
+      return await handleResponse(response, (_) => null);
     } catch (e) {
       throw handleError(e);
     }
@@ -57,7 +57,7 @@ class CourtRemoteDatasourceImpl extends BaseRemoteDatasource implements CourtRem
         '${AppConfig.courtsPath}/$id',
         data: request.toJson(),
       );
-      return handleResponse(response, (_) => null);
+      return await handleResponse(response, (_) => null);
     } catch (e) {
       throw handleError(e);
     }
@@ -67,7 +67,7 @@ class CourtRemoteDatasourceImpl extends BaseRemoteDatasource implements CourtRem
   Future<void> deleteCourt(String id) async {
     try {
       final response = await dio.delete('${AppConfig.courtsPath}/$id');
-      return handleResponse(response, (_) => null);
+      return await handleResponse(response, (_) => null);
     } catch (e) {
       throw handleError(e);
     }

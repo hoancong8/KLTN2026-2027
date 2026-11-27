@@ -28,7 +28,7 @@ class SessionRemoteDataSourceImpl extends BaseRemoteDatasource implements Sessio
         data: request.toJson(),
         options: Options(headers: {'X-Group-Id': clubId}),
       );
-      return handleResponse(response, (data) {
+      return await handleResponse(response, (data) {
         if (data is Map && data.containsKey('sessionId')) {
           return data['sessionId'].toString();
         }
@@ -53,7 +53,7 @@ class SessionRemoteDataSourceImpl extends BaseRemoteDatasource implements Sessio
   Future<SessionDetailDto> getSessionDetail(String sessionId) async {
     try {
       final response = await dio.get(AppConfig.sessionDetailPath(sessionId));
-      return handleResponse(response, (data) => SessionDetailDto.fromJson(data));
+      return await handleResponse(response, (data) => SessionDetailDto.fromJson(data));
     } catch (e) {
       throw handleError(e);
     }
@@ -119,7 +119,7 @@ class SessionRemoteDataSourceImpl extends BaseRemoteDatasource implements Sessio
   Future<SessionBookingDto> voteBooking(String sessionId) async {
     try {
       final response = await dio.post(AppConfig.sessionBookingsPath(sessionId));
-      return handleResponse(response, (data) => SessionBookingDto.fromJson(data));
+      return await handleResponse(response, (data) => SessionBookingDto.fromJson(data));
     } catch (e) {
       throw handleError(e);
     }
@@ -157,7 +157,7 @@ class SessionRemoteDataSourceImpl extends BaseRemoteDatasource implements Sessio
   Future<SessionBookingDto?> getMyBooking(String sessionId) async {
     try {
       final response = await dio.get(AppConfig.sessionMyBookingPath(sessionId));
-      return handleResponse(response, (data) {
+      return await handleResponse(response, (data) {
         if (data == null) return null;
         return SessionBookingDto.fromJson(data);
       });
@@ -183,7 +183,7 @@ class SessionRemoteDataSourceImpl extends BaseRemoteDatasource implements Sessio
         AppConfig.sessionRecruitmentsPath(sessionId),
         data: request.toJson(),
       );
-      return handleResponse(response, (data) {
+      return await handleResponse(response, (data) {
         if (data is Map && data.containsKey('recruitmentId')) {
           return data['recruitmentId'].toString();
         }
@@ -198,7 +198,7 @@ class SessionRemoteDataSourceImpl extends BaseRemoteDatasource implements Sessio
   Future<GuestRecruitmentDto?> getSessionRecruitment(String sessionId) async {
     try {
       final response = await dio.get(AppConfig.sessionRecruitmentsPath(sessionId));
-      return handleResponse(response, (data) {
+      return await handleResponse(response, (data) {
         if (data == null) return null;
         return GuestRecruitmentDto.fromJson(data);
       });
@@ -243,7 +243,7 @@ class SessionRemoteDataSourceImpl extends BaseRemoteDatasource implements Sessio
   Future<SessionBookingDto> joinRecruitment(String recruitmentId) async {
     try {
       final response = await dio.post(AppConfig.joinRecruitmentPath(recruitmentId));
-      return handleResponse(response, (data) => SessionBookingDto.fromJson(data));
+      return await handleResponse(response, (data) => SessionBookingDto.fromJson(data));
     } catch (e) {
       throw handleError(e);
     }
@@ -265,7 +265,7 @@ class SessionRemoteDataSourceImpl extends BaseRemoteDatasource implements Sessio
         AppConfig.passCourtPath,
         data: request.toJson(),
       );
-      return handleResponse(response, (data) {
+      return await handleResponse(response, (data) {
         if (data is Map && data.containsKey('sessionId')) {
           return data['sessionId'].toString();
         }
@@ -280,7 +280,7 @@ class SessionRemoteDataSourceImpl extends BaseRemoteDatasource implements Sessio
   Future<SessionSettlementDto> getSettlement(String sessionId) async {
     try {
       final response = await dio.get(AppConfig.sessionSettlementPath(sessionId));
-      return handleResponse(response, (data) => SessionSettlementDto.fromJson(data));
+      return await handleResponse(response, (data) => SessionSettlementDto.fromJson(data));
     } catch (e) {
       throw handleError(e);
     }
@@ -304,7 +304,7 @@ class SessionRemoteDataSourceImpl extends BaseRemoteDatasource implements Sessio
           ...?courtFee == null ? null : {'courtFee': courtFee},
         },
       );
-      return handleResponse(response, (data) => SessionSettlementDto.fromJson(data));
+      return await handleResponse(response, (data) => SessionSettlementDto.fromJson(data));
     } catch (e) {
       throw handleError(e);
     }
@@ -317,7 +317,7 @@ class SessionRemoteDataSourceImpl extends BaseRemoteDatasource implements Sessio
   }) async {
     try {
       final response = await dio.post(AppConfig.sessionMarkPaidPath(sessionId, userId));
-      return handleResponse(response, (data) => SessionSettlementDto.fromJson(data));
+      return await handleResponse(response, (data) => SessionSettlementDto.fromJson(data));
     } catch (e) {
       throw handleError(e);
     }

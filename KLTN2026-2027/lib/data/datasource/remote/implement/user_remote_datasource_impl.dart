@@ -23,7 +23,7 @@ class UserRemoteDatasourceImpl extends BaseRemoteDatasource implements UserRemot
   Future<UserResponseDto> getUserMe() async {
     try {
       final response = await dio.get(AppConfig.userMePath);
-      return handleResponse(response, (data) => UserResponseDto.fromJson(data));
+      return await handleResponse(response, (data) => UserResponseDto.fromJson(data));
     } catch (e) {
       throw handleError(e);
     }
@@ -33,7 +33,7 @@ class UserRemoteDatasourceImpl extends BaseRemoteDatasource implements UserRemot
   Future<PlayerProfileDto> getUserProfile() async {
     try {
       final response = await dio.get(AppConfig.userProfilePath);
-      return handleResponse(response, (data) => PlayerProfileDto.fromJson(data));
+      return await handleResponse(response, (data) => PlayerProfileDto.fromJson(data));
     } catch (e) {
       throw handleError(e);
     }
@@ -52,7 +52,7 @@ class UserRemoteDatasourceImpl extends BaseRemoteDatasource implements UserRemot
   Future<UserPermissionsResponseDto> getUserPermissions() async {
     try {
       final response = await dio.get(AppConfig.userPermissionsPath);
-      return handleResponse(response, (data) => UserPermissionsResponseDto.fromJson(data));
+      return await handleResponse(response, (data) => UserPermissionsResponseDto.fromJson(data));
     } catch (e) {
       throw handleError(e);
     }
@@ -91,7 +91,7 @@ class UserRemoteDatasourceImpl extends BaseRemoteDatasource implements UserRemot
           if (sortColumn != null && sortColumn.isNotEmpty) 'SortColumn': sortColumn,
         },
       );
-      return handleResponse(
+      return await handleResponse(
         response,
         (data) => PagedResultDto.fromJson(data, (item) => UserResponseDto.fromJson(item)),
       );
@@ -104,7 +104,7 @@ class UserRemoteDatasourceImpl extends BaseRemoteDatasource implements UserRemot
   Future<UserResponseDto> getUserById(String id) async {
     try {
       final response = await dio.get('${AppConfig.usersPath}/$id');
-      return handleResponse(response, (data) => UserResponseDto.fromJson(data));
+      return await handleResponse(response, (data) => UserResponseDto.fromJson(data));
     } catch (e) {
       throw handleError(e);
     }
@@ -117,7 +117,7 @@ class UserRemoteDatasourceImpl extends BaseRemoteDatasource implements UserRemot
         AppConfig.usersPath,
         data: request.toJson(),
       );
-      return handleResponse(response, (_) => null);
+      return await handleResponse(response, (_) => null);
     } catch (e) {
       throw handleError(e);
     }
@@ -130,7 +130,7 @@ class UserRemoteDatasourceImpl extends BaseRemoteDatasource implements UserRemot
         '${AppConfig.usersPath}/$id',
         data: request.toJson(),
       );
-      return handleResponse(response, (_) => null);
+      return await handleResponse(response, (_) => null);
     } catch (e) {
       throw handleError(e);
     }
@@ -140,7 +140,7 @@ class UserRemoteDatasourceImpl extends BaseRemoteDatasource implements UserRemot
   Future<void> deleteUser(String id) async {
     try {
       final response = await dio.delete('${AppConfig.usersPath}/$id');
-      return handleResponse(response, (_) => null);
+      return await handleResponse(response, (_) => null);
     } catch (e) {
       throw handleError(e);
     }
@@ -153,7 +153,7 @@ class UserRemoteDatasourceImpl extends BaseRemoteDatasource implements UserRemot
         '${AppConfig.usersPath}/$id/lock',
         data: request.toJson(),
       );
-      return handleResponse(response, (_) => null);
+      return await handleResponse(response, (_) => null);
     } catch (e) {
       throw handleError(e);
     }
@@ -166,7 +166,7 @@ class UserRemoteDatasourceImpl extends BaseRemoteDatasource implements UserRemot
         '${AppConfig.usersPath}/$id/roles',
         data: request.toJson(),
       );
-      return handleResponse(response, (_) => null);
+      return await handleResponse(response, (_) => null);
     } catch (e) {
       throw handleError(e);
     }
@@ -179,7 +179,7 @@ class UserRemoteDatasourceImpl extends BaseRemoteDatasource implements UserRemot
         '${AppConfig.usersPath}/$id/reset-password',
         data: request.toJson(),
       );
-      return handleResponse(response, (_) => null);
+      return await handleResponse(response, (_) => null);
     } catch (e) {
       throw handleError(e);
     }

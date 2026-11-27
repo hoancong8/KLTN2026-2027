@@ -28,7 +28,7 @@ class MediaRemoteDatasourceImpl extends BaseRemoteDatasource implements MediaRem
         data: formData,
       );
 
-      return handleResponse(response, (data) => UploadImageResponseDto.fromJson(data));
+      return await handleResponse(response, (data) => UploadImageResponseDto.fromJson(data));
     } catch (e) {
       throw handleError(e);
     }

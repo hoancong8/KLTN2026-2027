@@ -14,7 +14,7 @@ class SepayRemoteDatasourceImpl extends BaseRemoteDatasource
   Future<SepayApplicationDto> getSepayApplication() async {
     try {
       final response = await dio.get(AppConfig.sepayApplicationEndpoint);
-      return handleResponse(response, SepayApplicationDto.fromJson);
+      return await handleResponse(response, SepayApplicationDto.fromJson);
     } catch (e) {
       throw handleError(e);
     }
@@ -42,7 +42,7 @@ class SepayRemoteDatasourceImpl extends BaseRemoteDatasource
         AppConfig.sepayApplicationEndpoint,
         data: data,
       );
-      return handleResponse(response, SepayApplicationDto.fromJson);
+      return await handleResponse(response, SepayApplicationDto.fromJson);
     } catch (e) {
       throw handleError(e);
     }
@@ -52,7 +52,7 @@ class SepayRemoteDatasourceImpl extends BaseRemoteDatasource
   Future<SepayConnectionDto> getClubSepayConnection(String clubId) async {
     try {
       final response = await dio.get(AppConfig.clubSepayEndpoint(clubId));
-      return handleResponse(response, SepayConnectionDto.fromJson);
+      return await handleResponse(response, SepayConnectionDto.fromJson);
     } catch (e) {
       throw handleError(e);
     }
@@ -84,7 +84,7 @@ class SepayRemoteDatasourceImpl extends BaseRemoteDatasource
         AppConfig.clubSepayCompleteEndpoint(clubId),
         data: {'ticket': ticket},
       );
-      return handleResponse(response, SepayConnectionDto.fromJson);
+      return await handleResponse(response, SepayConnectionDto.fromJson);
     } catch (e) {
       throw handleError(e);
     }
@@ -112,7 +112,7 @@ class SepayRemoteDatasourceImpl extends BaseRemoteDatasource
         AppConfig.clubSepayAccountEndpoint(clubId),
         data: {'providerBankId': providerBankId},
       );
-      return handleResponse(response, SepayConnectionDto.fromJson);
+      return await handleResponse(response, SepayConnectionDto.fromJson);
     } catch (e) {
       throw handleError(e);
     }
@@ -123,7 +123,7 @@ class SepayRemoteDatasourceImpl extends BaseRemoteDatasource
     try {
       final response =
           await dio.post(AppConfig.clubSepayActivateEndpoint(clubId));
-      return handleResponse(response, SepayConnectionDto.fromJson);
+      return await handleResponse(response, SepayConnectionDto.fromJson);
     } catch (e) {
       throw handleError(e);
     }
@@ -152,7 +152,7 @@ class SepayRemoteDatasourceImpl extends BaseRemoteDatasource
               clubId, connectionId)
           : AppConfig.clubSepayEndpoint(clubId);
       final response = await dio.delete(url);
-      return handleResponse(response, SepayConnectionDto.fromJson);
+      return await handleResponse(response, SepayConnectionDto.fromJson);
     } catch (e) {
       throw handleError(e);
     }

@@ -30,7 +30,7 @@ class ReconciliationRemoteDatasourceImpl extends BaseRemoteDatasource
         AppConfig.clubReconciliationsEndpoint(clubId),
         queryParameters: query,
       );
-      return handleResponse(response, ReconciliationPageDto.fromJson);
+      return await handleResponse(response, ReconciliationPageDto.fromJson);
     } catch (e) {
       throw handleError(e);
     }
@@ -45,7 +45,7 @@ class ReconciliationRemoteDatasourceImpl extends BaseRemoteDatasource
       final response = await dio.get(
         AppConfig.clubReconciliationDetailEndpoint(clubId, transactionId),
       );
-      return handleResponse(response, ReconciliationTransactionDto.fromJson);
+      return await handleResponse(response, ReconciliationTransactionDto.fromJson);
     } catch (e) {
       throw handleError(e);
     }
@@ -66,7 +66,7 @@ class ReconciliationRemoteDatasourceImpl extends BaseRemoteDatasource
           'reason': reason,
         },
       );
-      return handleResponse(response, ReconciliationTransactionDto.fromJson);
+      return await handleResponse(response, ReconciliationTransactionDto.fromJson);
     } catch (e) {
       throw handleError(e);
     }

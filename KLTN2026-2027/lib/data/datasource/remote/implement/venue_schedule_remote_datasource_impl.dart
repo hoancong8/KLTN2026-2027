@@ -26,7 +26,7 @@ class VenueScheduleRemoteDatasourceImpl extends BaseRemoteDatasource implements 
           if (venueId != null && venueId.isNotEmpty) 'venueId': venueId,
         },
       );
-      return handleResponse(
+      return await handleResponse(
         response,
         (data) => PagedResultDto.fromJson(data, (item) => VenueScheduleResponseDto.fromJson(item)),
       );
@@ -42,7 +42,7 @@ class VenueScheduleRemoteDatasourceImpl extends BaseRemoteDatasource implements 
         AppConfig.venueSchedulesPath,
         data: request.toJson(),
       );
-      return handleResponse(response, (_) => null);
+      return await handleResponse(response, (_) => null);
     } catch (e) {
       throw handleError(e);
     }
@@ -55,7 +55,7 @@ class VenueScheduleRemoteDatasourceImpl extends BaseRemoteDatasource implements 
         '${AppConfig.venueSchedulesPath}/$id',
         data: request.toJson(),
       );
-      return handleResponse(response, (_) => null);
+      return await handleResponse(response, (_) => null);
     } catch (e) {
       throw handleError(e);
     }
@@ -65,7 +65,7 @@ class VenueScheduleRemoteDatasourceImpl extends BaseRemoteDatasource implements 
   Future<void> deleteVenueSchedule(String id) async {
     try {
       final response = await dio.delete('${AppConfig.venueSchedulesPath}/$id');
-      return handleResponse(response, (_) => null);
+      return await handleResponse(response, (_) => null);
     } catch (e) {
       throw handleError(e);
     }
