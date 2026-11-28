@@ -60,6 +60,18 @@ class AppConfig {
 
   // ===== [API] 2. Clubs Management APIs (/api/v1/clubs) =====
   static const clubsPath = '/api/v1/clubs';
+  static const reviewsPath = '/api/v1/user/me/reviews';
+  static const reviewInvitationsPath = '$reviewsPath/invitations';
+  static const reputationEntriesPath = '/api/v1/reputation/me/entries';
+  static const groupQualityPath = '/api/v1/reputation/group-quality';
+  static String playerReputationPath(String userId) =>
+      '/api/v1/reputation/players/$userId';
+  static String reputationAuditPath(String clubId, String sessionId) =>
+      '$clubsPath/$clubId/sessions/$sessionId/reputation-audit';
+  static String reviewsRoute({String? sessionId}) => Uri(
+    path: '/reputation/invitations',
+    queryParameters: sessionId == null ? null : {'sessionId': sessionId},
+  ).toString();
   static const myClubsPath = '$clubsPath/my-clubs';
   static const clubJoinPath = '$clubsPath/join';
   static const clubsExplorePath = '$clubsPath/explore';

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
+import 'package:signalr_netcore/ihub_protocol.dart';
 import 'package:signalr_netcore/signalr_client.dart';
 import '../consts/app_config.dart';
 import 'secure_storage_service.dart';
@@ -11,6 +12,19 @@ class RealtimeHubService {
   RealtimeHubService._();
 
   HubConnection? _connection;
+  String? _userId;
+  Future<void> _transition = Future.value();
+  final _reputationController = StreamController<Map<String, dynamic>>.broadcast();
+  final _reconnectedController = StreamController<void>.broadcast();
+
+  Stream<Map<String, dynamic>> get onReputation => _reputationController.stream;
+  Stream<void> get onReconnected => _reconnectedController.stream;
+
+  Future<void> _serialize(Future<void> Function() action) {
+    final next = _transition.then((_) => action());
+    _transition = next.catchError((Object _) {});
+    return next;
+  }
   final _ledgerUpdatedController = StreamController<Map<String, dynamic>>.broadcast();
   final _rotationChangedController = StreamController<Map<String, dynamic>>.broadcast();
   final _bookingUpdatedController = StreamController<Map<String, dynamic>>.broadcast();
@@ -21,14 +35,25 @@ class RealtimeHubService {
 
   bool get isConnected => _connection?.state == HubConnectionState.Connected;
 
-  Future<void> start() async {
-    if (isConnected) return;
+  Future<void> start() => _serialize(_start);
+
+  Future<void> _start() async {
 
     try {
       final token = await SecureStorageService.instance.getAuthToken();
       if (token == null || token.accessToken.isEmpty) return;
+      if (_userId == token.userId && _connection?.state != HubConnectionState.Disconnected &&
+          _connection != null) {
+        return;
+      }
+      await _stop();
+      _userId = token.userId;
 
       final hubUrl = '${AppConfig.baseUrl}/hubs/sessions';
+      final headers = MessageHeaders();
+      for (final entry in AppConfig.developmentTunnelHeaders.entries) {
+        headers.setHeaderValue(entry.key, entry.value);
+      }
 
       _connection = HubConnectionBuilder()
           .withUrl(
@@ -38,6 +63,7 @@ class RealtimeHubService {
                 final current = await SecureStorageService.instance.getAuthToken();
                 return current?.accessToken ?? '';
               },
+              headers: headers,
             ),
           )
           .withAutomaticReconnect()
@@ -47,6 +73,8 @@ class RealtimeHubService {
       _connection?.on('RotationChanged', _handleRotationChanged);
       _connection?.on('MyMatchesChanged', _handleRotationChanged);
       _connection?.on('BookingUpdated', _handleBookingUpdated);
+      _connection?.on('ReviewInvitation', (args) => _handleReputation(args, 'ReviewInvitationPush'));
+      _connection?.on('ReputationUpdated', (args) => _handleReputation(args, 'ReputationUpdatedPush'));
 
       _connection?.onclose(({error}) {
         if (kDebugMode) {
@@ -55,6 +83,7 @@ class RealtimeHubService {
       });
 
       _connection?.onreconnected(({connectionId}) {
+        _reconnectedController.add(null);
         if (kDebugMode) {
           debugPrint('[RealtimeHubService] Reconnected: $connectionId');
         }
@@ -114,9 +143,19 @@ class RealtimeHubService {
     }
   }
 
-  Future<void> stop() async {
+  void _handleReputation(List<Object?>? args, String kind) {
+    final data = args?.firstOrNull;
+    if (data is Map) _reputationController.add({...Map<String, dynamic>.from(data), 'kind': kind});
+  }
+
+  Future<void> stop() => _serialize(_stop);
+
+  Future<void> _stop() async {
+    final connection = _connection;
+    _connection = null;
+    _userId = null;
     try {
-      await _connection?.stop();
+      await connection?.stop();
     } catch (_) {}
   }
 }

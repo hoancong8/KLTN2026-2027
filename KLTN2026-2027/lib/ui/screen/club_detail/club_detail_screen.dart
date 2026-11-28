@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../app/consts/permissions.dart';
 import '../../../app/provider.dart';
+import '../../../app/provider/reputation_provider.dart';
 import '../../../app/theme/theme.dart';
 import '../../../domain/enums/club_role.dart';
 import '../../../app/provider/localization_provider.dart';
@@ -375,6 +376,9 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen>
   }
 
   Widget _buildClubHeaderCard(ClubDetail club) {
+    final quality = ref.watch(authTokenProvider) == null
+        ? null
+        : ref.watch(groupQualityProvider(widget.clubId)).asData?.value.score;
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
@@ -559,11 +563,14 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen>
                 Icons.groups_rounded,
                 AppColors.roleDeputy,
               ),
-              _buildHeaderStat(
-                'Chất lượng',
-                club.qualityScore.toStringAsFixed(1),
-                Icons.star_rounded,
-                AppColors.warning,
+              InkWell(
+                onTap: () => context.push('/reputation/quality/${widget.clubId}'),
+                child: _buildHeaderStat(
+                  context.l10n.reputation_quality,
+                  (quality ?? club.qualityScore).toStringAsFixed(1),
+                  Icons.star_rounded,
+                  context.colors.warning,
+                ),
               ),
               _buildHeaderStat(
                 'Tuyển thành viên',

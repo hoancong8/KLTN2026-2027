@@ -13,6 +13,7 @@ import '../payment/advance/session_advance_ui.dart';
 import 'package:kltn2026_2027/app/theme/theme.dart';
 import '../../../app/consts/app_config.dart';
 import '../../../app/provider.dart';
+import '../../../app/provider/reputation_provider.dart';
 import '../../../app/services/realtime_hub_service.dart';
 import '../../../domain/enums/club_role.dart';
 import '../../../domain/entities/session/create_court_pass_params.dart';
@@ -3143,6 +3144,18 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                     },
                   ),
               ],
+              if (ref.watch(activeClubContextProvider)?.clubId == session.groupId &&
+                  ref.hasClubPermission(reputationAuditPermission))
+                _buildActionTile(
+                  icon: Icons.fact_check_outlined,
+                  color: colors.primary,
+                  label: context.l10n.reputation_audit,
+                  subtitle: context.l10n.reputation_title,
+                  onTap: () {
+                    Navigator.of(ctx).pop();
+                    context.push('/club/${session.groupId}/session/${session.id}/reputation-audit');
+                  },
+                ),
               if (canDeleteSession) ...[
                 const Divider(),
                 _buildActionTile(
@@ -3734,59 +3747,16 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
             AppSpacing.gapH12,
           ],
 
-          // Đánh giá buổi chơi: Chỉ hiển thị khi buổi kết thúc VÀ người chơi là khách vãng lai (!isMember)
-          if (session.status == SessionStatus.completed && !isMember) ...[
-            Container(
-              padding: AppSpacing.allBase,
-              decoration: BoxDecoration(
-                color: colors.cardBackground,
-                borderRadius: AppRadius.card,
-                border: Border.all(color: colors.warning.withValues(alpha: 0.35)),
-                boxShadow: AppShadows.sm,
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: colors.warning.withValues(alpha: 0.12),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(Icons.star_rounded, size: 24, color: colors.warning),
-                  ),
-                  AppSpacing.gapW12,
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Đánh giá buổi chơi',
-                          style: AppTypography.titleSmall.bold.colored(colors.textPrimary),
-                        ),
-                        AppSpacing.gapH4,
-                        Text(
-                          'Chia sẻ cảm nhận về sân bãi và văn hóa chơi để hoàn tất buổi giao lưu.',
-                          style: AppTypography.bodySmall.colored(colors.textMuted),
-                        ),
-                      ],
-                    ),
-                  ),
-                  AppSpacing.gapW8,
-                  OutlinedButton.icon(
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: colors.warning,
-                      side: BorderSide(color: colors.warning),
-                      shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
-                    ),
-                    icon: const Icon(Icons.rate_review_outlined, size: 16),
-                    label: const Text('Đánh giá'),
-                    onPressed: () => context.push('/session/${session.id}/reviews'),
-                  ),
-                ],
+          if (session.status == SessionStatus.completed &&
+              ref.watch(reputationInvitationsProvider((page: 1, sessionId: session.id)))
+                  .asData?.value.items.isNotEmpty == true)
+            Card(
+              child: ListTile(
+                leading: const Icon(Icons.rate_review_outlined),
+                title: Text(context.l10n.reputation_review),
+                onTap: () => context.push(AppConfig.reviewsRoute(sessionId: session.id)),
               ),
             ),
-            AppSpacing.gapH12,
-          ],
           // Cơ chế phân bổ chi phí
           Container(
             padding: const EdgeInsets.all(12),

@@ -89,7 +89,9 @@ class NotificationTablet extends ConsumerWidget {
                                 final referenceId = item.referenceId;
                                 if (referenceId != null &&
                                     referenceId.isNotEmpty) {
-                                  if (referenceType == 'GROUPLEDGER' &&
+                                  if (item.type.toUpperCase() == 'REPUTATION' && referenceType == 'SESSIONREPUTATION') {
+                                    context.push(AppConfig.reviewsRoute(sessionId: referenceId));
+                                  } else if (referenceType == 'GROUPLEDGER' &&
                                       item.groupId != null && item.groupId!.isNotEmpty) {
                                     await openLedgerFromNotification(context, ref, item.groupId!);
                                   } else if (referenceType == 'SESSIONSETTLEMENT') {

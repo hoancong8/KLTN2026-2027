@@ -216,28 +216,32 @@ class DashboardPage extends ConsumerWidget {
               ),
               AppSpacing.gapW8,
               // Compact Reputation Badge
-              Container(
-                height: 36,
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                decoration: BoxDecoration(
-                  color: colors.cardBackground,
-                  borderRadius: BorderRadius.circular(18),
-                  border: Border.all(color: colors.cardBorder),
-                  boxShadow: context.isDark ? AppShadows.none : AppShadows.sm,
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.star_rounded, color: colors.accent, size: 15),
-                    AppSpacing.gapW4,
-                    Text(
-                      reputation,
-                      style: AppTypography.labelSmall.copyWith(
-                        color: colors.textPrimary,
-                        fontWeight: FontWeight.bold,
+              InkWell(
+                onTap: () => context.push('/reputation/me'),
+                borderRadius: BorderRadius.circular(18),
+                child: Container(
+                  height: 36,
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  decoration: BoxDecoration(
+                    color: colors.cardBackground,
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(color: colors.cardBorder),
+                    boxShadow: context.isDark ? AppShadows.none : AppShadows.sm,
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.star_rounded, color: colors.accent, size: 15),
+                      AppSpacing.gapW4,
+                      Text(
+                        reputation,
+                        style: AppTypography.labelSmall.copyWith(
+                          color: colors.textPrimary,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
               AppSpacing.gapW8,

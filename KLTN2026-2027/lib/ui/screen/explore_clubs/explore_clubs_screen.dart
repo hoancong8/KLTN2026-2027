@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:kltn2026_2027/app/theme/theme.dart';
 import '../../../app/consts/app_config.dart';
 import '../../../app/provider/localization_provider.dart';
+import '../../../app/provider/reputation_provider.dart';
 import '../../../app/utils/exception_ext.dart';
 import '../../../domain/enums/session_enums.dart';
 import '../../../widget/responsive_layout.dart';
@@ -37,6 +38,7 @@ class _ExploreClubsScreenState extends ConsumerState<ExploreClubsScreen> {
     final colors = context.colors;
     final state = ref.watch(exploreClubsViewModelProvider);
     final vm = ref.read(exploreClubsViewModelProvider.notifier);
+    ref.listen(reputationRevisionProvider, (_, _) => vm.loadClubs());
 
     ref.listen(exploreClubsViewModelProvider, (prev, next) {
       if (next.error != null && next.error != prev?.error) {

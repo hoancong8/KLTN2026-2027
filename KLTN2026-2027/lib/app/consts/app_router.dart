@@ -2,7 +2,7 @@ import '../../ui/screen/club/create_session_screen.dart';
 import '../../ui/screen/club/session_operations/session_attendance_screen.dart';
 import '../../ui/screen/club/session_operations/session_rotation_screen.dart';
 import '../../ui/screen/club/session_operations/session_settlement_screen.dart';
-import '../../ui/screen/club/session_operations/session_reviews_screen.dart';
+import '../../ui/screen/reputation/reputation_screens.dart';
 // app/router/app_router.dart
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -200,11 +200,28 @@ GoRouter generateAppRouter(String initialRoute) {
         },
       ),
       GoRoute(
-        path: '/session/:sessionId/reviews',
-        builder: (_, state) {
-          final sessionId = state.pathParameters['sessionId'] ?? '';
-          return SessionReviewsScreen(sessionId: sessionId);
-        },
+        path: '/reputation/invitations',
+        builder: (_, state) => ReviewInvitationsScreen(
+          key: ValueKey(state.uri),
+          sessionId: state.uri.queryParameters['sessionId'],
+        ),
+      ),
+      GoRoute(path: '/reputation/me', builder: (_, _) => const PlayerReputationScreen()),
+      GoRoute(path: '/reputation/history', builder: (_, _) => const ReputationHistoryScreen()),
+      GoRoute(
+        path: '/reputation/player/:userId',
+        builder: (_, state) => PlayerReputationScreen(userId: state.pathParameters['userId']),
+      ),
+      GoRoute(
+        path: '/reputation/quality/:clubId',
+        builder: (_, state) => GroupQualityScreen(groupId: state.pathParameters['clubId']!),
+      ),
+      GoRoute(
+        path: '/club/:clubId/session/:sessionId/reputation-audit',
+        builder: (_, state) => SessionReputationAuditScreen(
+          clubId: state.pathParameters['clubId']!,
+          sessionId: state.pathParameters['sessionId']!,
+        ),
       ),
       GoRoute(
         path: '/session-create/:clubId',

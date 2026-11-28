@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../../app/provider.dart';
+import '../../../../app/provider/reputation_provider.dart';
 import '../../../../app/theme/theme.dart';
 import '../../../../app/provider/localization_provider.dart';
 import '../../../../app/utils/exception_ext.dart';
@@ -186,6 +187,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 
   Widget _buildHeaderCard(PlayerProfile profile) {
+    final userId = ref.watch(currentUserProfileProvider)?.id ?? ref.watch(authTokenProvider)?.userId;
+    final reputation = userId == null ? null : ref.watch(playerReputationProvider(userId)).asData?.value.score;
     final skillColor = _getSkillColor(profile.skillLevel);
 
     return Container(
@@ -359,33 +362,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               ),
               const SizedBox(width: 12),
 
-              // Reputation Score
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                decoration: BoxDecoration(
-                  color: AppColors.warningLight,
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: AppColors.warningBorder),
-                ),
-                child: Row(
-                  children: [
-                    Icon(Icons.star_rounded, size: 18, color: AppColors.roleTreasurer),
-                    const SizedBox(width: 4),
-                    Text(
-                      profile.reputationScore.toStringAsFixed(1),
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.amberText,
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      'Uy tín',
-                      style: TextStyle(fontSize: 12, color: AppColors.amberText),
-                    ),
-                  ],
-                ),
+              ActionChip(
+                avatar: Icon(Icons.star_rounded, color: context.colors.warning),
+                tooltip: context.l10n.reputation_title,
+                label: Text('${(reputation ?? profile.reputationScore).toStringAsFixed(1)}/100'),
+                onPressed: () => context.push('/reputation/me'),
               ),
             ],
           ),
