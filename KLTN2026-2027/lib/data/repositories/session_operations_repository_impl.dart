@@ -1666,6 +1666,7 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
     required int extraFee,
     int? courtRentalCost,
     bool monthlyExemptCourtOnly = false,
+    Future<bool> Function(List<SettlementAdvanceLine>)? confirmAdvances,
   }) async {
     final current = await getSettlement(sessionId);
     final courtCost = courtRentalCost ?? current.courtFee;
@@ -1692,6 +1693,25 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
             ? (pData['previewToken'] ?? pData['PreviewToken'])
             : null;
         if (previewToken is String) {
+          final allocation = pData is Map ? pData['allocation'] : null;
+          final rawLines = allocation is Map ? allocation['members'] : null;
+          final outside = allocation is Map ? allocation['otherAdvances'] : null;
+          final advances = <SettlementAdvanceLine>[
+            if (rawLines is List)
+              for (final row in rawLines.whereType<Map>())
+                if (row['advancePending'] == true || (row['advanceReceived'] is num && (row['advanceReceived'] as num) > 0))
+                  SettlementAdvanceLine(
+                    row['playerName']?.toString() ?? row['userId']?.toString() ?? '',
+                    row['finalAmount'] as num? ?? 0, row['advanceApplied'] as num? ?? 0,
+                    row['amountDue'] as num? ?? 0, row['advanceRefund'] as num? ?? 0,
+                    row['advancePending'] == true,
+                  ),
+            if (outside is List)
+              for (final row in outside.whereType<Map>())
+                SettlementAdvanceLine(row['playerName']?.toString() ?? row['userId']?.toString() ?? '',
+                  0, 0, 0, row['advanceRefund'] as num? ?? 0, row['advancePending'] == true),
+          ];
+          if (advances.isNotEmpty && confirmAdvances != null && !await confirmAdvances(advances)) return current;
           final approveRes = await dio.post(
             '/api/v1/sessions/$sessionId/settlement/approve',
             data: {

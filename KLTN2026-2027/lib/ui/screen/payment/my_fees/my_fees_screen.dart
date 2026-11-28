@@ -8,11 +8,13 @@ import '../../../../app/theme/theme.dart';
 import '../../../../app/utils/exception_ext.dart';
 import '../../../../domain/entities/payment/personal_fee.dart';
 import '../../../../widget/responsive_layout.dart';
+import '../advance/session_advance_ui.dart';
 import 'my_fees_state.dart';
 import 'my_fees_vm.dart';
 
 class MyFeesScreen extends ConsumerStatefulWidget {
-  const MyFeesScreen({super.key});
+  const MyFeesScreen({super.key, this.advanceSessionId});
+  final String? advanceSessionId;
 
   @override
   ConsumerState<MyFeesScreen> createState() => _MyFeesScreenState();
@@ -24,6 +26,11 @@ class _MyFeesScreenState extends ConsumerState<MyFeesScreen>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    if (widget.advanceSessionId case final id?) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) showAdvanceDetail(context, id);
+      });
+    }
   }
 
   @override
@@ -50,6 +57,13 @@ class _MyFeesScreenState extends ConsumerState<MyFeesScreen>
       backgroundColor: colors.background,
       appBar: AppBar(
         title: Text(l10n.payment_my_fees),
+        actions: [
+          IconButton(
+            tooltip: l10n.advance_my_advances,
+            onPressed: () => showAdvanceList(context),
+            icon: const Icon(Icons.account_balance_wallet_outlined),
+          ),
+        ],
         backgroundColor: colors.surface,
         foregroundColor: colors.textPrimary,
       ),

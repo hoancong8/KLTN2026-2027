@@ -26,7 +26,7 @@ class CourtPricingRemoteDatasourceImpl extends BaseRemoteDatasource implements C
           if (venueId != null && venueId.isNotEmpty) 'venueId': venueId,
         },
       );
-      return handleResponse(
+      return await handleResponse(
         response,
         (data) => PagedResultDto.fromJson(data, (item) => CourtPricingResponseDto.fromJson(item)),
       );
@@ -42,7 +42,7 @@ class CourtPricingRemoteDatasourceImpl extends BaseRemoteDatasource implements C
         AppConfig.courtPricingsPath,
         data: request.toJson(),
       );
-      return handleResponse(response, (_) => null);
+      return await handleResponse(response, (_) => null);
     } catch (e) {
       throw handleError(e);
     }
@@ -55,7 +55,7 @@ class CourtPricingRemoteDatasourceImpl extends BaseRemoteDatasource implements C
         '${AppConfig.courtPricingsPath}/$id',
         data: request.toJson(),
       );
-      return handleResponse(response, (_) => null);
+      return await handleResponse(response, (_) => null);
     } catch (e) {
       throw handleError(e);
     }
@@ -65,7 +65,7 @@ class CourtPricingRemoteDatasourceImpl extends BaseRemoteDatasource implements C
   Future<void> deleteCourtPricing(String id) async {
     try {
       final response = await dio.delete('${AppConfig.courtPricingsPath}/$id');
-      return handleResponse(response, (_) => null);
+      return await handleResponse(response, (_) => null);
     } catch (e) {
       throw handleError(e);
     }

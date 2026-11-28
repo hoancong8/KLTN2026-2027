@@ -21,6 +21,10 @@ class CreateSessionParams {
   final String? address;
   final double? lat;
   final double? lng;
+  final int? minimumPlayers;
+  final int? shortageCheckMinutes;
+  final bool? advanceEnabled;
+  final int? advanceAmount;
 
   const CreateSessionParams({
     required this.clubId,
@@ -36,6 +40,10 @@ class CreateSessionParams {
     this.address,
     this.lat,
     this.lng,
+    this.minimumPlayers,
+    this.shortageCheckMinutes,
+    this.advanceEnabled,
+    this.advanceAmount,
   });
 }
 
@@ -58,6 +66,10 @@ class CreateSessionUseCase {
       address: params.address,
       lat: params.lat,
       lng: params.lng,
+      minimumPlayers: params.minimumPlayers,
+      shortageCheckMinutes: params.shortageCheckMinutes,
+      advanceEnabled: params.advanceEnabled,
+      advanceAmount: params.advanceAmount,
     );
   }
 }
@@ -85,6 +97,10 @@ class UpdateSessionParams {
   final int courtCount;
   final int maxPlayers;
   final DateTime deadlineBooking;
+  final int? minimumPlayers;
+  final int? shortageCheckMinutes;
+  final bool? advanceEnabled;
+  final int? advanceAmount;
 
   const UpdateSessionParams({
     required this.sessionId,
@@ -95,6 +111,10 @@ class UpdateSessionParams {
     required this.courtCount,
     required this.maxPlayers,
     required this.deadlineBooking,
+    this.minimumPlayers,
+    this.shortageCheckMinutes,
+    this.advanceEnabled,
+    this.advanceAmount,
   });
 }
 
@@ -112,8 +132,20 @@ class UpdateSessionUseCase {
       courtCount: params.courtCount,
       maxPlayers: params.maxPlayers,
       deadlineBooking: params.deadlineBooking,
+      minimumPlayers: params.minimumPlayers,
+      shortageCheckMinutes: params.shortageCheckMinutes,
+      advanceEnabled: params.advanceEnabled,
+      advanceAmount: params.advanceAmount,
     );
   }
+}
+
+class SetShortageReminderUseCase {
+  final SessionRepository repository;
+  SetShortageReminderUseCase(this.repository);
+
+  Future<void> execute(String sessionId, int? delayMinutes) =>
+      repository.setShortageReminder(sessionId, delayMinutes);
 }
 
 class UpdateSessionStatusUseCase {

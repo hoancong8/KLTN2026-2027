@@ -92,6 +92,8 @@ class NotificationMobile extends ConsumerWidget {
                                     referenceId,
                                   ),
                                 );
+                              } else if (referenceType == 'SESSIONADVANCE') {
+                                context.push(AppConfig.advanceNotificationPath(referenceId));
                               } else if (referenceType == 'SESSIONFEE') {
                                 context.push(
                                   AppConfig.myFeeDetailPath(referenceId),
@@ -99,7 +101,8 @@ class NotificationMobile extends ConsumerWidget {
                               } else if (item.type.toUpperCase() == 'SESSION' ||
                                   referenceType == 'SESSION') {
                                 context.push(
-                                  AppConfig.sessionDetailRoutePath(referenceId),
+                                  AppConfig.sessionDetailRoutePath(referenceId,
+                                    fromShortageNotice: referenceType == 'SESSIONSHORTAGE'),
                                 );
                               }
                             }

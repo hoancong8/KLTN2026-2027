@@ -1,6 +1,8 @@
 // lib/ui/screen/club/create_session_screen.dart
 
 import 'package:flutter/material.dart';
+import 'widgets/session_shortage_settings.dart';
+import 'widgets/session_advance_settings.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:kltn2026_2027/app/theme/theme.dart';
@@ -27,6 +29,10 @@ class CreateSessionScreen extends ConsumerStatefulWidget {
 
 class _CreateSessionScreenState extends ConsumerState<CreateSessionScreen> {
   AppThemeColors get colors => context.colors;
+  bool _advanceEnabled = false;
+  int? _advanceAmount;
+  int _minimumPlayers = 4;
+  int _shortageCheckMinutes = 120;
   final _formKey = GlobalKey<FormState>();
 
   late final TextEditingController _titleCtl;
@@ -211,6 +217,10 @@ class _CreateSessionScreenState extends ConsumerState<CreateSessionScreen> {
         courtCount: _courtCount,
         targetPlayerPerCourt: _targetPlayerPerCourt,
         maxPlayers: _maxPlayers,
+        minimumPlayers: _minimumPlayers,
+        shortageCheckMinutes: _shortageCheckMinutes,
+        advanceEnabled: _advanceEnabled,
+        advanceAmount: _advanceAmount,
         deadlineBooking: _deadlineBooking,
         courtRentalCost: cost,
       ),
@@ -621,6 +631,20 @@ class _CreateSessionScreenState extends ConsumerState<CreateSessionScreen> {
 
             const SizedBox(height: 16),
 
+            SessionAdvanceSettings(
+                  enabled: _advanceEnabled,
+                  dynamicFee: ref.watch(clubFeeRuleProvider(widget.clubId)).asData?.value.isDynamic ?? true,
+                  initialAmount: _advanceAmount,
+                  onEnabled: (value) => setState(() => _advanceEnabled = value),
+                  onAmount: (value) => _advanceAmount = value,
+                ),
+                SessionShortageSettings(
+              capacity: _maxPlayers,
+              minimumPlayers: _minimumPlayers,
+              checkMinutes: _shortageCheckMinutes,
+              onMinimumChanged: (value) => _minimumPlayers = value,
+              onCheckChanged: (value) => _shortageCheckMinutes = value,
+            ),
             // 5. Chi phí thuê sân (nếu dynamic)
             Builder(
               builder: (context) {

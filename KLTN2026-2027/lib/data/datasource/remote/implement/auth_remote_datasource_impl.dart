@@ -22,7 +22,7 @@ class AuthRemoteDatasourceImpl extends BaseRemoteDatasource implements AuthRemot
         data: request.toJson(),
       );
 
-      return handleResponse(res, (data) => LoginResponseDto.fromJson(data));
+      return await handleResponse(res, (data) => LoginResponseDto.fromJson(data));
     } catch (e) {
       throw handleError(e);
     }
@@ -36,7 +36,7 @@ class AuthRemoteDatasourceImpl extends BaseRemoteDatasource implements AuthRemot
         data: request.toJson(),
       );
 
-      return handleResponse(res, (data) => RegisterResponseDto.fromJson(data));
+      return await handleResponse(res, (data) => RegisterResponseDto.fromJson(data));
     } catch (e) {
       throw handleError(e);
     }
@@ -50,7 +50,7 @@ class AuthRemoteDatasourceImpl extends BaseRemoteDatasource implements AuthRemot
         data: request.toJson(),
       );
 
-      return handleResponse(res, (data) => res.statusCode == 200);
+      return await handleResponse(res, (data) => res.statusCode == 200);
     } catch (e) {
       throw handleError(e);
     }
@@ -83,7 +83,7 @@ class AuthRemoteDatasourceImpl extends BaseRemoteDatasource implements AuthRemot
           },
         ),
       );
-      return handleResponse(res, (data) => LoginResponseDto.fromJson(data));
+      return await handleResponse(res, (data) => LoginResponseDto.fromJson(data));
     } catch (e) {
       throw handleError(e);
     }

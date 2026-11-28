@@ -22,6 +22,10 @@ abstract class SessionRepository {
     String? address,
     double? lat,
     double? lng,
+    int? minimumPlayers,
+    int? shortageCheckMinutes,
+    bool? advanceEnabled,
+    int? advanceAmount,
   });
 
   Future<List<Session>> getClubSessions(String clubId);
@@ -37,6 +41,10 @@ abstract class SessionRepository {
     required int courtCount,
     required int maxPlayers,
     required DateTime deadlineBooking,
+    int? minimumPlayers,
+    int? shortageCheckMinutes,
+    bool? advanceEnabled,
+    int? advanceAmount,
   });
 
   Future<void> updateSessionStatus(
@@ -44,6 +52,8 @@ abstract class SessionRepository {
     String status, {
     bool confirmRemainingNoShows = true,
   });
+
+  Future<void> setShortageReminder(String sessionId, int? delayMinutes);
 
   Future<void> deleteSession(String sessionId);
 

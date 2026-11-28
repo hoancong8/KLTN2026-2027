@@ -19,6 +19,12 @@ class SessionDto {
   final String status;
   final int confirmedCount;
   final int waitingCount;
+  final int? minimumPlayers;
+  final int? shortageCheckMinutes;
+  final DateTime? shortageReminderAt;
+  final bool shortageReminderSent;
+  final bool advanceEnabled;
+  final int? advanceAmount;
   final bool isBookedByCurrentUser;
   final String? currentUserBookingStatus;
   final int currentUserQueueOrder;
@@ -42,6 +48,12 @@ class SessionDto {
     required this.status,
     required this.confirmedCount,
     required this.waitingCount,
+    this.minimumPlayers,
+    this.shortageCheckMinutes,
+    this.shortageReminderAt,
+    this.shortageReminderSent = false,
+    this.advanceEnabled = false,
+    this.advanceAmount,
     this.isBookedByCurrentUser = false,
     this.currentUserBookingStatus,
     this.currentUserQueueOrder = 0,
@@ -115,6 +127,12 @@ class SessionDto {
       status: json['status']?.toString() ?? '1',
       confirmedCount: _parseInt(json['confirmedCount']),
       waitingCount: _parseInt(json['waitingCount']),
+      minimumPlayers: json['minimumPlayers'] == null ? null : _parseInt(json['minimumPlayers']),
+      shortageCheckMinutes: json['shortageCheckMinutes'] == null ? null : _parseInt(json['shortageCheckMinutes']),
+      shortageReminderAt: DateTime.tryParse(json['shortageReminderAt']?.toString() ?? ''),
+      shortageReminderSent: _parseBool(json['shortageReminderSent']),
+      advanceEnabled: _parseBool(json['advanceEnabled']),
+      advanceAmount: json['advanceAmount'] == null ? null : _parseInt(json['advanceAmount']),
       isBookedByCurrentUser: _parseBool(json['isBookedByCurrentUser']),
       currentUserBookingStatus: json['currentUserBookingStatus']?.toString(),
       currentUserQueueOrder: _parseInt(json['currentUserQueueOrder']),
@@ -140,6 +158,10 @@ class SessionDto {
     'status': status,
     'confirmedCount': confirmedCount,
     'waitingCount': waitingCount,
+    if (minimumPlayers != null) 'minimumPlayers': minimumPlayers,
+    if (shortageCheckMinutes != null) 'shortageCheckMinutes': shortageCheckMinutes,
+    if (shortageReminderAt != null) 'shortageReminderAt': shortageReminderAt!.toIso8601String(),
+    'shortageReminderSent': shortageReminderSent,
     'isBookedByCurrentUser': isBookedByCurrentUser,
     'currentUserBookingStatus': currentUserBookingStatus,
     'currentUserQueueOrder': currentUserQueueOrder,

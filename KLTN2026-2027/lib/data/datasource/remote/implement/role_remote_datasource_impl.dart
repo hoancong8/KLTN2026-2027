@@ -27,7 +27,7 @@ class RoleRemoteDatasourceImpl extends BaseRemoteDatasource implements RoleRemot
         AppConfig.rolesPath,
         data: request.toJson(),
       );
-      return handleResponse(response, (_) => null);
+      return await handleResponse(response, (_) => null);
     } catch (e) {
       throw handleError(e);
     }
@@ -40,7 +40,7 @@ class RoleRemoteDatasourceImpl extends BaseRemoteDatasource implements RoleRemot
         '${AppConfig.rolesPath}/$id',
         data: request.toJson(),
       );
-      return handleResponse(response, (_) => null);
+      return await handleResponse(response, (_) => null);
     } catch (e) {
       throw handleError(e);
     }
@@ -50,7 +50,7 @@ class RoleRemoteDatasourceImpl extends BaseRemoteDatasource implements RoleRemot
   Future<void> deleteRole(String id) async {
     try {
       final response = await dio.delete('${AppConfig.rolesPath}/$id');
-      return handleResponse(response, (_) => null);
+      return await handleResponse(response, (_) => null);
     } catch (e) {
       throw handleError(e);
     }
@@ -63,7 +63,7 @@ class RoleRemoteDatasourceImpl extends BaseRemoteDatasource implements RoleRemot
         '${AppConfig.rolesPath}/$id/permissions',
         data: request.toJson(),
       );
-      return handleResponse(response, (_) => null);
+      return await handleResponse(response, (_) => null);
     } catch (e) {
       throw handleError(e);
     }

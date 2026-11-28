@@ -43,6 +43,8 @@ String ledgerCategoryLabel(BuildContext context, LedgerCategory category) =>
       LedgerCategory.shuttleExpense => context.l10n.ledger_shuttles,
       LedgerCategory.monthlyFund => context.l10n.ledger_monthly_fee,
       LedgerCategory.other ||
+      LedgerCategory.sessionAdvance => context.l10n.advance_title,
+      LedgerCategory.sessionAdvanceRefund => context.l10n.advance_refunded,
       LedgerCategory.unknown => context.l10n.ledger_other,
     };
 

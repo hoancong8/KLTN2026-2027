@@ -12,6 +12,8 @@ class MemberSettlementFee {
   final int baseFee;
   final int discount;
   final int finalFee;
+  final int advanceApplied;
+  final bool advancePending;
   final String paymentStatus; // 'PENDING' | 'PAID' | 'UNPAID' | 'EXEMPT'
   final String? paymentMethod;
   final String? paymentProgress;
@@ -29,6 +31,8 @@ class MemberSettlementFee {
     required this.baseFee,
     required this.discount,
     required this.finalFee,
+    this.advanceApplied = 0,
+    this.advancePending = false,
     required this.paymentStatus,
     this.paymentMethod,
     this.paymentProgress,
@@ -77,6 +81,8 @@ class MemberSettlementFee {
       baseFee: baseFee ?? this.baseFee,
       discount: discount ?? this.discount,
       finalFee: finalFee ?? this.finalFee,
+      advanceApplied: advanceApplied,
+      advancePending: advancePending,
       paymentStatus: paymentStatus ?? this.paymentStatus,
       paymentMethod: paymentMethod ?? this.paymentMethod,
       paymentProgress: paymentProgress ?? this.paymentProgress,
@@ -85,6 +91,13 @@ class MemberSettlementFee {
       paidAmount: paidAmount ?? this.paidAmount,
     );
   }
+}
+
+class SettlementAdvanceLine {
+  const SettlementAdvanceLine(this.name, this.gross, this.applied, this.due, this.refund, this.pending);
+  final String name;
+  final num gross, applied, due, refund;
+  final bool pending;
 }
 
 class SessionSettlement {

@@ -36,6 +36,10 @@ class _FakeSessionRepository implements SessionRepository {
     String? address,
     double? lat,
     double? lng,
+    int? minimumPlayers,
+    int? shortageCheckMinutes,
+    bool? advanceEnabled,
+    int? advanceAmount,
   }) async => 'session-id';
 
   @override
@@ -86,6 +90,10 @@ class _FakeSessionRepository implements SessionRepository {
     required int courtCount,
     required int maxPlayers,
     required DateTime deadlineBooking,
+    int? minimumPlayers,
+    int? shortageCheckMinutes,
+    bool? advanceEnabled,
+    int? advanceAmount,
   }) async {
     lastUpdateParams = UpdateSessionParams(
       sessionId: sessionId,
@@ -96,8 +104,15 @@ class _FakeSessionRepository implements SessionRepository {
       courtCount: courtCount,
       maxPlayers: maxPlayers,
       deadlineBooking: deadlineBooking,
+      minimumPlayers: minimumPlayers,
+      shortageCheckMinutes: shortageCheckMinutes,
+      advanceEnabled: advanceEnabled,
+      advanceAmount: advanceAmount,
     );
   }
+  @override
+  Future<void> setShortageReminder(String sessionId, int? delayMinutes) async {}
+
   @override
   Future<void> updateSessionStatus(
     String sessionId,

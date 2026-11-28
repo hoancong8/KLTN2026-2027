@@ -12,6 +12,8 @@ class MemberSettlementFeeDto {
   final int baseFee;
   final int discount;
   final int finalFee;
+  final int advanceApplied;
+  final bool advancePending;
   final String paymentStatus;
   final String? paymentMethod;
   final String? paymentProgress;
@@ -29,6 +31,8 @@ class MemberSettlementFeeDto {
     required this.baseFee,
     required this.discount,
     required this.finalFee,
+    this.advanceApplied = 0,
+    this.advancePending = false,
     required this.paymentStatus,
     this.paymentMethod,
     this.paymentProgress,
@@ -55,6 +59,8 @@ class MemberSettlementFeeDto {
       baseFee: _parseInt(json['baseFee'] ?? json['BaseFee'] ?? json['finalFee'] ?? json['FinalFee']),
       discount: _parseInt(json['discount'] ?? json['Discount']),
       finalFee: finalFee,
+      advanceApplied: _parseInt(json['advanceApplied']),
+      advancePending: json['advancePending'] == true,
       paymentStatus: status,
       paymentMethod: _parseNullableString(json['paymentMethod'] ?? json['PaymentMethod']),
       paymentProgress: _parseNullableString(json['paymentProgress'] ?? json['PaymentProgress']),

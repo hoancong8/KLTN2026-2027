@@ -48,7 +48,7 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
   _SessionTabFilter _filter = _SessionTabFilter.all;
 
   bool _isSessionEnded(Session s, DateTime now) {
-    return s.status == SessionStatus.completed ||
+    return s.status == SessionStatus.notHeld || s.status == SessionStatus.completed ||
         s.status == SessionStatus.calculated ||
         s.endTime.isBefore(now);
   }
@@ -508,7 +508,9 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
       headerBg = colors.surfaceSubtle;
       headerFg = colors.textMuted;
       headerIcon = Icons.history_rounded;
-      headerText = 'BUỔI GẦN NHẤT (ĐÃ KẾT THÚC)';
+      headerText = session.status == SessionStatus.notHeld
+          ? l10n.session_shortage_not_held
+          : 'BUỔI GẦN NHẤT (ĐÃ KẾT THÚC)';
       gradientColors = [
         colors.surfaceSubtle.withValues(alpha: 0.6),
         colors.cardBackground,
@@ -746,7 +748,9 @@ class _ClubSessionsTabState extends ConsumerState<ClubSessionsTab> {
                     size: 18,
                   ),
                   label: Text(
-                    isEnded
+                    session.status == SessionStatus.notHeld
+                        ? l10n.session_shortage_not_held
+                        : isEnded
                         ? 'Xem lại kết quả trận đấu'
                         : (session.isBookedByCurrentUser ? 'Xem chi tiết & Ra sân' : 'Xem chi tiết & Giữ chỗ'),
                     style: AppTypography.bodyMedium.bold.colored(
@@ -1166,7 +1170,7 @@ class _SessionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.colors;
     final now = DateTime.now();
-    final isEnded = session.status == SessionStatus.completed ||
+    final isEnded = session.status == SessionStatus.notHeld || session.status == SessionStatus.completed ||
         session.status == SessionStatus.calculated ||
         session.endTime.isBefore(now);
     final isPlaying = !isEnded && (session.status == SessionStatus.playing ||

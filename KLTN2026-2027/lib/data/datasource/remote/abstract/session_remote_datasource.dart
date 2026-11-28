@@ -18,6 +18,8 @@ abstract class SessionRemoteDataSource {
 
   Future<SessionDetailDto> getSessionDetail(String sessionId);
 
+  Future<void> setShortageReminder(String sessionId, int? delayMinutes);
+
   Future<void> updateSession(String sessionId, UpdateSessionRequestDto request);
 
   Future<void> updateSessionStatus(

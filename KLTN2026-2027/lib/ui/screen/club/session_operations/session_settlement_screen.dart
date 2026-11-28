@@ -1,6 +1,7 @@
 // lib/ui/screen/club/session_operations/session_settlement_screen.dart
 
 import 'dart:async';
+import '../../payment/advance/session_advance_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -82,6 +83,7 @@ class SessionSettlementNotifier
     required int extraFee,
     int? courtRentalCost,
     bool monthlyExemptCourtOnly = false,
+    Future<bool> Function(List<SettlementAdvanceLine>)? confirmAdvances,
   }) async {
     try {
       final updated = await _repo.calculateSettlement(
@@ -90,6 +92,7 @@ class SessionSettlementNotifier
         extraFee: extraFee,
         courtRentalCost: courtRentalCost,
         monthlyExemptCourtOnly: monthlyExemptCourtOnly,
+        confirmAdvances: confirmAdvances,
       );
       state = AsyncValue.data(updated);
     } catch (e) {
@@ -624,8 +627,7 @@ class SessionSettlementScreen extends ConsumerWidget {
                           if (isCurrentUser &&
                               myPersonalFee != null &&
                               myPersonalFee.sessionId.toLowerCase() == sessionId.toLowerCase()) {
-                            final isExempt = myPersonalFee.isExempt ||
-                                (myPersonalFee.amount != null && myPersonalFee.amount! <= 0);
+                            final isExempt = myPersonalFee.isExempt;
                             final feeAmount = isExempt
                                 ? 0
                                 : (myPersonalFee.amount?.toInt() ?? effectiveFee.finalFee);
@@ -911,7 +913,10 @@ class SessionSettlementScreen extends ConsumerWidget {
               ),
             ),
           ],
-          if (!isPaid && !fee.isExempt) ...[
+          if (fee.advanceApplied > 0)
+            Text('${context.l10n.advance_applied} · ${advanceMoney(context, fee.advanceApplied)}'),
+          if (fee.advancePending) Text(context.l10n.advance_review),
+          if (!isPaid && !fee.isExempt && !fee.advancePending) ...[
             AppSpacing.gapH12,
             Divider(height: 1, color: colors.cardBorder),
             const SizedBox(height: 10),
@@ -1451,6 +1456,7 @@ class SessionSettlementScreen extends ConsumerWidget {
                     shuttlecockUsed: used,
                     extraFee: extra,
                     monthlyExemptCourtOnly: monthlyExemptCourtOnly,
+                    confirmAdvances: (rows) async => context.mounted && await showAdvanceSettlementPreview(context, rows),
                   );
                 ref.read(sessionDetailViewModelProvider(sessionId).notifier).loadDetail();
               } catch (e) {

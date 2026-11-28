@@ -71,6 +71,7 @@ abstract class SessionOperationsRepository {
     required int extraFee,
     int? courtRentalCost,
     bool monthlyExemptCourtOnly = false,
+    Future<bool> Function(List<SettlementAdvanceLine>)? confirmAdvances,
   });
   Future<SessionSettlement> markMemberPaid({
     required String sessionId,

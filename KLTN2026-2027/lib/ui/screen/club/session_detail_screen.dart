@@ -7,6 +7,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:kltn2026_2027/app/provider/localization_provider.dart';
+import 'widgets/session_shortage_settings.dart';
+import 'widgets/session_advance_settings.dart';
+import '../payment/advance/session_advance_ui.dart';
 import 'package:kltn2026_2027/app/theme/theme.dart';
 import '../../../app/consts/app_config.dart';
 import '../../../app/provider.dart';
@@ -29,7 +32,9 @@ import 'session_vm/explore_recruitments_vm.dart';
 class SessionDetailScreen extends ConsumerStatefulWidget {
   final String sessionId;
 
-  const SessionDetailScreen({super.key, required this.sessionId});
+  final bool fromShortageNotice;
+
+  const SessionDetailScreen({super.key, required this.sessionId, this.fromShortageNotice = false});
 
   @override
   ConsumerState<SessionDetailScreen> createState() => _SessionDetailScreenState();
@@ -38,6 +43,7 @@ class SessionDetailScreen extends ConsumerStatefulWidget {
 class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
   StreamSubscription? _bookingSubscription;
+  bool _noticeClubSwitchScheduled = false;
 
   @override
   void initState() {
@@ -1198,9 +1204,13 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                       final remainingMaxPlayers = playersPerCourt * remainingCourts;
                       final isOverCapacity = !isFullPass && (session.confirmedCount > remainingMaxPlayers);
 
+                      final needsNewMinimum = !isFullPass &&
+                          (session.minimumPlayers ?? 0) > remainingMaxPlayers;
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
+                          if (needsNewMinimum)
+                            Text(context.l10n.session_shortage_pass_minimum),
                           if (isOverCapacity)
                             Container(
                               padding: const EdgeInsets.all(12),
@@ -1269,7 +1279,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                             ),
                           AppSpacing.gapH16,
                           ElevatedButton(
-                            onPressed: isOverCapacity
+                            onPressed: isOverCapacity || needsNewMinimum
                                 ? null
                                 : () async {
                                     final basePrice = calculateBasePrice(passCourtCount);
@@ -1532,7 +1542,22 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
     final canOperateSession = canOperateAttendance || canOperateRotation || canOperateSettlement || canManageSession;
     final hasAnySessionManagePerm = canManageSession || canDeleteSession || canRecruit;
 
-    final myClubs = ref.watch(clubContextViewModelProvider).myClubs;
+    final clubState = ref.watch(clubContextViewModelProvider);
+    final myClubs = clubState.myClubs;
+    if (widget.fromShortageNotice && !isSameClub && !clubState.isLoading &&
+        !clubState.isSwitching && !_noticeClubSwitchScheduled &&
+        myClubs.any((club) => club.clubId == session.groupId && club.role == ClubRole.host)) {
+      _noticeClubSwitchScheduled = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        if (!mounted) return;
+        final switched = await ref.read(clubContextViewModelProvider.notifier).switchClub(session.groupId);
+        if (!switched && context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(context.l10n.ledger_switch_failed),
+          ));
+        }
+      });
+    }
     final isMember = isSameClub || myClubs.any((c) => c.clubId == session.groupId);
 
     final now = DateTime.now();
@@ -1553,6 +1578,26 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
     final canDeleteCourtPass = canDeleteSession ||
         isHost ||
         myClubs.any((c) => c.clubId == session.groupId && (c.role == ClubRole.host || c.role == ClubRole.deputy));
+
+    if (session.status == SessionStatus.notHeld) {
+      return Scaffold(
+        appBar: AppBar(title: Text(session.title)),
+        body: ListView(
+          padding: AppSpacing.card,
+          children: [
+            Text(context.l10n.session_shortage_not_held, style: AppTypography.titleMedium),
+            AppSpacing.gapH8,
+            Text(session.clubName),
+            Text('${DateFormat('HH:mm, dd/MM/yyyy').format(session.startTime)} – ${DateFormat('HH:mm').format(session.endTime)}'),
+            Text(session.courtLocation),
+            if (isHost || myClubs.any((club) => club.clubId == session.groupId && club.role == ClubRole.host)) ...[
+              AppSpacing.gapH12,
+              Text(context.l10n.session_shortage_contact),
+            ],
+          ],
+        ),
+      );
+    }
 
     if (session.isCourtPass) {
       return _buildCourtPassDetailScaffold(
@@ -1725,7 +1770,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
           style: AppTypography.titleMedium.copyWith(color: colors.textPrimary),
         ),
         content: Text(
-          'Hành động này sẽ hủy buổi chơi vĩnh viễn và thông báo tới toàn bộ người đã đăng ký.',
+          context.l10n.session_shortage_cancel_copy,
           style: AppTypography.bodyMedium.copyWith(color: colors.textSecondary),
         ),
         actions: [
@@ -2800,6 +2845,134 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
     }
   }
 
+  Future<void> _saveShortageReminder(Session session) async {
+    final finalCheck = session.startTime.subtract(const Duration(minutes: 30));
+    final choices = [15, 30, 60];
+    final choice = await showDialog<int>(
+      context: context,
+      builder: (dialogContext) => SimpleDialog(
+        title: Text(context.l10n.session_shortage_wait),
+        children: [
+          for (final minutes in choices)
+            SimpleDialogOption(
+              onPressed: DateTime.now().add(Duration(minutes: minutes)).isBefore(finalCheck)
+                  ? () => Navigator.pop(dialogContext, minutes)
+                  : null,
+              child: Text(context.l10n.session_shortage_reminder(minutes)),
+            ),
+          SimpleDialogOption(
+            onPressed: () => Navigator.pop(dialogContext, 0),
+            child: Text(context.l10n.session_shortage_final_only),
+          ),
+        ],
+      ),
+    );
+    if (choice == null || !mounted) return;
+    final provider = sessionDetailViewModelProvider(widget.sessionId);
+    final ok = await ref.read(provider.notifier).setShortageReminder(choice == 0 ? null : choice);
+    if (!mounted || ok) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(ref.read(provider).errorMessage ?? context.l10n.com_retry),
+    ));
+  }
+
+  Future<void> _editShortageSettings(Session session) async {
+    final form = GlobalKey<FormState>();
+    var minimum = session.minimumPlayers ?? 4;
+    var minutes = session.shortageCheckMinutes ?? 120;
+    final saved = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(context.l10n.session_shortage_settings),
+        content: SizedBox(
+          width: 400,
+          child: SingleChildScrollView(
+            child: Form(
+              key: form,
+              child: SessionShortageSettings(
+                capacity: session.maxPlayers,
+                minimumPlayers: minimum,
+                checkMinutes: minutes,
+                onMinimumChanged: (value) => minimum = value,
+                onCheckChanged: (value) => minutes = value,
+              ),
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text(context.l10n.com_cancel),
+          ),
+          FilledButton(
+            onPressed: () {
+              if (form.currentState!.validate()) Navigator.pop(dialogContext, true);
+            },
+            child: Text(context.l10n.com_confirm),
+          ),
+        ],
+      ),
+    );
+    if (saved != true || !mounted) return;
+    final provider = sessionDetailViewModelProvider(widget.sessionId);
+    final ok = await ref.read(provider.notifier).updateSession(
+      title: session.title,
+      startTime: session.startTime,
+      endTime: session.endTime,
+      courtLocation: session.courtLocation,
+      courtCount: session.courtCount,
+      maxPlayers: session.maxPlayers,
+      deadlineBooking: session.deadlineBooking,
+      minimumPlayers: minimum,
+      shortageCheckMinutes: minutes,
+    );
+    if (!mounted || ok) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(ref.read(provider).errorMessage ?? context.l10n.com_retry),
+    ));
+  }
+
+  Future<void> _editAdvanceSettings(Session session) async {
+    final form = GlobalKey<FormState>();
+    var enabled = session.advanceEnabled;
+    var amount = session.advanceAmount;
+    final dynamicFee = ref.read(clubFeeRuleProvider(session.groupId)).asData?.value.isDynamic ?? true;
+    final saved = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(builder: (ctx, update) => AlertDialog(
+        title: Text(ctx.l10n.advance_title),
+        content: SizedBox(width: 420, child: SingleChildScrollView(child: Form(
+          key: form,
+          child: SessionAdvanceSettings(
+            enabled: enabled,
+            dynamicFee: dynamicFee,
+            initialAmount: amount,
+            onEnabled: (value) => update(() => enabled = value),
+            onAmount: (value) => amount = value,
+          ),
+        ))),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(ctx.l10n.com_cancel)),
+          FilledButton(onPressed: () {
+            if (form.currentState!.validate()) Navigator.pop(ctx, true);
+          }, child: Text(ctx.l10n.com_confirm)),
+        ],
+      )),
+    );
+    if (saved != true || !mounted) return;
+    final provider = sessionDetailViewModelProvider(widget.sessionId);
+    final ok = await ref.read(provider.notifier).updateSession(
+      title: session.title, startTime: session.startTime, endTime: session.endTime,
+      courtLocation: session.courtLocation, courtCount: session.courtCount,
+      maxPlayers: session.maxPlayers, deadlineBooking: session.deadlineBooking,
+      advanceEnabled: enabled, advanceAmount: amount,
+    );
+    if (!mounted || ok) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(ref.read(provider).errorMessage ?? context.l10n.com_retry),
+    ));
+  }
+
   void _showHostActionSheet(
     BuildContext context,
     Session session, {
@@ -2853,6 +3026,28 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                 ],
               ),
               AppSpacing.gapH16,
+              if (canManageSession && now.isBefore(session.startTime))
+                _buildActionTile(
+                  icon: Icons.account_balance_wallet_outlined,
+                  color: colors.primary,
+                  label: context.l10n.advance_title,
+                  subtitle: context.l10n.advance_enable,
+                  onTap: () {
+                    Navigator.of(ctx).pop();
+                    _editAdvanceSettings(session);
+                  },
+                ),
+              if (canManageSession && !isEnded && !isPlaying)
+                _buildActionTile(
+                  icon: Icons.schedule_rounded,
+                  color: colors.primary,
+                  label: context.l10n.session_shortage_settings,
+                  subtitle: context.l10n.session_shortage_lead,
+                  onTap: () {
+                    Navigator.of(ctx).pop();
+                    _editShortageSettings(session);
+                  },
+                ),
               if (canRecruit && session.status == SessionStatus.open && !isEnded && !isPlaying && !isExpired) ...[
                 _buildActionTile(
                   icon: Icons.radar_rounded,
@@ -4307,7 +4502,62 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
             ),
           ],
 
-          if (session.status == SessionStatus.open && session.confirmedCount < 4 && !isEnded && !isPlaying && !isExpired && canRecruit && activeRecruitment == null) ...[
+          if (session.advanceEnabled && session.isBookedByCurrentUser)
+            SessionAdvanceCard(sessionId: session.id),
+          if (isHost &&
+              session.minimumPlayers != null &&
+              session.confirmedCount < session.minimumPlayers! &&
+              now.isBefore(session.startTime) &&
+              (session.status == SessionStatus.open || session.status == SessionStatus.locked))
+            Card(
+              child: Padding(
+                padding: AppSpacing.card,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (session.confirmedCount == 0) Text(context.l10n.session_shortage_empty),
+                    Text(context.l10n.session_shortage_count(
+                      session.confirmedCount,
+                      session.minimumPlayers!,
+                      session.minimumPlayers! - session.confirmedCount,
+                    )),
+                    if (session.shortageReminderAt case final reminder?)
+                      Text(context.l10n.session_shortage_scheduled(
+                        DateFormat('HH:mm').format(reminder.toLocal()),
+                      )),
+                    Wrap(
+                      spacing: 8,
+                      children: [
+                        if (activeRecruitment != null || (canRecruit && session.status == SessionStatus.open))
+                          OutlinedButton(
+                            onPressed: () => _showRecruitmentModal(context, session, activeRecruitment: activeRecruitment),
+                            child: Text(activeRecruitment == null
+                                ? context.l10n.session_shortage_recruit
+                                : context.l10n.session_shortage_view_recruit),
+                          ),
+                        if (session.status == SessionStatus.open)
+                          OutlinedButton(
+                            onPressed: () => _showPassCourtModal(context, session, isHost: isHost),
+                            child: Text(context.l10n.session_shortage_pass),
+                          ),
+                        if (!session.shortageReminderSent && now.isBefore(session.startTime.subtract(const Duration(minutes: 30))))
+                          OutlinedButton(
+                            onPressed: () => _saveShortageReminder(session),
+                            child: Text(context.l10n.session_shortage_wait),
+                          ),
+                        if (canDeleteSession)
+                          TextButton(
+                            onPressed: () => _confirmDeleteSession(context, ref.read(sessionDetailViewModelProvider(widget.sessionId).notifier)),
+                            child: Text(context.l10n.session_shortage_cancel_session),
+                          ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+          if (session.minimumPlayers == null && session.status == SessionStatus.open && session.confirmedCount < 4 && !isEnded && !isPlaying && !isExpired && canRecruit && activeRecruitment == null) ...[
             AppSpacing.gapH12,
             Container(
               padding: const EdgeInsets.all(12),

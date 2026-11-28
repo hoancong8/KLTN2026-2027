@@ -329,6 +329,7 @@ final dioProvider = Provider<Dio>((ref) {
       PrettyDioLogger(
         filter: (options, _) =>
             !options.path.contains('/sepay') &&
+            !options.path.contains('/session-advances') &&
             !options.extra.containsKey(AppConfig.ledgerClubRequestKey),
         requestHeader: true,
         requestBody: true,
@@ -681,6 +682,10 @@ final getClubSessionsUseCaseProvider = Provider<GetClubSessionsUseCase>((ref) {
 
 final getSessionDetailUseCaseProvider = Provider<GetSessionDetailUseCase>((ref) {
   return GetSessionDetailUseCase(ref.watch(sessionRepositoryProvider));
+});
+
+final setShortageReminderUseCaseProvider = Provider<SetShortageReminderUseCase>((ref) {
+  return SetShortageReminderUseCase(ref.watch(sessionRepositoryProvider));
 });
 
 final updateSessionUseCaseProvider = Provider<UpdateSessionUseCase>((ref) {

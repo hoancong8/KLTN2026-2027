@@ -40,7 +40,7 @@ class ClubRemoteDatasourceImpl extends BaseRemoteDatasource implements ClubRemot
   Future<ClubResponseDto> getClubById(String id) async {
     try {
       final response = await dio.get(AppConfig.clubDetailPath(id));
-      return handleResponse(response, (data) => ClubResponseDto.fromJson(data));
+      return await handleResponse(response, (data) => ClubResponseDto.fromJson(data));
     } catch (e) {
       throw handleError(e);
     }
@@ -54,7 +54,7 @@ class ClubRemoteDatasourceImpl extends BaseRemoteDatasource implements ClubRemot
         data: request.toJson(),
       );
       // BE returns Results.Created($"/api/v1/clubs/{clubId}", clubId)
-      return handleResponse(response, (data) {
+      return await handleResponse(response, (data) {
         if (data is Map) {
           return (data['clubId'] ?? data['id'] ?? data['result'] ?? '').toString();
         }
@@ -73,7 +73,7 @@ class ClubRemoteDatasourceImpl extends BaseRemoteDatasource implements ClubRemot
         data: request.toJson(),
       );
       // BE returns Results.Ok(new { MemberId = memberId })
-      return handleResponse(response, (data) {
+      return await handleResponse(response, (data) {
         if (data is Map) {
           return data['memberId']?.toString() ?? '';
         }
@@ -109,7 +109,7 @@ class ClubRemoteDatasourceImpl extends BaseRemoteDatasource implements ClubRemot
         data: request.toJson(),
         options: Options(headers: {'X-Group-Id': clubId}),
       );
-      return handleResponse(response, (data) {
+      return await handleResponse(response, (data) {
         if (data is Map && data.containsKey('success')) {
           return data['success'] == true;
         }
@@ -141,7 +141,7 @@ class ClubRemoteDatasourceImpl extends BaseRemoteDatasource implements ClubRemot
         AppConfig.clubMemberDetailPath(clubId, userId),
         options: Options(headers: {'X-Group-Id': clubId}),
       );
-      return handleResponse(response, (data) {
+      return await handleResponse(response, (data) {
         if (data is Map && data.containsKey('success')) {
           return data['success'] == true;
         }
@@ -184,7 +184,7 @@ class ClubRemoteDatasourceImpl extends BaseRemoteDatasource implements ClubRemot
         data: request.toJson(),
         options: Options(headers: {'X-Group-Id': clubId}),
       );
-      return handleResponse(response, (data) {
+      return await handleResponse(response, (data) {
         if (data is Map && data.containsKey('roleId')) {
           return data['roleId'].toString();
         }
@@ -203,7 +203,7 @@ class ClubRemoteDatasourceImpl extends BaseRemoteDatasource implements ClubRemot
         data: {'permissionIds': permissionIds},
         options: Options(headers: {'X-Group-Id': clubId}),
       );
-      return handleResponse(response, (data) => true);
+      return await handleResponse(response, (data) => true);
     } catch (e) {
       throw handleError(e);
     }
@@ -230,7 +230,7 @@ class ClubRemoteDatasourceImpl extends BaseRemoteDatasource implements ClubRemot
         AppConfig.clubJoinRequestsPath(clubId),
         data: request.toJson(),
       );
-      return handleResponse(response, (data) {
+      return await handleResponse(response, (data) {
         if (data is Map && data.containsKey('requestId')) {
           return data['requestId'].toString();
         }
@@ -265,7 +265,7 @@ class ClubRemoteDatasourceImpl extends BaseRemoteDatasource implements ClubRemot
         data: request.toJson(),
         options: Options(headers: {'X-Group-Id': clubId}),
       );
-      return handleResponse(response, (data) {
+      return await handleResponse(response, (data) {
         if (data is Map && data.containsKey('memberId')) {
           return data['memberId'].toString();
         }
@@ -323,7 +323,7 @@ class ClubRemoteDatasourceImpl extends BaseRemoteDatasource implements ClubRemot
   Future<ClubDetailDto> getClubDetail(String clubId) async {
     try {
       final response = await dio.get(AppConfig.clubDetailPath(clubId));
-      return handleResponse(response, (data) => ClubDetailDto.fromJson(data));
+      return await handleResponse(response, (data) => ClubDetailDto.fromJson(data));
     } catch (e) {
       throw handleError(e);
     }
@@ -360,7 +360,7 @@ class ClubRemoteDatasourceImpl extends BaseRemoteDatasource implements ClubRemot
   Future<ClubFeeRuleResponseDto> getClubFeeRule(String clubId) async {
     try {
       final response = await dio.get(AppConfig.clubFeeRulePath(clubId));
-      return handleResponse(response, (data) => ClubFeeRuleResponseDto.fromJson(data));
+      return await handleResponse(response, (data) => ClubFeeRuleResponseDto.fromJson(data));
     } catch (e) {
       throw handleError(e);
     }
@@ -377,7 +377,7 @@ class ClubRemoteDatasourceImpl extends BaseRemoteDatasource implements ClubRemot
         data: request.toJson(),
         options: Options(headers: {'X-Group-Id': clubId}),
       );
-      return handleResponse(response, (data) => ClubFeeRuleResponseDto.fromJson(data));
+      return await handleResponse(response, (data) => ClubFeeRuleResponseDto.fromJson(data));
     } catch (e) {
       throw handleError(e);
     }

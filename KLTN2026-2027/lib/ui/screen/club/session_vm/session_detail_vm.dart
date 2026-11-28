@@ -17,6 +17,7 @@ final sessionDetailViewModelProvider = StateNotifierProvider.autoDispose
     cancelBookingUseCase: ref.watch(cancelBookingUseCaseProvider),
     confirmBookingUseCase: ref.watch(confirmBookingUseCaseProvider),
     updateSessionUseCase: ref.watch(updateSessionUseCaseProvider),
+    setShortageReminderUseCase: ref.watch(setShortageReminderUseCaseProvider),
     updateSessionStatusUseCase: ref.watch(updateSessionStatusUseCaseProvider),
     deleteSessionUseCase: ref.watch(deleteSessionUseCaseProvider),
     createRecruitmentUseCase: ref.watch(createRecruitmentUseCaseProvider),
@@ -31,6 +32,7 @@ class SessionDetailViewModel extends StateNotifier<SessionDetailState> {
   final CancelBookingUseCase cancelBookingUseCase;
   final ConfirmBookingUseCase confirmBookingUseCase;
   final UpdateSessionUseCase updateSessionUseCase;
+  final SetShortageReminderUseCase? setShortageReminderUseCase;
   final UpdateSessionStatusUseCase updateSessionStatusUseCase;
   final DeleteSessionUseCase deleteSessionUseCase;
   final CreateRecruitmentUseCase createRecruitmentUseCase;
@@ -43,6 +45,7 @@ class SessionDetailViewModel extends StateNotifier<SessionDetailState> {
     required this.cancelBookingUseCase,
     required this.confirmBookingUseCase,
     required this.updateSessionUseCase,
+    this.setShortageReminderUseCase,
     required this.updateSessionStatusUseCase,
     required this.deleteSessionUseCase,
     required this.createRecruitmentUseCase,
@@ -116,6 +119,10 @@ class SessionDetailViewModel extends StateNotifier<SessionDetailState> {
     required int courtCount,
     required int maxPlayers,
     required DateTime deadlineBooking,
+    int? minimumPlayers,
+    int? shortageCheckMinutes,
+    bool? advanceEnabled,
+    int? advanceAmount,
   }) async {
     state = state.copyWith(isSubmitting: true, errorMessage: null);
     try {
@@ -128,6 +135,10 @@ class SessionDetailViewModel extends StateNotifier<SessionDetailState> {
         courtCount: courtCount,
         maxPlayers: maxPlayers,
         deadlineBooking: deadlineBooking,
+        minimumPlayers: minimumPlayers,
+        shortageCheckMinutes: shortageCheckMinutes,
+      advanceEnabled: advanceEnabled,
+      advanceAmount: advanceAmount,
       ));
       if (!mounted) return true;
       await loadDetail();
@@ -137,6 +148,24 @@ class SessionDetailViewModel extends StateNotifier<SessionDetailState> {
     } catch (e) {
       if (!mounted) return false;
       state = state.copyWith(isSubmitting: false, errorMessage: _resolveErrorMessage(e));
+      return false;
+    }
+  }
+
+  Future<bool> setShortageReminder(int? delayMinutes) async {
+    final useCase = setShortageReminderUseCase;
+    if (useCase == null || state.isSubmitting) return false;
+    state = state.copyWith(isSubmitting: true, errorMessage: null);
+    try {
+      await useCase.execute(sessionId, delayMinutes);
+      if (!mounted) return true;
+      await loadDetail();
+      if (mounted) state = state.copyWith(isSubmitting: false);
+      return true;
+    } catch (e) {
+      if (mounted) {
+        state = state.copyWith(isSubmitting: false, errorMessage: _resolveErrorMessage(e));
+      }
       return false;
     }
   }

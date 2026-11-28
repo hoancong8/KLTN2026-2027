@@ -27,6 +27,8 @@ class PaymentMapper {
       currency: dto.currency,
       paymentCode: dto.paymentCode,
       paymentStatus: dto.paymentStatus,
+      advanceApplied: dto.advanceApplied,
+      advancePending: dto.advancePending,
       paymentProgress: dto.paymentProgress,
       paymentMethod: dto.paymentMethod,
       paymentRequestedAt: dto.paymentRequestedAt,
