@@ -11,6 +11,7 @@ import 'package:intl/intl.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import '../../../../app/consts/vietqr_bank_directory.dart';
 import '../../../../app/provider.dart';
+import '../../../../app/provider/reputation_provider.dart';
 import '../../../../app/provider/localization_provider.dart';
 import '../../../../app/theme/theme.dart';
 import '../../../../domain/exceptions/app_exception.dart';
@@ -185,11 +186,12 @@ class SessionSettlementScreen extends ConsumerWidget {
               context.canPop() ? context.pop() : context.go('/home'),
         ),
         actions: [
-          IconButton(
-            icon: Icon(Icons.rate_review_outlined, color: colors.primary),
-            tooltip: context.l10n.settlement_reviews_tooltip,
-            onPressed: () => context.push('/session/$sessionId/reviews'),
-          ),
+          if (detail != null && isSameClub && ref.hasClubPermission(reputationAuditPermission))
+            IconButton(
+              icon: Icon(Icons.fact_check_outlined, color: colors.primary),
+              tooltip: context.l10n.reputation_audit,
+              onPressed: () => context.push('/club/$clubId/session/$sessionId/reputation-audit'),
+            ),
         ],
       ),
       body: Center(

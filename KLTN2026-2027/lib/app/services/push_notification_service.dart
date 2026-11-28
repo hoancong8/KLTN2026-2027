@@ -56,20 +56,28 @@ class PushNotificationService {
     return 'ANDROID';
   }
 
-  void initForegroundHandler({VoidCallback? onNotificationReceived}) {
+  void initForegroundHandler({
+    VoidCallback? onNotificationReceived,
+    bool Function(Map<String, dynamic>)? onReputationNotification,
+  }) {
     if (kIsWeb) return;
     _foregroundSubscription?.cancel();
     _foregroundSubscription = FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       AppLog.info('[FCM Foreground] Received: ${message.notification?.title}');
+      if (onReputationNotification?.call(message.data) == true) return;
       onNotificationReceived?.call();
       _showInAppNotificationBanner(message);
     });
   }
 
-  void initSessionNotificationNavigation(GoRouter router) {
+  void initSessionNotificationNavigation(
+    GoRouter router, {
+    bool Function(Map<String, dynamic>)? onReputationOpened,
+  }) {
     if (kIsWeb) return;
     _openedSubscription?.cancel();
     void open(RemoteMessage? message) {
+      if (message != null && onReputationOpened?.call(message.data) == true) return;
       final sessionId = message?.data['sessionId'];
       final type = message?.data['type'];
       final advance = message?.data['advanceSessionId'];

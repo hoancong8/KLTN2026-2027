@@ -3,6 +3,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:kltn2026_2027/app/provider/localization_provider.dart';
 import 'package:kltn2026_2027/app/theme/theme.dart';
 import '../../../../../../app/provider.dart';
 import '../../../../../../domain/entities/club/club_member.dart';
@@ -542,6 +544,15 @@ class _ClubMemberSectionState extends ConsumerState<ClubMemberSection> {
               AppSpacing.gapH16,
               const Divider(height: 1),
               AppSpacing.gapH12,
+              if (m.userId.isNotEmpty)
+                ListTile(
+                  leading: const Icon(Icons.star_outline),
+                  title: Text(context.l10n.reputation_player),
+                  onTap: () {
+                    Navigator.of(ctx).pop();
+                    context.push('/reputation/player/${m.userId}');
+                  },
+                ),
 
               if (canManageRoles && m.role != ClubRole.host && !isMe)
                 ListTile(

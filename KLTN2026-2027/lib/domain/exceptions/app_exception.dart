@@ -26,6 +26,10 @@ class AppException implements Exception {
 // Common subclasses — dùng trong AppExceptionHandler và BaseRemoteDatasource
 // ---------------------------------------------------------------------------
 
+class ReviewConflictException extends AppException {
+  const ReviewConflictException();
+}
+
 class ConnectionException extends AppException {
   const ConnectionException({super.message, super.originalError});
   @override

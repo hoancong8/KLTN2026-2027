@@ -4,7 +4,6 @@ import 'package:dio/dio.dart';
 import '../../app/utils/app_exception_handler.dart';
 import '../../domain/entities/payment/personal_fee.dart';
 import '../../domain/entities/session/session_attendance.dart';
-import '../../domain/entities/session/session_review.dart';
 import '../../domain/entities/session/session_rotation.dart';
 import '../../domain/entities/session/session_settlement.dart';
 import '../../domain/enums/session_enums.dart';
@@ -26,7 +25,6 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
   final Map<String, SessionAttendanceSnapshot> _attendanceCache = {};
   final Map<String, SessionRotationSnapshot> _rotationCache = {};
   final Map<String, SessionSettlement> _settlementCache = {};
-  final Map<String, List<SessionReview>> _reviewsCache = {};
   final Map<String, int> _sessionCourtCountCache = {};
   final Map<String, String> _sessionGroupIdCache = {};
   final Map<String, ThreePlayerMatchMode> _threePlayerModeCache = {};
@@ -1830,42 +1828,5 @@ class SessionOperationsRepositoryImpl implements SessionOperationsRepository {
     return updated;
   }
 
-  // ==========================================
-  // FR23: Đánh giá uy tín & Tín nhiệm
-  // ==========================================
 
-  @override
-  Future<List<SessionReview>> getSessionReviews(String sessionId) async {
-    if (!_reviewsCache.containsKey(sessionId)) {
-      _reviewsCache[sessionId] = [
-        SessionReview(
-          id: 'rev-01',
-          sessionId: sessionId,
-          reviewerId: 'u2',
-          reviewerName: 'Trần Minh Đức',
-          rating: 5.0,
-          comment: 'Sân đẹp, anh em xếp trận xoay tua rất công bằng, không ai bị ngồi ngoài lâu!',
-          tags: const ['Xoay sân công bằng', 'Vui vẻ', 'Đúng giờ'],
-          createdAt: DateTime.now().subtract(const Duration(hours: 1)),
-        ),
-        SessionReview(
-          id: 'rev-02',
-          sessionId: sessionId,
-          reviewerId: 'u4',
-          reviewerName: 'Phạm Quỳnh Anh',
-          rating: 4.8,
-          comment: 'Thủ quỹ sao kê VietQR nhanh gọn, minh bạch.',
-          tags: const ['Minh bạch tài chính', 'Nhiệt tình'],
-          createdAt: DateTime.now().subtract(const Duration(minutes: 30)),
-        ),
-      ];
-    }
-    return _reviewsCache[sessionId]!;
-  }
-
-  @override
-  Future<void> submitReview(SessionReview review) async {
-    final list = _reviewsCache[review.sessionId] ?? [];
-    _reviewsCache[review.sessionId] = [review, ...list];
-  }
 }

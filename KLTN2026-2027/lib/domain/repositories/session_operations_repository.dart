@@ -3,7 +3,6 @@
 import '../entities/session/session_attendance.dart';
 import '../entities/session/session_rotation.dart';
 import '../entities/session/session_settlement.dart';
-import '../entities/session/session_review.dart';
 
 abstract class SessionOperationsRepository {
   // --- FR14 / UC12: Điểm danh thành viên tại sân ---
@@ -83,7 +82,5 @@ abstract class SessionOperationsRepository {
     String? feeId,
   });
 
-  // --- FR23: Đánh giá uy tín & Tín nhiệm ---
-  Future<List<SessionReview>> getSessionReviews(String sessionId);
-  Future<void> submitReview(SessionReview review);
+
 }

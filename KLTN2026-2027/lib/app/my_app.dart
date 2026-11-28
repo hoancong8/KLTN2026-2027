@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -8,7 +10,13 @@ import 'package:kltn2026_2027/app/consts/app_theme.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:kltn2026_2027/app/provider/localization_provider.dart';
 import 'package:kltn2026_2027/app/l10n_gen/app_localizations.dart';
+import 'consts/app_config.dart';
+import 'provider.dart';
+import 'provider/reputation_provider.dart';
 import 'services/push_notification_service.dart';
+import 'services/realtime_hub_service.dart';
+import 'services/reputation_notification_coordinator.dart';
+import 'theme/theme.dart';
 import '../ui/screen/notification/notification_vm/notification_vm.dart';
 
 class MyApp extends ConsumerStatefulWidget {
@@ -19,20 +27,43 @@ class MyApp extends ConsumerStatefulWidget {
   ConsumerState<MyApp> createState() => _MyAppState();
 }
 
-class _MyAppState extends ConsumerState<MyApp> {
+class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
   bool _isInit = false;
   late final GoRouter _router;
+  final _reputationNotices = ReputationNotificationCoordinator();
+  ReputationNotice? _pendingNotice;
+  StreamSubscription<Map<String, dynamic>>? _reputationSubscription;
+  StreamSubscription<void>? _reconnectionSubscription;
 
   @override
   void initState() {
     super.initState();
     _router = generateAppRouter(widget.initialRoute);
+    _router.routeInformationProvider.addListener(_openPendingReputationNotice);
+    WidgetsBinding.instance.addObserver(this);
+    final hub = RealtimeHubService.instance;
+    _reputationSubscription = hub.onReputation.listen(_receiveReputationNotice);
+    _reconnectionSubscription = hub.onReconnected.listen((_) => _refreshReputation());
+    ref.listenManual(authTokenProvider, (before, after) {
+      if (before?.userId != after?.userId) {
+        _reputationNotices.reset();
+        if (before != null) _pendingNotice = null;
+      }
+      if (after == null) {
+        unawaited(hub.stop());
+      } else {
+        unawaited(hub.start());
+        _openPendingReputationNotice();
+      }
+    }, fireImmediately: true);
     _initApp();
   }
 
   Future<void> _initApp() async {
     await _initializeLocalization();
+    if (!mounted) return;
     PushNotificationService.instance.initForegroundHandler(
+      onReputationNotification: _receiveReputationNotice,
       onNotificationReceived: () {
         ref.read(notificationViewModelProvider.notifier).refresh();
       },
@@ -40,13 +71,89 @@ class _MyAppState extends ConsumerState<MyApp> {
     if (!mounted) return;
     setState(() => _isInit = true);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) PushNotificationService.instance.initSessionNotificationNavigation(_router);
+      if (mounted) {
+        PushNotificationService.instance.initSessionNotificationNavigation(
+          _router,
+          onReputationOpened: _openReputationNotice,
+        );
+      }
     });
+  }
+
+  void _refreshReputation() {
+    if (mounted && ref.read(authTokenProvider) != null) {
+      ref.read(reputationRevisionProvider.notifier).state++;
+    }
+  }
+
+  bool _receiveReputationNotice(Map<String, dynamic> data) {
+    final notice = ReputationNotice.fromData(data);
+    if (notice == null) return false;
+    if (!mounted) return true;
+    final userId = ref.read(authTokenProvider)?.userId;
+    if (userId == null || !_reputationNotices.claim(notice, userId)) return true;
+    _refreshReputation();
+    ref.read(notificationViewModelProvider.notifier).refresh();
+    final context = rootNavigatorKey.currentContext;
+    if (context != null) {
+      ScaffoldMessenger.maybeOf(context)?.showSnackBar(SnackBar(
+        content: Text(notice.isInvitation ? context.l10n.reputation_invitations : context.l10n.reputation_updated),
+        action: SnackBarAction(
+          label: context.l10n.reputation_title,
+          onPressed: () {
+            if (mounted && ref.read(authTokenProvider)?.userId == userId) {
+              _router.push(notice.route);
+            }
+          },
+        ),
+      ));
+    }
+    return true;
+  }
+
+  bool _openReputationNotice(Map<String, dynamic> data) {
+    final notice = ReputationNotice.fromData(data);
+    if (notice == null) return false;
+    _pendingNotice = notice;
+    _openPendingReputationNotice();
+    return true;
+  }
+
+  void _openPendingReputationNotice() {
+    final notice = _pendingNotice;
+    final userId = mounted ? ref.read(authTokenProvider)?.userId : null;
+    if (notice == null || userId == null || !_isInit ||
+        _router.routeInformationProvider.value.uri.path == AppConfig.loginPath) {
+      return;
+    }
+    _pendingNotice = null;
+    if (notice.belongsTo(userId)) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && ref.read(authTokenProvider)?.userId == userId) {
+          _refreshReputation();
+          _router.push(notice.route);
+        }
+      });
+    }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && ref.read(authTokenProvider) != null) {
+      unawaited(RealtimeHubService.instance.start());
+      _refreshReputation();
+    }
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _router.routeInformationProvider.removeListener(_openPendingReputationNotice);
+    _reputationSubscription?.cancel();
+    _reconnectionSubscription?.cancel();
     PushNotificationService.instance.dispose();
+    unawaited(RealtimeHubService.instance.stop());
+    _router.dispose();
     super.dispose();
   }
 

@@ -10,12 +10,13 @@ import 'package:kltn2026_2027/app/provider.dart';
 import 'package:kltn2026_2027/domain/entities/club/active_club_context.dart';
 import 'package:kltn2026_2027/domain/enums/club_role.dart';
 import 'package:kltn2026_2027/domain/entities/session/session_attendance.dart';
-import 'package:kltn2026_2027/domain/entities/session/session_review.dart';
 import 'package:kltn2026_2027/domain/entities/session/session_rotation.dart';
 import 'package:kltn2026_2027/domain/entities/session/session_settlement.dart';
 import 'package:kltn2026_2027/domain/repositories/session_operations_repository.dart';
 import 'package:kltn2026_2027/ui/screen/club/session_operations/session_attendance_screen.dart';
-import 'package:kltn2026_2027/ui/screen/club/session_operations/session_reviews_screen.dart';
+import 'package:kltn2026_2027/ui/screen/reputation/reputation_screens.dart';
+import 'package:kltn2026_2027/app/provider/reputation_provider.dart';
+import 'package:kltn2026_2027/domain/entities/reputation/reputation.dart';
 import 'package:kltn2026_2027/ui/screen/club/session_operations/session_rotation_screen.dart';
 import 'package:kltn2026_2027/ui/screen/club/session_operations/session_settlement_screen.dart';
 
@@ -198,23 +199,7 @@ class FakeSessionOperationsRepository implements SessionOperationsRepository {
   @override
   Future<SessionSettlement> requestCashPayment({required String sessionId, required String userId, String? feeId}) async => getSettlement(sessionId);
 
-  @override
-  Future<List<SessionReview>> getSessionReviews(String sessionId) async {
-    return [
-      SessionReview(
-        id: 'r1',
-        sessionId: sessionId,
-        reviewerId: 'u1',
-        reviewerName: 'Trần Minh Đức',
-        rating: 5.0,
-        comment: 'Sân đẹp, xoay tua sân 5 phút rất đều!',
-        createdAt: DateTime(2026, 10, 24),
-      ),
-    ];
-  }
 
-  @override
-  Future<void> submitReview(SessionReview review) async {}
 }
 
 void main() {
@@ -298,12 +283,30 @@ void main() {
     expect(find.byType(QrImageView), findsOneWidget);
   });
 
-  testWidgets('SessionReviewsScreen renders FR23 reviews and rating score', (tester) async {
-    await tester.pumpWidget(buildTestableWidget(const SessionReviewsScreen(sessionId: 'session-1')));
+  testWidgets('review invitation displays the persisted rating read-only', (tester) async {
+    final expiresAt = DateTime.now().toUtc().add(const Duration(days: 1));
+    await tester.pumpWidget(ProviderScope(
+      overrides: [
+        reputationInvitationsProvider((page: 1, sessionId: 'session-1')).overrideWith(
+          (ref) async => ReputationPage([
+            ReviewInvitation(sessionId: 'session-1', groupId: 'club-1',
+                sessionTitle: 'Buổi thử UC20', groupName: 'CLB thử',
+                sessionStartAt: null, expiresAt: expiresAt,
+                review: SessionRating('session-1', 4, 'Đánh giá đã lưu', expiresAt)),
+          ], 1, 20, 1),
+        ),
+      ],
+      child: const MaterialApp(
+        locale: Locale('vi'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: ReviewInvitationsScreen(sessionId: 'session-1'),
+      ),
+    ));
     await tester.pumpAndSettle();
-
-    expect(find.text('Đánh Giá & Tín Nhiệm'), findsOneWidget);
-    expect(find.text('4.9 / 5.0 Điểm Tín Nhiệm'), findsOneWidget);
-    expect(find.text('Trần Minh Đức'), findsOneWidget);
+    await tester.tap(find.text('Buổi thử UC20'));
+    await tester.pumpAndSettle();
+    expect(find.text('Đánh giá đã lưu'), findsOneWidget);
+    expect(find.text('Gửi đánh giá'), findsNothing);
   });
 }
