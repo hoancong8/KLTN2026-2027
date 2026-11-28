@@ -71,6 +71,7 @@ class ReputationEntry {
     required this.computedAt,
     required this.policyVersion,
     required this.evidence,
+    this.reasons,
   });
 
   final String bookingId;
@@ -81,6 +82,15 @@ class ReputationEntry {
   final DateTime? computedAt;
   final String? policyVersion;
   final ReputationEvidence? evidence;
+  final List<ReputationReason>? reasons;
+}
+
+class ReputationReason {
+  const ReputationReason(this.code, this.points, this.suppressed);
+
+  final String code;
+  final double? points;
+  final bool suppressed;
 }
 
 class GroupQuality {

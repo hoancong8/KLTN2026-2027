@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../../../app/provider.dart';
+import '../../../../../../app/provider/reputation_provider.dart';
 import '../../../../../../app/theme/theme.dart';
 import '../../../../../../app/provider/localization_provider.dart';
 import '../../../../../../app/l10n_gen/app_localizations.dart';
@@ -55,6 +56,9 @@ class _ClubOverviewTabState extends ConsumerState<ClubOverviewTab> {
     final activeContext = ref.watch(activeClubContextProvider);
 
     final club = state.club;
+    final quality = ref.watch(authTokenProvider) == null
+        ? null
+        : ref.watch(groupQualityProvider(widget.clubId)).asData?.value.score;
     final currentProfile = ref.watch(currentUserProfileProvider);
 
     // Dynamic RBAC with strict Context Isolation
@@ -298,11 +302,23 @@ class _ClubOverviewTabState extends ConsumerState<ClubOverviewTab> {
                   style: AppTypography.titleSmall.bold.colored(colors.textPrimary),
                 ),
                 AppSpacing.gapH12,
-                _buildInfoRow(
-                  'Điểm chất lượng CLB',
-                  club != null ? '${club.qualityScore.toStringAsFixed(1)} / 5.0' : '5.0 / 5.0',
-                  icon: Icons.star_rounded,
-                  iconColor: AppColors.warning,
+                InkWell(
+                  onTap: () => context.push('/reputation/quality/${widget.clubId}'),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 6),
+                    child: Row(
+                      children: [
+                        Expanded(child: _buildInfoRow(
+                          'Điểm chất lượng CLB',
+                          quality != null ? '${quality.toStringAsFixed(1)} / 5.0'
+                              : club != null ? '${club.qualityScore.toStringAsFixed(1)} / 5.0' : 'Đang tải...',
+                          icon: Icons.star_rounded,
+                          iconColor: AppColors.warning,
+                        )),
+                        Icon(Icons.chevron_right, size: 20, color: colors.textMuted),
+                      ],
+                    ),
+                  ),
                 ),
                 Divider(height: AppSpacing.base, color: colors.cardBorder),
                 _buildInfoRow(

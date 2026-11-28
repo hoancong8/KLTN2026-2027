@@ -32,7 +32,9 @@ class ReputationMapper {
       bookingId: dto.string('bookingId') ?? '', sessionId: dto.string('sessionId') ?? '',
       sessionTitle: dto.string('sessionTitle'), groupName: dto.string('groupName'),
       rawDelta: dto.number('rawDelta'), computedAt: dto.date('computedAt'),
-      policyVersion: dto.string('policyVersion'), evidence: _evidence(dto.object('evidence')));
+      policyVersion: dto.string('policyVersion'), evidence: _evidence(dto.object('evidence')),
+      reasons: dto.hasList('reasons') ? dto.list('reasons').map((reason) => ReputationReason(
+          reason.string('code') ?? '', reason.number('points'), reason.boolean('suppressed') ?? false)).toList() : null);
 
   static GroupQuality quality(ReputationDto dto) {
     final summary = dto.object('summary');

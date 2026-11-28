@@ -10,6 +10,8 @@ class ReputationDto {
 
   String? string(String key) => _parseString(_fields[key]);
   int? integer(String key) => _parseInt(_fields[key]);
+  bool? boolean(String key) => _fields[key] is bool ? _fields[key] as bool : null;
+  bool hasList(String key) => _fields[key] is List;
   double? number(String key) {
     final value = _fields[key];
     final parsed = value is num ? value.toDouble() : double.tryParse('$value');

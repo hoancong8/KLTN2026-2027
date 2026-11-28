@@ -34,6 +34,8 @@ class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
   ReputationNotice? _pendingNotice;
   StreamSubscription<Map<String, dynamic>>? _reputationSubscription;
   StreamSubscription<void>? _reconnectionSubscription;
+  DateTime? _lastReputationRefresh;
+  Timer? _reputationRefreshTimer;
 
   @override
   void initState() {
@@ -47,6 +49,8 @@ class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
     ref.listenManual(authTokenProvider, (before, after) {
       if (before?.userId != after?.userId) {
         _reputationNotices.reset();
+        _reputationRefreshTimer?.cancel();
+        _lastReputationRefresh = null;
         if (before != null) _pendingNotice = null;
       }
       if (after == null) {
@@ -80,8 +84,21 @@ class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
     });
   }
 
-  void _refreshReputation() {
+  void _refreshReputation({bool force = false}) {
     if (mounted && ref.read(authTokenProvider) != null) {
+      final now = DateTime.now();
+      final lastRefresh = _lastReputationRefresh;
+      final elapsed = lastRefresh == null ? const Duration(seconds: 30) : now.difference(lastRefresh);
+      if (!force && elapsed < const Duration(seconds: 30)) {
+        _reputationRefreshTimer ??= Timer(const Duration(seconds: 30) - elapsed, () {
+          _reputationRefreshTimer = null;
+          _refreshReputation();
+        });
+        return;
+      }
+      _reputationRefreshTimer?.cancel();
+      _reputationRefreshTimer = null;
+      _lastReputationRefresh = now;
       ref.read(reputationRevisionProvider.notifier).state++;
     }
   }
@@ -92,7 +109,7 @@ class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
     if (!mounted) return true;
     final userId = ref.read(authTokenProvider)?.userId;
     if (userId == null || !_reputationNotices.claim(notice, userId)) return true;
-    _refreshReputation();
+    _refreshReputation(force: true);
     ref.read(notificationViewModelProvider.notifier).refresh();
     final context = rootNavigatorKey.currentContext;
     if (context != null) {
@@ -130,7 +147,7 @@ class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
     if (notice.belongsTo(userId)) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted && ref.read(authTokenProvider)?.userId == userId) {
-          _refreshReputation();
+          _refreshReputation(force: true);
           _router.push(notice.route);
         }
       });
@@ -151,6 +168,7 @@ class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
     _router.routeInformationProvider.removeListener(_openPendingReputationNotice);
     _reputationSubscription?.cancel();
     _reconnectionSubscription?.cancel();
+    _reputationRefreshTimer?.cancel();
     PushNotificationService.instance.dispose();
     unawaited(RealtimeHubService.instance.stop());
     _router.dispose();

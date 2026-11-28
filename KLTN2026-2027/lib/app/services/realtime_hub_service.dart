@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
+import 'package:signalr_netcore/ihub_protocol.dart';
 import 'package:signalr_netcore/signalr_client.dart';
 import '../consts/app_config.dart';
 import 'secure_storage_service.dart';
@@ -49,6 +50,10 @@ class RealtimeHubService {
       _userId = token.userId;
 
       final hubUrl = '${AppConfig.baseUrl}/hubs/sessions';
+      final headers = MessageHeaders();
+      for (final entry in AppConfig.developmentTunnelHeaders.entries) {
+        headers.setHeaderValue(entry.key, entry.value);
+      }
 
       _connection = HubConnectionBuilder()
           .withUrl(
@@ -58,6 +63,7 @@ class RealtimeHubService {
                 final current = await SecureStorageService.instance.getAuthToken();
                 return current?.accessToken ?? '';
               },
+              headers: headers,
             ),
           )
           .withAutomaticReconnect()

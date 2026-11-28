@@ -17,6 +17,7 @@ import 'package:kltn2026_2027/ui/screen/club/session_operations/session_attendan
 import 'package:kltn2026_2027/ui/screen/reputation/reputation_screens.dart';
 import 'package:kltn2026_2027/app/provider/reputation_provider.dart';
 import 'package:kltn2026_2027/domain/entities/reputation/reputation.dart';
+import 'package:kltn2026_2027/domain/entities/auth_token.dart';
 import 'package:kltn2026_2027/ui/screen/club/session_operations/session_rotation_screen.dart';
 import 'package:kltn2026_2027/ui/screen/club/session_operations/session_settlement_screen.dart';
 
@@ -291,7 +292,7 @@ void main() {
           (ref) async => ReputationPage([
             ReviewInvitation(sessionId: 'session-1', groupId: 'club-1',
                 sessionTitle: 'Buổi thử UC20', groupName: 'CLB thử',
-                sessionStartAt: null, expiresAt: expiresAt,
+                sessionStartAt: DateTime.utc(2026, 11, 28, 18, 30), expiresAt: expiresAt,
                 review: SessionRating('session-1', 4, 'Đánh giá đã lưu', expiresAt)),
           ], 1, 20, 1),
         ),
@@ -304,9 +305,104 @@ void main() {
       ),
     ));
     await tester.pumpAndSettle();
+    expect(find.textContaining('01:30, 29/11/2026'), findsOneWidget);
     await tester.tap(find.text('Buổi thử UC20'));
     await tester.pumpAndSettle();
     expect(find.text('Đánh giá đã lưu'), findsOneWidget);
     expect(find.text('Gửi đánh giá'), findsNothing);
   });
+
+  for (final width in [360.0, 1200.0]) {
+    testWidgets('reputation history fits and expands at width $width', (tester) async {
+      await tester.binding.setSurfaceSize(Size(width, 850));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      await tester.pumpWidget(ProviderScope(
+        overrides: [
+          reputationEntriesProvider(1).overrideWith((ref) async => const ReputationPage([
+            ReputationEntry(
+              bookingId: 'booking-1', sessionId: 'session-1', sessionTitle: 'Buổi cầu lông',
+              groupName: 'Câu lạc bộ', rawDelta: -3, computedAt: null, policyVersion: 'UC20-V1',
+              evidence: null, reasons: [
+                ReputationReason('CHECKED_IN_LATE', -3, false),
+                ReputationReason('PAID_ON_TIME', 0, true),
+              ],
+            ),
+          ], 1, 20, 1)),
+        ],
+        child: const MaterialApp(
+          locale: Locale('vi'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: ReputationHistoryScreen(),
+        ),
+      ));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Buổi cầu lông'));
+      await tester.pumpAndSettle();
+      expect(find.text('Điểm danh trễ hơn 15 phút'), findsOneWidget);
+      expect(find.text('Không cộng điểm thưởng vì buổi có vi phạm'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+  }
+
+  for (final width in [320.0, 1200.0]) {
+    testWidgets('UC20 screens fit and review dialog opens at width $width', (tester) async {
+      await tester.binding.setSurfaceSize(Size(width, 850));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      final now = DateTime.now().toUtc();
+      final invitation = ReviewInvitation(sessionId: 'session-1', groupId: 'club-1',
+          sessionTitle: 'Buổi cầu lông', groupName: 'Câu lạc bộ', sessionStartAt: now,
+          expiresAt: now.add(const Duration(days: 1)), review: null);
+      Future<void> show(Widget screen) async {
+        await tester.pumpWidget(ProviderScope(
+          overrides: [
+            authTokenProvider.overrideWith((ref) => AuthToken(accessToken: 'token', refreshToken: '', userId: 'user-1')),
+            activeClubContextProvider.overrideWith((ref) => const ActiveClubContext(
+                clubId: 'club-1', clubName: 'CLB', role: ClubRole.host,
+                permissions: ['OPERATIONS.SESSION.UPDATE'])),
+            reputationInvitationsProvider((page: 1, sessionId: null)).overrideWith(
+                (ref) async => ReputationPage([invitation], 1, 20, 1)),
+            playerReputationProvider('user-1').overrideWith(
+                (ref) async => PlayerReputation(72, 'Rủi ro bùng kèo', now, 4)),
+            groupQualityProvider('club-1').overrideWith((ref) async => GroupQuality(
+                score: 4.2, computedAt: now, reviews: 4, transparency: 4, density: 4,
+                reviewCount: 5, sessionCount: 5, coverage: 1, hasResult: true)),
+            reputationAuditProvider((clubId: 'club-1', sessionId: 'session-1', page: 1)).overrideWith(
+                (ref) async => SessionReputationAudit(status: 'Finalized', pendingReason: null,
+                    bookings: ReputationPage([ReputationAuditBooking('booking', 'user-1', -3, null,
+                        SessionRating('session-1', 4, 'Buổi chơi tốt', now), fullName: 'Nguyễn Văn A')], 1, 20, 1),
+                    financialSources: const [ReputationFinancialSource('user-1', 'PAID', 50000, null)],
+                    playerCount: 1, courtCount: 1, invoiceCount: 0, expenseCount: 1)),
+          ],
+          child: MaterialApp(locale: const Locale('vi'),
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales, home: screen),
+        ));
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull);
+      }
+
+      await show(const ReviewInvitationsScreen());
+      await tester.tap(find.text('Buổi cầu lông'));
+      await tester.pumpAndSettle();
+      expect(find.text('Gửi đánh giá'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+      await tester.tap(find.text('Để sau'));
+      await tester.pumpAndSettle();
+      await show(const PlayerReputationScreen(userId: 'user-1'));
+      expect(find.text('Rủi ro bùng kèo'), findsOneWidget);
+      await show(const GroupQualityScreen(groupId: 'club-1'));
+      expect(find.text('Mật độ người/sân'), findsOneWidget);
+      expect(find.text('Điểm chất lượng tổng hợp'), findsOneWidget);
+      expect(find.text('Điểm đánh giá của người chơi'), findsOneWidget);
+      expect(find.ancestor(of: find.text('Điểm đánh giá của người chơi'), matching: find.byType(Card)), findsNothing);
+      await show(const SessionReputationAuditScreen(clubId: 'club-1', sessionId: 'session-1'));
+      await tester.ensureVisible(find.text('Đánh giá và uy tín thành viên'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Đánh giá và uy tín thành viên'));
+      await tester.pumpAndSettle();
+      expect(find.text('Nguyễn Văn A'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+  }
 }
