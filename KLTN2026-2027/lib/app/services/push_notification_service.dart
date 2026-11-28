@@ -72,6 +72,11 @@ class PushNotificationService {
     void open(RemoteMessage? message) {
       final sessionId = message?.data['sessionId'];
       final type = message?.data['type'];
+      final advance = message?.data['advanceSessionId'];
+      if (type == 'SESSION_ADVANCE' && advance is String && router.state.uri.path != AppConfig.loginPath) {
+        router.push(AppConfig.advanceNotificationPath(advance));
+        return;
+      }
       if (sessionId is String && sessionId.isNotEmpty &&
           (type == 'SESSION_SHORTAGE' || type == 'SESSION_NOT_HELD') &&
           router.state.uri.path != AppConfig.loginPath) {
@@ -156,6 +161,11 @@ class PushNotificationService {
           label: 'Xem',
           textColor: colors.primary,
           onPressed: () {
+            final advance = message.data['advanceSessionId'];
+            if (message.data['type'] == 'SESSION_ADVANCE' && advance is String) {
+              context.push(AppConfig.advanceNotificationPath(advance));
+              return;
+            }
             final sessionId = message.data['sessionId'];
             if (sessionId != null && sessionId.toString().isNotEmpty) {
               final type = message.data['type'];

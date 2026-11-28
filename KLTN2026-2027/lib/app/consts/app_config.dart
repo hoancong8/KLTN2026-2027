@@ -165,6 +165,7 @@ class AppConfig {
   static const exploreClubsScreenPath = '/explore-clubs';
   static const exploreRecruitmentsScreenPath = '/explore-recruitments';
   static String clubDetailRoutePath(String clubId) => '/club/$clubId';
+  static String advanceNotificationPath(String id) => '$myFeesPath?advanceSession=${Uri.encodeQueryComponent(id)}';
   static String sessionDetailRoutePath(String sessionId, {bool fromShortageNotice = false}) =>
       fromShortageNotice ? '/session/$sessionId?shortageNotice=1' : '/session/$sessionId';
   static String createSessionRoutePath(String clubId) =>

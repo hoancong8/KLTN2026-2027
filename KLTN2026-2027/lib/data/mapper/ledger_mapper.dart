@@ -6,6 +6,8 @@ const ledgerCategories = {
   LedgerCategory.courtRent: 'COURT_RENT',
   LedgerCategory.shuttleExpense: 'SHUTTLE_EXPENSE',
   LedgerCategory.monthlyFund: 'MONTHLY_FUND',
+  LedgerCategory.sessionAdvance: 'SESSION_ADVANCE',
+  LedgerCategory.sessionAdvanceRefund: 'SESSION_ADVANCE_REFUND',
   LedgerCategory.other: 'OTHER',
 };
 
@@ -31,6 +33,7 @@ extension LedgerMapper on LedgerDto {
     final capabilities = child('capabilities');
     return (
       balance: _money('availableBalance'),
+      heldAdvance: _optionalMoney('heldAdvanceBalance') ?? LedgerMoney(BigInt.zero),
       inflow: _money('totalInflow'),
       outflow: _money('totalOutflow'),
       sessionDebt: _money('sessionDebtTotal'),

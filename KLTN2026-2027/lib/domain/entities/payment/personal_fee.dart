@@ -11,6 +11,8 @@ class PersonalFee extends Equatable {
   final String currency;
   final String paymentCode;
   final String paymentStatus;
+  final num advanceApplied;
+  final bool advancePending;
   final String? paymentProgress;
   final String? paymentMethod;
   final DateTime? paymentRequestedAt;
@@ -31,6 +33,8 @@ class PersonalFee extends Equatable {
     required this.currency,
     required this.paymentCode,
     required this.paymentStatus,
+    this.advanceApplied = 0,
+    this.advancePending = false,
     required this.paymentProgress,
     required this.paymentMethod,
     required this.paymentRequestedAt,
@@ -69,6 +73,8 @@ class PersonalFee extends Equatable {
     currency: currency,
     paymentCode: paymentCode,
     paymentStatus: paymentStatus,
+    advanceApplied: advanceApplied,
+    advancePending: advancePending,
     paymentProgress: paymentProgress,
     paymentMethod: paymentMethod,
     paymentRequestedAt: paymentRequestedAt,
@@ -93,6 +99,8 @@ class PersonalFee extends Equatable {
     currency,
     paymentCode,
     paymentStatus,
+    advanceApplied,
+    advancePending,
     paymentProgress,
     paymentMethod,
     paymentRequestedAt,

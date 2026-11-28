@@ -35,6 +35,8 @@ class SessionMapper {
       shortageCheckMinutes: dto.shortageCheckMinutes,
       shortageReminderAt: dto.shortageReminderAt,
       shortageReminderSent: dto.shortageReminderSent,
+      advanceEnabled: dto.advanceEnabled,
+      advanceAmount: dto.advanceAmount,
       isBookedByCurrentUser: dto.isBookedByCurrentUser,
       currentUserBookingStatus: dto.currentUserBookingStatus != null
           ? BookingStatus.fromString(dto.currentUserBookingStatus)

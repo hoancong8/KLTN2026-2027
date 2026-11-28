@@ -98,6 +98,8 @@ class NotificationTablet extends ConsumerWidget {
                                         referenceId,
                                       ),
                                     );
+                                  } else if (referenceType == 'SESSIONADVANCE') {
+                                    context.push(AppConfig.advanceNotificationPath(referenceId));
                                   } else if (referenceType == 'SESSIONFEE') {
                                     context.push(
                                       AppConfig.myFeeDetailPath(referenceId),

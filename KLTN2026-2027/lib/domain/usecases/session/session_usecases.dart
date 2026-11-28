@@ -23,6 +23,8 @@ class CreateSessionParams {
   final double? lng;
   final int? minimumPlayers;
   final int? shortageCheckMinutes;
+  final bool? advanceEnabled;
+  final int? advanceAmount;
 
   const CreateSessionParams({
     required this.clubId,
@@ -40,6 +42,8 @@ class CreateSessionParams {
     this.lng,
     this.minimumPlayers,
     this.shortageCheckMinutes,
+    this.advanceEnabled,
+    this.advanceAmount,
   });
 }
 
@@ -64,6 +68,8 @@ class CreateSessionUseCase {
       lng: params.lng,
       minimumPlayers: params.minimumPlayers,
       shortageCheckMinutes: params.shortageCheckMinutes,
+      advanceEnabled: params.advanceEnabled,
+      advanceAmount: params.advanceAmount,
     );
   }
 }
@@ -93,6 +99,8 @@ class UpdateSessionParams {
   final DateTime deadlineBooking;
   final int? minimumPlayers;
   final int? shortageCheckMinutes;
+  final bool? advanceEnabled;
+  final int? advanceAmount;
 
   const UpdateSessionParams({
     required this.sessionId,
@@ -105,6 +113,8 @@ class UpdateSessionParams {
     required this.deadlineBooking,
     this.minimumPlayers,
     this.shortageCheckMinutes,
+    this.advanceEnabled,
+    this.advanceAmount,
   });
 }
 
@@ -124,6 +134,8 @@ class UpdateSessionUseCase {
       deadlineBooking: params.deadlineBooking,
       minimumPlayers: params.minimumPlayers,
       shortageCheckMinutes: params.shortageCheckMinutes,
+      advanceEnabled: params.advanceEnabled,
+      advanceAmount: params.advanceAmount,
     );
   }
 }

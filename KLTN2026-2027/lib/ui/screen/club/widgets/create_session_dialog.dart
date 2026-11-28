@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'session_shortage_settings.dart';
+import 'session_advance_settings.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:kltn2026_2027/app/theme/theme.dart';
@@ -33,6 +34,8 @@ class CreateSessionDialog extends ConsumerStatefulWidget {
 
 class _CreateSessionDialogState extends ConsumerState<CreateSessionDialog> {
   AppThemeColors get colors => context.colors;
+  bool _advanceEnabled = false;
+  int? _advanceAmount;
   int _minimumPlayers = 4;
   int _shortageCheckMinutes = 120;
   final _formKey = GlobalKey<FormState>();
@@ -167,6 +170,8 @@ class _CreateSessionDialogState extends ConsumerState<CreateSessionDialog> {
         maxPlayers: _maxPlayers,
         minimumPlayers: _minimumPlayers,
         shortageCheckMinutes: _shortageCheckMinutes,
+        advanceEnabled: _advanceEnabled,
+        advanceAmount: _advanceAmount,
         deadlineBooking: _deadlineBooking,
         courtRentalCost: cost,
       ),
@@ -413,6 +418,13 @@ class _CreateSessionDialogState extends ConsumerState<CreateSessionDialog> {
                 ),
                 AppSpacing.gapH12,
 
+                SessionAdvanceSettings(
+                  enabled: _advanceEnabled,
+                  dynamicFee: ref.watch(clubFeeRuleProvider(widget.clubId)).asData?.value.isDynamic ?? true,
+                  initialAmount: _advanceAmount,
+                  onEnabled: (value) => setState(() => _advanceEnabled = value),
+                  onAmount: (value) => _advanceAmount = value,
+                ),
                 SessionShortageSettings(
               capacity: _maxPlayers,
               minimumPlayers: _minimumPlayers,

@@ -18,6 +18,8 @@ extension MemberSettlementFeeDtoMapper on MemberSettlementFeeDto {
       baseFee: baseFee,
       discount: discount,
       finalFee: finalFee,
+      advanceApplied: advanceApplied,
+      advancePending: advancePending,
       paymentStatus: paymentStatus,
       paymentMethod: paymentMethod,
       paymentProgress: paymentProgress,

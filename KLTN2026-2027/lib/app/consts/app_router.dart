@@ -62,7 +62,7 @@ GoRouter generateAppRouter(String initialRoute) {
       ),
       GoRoute(
         path: AppConfig.myFeesPath,
-        builder: (_, _) => const MyFeesScreen(),
+        builder: (_, state) => MyFeesScreen(advanceSessionId: state.uri.queryParameters['advanceSession']),
       ),
       GoRoute(
         path: '/my-fees/:feeId',

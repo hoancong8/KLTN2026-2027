@@ -1,5 +1,6 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import '../../../payment/advance/session_advance_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -132,6 +133,20 @@ class _LedgerContentState extends ConsumerState<LedgerContent> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        if (overview.heldAdvance.minorUnits > BigInt.zero)
+          Padding(
+            padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+            child: Text('${l10n.advance_reserved} · ${ledgerAmount(context, overview.heldAdvance)}'),
+          ),
+        if (canManage)
+          OutlinedButton.icon(
+            onPressed: () async {
+              await showAdvanceList(context, groupId: widget.scope.clubId);
+              if (mounted) await _vm.refresh();
+            },
+            icon: const Icon(Icons.account_balance_wallet_outlined),
+            label: Text(l10n.advance_finance),
+          ),
         Card(
           margin: EdgeInsets.zero,
           color: colors.primaryContainer,

@@ -37,6 +37,8 @@ class SessionRepositoryImpl implements SessionRepository {
     double? lng,
     int? minimumPlayers,
     int? shortageCheckMinutes,
+    bool? advanceEnabled,
+    int? advanceAmount,
   }) async {
     final request = CreateSessionRequestDto(
       title: title,
@@ -53,6 +55,8 @@ class SessionRepositoryImpl implements SessionRepository {
       lng: lng,
       minimumPlayers: minimumPlayers,
       shortageCheckMinutes: shortageCheckMinutes,
+      advanceEnabled: advanceEnabled,
+      advanceAmount: advanceAmount,
     );
     return await remote.createSession(clubId, request);
   }
@@ -81,6 +85,8 @@ class SessionRepositoryImpl implements SessionRepository {
     required DateTime deadlineBooking,
     int? minimumPlayers,
     int? shortageCheckMinutes,
+    bool? advanceEnabled,
+    int? advanceAmount,
   }) async {
     final request = UpdateSessionRequestDto(
       title: title,
@@ -92,6 +98,8 @@ class SessionRepositoryImpl implements SessionRepository {
       deadlineBooking: deadlineBooking.toUtc().toIso8601String(),
       minimumPlayers: minimumPlayers,
       shortageCheckMinutes: shortageCheckMinutes,
+      advanceEnabled: advanceEnabled,
+      advanceAmount: advanceAmount,
     );
     await remote.updateSession(sessionId, request);
   }

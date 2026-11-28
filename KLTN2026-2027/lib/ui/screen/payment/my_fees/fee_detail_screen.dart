@@ -188,6 +188,10 @@ class _FeeDetailScreenState extends ConsumerState<FeeDetailScreen>
                         _FeeStatusChip(status: fee.paymentStatus),
                       ],
                     ),
+                    if (fee.advanceApplied > 0)
+                      _InfoLine(label: l10n.advance_applied, value: _money(fee.advanceApplied, fee.currency)),
+                    if (fee.advancePending)
+                      _Notice(text: l10n.advance_review, color: colors.warning),
                     if (!fee.isPaid &&
                         !fee.isExempt &&
                         fee.paymentProgress?.toUpperCase() == 'QR_READY') ...[

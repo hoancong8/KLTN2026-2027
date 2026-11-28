@@ -38,6 +38,8 @@ class _FakeSessionRepository implements SessionRepository {
     double? lng,
     int? minimumPlayers,
     int? shortageCheckMinutes,
+    bool? advanceEnabled,
+    int? advanceAmount,
   }) async => 'session-id';
 
   @override
@@ -90,6 +92,8 @@ class _FakeSessionRepository implements SessionRepository {
     required DateTime deadlineBooking,
     int? minimumPlayers,
     int? shortageCheckMinutes,
+    bool? advanceEnabled,
+    int? advanceAmount,
   }) async {
     lastUpdateParams = UpdateSessionParams(
       sessionId: sessionId,
@@ -102,6 +106,8 @@ class _FakeSessionRepository implements SessionRepository {
       deadlineBooking: deadlineBooking,
       minimumPlayers: minimumPlayers,
       shortageCheckMinutes: shortageCheckMinutes,
+      advanceEnabled: advanceEnabled,
+      advanceAmount: advanceAmount,
     );
   }
   @override

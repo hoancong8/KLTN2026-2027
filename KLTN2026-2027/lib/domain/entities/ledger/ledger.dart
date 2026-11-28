@@ -5,6 +5,8 @@ enum LedgerCategory {
   courtRent,
   shuttleExpense,
   monthlyFund,
+  sessionAdvance,
+  sessionAdvanceRefund,
   other,
   unknown,
 }
@@ -41,6 +43,7 @@ class LedgerMoney {
 
 typedef LedgerOverview = ({
   LedgerMoney balance,
+  LedgerMoney heldAdvance,
   LedgerMoney inflow,
   LedgerMoney outflow,
   LedgerMoney sessionDebt,

@@ -23,6 +23,8 @@ class SessionDto {
   final int? shortageCheckMinutes;
   final DateTime? shortageReminderAt;
   final bool shortageReminderSent;
+  final bool advanceEnabled;
+  final int? advanceAmount;
   final bool isBookedByCurrentUser;
   final String? currentUserBookingStatus;
   final int currentUserQueueOrder;
@@ -50,6 +52,8 @@ class SessionDto {
     this.shortageCheckMinutes,
     this.shortageReminderAt,
     this.shortageReminderSent = false,
+    this.advanceEnabled = false,
+    this.advanceAmount,
     this.isBookedByCurrentUser = false,
     this.currentUserBookingStatus,
     this.currentUserQueueOrder = 0,
@@ -127,6 +131,8 @@ class SessionDto {
       shortageCheckMinutes: json['shortageCheckMinutes'] == null ? null : _parseInt(json['shortageCheckMinutes']),
       shortageReminderAt: DateTime.tryParse(json['shortageReminderAt']?.toString() ?? ''),
       shortageReminderSent: _parseBool(json['shortageReminderSent']),
+      advanceEnabled: _parseBool(json['advanceEnabled']),
+      advanceAmount: json['advanceAmount'] == null ? null : _parseInt(json['advanceAmount']),
       isBookedByCurrentUser: _parseBool(json['isBookedByCurrentUser']),
       currentUserBookingStatus: json['currentUserBookingStatus']?.toString(),
       currentUserQueueOrder: _parseInt(json['currentUserQueueOrder']),

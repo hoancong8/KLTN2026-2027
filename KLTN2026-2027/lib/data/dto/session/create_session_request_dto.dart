@@ -15,6 +15,8 @@ class CreateSessionRequestDto {
   final double? lng;
   final int? minimumPlayers;
   final int? shortageCheckMinutes;
+  final bool? advanceEnabled;
+  final int? advanceAmount;
 
   CreateSessionRequestDto({
     required this.title,
@@ -31,6 +33,8 @@ class CreateSessionRequestDto {
     this.lng,
     this.minimumPlayers,
     this.shortageCheckMinutes,
+    this.advanceEnabled,
+    this.advanceAmount,
   });
 
   Map<String, dynamic> toJson() => {
@@ -39,6 +43,8 @@ class CreateSessionRequestDto {
     'endTime': endTime,
     if (minimumPlayers != null) 'minimumPlayers': minimumPlayers,
     if (shortageCheckMinutes != null) 'shortageCheckMinutes': shortageCheckMinutes,
+    if (advanceEnabled != null) 'advanceEnabled': advanceEnabled,
+    if (advanceAmount != null) 'advanceAmount': advanceAmount,
     'courtLocation': courtLocation,
     'courtCount': courtCount,
     'targetPlayerPerCourt': targetPlayerPerCourt,

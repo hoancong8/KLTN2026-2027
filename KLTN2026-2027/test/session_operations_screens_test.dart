@@ -189,6 +189,7 @@ class FakeSessionOperationsRepository implements SessionOperationsRepository {
     required int extraFee,
     int? courtRentalCost,
     bool monthlyExemptCourtOnly = false,
+    Future<bool> Function(List<SettlementAdvanceLine>)? confirmAdvances,
   }) async => getSettlement(sessionId);
 
   @override

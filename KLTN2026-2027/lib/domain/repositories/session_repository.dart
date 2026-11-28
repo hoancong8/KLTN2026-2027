@@ -24,6 +24,8 @@ abstract class SessionRepository {
     double? lng,
     int? minimumPlayers,
     int? shortageCheckMinutes,
+    bool? advanceEnabled,
+    int? advanceAmount,
   });
 
   Future<List<Session>> getClubSessions(String clubId);
@@ -41,6 +43,8 @@ abstract class SessionRepository {
     required DateTime deadlineBooking,
     int? minimumPlayers,
     int? shortageCheckMinutes,
+    bool? advanceEnabled,
+    int? advanceAmount,
   });
 
   Future<void> updateSessionStatus(

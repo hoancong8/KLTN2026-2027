@@ -8,6 +8,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:kltn2026_2027/app/provider/localization_provider.dart';
 import 'widgets/session_shortage_settings.dart';
+import 'widgets/session_advance_settings.dart';
+import '../payment/advance/session_advance_ui.dart';
 import 'package:kltn2026_2027/app/theme/theme.dart';
 import '../../../app/consts/app_config.dart';
 import '../../../app/provider.dart';
@@ -2930,6 +2932,47 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
     ));
   }
 
+  Future<void> _editAdvanceSettings(Session session) async {
+    final form = GlobalKey<FormState>();
+    var enabled = session.advanceEnabled;
+    var amount = session.advanceAmount;
+    final dynamicFee = ref.read(clubFeeRuleProvider(session.groupId)).asData?.value.isDynamic ?? true;
+    final saved = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(builder: (ctx, update) => AlertDialog(
+        title: Text(ctx.l10n.advance_title),
+        content: SizedBox(width: 420, child: SingleChildScrollView(child: Form(
+          key: form,
+          child: SessionAdvanceSettings(
+            enabled: enabled,
+            dynamicFee: dynamicFee,
+            initialAmount: amount,
+            onEnabled: (value) => update(() => enabled = value),
+            onAmount: (value) => amount = value,
+          ),
+        ))),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(ctx.l10n.com_cancel)),
+          FilledButton(onPressed: () {
+            if (form.currentState!.validate()) Navigator.pop(ctx, true);
+          }, child: Text(ctx.l10n.com_confirm)),
+        ],
+      )),
+    );
+    if (saved != true || !mounted) return;
+    final provider = sessionDetailViewModelProvider(widget.sessionId);
+    final ok = await ref.read(provider.notifier).updateSession(
+      title: session.title, startTime: session.startTime, endTime: session.endTime,
+      courtLocation: session.courtLocation, courtCount: session.courtCount,
+      maxPlayers: session.maxPlayers, deadlineBooking: session.deadlineBooking,
+      advanceEnabled: enabled, advanceAmount: amount,
+    );
+    if (!mounted || ok) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(ref.read(provider).errorMessage ?? context.l10n.com_retry),
+    ));
+  }
+
   void _showHostActionSheet(
     BuildContext context,
     Session session, {
@@ -2983,6 +3026,17 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
                 ],
               ),
               AppSpacing.gapH16,
+              if (canManageSession && now.isBefore(session.startTime))
+                _buildActionTile(
+                  icon: Icons.account_balance_wallet_outlined,
+                  color: colors.primary,
+                  label: context.l10n.advance_title,
+                  subtitle: context.l10n.advance_enable,
+                  onTap: () {
+                    Navigator.of(ctx).pop();
+                    _editAdvanceSettings(session);
+                  },
+                ),
               if (canManageSession && !isEnded && !isPlaying)
                 _buildActionTile(
                   icon: Icons.schedule_rounded,
@@ -4448,6 +4502,8 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> with 
             ),
           ],
 
+          if (session.advanceEnabled && session.isBookedByCurrentUser)
+            SessionAdvanceCard(sessionId: session.id),
           if (isHost &&
               session.minimumPlayers != null &&
               session.confirmedCount < session.minimumPlayers! &&

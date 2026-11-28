@@ -329,6 +329,7 @@ final dioProvider = Provider<Dio>((ref) {
       PrettyDioLogger(
         filter: (options, _) =>
             !options.path.contains('/sepay') &&
+            !options.path.contains('/session-advances') &&
             !options.extra.containsKey(AppConfig.ledgerClubRequestKey),
         requestHeader: true,
         requestBody: true,

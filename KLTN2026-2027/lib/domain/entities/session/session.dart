@@ -25,6 +25,8 @@ class Session {
   final int? shortageCheckMinutes;
   final DateTime? shortageReminderAt;
   final bool shortageReminderSent;
+  final bool advanceEnabled;
+  final int? advanceAmount;
   final bool isBookedByCurrentUser;
   final BookingStatus? currentUserBookingStatus;
   final int currentUserQueueOrder;
@@ -52,6 +54,8 @@ class Session {
     this.shortageCheckMinutes,
     this.shortageReminderAt,
     this.shortageReminderSent = false,
+    this.advanceEnabled = false,
+    this.advanceAmount,
     this.isBookedByCurrentUser = false,
     this.currentUserBookingStatus,
     this.currentUserQueueOrder = 0,
@@ -128,6 +132,8 @@ class Session {
       shortageCheckMinutes: shortageCheckMinutes,
       shortageReminderAt: shortageReminderAt,
       shortageReminderSent: shortageReminderSent,
+      advanceEnabled: advanceEnabled,
+      advanceAmount: advanceAmount,
       isBookedByCurrentUser: isBookedByCurrentUser ?? this.isBookedByCurrentUser,
       currentUserBookingStatus: currentUserBookingStatus ?? this.currentUserBookingStatus,
       currentUserQueueOrder: currentUserQueueOrder ?? this.currentUserQueueOrder,

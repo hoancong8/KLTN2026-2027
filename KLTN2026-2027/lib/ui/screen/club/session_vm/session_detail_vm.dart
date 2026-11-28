@@ -121,6 +121,8 @@ class SessionDetailViewModel extends StateNotifier<SessionDetailState> {
     required DateTime deadlineBooking,
     int? minimumPlayers,
     int? shortageCheckMinutes,
+    bool? advanceEnabled,
+    int? advanceAmount,
   }) async {
     state = state.copyWith(isSubmitting: true, errorMessage: null);
     try {
@@ -135,6 +137,8 @@ class SessionDetailViewModel extends StateNotifier<SessionDetailState> {
         deadlineBooking: deadlineBooking,
         minimumPlayers: minimumPlayers,
         shortageCheckMinutes: shortageCheckMinutes,
+      advanceEnabled: advanceEnabled,
+      advanceAmount: advanceAmount,
       ));
       if (!mounted) return true;
       await loadDetail();

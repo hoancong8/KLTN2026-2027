@@ -37,6 +37,8 @@ class PersonalFeeDto {
   final String currency;
   final String paymentCode;
   final String paymentStatus;
+  final num advanceApplied;
+  final bool advancePending;
   final String? paymentProgress;
   final String? paymentMethod;
   final DateTime? paymentRequestedAt;
@@ -57,6 +59,8 @@ class PersonalFeeDto {
     required this.currency,
     required this.paymentCode,
     required this.paymentStatus,
+    this.advanceApplied = 0,
+    this.advancePending = false,
     required this.paymentProgress,
     required this.paymentMethod,
     required this.paymentRequestedAt,
@@ -81,6 +85,8 @@ class PersonalFeeDto {
       currency: _asString(json['currency']),
       paymentCode: _asString(json['paymentCode']),
       paymentStatus: _asString(json['paymentStatus']),
+      advanceApplied: num.tryParse(json['advanceApplied']?.toString() ?? '') ?? 0,
+      advancePending: json['advancePending'] == true,
       paymentProgress: _asNullableString(json['paymentProgress']),
       paymentMethod: _asNullableString(json['paymentMethod']),
       paymentRequestedAt: _asDate(json['paymentRequestedAt']),
